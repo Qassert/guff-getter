@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONBin Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            white-space: pre-line; /* Keeps line breaks */
+            margin: 20px;
+        }
+        .object-separator {
+            margin-bottom: 20px; /* Adds double space between objects */
+        }
+    </style>
+</head>
+<body>
+    <h2>JSONBin Data Viewer</h2>
+    <pre id="output">Loading data...</pre>
+
+    <script>
+        // Get the Bin ID from the URL
+        const params = new URLSearchParams(window.location.search);
+        const binId = params.get("bin");
+
+        if (!binId) {
+            document.getElementById("output").textContent = "Error: No Bin ID provided in URL.";
+        } else {
+            const url = `https://api.jsonbin.io/v3/b/${binId}/latest?pretty=1`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const outputElement = document.getElementById("output");
+                    let formattedText = "";
+
+                    // Extract only the required fields
+                    Object.values(data.record).forEach(obj => {
+                        formattedText += `${obj.crazyReplacement1Title}\n`;
+                        formattedText += `${obj.crazyReplacement1Extract}\n\n`;
+                        formattedText += `${obj.crazyReplacement2Title}\n`;
+                        formattedText += `${obj.crazyReplacement2Extract}\n\n`;
+                        formattedText += " \n"; // Double space between objects
+                    });
+
+                    outputElement.textContent = formattedText;
+                })
+                .catch(error => {
+                    document.getElementById("output").textContent = "Error fetching data: " + error;
+                });
+        }
+    </script>
+</body>
+</html>
