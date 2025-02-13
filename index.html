@@ -7,8 +7,15 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            white-space: pre-line; /* Keeps line breaks */
             margin: 20px;
+            max-width: 100%;
+            word-wrap: break-word; /* Ensures long words break properly */
+        }
+        #output {
+            white-space: pre-wrap; /* Keeps line breaks and ensures text wraps */
+            word-wrap: break-word; /* Ensures text breaks on small screens */
+            overflow-wrap: break-word; /* Ensures words break properly */
+            max-width: 100%; /* Prevents horizontal scrolling */
         }
         .object-separator {
             margin-bottom: 20px; /* Adds double space between objects */
