@@ -49,10 +49,10 @@
 
                     // Extract only the required fields
                     Object.values(data.record).forEach(obj => {
-                        formattedText += `${obj.crazyReplacement1Title}\n`;
-                        formattedText += `${obj.crazyReplacement1Extract}\n\n`;
-                        formattedText += `${obj.crazyReplacement2Title}\n`;
-                        formattedText += `${obj.crazyReplacement2Extract}\n\n`;
+                        formattedText += `${obj.crazyReplacement1Title}\n\n`;
+                        formattedText += `${obj.crazyReplacement1Extract}\n\n\n`;
+                        formattedText += `${obj.crazyReplacement2Title}\n\n`;
+                        formattedText += `${obj.crazyReplacement2Extract}\n\n\n`;
                         formattedText += " \n"; // Double space between objects
                     });
 
