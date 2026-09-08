@@ -6,7 +6,7 @@ from bson import ObjectId
 import os
 import certifi
 from dotenv import load_dotenv  # type: ignore
-from pydantic import BaseModel  # type: ignore
+from pydantic import BaseModel, field_validator  # type: ignore
 import datetime
 
 # Load environment variables
@@ -20,7 +20,23 @@ collection = db["entries"]
 
 router = APIRouter()
 
-class Post(BaseModel):
+class ImageMetadata(BaseModel):
+    image_url: str | None = None
+    image_prompt: str | None = None
+    image_model: str | None = None
+    image_provider: str | None = None
+    image_generated_at: str | None = None
+
+    @field_validator('image_url')
+    @classmethod
+    def reference_only(cls, value):
+        if value is not None and not (value.startswith(('https://', 'http://')) or
+                                      (value.startswith('/') and not value.startswith('//'))):
+            raise ValueError('Image must be an HTTP URL or local path, never embedded image data.')
+        return value
+
+
+class Post(ImageMetadata):
     title: str
     description: str
     extract: str
@@ -28,6 +44,8 @@ class Post(BaseModel):
     crazyReplacement1Extract: str | None = None
     crazyReplacement1done: bool = False
     creationUser: str | None = None
+    rewrite_id: str | None = None
+    image_owner: str | None = None
 
 
 
@@ -58,6 +76,10 @@ def create_entry(post: Post, request: Request):
         "creationUser": post.creationUser or request.cookies.get("active_pet")
     }
 
+    if post.rewrite_id:
+        new_entry.update(rewrite_id=post.rewrite_id, image_owner=creation_user)
+        new_entry.update({key: getattr(post, key) for key in ImageMetadata.model_fields
+                          if getattr(post, key) is not None})
     inserted_id = collection.insert_one(new_entry).inserted_id
 
     return {
@@ -82,7 +104,9 @@ def get_entries():
         "flagForFunnyCount": 1,
         "chatHistory": 1,
         "creationDate": 1,
-        "creationUser": 1
+        "creationUser": 1,
+        **{key: 1 for key in ImageMetadata.model_fields},
+        "rewrite_id": 1
     }).sort("creationDate", -1))
 
     return [
@@ -98,7 +122,8 @@ def get_entries():
             "flagForFunnyCount": post.get("flagForFunnyCount", 0),
             "chatHistory": post.get("chatHistory", []),
             "creationDate": post.get("creationDate"),
-            "creationUser": post.get("creationUser")
+            "creationUser": post.get("creationUser"),
+            **{key: post[key] for key in (*ImageMetadata.model_fields, "rewrite_id") if key in post}
         }
         for post in posts
     ]
@@ -160,3 +185,23 @@ def delete_all_entries_for_user(current_user: str = Depends(get_active_pet)):
 def delete_all_entries():
     result = collection.delete_many({})
     return {"message": f"All entries deleted. Total: {result.deleted_count}"}
+
+class ImageUpdate(ImageMetadata):
+    rewrite_id: str
+
+
+@router.patch('/entry/{id}/image')
+def update_entry_image(id: str, payload: ImageUpdate, active_pet: str = Cookie(None)):
+    if not active_pet:
+        raise HTTPException(status_code=401, detail='No active pet selected.')
+    if not ObjectId.is_valid(id):
+        raise HTTPException(status_code=400, detail='Invalid entry ID.')
+    metadata = payload.model_dump(exclude_none=True, exclude={'rewrite_id'})
+    if metadata.get('image_url', '').startswith('data:'):
+        raise HTTPException(status_code=400, detail='Image must be a URL/reference.')
+    result = collection.update_one(
+        {'_id': ObjectId(id), 'rewrite_id': payload.rewrite_id, 'image_owner': active_pet},
+        {'$set': metadata})
+    if not result.matched_count:
+        raise HTTPException(status_code=404, detail='Matching rewrite not found.')
+    return {'message': 'Image associated with rewrite.'}

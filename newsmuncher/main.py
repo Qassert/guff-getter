@@ -1,4 +1,4 @@
-from newsmuncher.config import AVATARS_DIR, STATIC_DIR, TEMPLATES_DIR
+from newsmuncher.config import AVATARS_DIR, STATIC_DIR, TEMPLATES_DIR, GENERATED_IMAGES_DIR
 from fastapi import FastAPI # type: ignore
 from fastapi.staticfiles import StaticFiles # type: ignore
 from fastapi.templating import Jinja2Templates # type: ignore
@@ -14,6 +14,9 @@ app.mount("/avatars", StaticFiles(directory=AVATARS_DIR), name="avatars")
 
 # ✅ Serve static files (CSS & JS) from the package static directory
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+GENERATED_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/generated-images", StaticFiles(directory=GENERATED_IMAGES_DIR), name="generated-images")
 
 # ✅ Include API routers properly
 app.include_router(main_api_router)

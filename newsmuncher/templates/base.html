@@ -6,12 +6,15 @@
   <title>{% block title %}NewsMuncher{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
 </head>
-<body>
+<body{% block body_attributes %}{% endblock %}>
+  {% block background %}{% endblock %}
   <a class="skip-link" href="#main-content">Skip to content</a>
+  {% block header %}
   <header class="site-header">
     <div class="wordmark">NEWS<span>MUNCHER</span><i aria-hidden="true">✳</i></div>
     <span class="edition">Fresh nonsense. Daily.</span>
   </header>
+  {% endblock %}
   <main id="main-content" class="site-main">{% block content %}{% endblock %}</main>
   <footer class="site-footer"><span>NEWSMUNCHER</span><span>A little rough around the edges.</span></footer>
   {% block scripts %}{% endblock %}

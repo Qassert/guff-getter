@@ -65,20 +65,23 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
 .workshop { max-width: 960px; }
 .container { padding: var(--space-3); margin-bottom: var(--space-3); }
 .nonsense-container { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: transparent; border: 0; box-shadow: none; padding: 0 0 12px; }
-.nonsense-container h2 { flex-basis: 100%; font-size: .85rem; }
 .nonsense-container button { background: var(--surface); }
 .nonsense-container button:nth-of-type(2) { background: var(--accent); }
-.profile-container { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-4); }
-.profile-container > img { width: 100%; aspect-ratio: 1; object-fit: cover; border: var(--border); box-shadow: 3px 3px 0 var(--purple); transform: rotate(-2deg); }
+.profile-container { position: relative; display: block; padding: var(--space-4);
+  background: transparent; border: 0; box-shadow: none; }
+.profile-container textarea { background: transparent; border: 0; border-radius: 0; padding-inline: 0; }
+.profile-container #titleDescBox { display: none; }
 .text-area-container { position: relative; min-width: 0; }
 .info-textarea { min-height: 76px; }
 .text-area-container textarea:last-child { margin-bottom: 0; }
 .shizzle-button { margin: 0 0 var(--space-4); font-size: 1.1rem; min-width: 210px; }
 #bankButton { background: var(--ink); color: var(--accent); }
-#outputContainer { display: none; padding: var(--space-4); }
+#outputContainer { display: none; padding: var(--space-4) 0; background: transparent; border: 0; box-shadow: none; }
 #outputContainer textarea { min-height: 70px; resize: vertical; }
 #outputContainer textarea:last-child { margin-bottom: 0; }
-.result-heading { font-family: var(--display-font); font-style: italic; font-size: 2rem; text-transform: uppercase; margin-bottom: 24px; }
+.result-heading { font-family: var(--display-font); font-style: italic; font-size: clamp(2rem, 4.5vw, 3rem); text-transform: uppercase; margin: 0 0 24px; line-height: 1.18; overflow-wrap: anywhere; text-wrap: pretty; max-width: 100%; }
+.result-heading:empty { display: none; }
+#crazyExtractBox { border: 0; border-radius: 0; padding: 16px; }
 .spinner { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin: -20px; border: 5px solid var(--paper); border-top-color: var(--purple); border-radius: 50%; animation: spin 1s linear infinite; z-index: 2; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .hidden { display: none; }
@@ -98,13 +101,133 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
   .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .pet-card { padding: 7px 7px 0; }
   .pet-card p { font-size: .9rem; }
-  .profile-container { grid-template-columns: 1fr; padding: 20px; }
-  .profile-container > img { width: 90px; }
+  .profile-container { padding: 20px; }
   .nonsense-container button { flex: 1 1 40%; }
   .shizzle-button { width: 100%; }
-  #outputContainer { padding: 20px; }
+  #outputContainer { padding: 20px 0; }
   .site-footer { flex-direction: column; gap: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+.image-panel { width: 100%; aspect-ratio: 1; margin-top: 24px; border: var(--border); background: var(--paper); color: var(--muted); overflow: hidden; }
+.generated-image { display: block; width: 100%; height: auto; opacity: 0; transition: opacity .6s ease; }
+.generated-image.loaded { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .generated-image { transition: none; } }
+.image-panel:has(.generated-image) { aspect-ratio: auto; }
+
+/* Two reusable ink washes sit behind all functional content. */
+body { isolation: isolate; }
+.image-ambient { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
+  --image-color-1: #bcb8ae; --image-color-2: #c3bbce; --wash-x: 50vw; --wash-y: 70vh; }
+.image-ambient span { position: absolute; left: var(--wash-x); top: var(--wash-y);
+  width: 170vmax; height: 120vmax; border-radius: 43% 57% 65% 35%;
+  background-color: var(--image-color-1); opacity: 0;
+  mask-image: radial-gradient(ellipse, #000 0%, #0009 20%, transparent 65%);
+  transform: translate(-53%, -48%) scale(.08);
+  transition: background-color 3s ease; }
+.image-ambient span:nth-child(2) { background-color: var(--image-color-2);
+  width: 130vmax; height: 160vmax; margin-left: 9vw; margin-top: -5vh; }
+.image-ambient .wash-group.spread span { animation: ink-spread 3s ease-out both; }
+.image-ambient .wash-group.spread span:nth-child(2) { animation-delay: .15s; }
+@keyframes ink-spread {
+  from { opacity: .03; transform: translate(-53%, -48%) scale(.08) rotate(-8deg); }
+  to { opacity: .16; transform: translate(-53%, -48%) scale(1) rotate(5deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .image-ambient span { transition: none; }
+  .image-ambient .wash-group.spread span { animation: none; opacity: .16; transform: translate(-53%, -48%) scale(1); }
+}
+
+.image-ambient .wash-group { position: absolute; inset: 0; opacity: 0; transition: opacity 3s ease; }
+.image-ambient .wash-group.active { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .image-ambient .wash-group { transition: none; } }
+
+/* Profile-only full-browser artwork: pet → ambient ink → fade → content. */
+.profile-page {
+  --pet-hero-height: max(1100px, 120vh);
+  --profile-reading: rgba(242, 240, 231, .94);
+  --profile-soft-paper: rgba(242, 240, 231, .86);
+  --profile-foreground: var(--ink);
+  position: relative;
+}
+@supports (height: 100dvh) {
+  .profile-page { --pet-hero-height: max(1100px, 120dvh); }
+}
+.pet-backdrop, .pet-backdrop-overlay { position: absolute; inset: 0 0 auto;
+  height: var(--pet-hero-height); pointer-events: none; }
+.pet-backdrop { z-index: -3; overflow: hidden; }
+.pet-backdrop img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+.profile-page .image-ambient { z-index: -2; }
+.pet-backdrop-overlay { z-index: -1;
+  background: linear-gradient(to bottom, #f2f0e7b3 0%, #f2f0e71a 14%,
+    #f2f0e700 32%, #f2f0e72e 50%, #f2f0e780 67%, #f2f0e7d9 83%, var(--paper) 100%); }
+.profile-page .site-main { padding-top: 24px; }
+.profile-page .profile-container { color: var(--profile-foreground); border-radius: 0;
+  background: linear-gradient(110deg, var(--profile-reading), var(--profile-soft-paper)); }
+.profile-page #outputContainer { color: var(--profile-foreground);
+  background: linear-gradient(110deg, var(--profile-reading), var(--profile-soft-paper));
+  padding: 24px; }
+.profile-page .site-footer { background: var(--profile-reading); }
+.profile-page :focus-visible { outline: 3px solid var(--purple); outline-offset: 4px;
+  box-shadow: 0 0 0 7px var(--paper); }
+@media (max-width: 620px) {
+  .pet-backdrop img { object-position: 50% 15%; }
+  .profile-page #outputContainer { padding: 20px; }
+}
+
+/* Source buttons stay at the top; their artwork-backed row sets the hero depth. */
+.profile-page .nonsense-container {
+  min-height: calc(50vh - 24px); margin-bottom: 0;
+  align-content: flex-start; align-items: flex-start; padding-bottom: 24px;
+}
+@supports (height: 100dvh) {
+  .profile-page .nonsense-container { min-height: calc(50dvh - 24px); }
+}
+.profile-page .generation-controls { display: flex; flex-wrap: wrap; align-items: stretch;
+  gap: 16px; margin-bottom: var(--space-4); }
+.profile-page .generation-controls .shizzle-button { margin: 0; }
+.profile-page .image-toggle { position: relative; display: inline-flex; cursor: pointer; }
+/* Visually hidden, but retains native checkbox focus, Space-key and label activation. */
+.profile-page .image-toggle input {
+  position: absolute; width: 1px; height: 1px; min-height: 0; margin: 0; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.profile-page .image-toggle .funky-button { display: flex; align-items: center;
+  justify-content: center; background: var(--surface); color: var(--ink); }
+.profile-page .image-toggle input:checked + .funky-button { background: var(--accent); }
+.profile-page .image-toggle input:focus-visible + .funky-button {
+  outline: 3px solid var(--purple); outline-offset: 4px; box-shadow: 0 0 0 7px var(--paper);
+}
+.profile-page .image-toggle:hover .funky-button { transform: translate(-1px, -1px); }
+.profile-page .image-toggle:active .funky-button { transform: translate(2px, 2px); box-shadow: none; }
+@media (max-width: 620px), (max-height: 500px) {
+  .profile-page .nonsense-container { min-height: max(132px, calc(42vh - 24px)); }
+  @supports (height: 100dvh) {
+    .profile-page .nonsense-container { min-height: max(132px, calc(42dvh - 24px)); }
+  }
+}
+@media (max-width: 620px) {
+  .profile-page .generation-controls { flex-direction: column; }
+  .profile-page .image-toggle, .profile-page .image-toggle .funky-button { width: 100%; }
+}
+
+/* Scroll-driven pet → generated artwork, below the existing ambient ink. */
+.profile-page { --generated-background-progress: 0; }
+.profile-page .pet-backdrop { z-index: -5; opacity: calc(1 - var(--generated-background-progress)); transition: opacity .65s ease; }
+.profile-page .generated-backdrop { position: fixed; inset: 0; height: 100vh; height: 100dvh;
+  z-index: -4; pointer-events: none; overflow: hidden;
+  opacity: var(--generated-background-progress); transition: opacity .65s ease; }
+.generated-backdrop > div { position: absolute; inset: 0; opacity: 0; transition: opacity .8s ease; }
+.generated-backdrop img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.profile-page .image-ambient { z-index: -3; }
+.profile-page .pet-backdrop-overlay { z-index: -2; opacity: calc(1 - var(--generated-background-progress)); transition: opacity .65s ease; }
+.generated-backdrop-shade { position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background: linear-gradient(to bottom, #f2f0e726, #f2f0e74d 45%, #f2f0e780);
+  opacity: var(--generated-background-progress); transition: opacity .65s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .profile-page .pet-backdrop, .profile-page .generated-backdrop,
+  .generated-backdrop > div, .profile-page .pet-backdrop-overlay,
+  .generated-backdrop-shade { transition: none; }
 }

@@ -1,10 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Pet Profile{% endblock %}
+{% block header %}{% endblock %}
+{% block body_attributes %} class="profile-page"{% endblock %}
+{% block background %}
+<div class="pet-backdrop" aria-hidden="true"><img src="/avatars/{{ pet.avatar }}" alt=""></div>
+<div id="generatedBackdrop" class="generated-backdrop" aria-hidden="true"><div></div><div></div></div>
+<div class="generated-backdrop-shade" aria-hidden="true"></div>
+<div class="pet-backdrop-overlay" aria-hidden="true"></div>
+{% endblock %}
 {% block content %}
-<div class="page-heading"><p class="eyebrow">THE NONSENSE WORKSHOP</p><h1>Same story.<br><span class="paint-underline">Different universe.</span></h1></div>
+<div id="imageAmbient" class="image-ambient" aria-hidden="true"><div class="wash-group"><span></span><span></span></div><div class="wash-group"><span></span><span></span></div></div>
 <div class="workshop">
   <div class="container nonsense-container">
-    <h2>Select your starter:</h2>
     <button class="funky-button" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">Drivel</button>
     <button class="funky-button" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">Wikipedia</button>
     <button class="funky-button" onclick="fetchAndDisplay('fetch_poem_into_api')">Poem</button>
@@ -12,24 +19,27 @@
   </div>
 
   <div class="container profile-container">
-    <img src="/avatars/{{ pet.avatar }}" alt="Pet Avatar" />
     <div class="text-area-container">
       <div id="loader" class="spinner hidden"></div>
-      <label class="field-label" for="titleDescBox">Title / description</label>
-      <textarea id="titleDescBox" placeholder="Type Title/Description..." readonly class="info-textarea"></textarea>
-      <label class="field-label" for="nonsenseBox">The source</label>
-      <textarea id="nonsenseBox" placeholder="Type Sentence..."></textarea>
+      <input type="hidden" id="titleDescBox">
+      <h2 id="sourceTitleHeading" class="result-heading"></h2>
+      <textarea aria-label="The source" id="nonsenseBox" placeholder="Type Sentence..."></textarea>
     </div>
   </div>
 
 
-  <button class="funky-button shizzle-button" onclick="confirmData()">Shizzalise</button>
+  <div class="generation-controls">
+    <label class="image-toggle">
+      <input type="checkbox" id="generateImages" autocomplete="off">
+      <span class="funky-button">Generate images</span>
+    </label>
+    <button class="funky-button shizzle-button" onclick="confirmData()">Shizzalise</button>
+  </div>
 
   <div id="outputContainer" class="container hidden">
-    <h2 class="result-heading">Fresh off the wall.</h2><label class="field-label" for="crazyTitleBox">Rewritten title</label>
-    <textarea id="crazyTitleBox" readonly></textarea>
-    <label class="field-label" for="crazyExtractBox">Your Shizzalise result</label>
-    <textarea id="crazyExtractBox" readonly></textarea>
+    <h2 id="crazyTitleBox" class="result-heading"></h2>
+    <textarea aria-label="Your Shizzalise result" id="crazyExtractBox" readonly></textarea>
+    <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
   </div>
 
 
@@ -37,4 +47,4 @@
 
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}

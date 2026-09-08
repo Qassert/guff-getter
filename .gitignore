@@ -34,3 +34,10 @@ build/
 dist/
 *.egg-info/
 *.bak
+
+# Optional local image/rewrite associations
+/data/previews/image_rewrites.sqlite3*
+
+# Paid image output (keep directory scaffold)
+/data/generated_images/*
+!/data/generated_images/.gitkeep

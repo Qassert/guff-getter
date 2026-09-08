@@ -15,3 +15,5 @@ AVATARS_DIR = DATA_DIR / "avatars"
 PREVIEWS_DIR = DATA_DIR / "previews"
 TEMP_FILE = PREVIEWS_DIR / "temp_data.json"
 TEMP_SHIZZ_FILE = PREVIEWS_DIR / "shizz_data.json"
+
+GENERATED_IMAGES_DIR = DATA_DIR / "generated_images"
