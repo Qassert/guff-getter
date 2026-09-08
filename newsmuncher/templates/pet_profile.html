@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pet Profile</title>
-  <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Pet Profile{% endblock %}
+{% block content %}
+<div class="page-heading"><p class="eyebrow">THE NONSENSE WORKSHOP</p><h1>Same story.<br><span class="paint-underline">Different universe.</span></h1></div>
+<div class="workshop">
   <div class="container nonsense-container">
-    <h3>Select your starter:</h3>
+    <h2>Select your starter:</h2>
     <button class="funky-button" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">Drivel</button>
     <button class="funky-button" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">Wikipedia</button>
     <button class="funky-button" onclick="fetchAndDisplay('fetch_poem_into_api')">Poem</button>
@@ -19,22 +15,26 @@
     <img src="/avatars/{{ pet.avatar }}" alt="Pet Avatar" />
     <div class="text-area-container">
       <div id="loader" class="spinner hidden"></div>
+      <label class="field-label" for="titleDescBox">Title / description</label>
       <textarea id="titleDescBox" placeholder="Type Title/Description..." readonly class="info-textarea"></textarea>
+      <label class="field-label" for="nonsenseBox">The source</label>
       <textarea id="nonsenseBox" placeholder="Type Sentence..."></textarea>
     </div>
   </div>
 
-  <!-- ✅ Renamed button -->
+
   <button class="funky-button shizzle-button" onclick="confirmData()">Shizzalise</button>
 
   <div id="outputContainer" class="container hidden">
+    <h2 class="result-heading">Fresh off the wall.</h2><label class="field-label" for="crazyTitleBox">Rewritten title</label>
     <textarea id="crazyTitleBox" readonly></textarea>
+    <label class="field-label" for="crazyExtractBox">Your Shizzalise result</label>
     <textarea id="crazyExtractBox" readonly></textarea>
   </div>
 
-  <!-- ✅ Final Save Button -->
+
   <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">Bank this Beauty</button>
 
-  <script src="{{ url_for('static', path='script.js') }}"></script>
-</body>
-</html>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
