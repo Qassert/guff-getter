@@ -1,6 +1,7 @@
+from newsmuncher.utils.source_preprocessing import preserve_source_text, preprocess_source, replacement_guidance, filter_word_banks
 from newsmuncher.config import ENV_FILE, WORDS_DIR
 import os, re, random, json
-import openai  # type: ignore
+from openai import OpenAI  # type: ignore
 from dotenv import load_dotenv  # type: ignore
 
 
@@ -9,7 +10,22 @@ WORDS_FOLDER = WORDS_DIR
 
 # Load API key from .env
 load_dotenv(ENV_FILE)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Shared strict output contract for both generation stages.
+JSON_FORMAT = {
+    "type": "json_schema",
+    "name": "rewritten_article",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "title": {"type": "string"},
+            "extract": {"type": "string"},
+        },
+        "required": ["title", "extract"],
+        "additionalProperties": False,
+    },
+}
 
 # CSV file definitions
 CSV_FILES = {
@@ -181,8 +197,9 @@ def process_batch(data, generate_replacements, flag_name, batch_size):
 def split_list(lst, num_parts=3):
     """Splits a list into roughly equal unique parts, ensuring no repeats."""
     random.shuffle(lst)
-    part_size = max(1, len(lst) // num_parts)
-    return [lst[i * part_size:(i + 1) * part_size] for i in range(num_parts)]
+    if num_parts <= 0:
+        raise ValueError("num_parts must be positive")
+    return [lst[i::num_parts] for i in range(num_parts)]
 
 
 # --------------
@@ -201,13 +218,17 @@ def prepare_prompt(entry, NumberOfWords, prompt_template):
               Returns None if there's an error.
     """
     # Clean the input data
-    cleaned_entry = clean_data(entry)
+    original_entry = preserve_source_text(entry)
+    preprocessing = preprocess_source(original_entry)
+    cleaned_entry = preprocessing["masked"]
     title_to_change = cleaned_entry.get("title", "No title provided").strip() + ' - ' + cleaned_entry.get("description",
                                                                                                       "No description provided").strip()
     extract_to_change = cleaned_entry.get("extract", "No extract provided").strip()
 
     # Get fresh, unique words for this prompt
     random_words = load_random_words(NumberOfWords)
+    # Avoid offering a detected original expression back as a bank ingredient.
+    random_words = filter_word_banks(preprocessing, random_words)
     print("[DEBUG] Random Words Loaded:", json.dumps(random_words, indent=2))
 
     # Split word lists into 3 unique parts
@@ -251,7 +272,8 @@ def prepare_prompt(entry, NumberOfWords, prompt_template):
     )
 
     # Format the final prompt
-    full_prompt = f"{filled_prompt_template}\n\nText to Transform:\nTitle: {title_to_change}\nExtract: {extract_to_change}"
+    guidance = replacement_guidance(preprocessing, random_words)
+    full_prompt = f"{filled_prompt_template}\n\n{guidance}\n\nText to Transform:\nTitle: {title_to_change}\nExtract: {extract_to_change}"
 
     print("\n********************************")
     print("[DEBUG] Final Prompt (Check if placeholders are replaced with UNIQUE words):")
@@ -260,6 +282,7 @@ def prepare_prompt(entry, NumberOfWords, prompt_template):
 
     return {
         "full_prompt": full_prompt,
+        "preprocessing": preprocessing,  # Local only; never passed to send_prompt().
         "title_to_change": title_to_change,
         "extract_to_change": extract_to_change
     }
@@ -280,19 +303,24 @@ def send_prompt(full_prompt):
     """
     try:
         # Single API call with the improved prompt
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # gpt-4 gpt-4o-mini gpt-3.5-turbo
-            messages=[
-                {"role": "system", "content": "You are an assistant that transforms text into absurd versions in strict JSON format."},
-                {"role": "user", "content": full_prompt}
-            ],
-            n=1,  # Single response
-            temperature=0.8,
-            max_tokens=750
-        )
+        with OpenAI(max_retries=0, timeout=30.0) as client:
+            response = client.responses.create(
+                model="gpt-5.6-luna",
+                input=[
+                    {"role": "system", "content": "You are an assistant that transforms text into absurd versions in strict JSON format."},
+                    {"role": "user", "content": full_prompt}
+                ],
+                reasoning={"effort": "none"},
+                text={"format": JSON_FORMAT},
+                max_output_tokens=750,
+                store=False,
+            )
+
+        if response.status != "completed":
+            raise ValueError("OpenAI rewrite response was incomplete.")
 
         # Extract response
-        response_content = response["choices"][0]["message"]["content"]
+        response_content = response.output_text
         response_data = json.loads(response_content)
 
         print("\n********************************")
@@ -309,6 +337,27 @@ def send_prompt(full_prompt):
 
 # --------------
 
+def format_shizzalise_result(response_data):
+    """Validate and sanitize the generated JSON locally, without another API call."""
+    try:
+        if not isinstance(response_data, dict):
+            raise ValueError("Expected a JSON object from generation.")
+        for key in ("title", "extract"):
+            if not isinstance(response_data.get(key), str) or not response_data[key].strip():
+                raise ValueError(f"Generated {key} must be a nonempty string.")
+        return {
+            "crazyReplacement1Title": sanitize_text(response_data["title"]),
+            "crazyReplacement1Extract": sanitize_text(response_data["extract"]),
+            "crazyReplacement1done": True,
+            "flagForDeleteCount": 0,
+            "flagForFunnyCount": 0,
+            "chatHistory": [],
+        }
+    except (TypeError, ValueError) as e:
+        print(f"Error formatting Shizzalise result: {e}")
+        return None
+
+
 def correct_grammar(response_data):
     """
     Sends the initial response to the OpenAI API for grammar correction.
@@ -322,18 +371,23 @@ def correct_grammar(response_data):
     """
     try:
         # Secondary call to correct grammar and pluralization
-        corrected_response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Cheaper model for grammar correction
-            messages=[
-                {"role": "system", "content": "You are an assistant that corrects grammar, spelling, case and pluralization in JSON text."},
-                {"role": "user", "content": json.dumps(response_data)}
-            ],
-            n=1,
-            temperature=0.2,  # Lower temperature for more consistent corrections
-            max_tokens=250
-        )
+        with OpenAI(max_retries=0, timeout=30.0) as client:
+            corrected_response = client.responses.create(
+                model="gpt-5.6-luna",
+                input=[
+                    {"role": "system", "content": "You are an assistant that corrects grammar, spelling, case and pluralization in JSON text."},
+                    {"role": "user", "content": json.dumps(response_data)}
+                ],
+                reasoning={"effort": "none"},
+                text={"format": JSON_FORMAT},
+                max_output_tokens=250,
+                store=False,
+            )
 
-        corrected_content = corrected_response["choices"][0]["message"]["content"]
+        if corrected_response.status != "completed":
+            raise ValueError("OpenAI grammar response was incomplete.")
+
+        corrected_content = corrected_response.output_text
         corrected_data = json.loads(corrected_content)
 
         print("\n********************************")

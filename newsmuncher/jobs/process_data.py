@@ -1,3 +1,4 @@
+from newsmuncher.utils.source_preprocessing import log_overlap
 from newsmuncher.config import PROMPT_FILE
 import os
 import requests
@@ -18,7 +19,7 @@ prompt_template = load_prompt(PROMPT_FILE)
 random_words = load_random_words(NumberOfWords)
 
 def generate_replacements(entry):
-    # Generate replacements using the modular functions: prepare_prompt, send_prompt, and correct_grammar.
+    # Generate replacements using the modular functions: prepare_prompt, send_prompt, and format_shizzalise_result.
 
     # Prepare the prompt
     prepared_data = prepare_prompt(entry, NumberOfWords, prompt_template)
@@ -32,13 +33,15 @@ def generate_replacements(entry):
         print("[ERROR] Failed to send prompt.")
         return None
 
-    # Correct the grammar of the initial response
-    corrected_data = correct_grammar(initial_response)
-    if not corrected_data:
-        print("[ERROR] Failed to correct grammar.")
+    # Sanitize and format the initial response locally
+    log_overlap(prepared_data["preprocessing"], initial_response)
+
+    result = format_shizzalise_result(initial_response)
+    if not result:
+        print("[ERROR] Generated title or extract is invalid.")
         return None
 
-    return corrected_data
+    return result
 
 def main(batch_size=1):
     try:

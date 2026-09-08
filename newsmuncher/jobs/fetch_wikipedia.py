@@ -1,3 +1,4 @@
+from newsmuncher.utils.source_preprocessing import preserve_source_text
 from newsmuncher.config import TEMP_FILE
 import json
 import requests
@@ -21,11 +22,11 @@ def fetch_data(min_chars=160, max_chars=500, max_retries=10):
             response.raise_for_status()
             data = response.json()
 
-            extract = clean_data(data.get("extract", ""))
+            extract = preserve_source_text(data.get("extract", ""))
             if min_chars <= len(extract) <= max_chars:
                 temp_data = {
-                    "title": clean_data(data.get("title", "")),
-                    "description": clean_data(data.get("description", "")),
+                    "title": preserve_source_text(data.get("title", "")),
+                    "description": preserve_source_text(data.get("description", "")),
                     "extract": extract
                 }
 

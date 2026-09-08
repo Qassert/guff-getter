@@ -1,3 +1,4 @@
+from newsmuncher.utils.source_preprocessing import preserve_source_text
 from newsmuncher.config import TEMP_FILE
 import json
 import requests
@@ -91,9 +92,9 @@ def fetch_data(min_chars=160, max_chars=500, max_retries=10):
                 summary = response.json()
                 if summary.get("type") == "disambiguation":
                     raise ValueError("Wikipedia returned a disambiguation page.")
-                abstract = clean_data(summary.get("extract", ""))
-                resource_name = clean_data(summary.get("title", person["title"]))
-                description = clean_data(summary.get("description", ""))
+                abstract = preserve_source_text(summary.get("extract", ""))
+                resource_name = preserve_source_text(summary.get("title", person["title"]))
+                description = preserve_source_text(summary.get("description", ""))
                 if not description:
                     raise ValueError(f"No short description returned for {person['title']}.")
 

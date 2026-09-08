@@ -1,3 +1,4 @@
+from newsmuncher.utils.source_preprocessing import log_overlap
 from newsmuncher.config import PROJECT_ROOT, PROMPT_FILE, TEMP_FILE, TEMP_SHIZZ_FILE
 from fastapi import APIRouter, HTTPException, Request, Cookie, Body
 from pydantic import BaseModel
@@ -6,7 +7,7 @@ import requests
 import subprocess
 import sys
 import os
-from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, correct_grammar
+from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result
 from newsmuncher.utils.file_handler import load_prompt
 
 
@@ -90,15 +91,15 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None)):
     if not initial_response:
         raise HTTPException(status_code=500, detail="OpenAI generation failed.")
 
-    corrected = correct_grammar(initial_response)
-    if not corrected:
-        raise HTTPException(status_code=500, detail="Grammar correction failed.")
+    log_overlap(prompt_template["preprocessing"], initial_response)
+
+    result = format_shizzalise_result(initial_response)
+    if not result:
+        raise HTTPException(status_code=500, detail="Generated title or extract is invalid.")
 
     full_result = {
         **payload.dict(),
-        "crazyReplacement1Title": corrected["crazyReplacement1Title"],
-        "crazyReplacement1Extract": corrected["crazyReplacement1Extract"],
-        "crazyReplacement1done": True,
+        **result,
         "creationUser": creationUser
     }
 

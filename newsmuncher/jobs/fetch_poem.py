@@ -1,3 +1,4 @@
+from newsmuncher.utils.source_preprocessing import preserve_source_text
 from newsmuncher.config import TEMP_FILE
 import json
 import requests
@@ -35,15 +36,15 @@ def fetch_data(min_chars=160, max_chars=500, max_retries=10):
             response.raise_for_status()
             poem_data = response.json()[0]
 
-            poem_title = clean_data(poem_data.get("title", "Untitled"))
-            poem_author = clean_data(poem_data.get("author", "Unknown Author"))
+            poem_title = preserve_source_text(poem_data.get("title", "Untitled"))
+            poem_author = preserve_source_text(poem_data.get("author", "Unknown Author"))
             valid_excerpt = extract_valid_verses(poem_data.get("lines", []), max_chars)
 
             if min_chars <= len(valid_excerpt) <= max_chars:
                 temp_data = {
                     "title": poem_title,
                     "description": poem_author,
-                    "extract": clean_data(valid_excerpt)
+                    "extract": preserve_source_text(valid_excerpt)
                 }
 
                 # Save data to temp file instead of posting

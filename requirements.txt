@@ -12,5 +12,8 @@ motor
 passlib[bcrypt]==1.7.4
 # Conservative backend constraint for the existing Passlib integration.
 bcrypt>=3.2,<4
-# Existing code uses the pre-1.0 ChatCompletion interface.
-openai>=0.28,<1
+# Current SDK with Responses API and structured outputs.
+openai>=2,<3
+
+# Local source masking; install en_core_web_sm separately (see README).
+spacy>=3.8,<4

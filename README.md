@@ -107,3 +107,23 @@ Neither maintenance command was executed during cleanup.
 
 Review files before the first commit, verify the fetch/rewrite/preview/save
 workflow, and configure deployment and service secrets before hosting.
+
+## Local source preprocessing
+
+Install the dependency and matching trained English pipeline in the active environment:
+
+```sh
+python -m pip install "spacy>=3.8,<4"
+python -m spacy download en_core_web_sm
+python -m unittest discover -s tests -v
+```
+
+The model is loaded locally once per process. No extra OpenAI call is used.
+Generation masks detected source names, places, noun phrases and modifiers before
+building the prompt; source-to-placeholder records remain local for overlap logs.
+A missing model raises an explicit setup error; original text is never silently
+sent as a fallback. Detection is heuristic, especially for surreal invented text,
+and is not an anonymization guarantee. Actions, quantities and connective language
+are intentionally retained. Existing stored text that was lowercased by older
+fetchers cannot recover its original capitalization; newly fetched text preserves it.
+Overlap logging is diagnostic only and does not reject or regenerate output.

@@ -1,22 +1,118 @@
-Transform the following text at the foot of this prompt into a surreal, absurd version:
-- Always include an animal or object from these lists: {animal_words1}, {animal_words2}, {animal_words3}.
-- Replace every adjective/adverb with words from these lists: {adverb_words1}, {adverb_words2}, {adverb_words3}.
-- Replace every firstname from these lists: {name_words1}, {name_words2}, {name_words3}.
-- Replace every place from these lists: {place_words1}, {place_words2}, {place_words3}.
-- Replace every noun from these lists: {noun_words1}, {noun_words2}, {noun_words3}, {animal_words1}, {animal_words2}, {animal_words3}.
-- Entire sentences or clauses should be rewritten with slang-filled or absurd phrasing, ensuring no field remains similar to the original.
-- Always add 1 rude swear word for comedic effect from these lists: {slang_words1}, {slang_words2}, {slang_words3}.
+Transform the source text into an outrageously surreal, ludicrous and funny version.
 
-### **Instructions:**
-1. **Transform every word or phrase** in all fields comprehensively. Do not leave any significant part unchanged.
-2. You are an assistant that modifies text into absurd, rude, and humorous versions in **strict JSON format**:
+The result must preserve the CORE MEANING and broad sequence of events from the original, but the language itself should be radically transformed.
+
+The reader should just about be able to recognise what the original was about, while wondering what the hell happened to it.
+
+LENGTH:
+- Keep the rewritten extract approximately the same length as the original.
+- Aim for roughly 90% to 115% of the original word count.
+- Do NOT make the rewrite twice as long as the source.
+- Do not add lengthy new scenes, backstory, explanations or tangents.
+- Create absurdity primarily by REPLACING existing material rather than continually adding new material.
+- If you add a ridiculous detail, compensate by shortening or replacing something elsewhere.
+
+TRANSFORMATION STRENGTH:
+- Rewrite aggressively.
+- Do NOT simply copy the original sentences and insert jokes into them.
+- Change the sentence structures and phrasing substantially.
+- Replace MOST names with supplied names.
+- Replace MOST places with supplied places.
+- Replace MOST significant nouns with supplied or invented absurd nouns.
+- Replace MOST adjectives and adverbs with supplied or invented ridiculous alternatives.
+- Replace distinctive imagery, metaphors and descriptions with surreal alternatives.
+- Avoid retaining memorable phrases from the source.
+- Ordinary connecting words can remain where needed for grammar and readability.
+- Preserve the basic event or idea, NOT the original vocabulary.
+
+The finished version should feel like somebody has taken the original through a literary blender rather than merely decorating it with jokes.
+
+COMEDY STYLE:
+- Treat completely ridiculous events with absolute seriousness.
+- Use deadpan delivery. Never acknowledge that anything is unusual.
+- Use bizarre specificity.
+- Give people ridiculous motivations and unjustified confidence.
+- Introduce stupid consequences that nevertheless follow their own strange logic.
+- Use unexpected comparisons and surreal imagery.
+- Let absurd situations escalate rapidly.
+- Prefer surprising, sharp jokes over generic randomness.
+- Occasionally use an oddly specific mundane detail in the middle of something spectacularly ridiculous.
+- Characters may behave as though insane decisions are completely sensible.
+- Avoid explaining jokes.
+- Avoid saying that something is "absurd", "crazy", "surreal" or "ridiculous". Simply present it as fact.
+- Keep enough narrative coherence that the nonsense has a thread.
+- Aim for repeated "what the fuck?" moments while remaining readable.
+
+RANDOM INGREDIENTS:
+
+The following randomly selected words are ingredients for this transformation.
+
+Use them creatively. Alter their grammar or pluralisation when necessary so sentences remain readable.
+
+Animals/objects:
+{animal_words1}, {animal_words2}, {animal_words3}
+
+Adverbs/absurd descriptors:
+{adverb_words1}, {adverb_words2}, {adverb_words3}
+
+Names:
+{name_words1}, {name_words2}, {name_words3}
+
+Places:
+{place_words1}, {place_words2}, {place_words3}
+
+Nouns:
+{noun_words1}, {noun_words2}, {noun_words3}
+
+Slang/rude words:
+{slang_words1}, {slang_words2}, {slang_words3}
+
+WORD-BANK RULES:
+- Use several supplied words throughout the transformation.
+- Use at least one supplied animal/object.
+- Use supplied names to replace original people's names wherever practical.
+- Use supplied places to replace original place names wherever practical.
+- Use several supplied nouns and descriptors in place of original ones.
+- Include at least one supplied rude/slang expression where it genuinely improves the joke.
+- Do NOT merely dump supplied words into extra sentences at the end.
+- Integrate them into the existing story so they replace ordinary elements of the source.
+- You may invent additional bizarre language when the supplied words alone are not enough.
+- Comedy and readability are more important than forcing every supplied word into the result.
+
+TITLE:
+- Completely rewrite the original title.
+- Make it short, punchy and outrageous.
+- It should resemble an unhinged tabloid headline.
+- Do not simply append a joke to the original title.
+- Change names and important nouns in the title where appropriate.
+
+FINAL QUALITY CHECK:
+
+Before returning the result, silently check your rewrite.
+
+Ask yourself:
+
+1. Is the extract approximately the same length as the source?
+2. Have I substantially rewritten the sentences rather than copying them?
+3. Have most important names, places, nouns, adjectives and adverbs been transformed?
+4. Have I replaced original material with comedy rather than simply adding lots of extra material?
+5. Does the story become significantly more ludicrous while remaining readable?
+6. Are there multiple genuinely surprising moments rather than just random word substitutions?
+7. Have I avoided explaining the jokes?
+
+If the transformation is too similar to the original, rewrite it more aggressively.
+
+If it is substantially longer than the original, shorten it before returning it.
+
+OUTPUT:
+
+Return ONLY valid JSON in exactly this structure:
+
 {{
   "title": "Your transformed title",
   "extract": "Your transformed extract"
 }}
-3. **Avoid including any additional text, explanations, or commentary** outside the JSON object.
-4. **Ensure all fields are changed.**
-5. **Validate the output for the following:**
-- Replace every name, noun, adjective, adverb, or clause with a ridiculous or absurd alternative.
-- Ensure grammatical accuracy after the transformation - add punctuation if required.
-6. **If the output fails to meet any requirement, regenerate the transformation until it complies fully.**
+
+Do not include markdown.
+Do not include code fences.
+Do not include explanations or commentary outside the JSON object.
