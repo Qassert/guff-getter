@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pet Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+  <div class="container nonsense-container">
+    <h3>Select your starter:</h3>
+    <button class="funky-button" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">Drivel</button>
+    <button class="funky-button" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">Wikipedia</button>
+    <button class="funky-button" onclick="fetchAndDisplay('fetch_poem_into_api')">Poem</button>
+    <button class="funky-button" onclick="fetchAndDisplay('fetch_people_into_api')">People</button>
+  </div>
+
+  <div class="container profile-container">
+    <img src="/avatars/{{ pet.avatar }}" alt="Pet Avatar" />
+    <div class="text-area-container">
+      <div id="loader" class="spinner hidden"></div>
+      <textarea id="titleDescBox" placeholder="Type Title/Description..." readonly class="info-textarea"></textarea>
+      <textarea id="nonsenseBox" placeholder="Type Sentence..."></textarea>
+    </div>
+  </div>
+
+  <!-- ✅ Renamed button -->
+  <button class="funky-button shizzle-button" onclick="confirmData()">Shizzalise</button>
+
+  <div id="outputContainer" class="container hidden">
+    <textarea id="crazyTitleBox" readonly></textarea>
+    <textarea id="crazyExtractBox" readonly></textarea>
+  </div>
+
+  <!-- ✅ Final Save Button -->
+  <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">Bank this Beauty</button>
+
+  <script src="{{ url_for('static', path='script.js') }}"></script>
+</body>
+</html>

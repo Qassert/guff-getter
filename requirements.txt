@@ -1,0 +1,16 @@
+# Runtime dependencies from imports and framework features; not a tested lockfile.
+fastapi
+uvicorn
+pydantic
+jinja2
+python-multipart
+requests
+python-dotenv
+certifi
+pymongo
+motor
+passlib[bcrypt]==1.7.4
+# Conservative backend constraint for the existing Passlib integration.
+bcrypt>=3.2,<4
+# Existing code uses the pre-1.0 ChatCompletion interface.
+openai>=0.28,<1

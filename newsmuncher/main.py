@@ -1,0 +1,27 @@
+from newsmuncher.config import AVATARS_DIR, STATIC_DIR, TEMPLATES_DIR
+from fastapi import FastAPI # type: ignore
+from fastapi.staticfiles import StaticFiles # type: ignore
+from fastapi.templating import Jinja2Templates # type: ignore
+from newsmuncher.api.reusable import app as reusable_app
+from newsmuncher.api.entries import router as main_api_router
+from newsmuncher.api.pets import router as pet_router
+from newsmuncher.api.previews import router as temp_router
+
+app = FastAPI()
+
+# ✅ Serve avatars
+app.mount("/avatars", StaticFiles(directory=AVATARS_DIR), name="avatars")
+
+# ✅ Serve static files (CSS & JS) from the package static directory
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# ✅ Include API routers properly
+app.include_router(main_api_router)
+app.include_router(pet_router, prefix="/pets", tags=["Pets"])
+app.include_router(temp_router, prefix="/temp", tags=["Temp Data"])
+
+# ✅ Mount reusable API
+app.mount("/reusable", reusable_app)
+
+# ✅ Set up Jinja2 templates (keeps template rendering working)
+templates = Jinja2Templates(directory=TEMPLATES_DIR)

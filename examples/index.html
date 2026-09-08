@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtered JSON Display from FastAPI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        pre {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+            white-space: pre-wrap;
+            text-align: left;
+            font-size: 16px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Filtered JSON Data from FastAPI</h1>
+    <pre id="json-output">Loading data from FastAPI...</pre>
+
+    <script>
+        async function fetchFromFastAPI() {
+            const apiUrl = "http://127.0.0.1:8000/main/get_all"; // Change URL if hosted elsewhere
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    document.getElementById("json-output").textContent = "No data available from the API.";
+                    return;
+                }
+
+                // Format and display data
+                let formattedText = data.map(item =>
+                    `🆔 ID: ${item.id}\n\n` +
+                    `🤪 Replacement 1 Title:\n${item.crazyReplacement1Title || "N/A"}\n` +
+                    `📝 Replacement 1 Extract:\n${item.crazyReplacement1Extract || "N/A"}\n\n` +
+                    `😂 Replacement 2 Title:\n${item.crazyReplacement2Title || "N/A"}\n` +
+                    `📜 Replacement 2 Extract:\n${item.crazyReplacement2Extract || "N/A"}\n\n`
+                ).join('\n-------------------------------------------------\n\n');
+
+                document.getElementById("json-output").textContent = formattedText.trim();
+            } catch (error) {
+                document.getElementById("json-output").innerHTML = `<span class="error">❌ Error fetching data: ${error.message}</span>`;
+                console.error("❌ Error fetching from FastAPI:", error);
+            }
+        }
+
+        // Fetch data when the page loads
+        fetchFromFastAPI();
+    </script>
+
+</body>
+</html>

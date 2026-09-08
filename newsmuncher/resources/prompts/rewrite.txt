@@ -1,0 +1,22 @@
+Transform the following text at the foot of this prompt into a surreal, absurd version:
+- Always include an animal or object from these lists: {animal_words1}, {animal_words2}, {animal_words3}.
+- Replace every adjective/adverb with words from these lists: {adverb_words1}, {adverb_words2}, {adverb_words3}.
+- Replace every firstname from these lists: {name_words1}, {name_words2}, {name_words3}.
+- Replace every place from these lists: {place_words1}, {place_words2}, {place_words3}.
+- Replace every noun from these lists: {noun_words1}, {noun_words2}, {noun_words3}, {animal_words1}, {animal_words2}, {animal_words3}.
+- Entire sentences or clauses should be rewritten with slang-filled or absurd phrasing, ensuring no field remains similar to the original.
+- Always add 1 rude swear word for comedic effect from these lists: {slang_words1}, {slang_words2}, {slang_words3}.
+
+### **Instructions:**
+1. **Transform every word or phrase** in all fields comprehensively. Do not leave any significant part unchanged.
+2. You are an assistant that modifies text into absurd, rude, and humorous versions in **strict JSON format**:
+{{
+  "title": "Your transformed title",
+  "extract": "Your transformed extract"
+}}
+3. **Avoid including any additional text, explanations, or commentary** outside the JSON object.
+4. **Ensure all fields are changed.**
+5. **Validate the output for the following:**
+- Replace every name, noun, adjective, adverb, or clause with a ridiculous or absurd alternative.
+- Ensure grammatical accuracy after the transformation - add punctuation if required.
+6. **If the output fails to meet any requirement, regenerate the transformation until it complies fully.**

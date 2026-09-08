@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .pet-card {
+            position: relative;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .pet-card:hover {
+            transform: scale(1.05);
+        }
+
+        .pet-card img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 0 15px #00ffff, 0 0 30px #ff00ff;
+        }
+
+        .pet-card p {
+            margin-top: 8px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        .speech-bubble {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 110%;
+            transform: translateY(-50%);
+            background: #111;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.6);
+            width: 200px;
+            z-index: 10;
+        }
+
+        .speech-bubble input {
+            width: 90%;
+            margin-bottom: 5px;
+            background-color: #222;
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            color: white;
+            padding: 5px;
+        }
+
+        .speech-bubble button {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+
+        .speech-bubble button:hover {
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.8);
+            transform: scale(1.05);
+        }
+
+        .vibrate {
+            animation: vibrate 0.2s linear 2;
+        }
+
+        @keyframes vibrate {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <h2>Select or Adopt a Bogart</h2>
+    <div class="gallery">
+        {# Non-orphan pets first, sorted by name #}
+        {% for pet in pets|selectattr('name')|sort(attribute='name') %}
+            <div class="pet-card" onclick="window.location.href='/pets/select/{{ pet["avatar"] }}'">
+                <img src="/avatars/{{ pet["avatar"] }}" alt="Pet Image">
+                <p>{{ pet["name"] }}</p>
+                <div class="speech-bubble" id="bubble-{{ pet["avatar"] }}" onclick="event.stopPropagation();"></div>
+            </div>
+        {% endfor %}
+
+        {# Orphan pets afterwards #}
+        {% for pet in pets if not pet.get("name") %}
+            <div class="pet-card" onclick="window.location.href='/pets/select/{{ pet["avatar"] }}'">
+                <img src="/avatars/{{ pet["avatar"] }}" alt="Pet Image">
+                <p>Orphan</p>
+                <div class="speech-bubble" id="bubble-{{ pet["avatar"] }}" onclick="event.stopPropagation();"></div>
+            </div>
+        {% endfor %}
+
+    </div>
+
+    
+</body>
+</html>
