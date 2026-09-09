@@ -164,3 +164,76 @@ The current pet-password login sets an `active_pet` cookie; it is not a signed,
 server-validated admin session. Before moderation can be exposed, implement genuine
 server-side session validation, an explicit privileged role, ownership/authorization
 checks, and an authenticated moderation endpoint. No gallery or video system exists.
+
+## Jingle feature — isolated proof stage (not yet enabled in the UI)
+
+One real ACE-Step jingle must succeed before backend/UI integration.
+Nothing currently auto-generates music on nomination. The application stays Python
+3.13; the Modal image uses Python 3.11 and the upstream ACE-Step dependency lockfile.
+Do not install ACE-Step into .venv.
+
+Prepared architecture: nominated rewritten text → one bounded OpenAI JSON brief →
+private Modal HTTPS endpoint → ACE-Step 1.5 turbo (eight steps, one 25-second output,
+no extra ACE language model) → MP3 → local generated-audio storage. The proof uses
+a dummy brief, so it spends no OpenAI tokens.
+
+Setup (separate CLI environment):
+
+    python3 -m venv .venv-modal
+    .venv-modal/bin/python -m pip install -r jingle_service/requirements-dev.txt
+    .venv-modal/bin/modal token new
+    .venv-modal/bin/modal deploy jingle_service/modal_app.py
+
+Deployment builds/downloads ML dependencies remotely and consumes Modal resources.
+Do not deploy until authenticated and available free allowance is confirmed. No
+payment method is required by this implementation.
+
+Create a Modal Proxy Token in the workspace dashboard. Put the deployed endpoint
+and its token pair in root .env as MODAL_JINGLE_ENDPOINT, MODAL_JINGLE_KEY,
+and MODAL_JINGLE_SECRET. Never put them in browser JavaScript or commit them.
+Existing OPENAI_API_KEY is reused for the brief. The default brief model is
+NEWSMUNCHER_JINGLE_BRIEF_MODEL=gpt-4.1-mini, with 400 maximum output tokens,
+structured output, no tools and no automatic retries.
+
+Offline tests and dry-run:
+
+    .venv/bin/python -B -m unittest discover -s tests -q
+    .venv/bin/python -m scripts.benchmark_jingle
+
+After authorization, ONE live proof:
+
+    .venv/bin/python -m scripts.benchmark_jingle --generate
+
+This writes an attempt marker before a single POST. Running again refuses another
+attempt. Do not delete the marker or choose a new ID after a timeout; inspect Modal
+logs/results first. Remote IDs retain durable markers/completed files and never
+automatically regenerate. Concurrent deployments sharing that volume are unsupported.
+
+Audio and benchmark reports live in data/generated_audio/ and are Git-ignored.
+MP3 uses 128 kbps. The proof returns model-load, generation and measured duration
+headers plus file size. Actual billable startup must be checked in Modal's dashboard.
+
+Pricing reviewed 2026-09-09: T4 $0.000164/GPU-second; L4 $0.000222/GPU-second.
+T4 is the lowest listed rate and the first candidate for the small turbo model;
+speed/quality are NOT yet benchmarked. At 60 GPU seconds, GPU alone would be
+$0.00984, before CPU, RAM, cold starts, build, storage and idle tail.
+This is not a claim of one-penny total generation. The service has zero minimum
+containers, one maximum container, two-second scale-down and no retries.
+Volume storage also costs money. Pricing can change.
+
+NEWSMUNCHER_JINGLE_DAILY_LIMIT=20 is reserved for backend integration: a transactional
+global UTC-day claim budget, with playback exempt. It is NOT yet enforced by the
+private proof endpoint. Do not expose it to browsers or connect MAKE JINGLE yet.
+Planned update policy: keep the brief/text snapshot with the audio; nomination
+edits never silently regenerate music.
+
+Official references:
+- [ACE-Step inference API](https://ace-step.github.io/ACE-Step-1.5/en/INFERENCE)
+- [ACE-Step GPU compatibility](https://ace-step.github.io/ACE-Step-1.5/en/GPU_COMPATIBILITY)
+- [Pinned source](https://github.com/ace-step/ACE-Step-1.5/tree/ca1e85fe9430179831e6bc6be790c332190a3866)
+- [Modal pricing](https://modal.com/pricing)
+- [Modal scaling](https://modal.com/docs/guide/scale)
+- [Modal proxy authentication](https://modal.com/docs/guide/webhook-proxy-auth)
+- [OpenAI brief model](https://developers.openai.com/api/docs/models/gpt-4.1-mini)
+
+See JINGLE_IMPLEMENTATION_STATUS.md for remaining work.

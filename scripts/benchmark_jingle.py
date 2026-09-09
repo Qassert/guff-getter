@@ -1,0 +1,68 @@
+"""One explicit live proof. Never retries a POST, even after an uncertain timeout."""
+import argparse
+import json
+import os
+from pathlib import Path
+import time
+from uuid import uuid4
+
+import requests
+from dotenv import load_dotenv
+from newsmuncher.config import ENV_FILE, DATA_DIR
+
+DUMMY_BRIEF = {
+    "music_prompt": "A jaunty absurd news jingle, wonky brass, bouncy bass and cheerful English vocals, one short catchy hook.",
+    "lyrics": "[Verse]\nThe mayor is a teapot, the buses run on cheese\n[Chorus]\nToot toot, teapot town! Put that biscuit down!",
+    "duration_seconds": 25,
+}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--generate", action="store_true", help="Consume Modal allowance for ONE test.")
+    args = parser.parse_args()
+    if not args.generate:
+        print(json.dumps(DUMMY_BRIEF, indent=2))
+        print("Dry run only. After deployment, --generate makes one real request.")
+        return
+    load_dotenv(ENV_FILE)
+    endpoint = os.environ.get("MODAL_JINGLE_ENDPOINT", "")
+    key = os.environ.get("MODAL_JINGLE_KEY", "")
+    secret = os.environ.get("MODAL_JINGLE_SECRET", "")
+    if not endpoint.startswith("https://") or not key or not secret:
+        raise SystemExit("Set MODAL_JINGLE_ENDPOINT, MODAL_JINGLE_KEY and MODAL_JINGLE_SECRET in root .env.")
+    directory = DATA_DIR / "generated_audio"
+    directory.mkdir(parents=True, exist_ok=True)
+    marker = directory / "benchmark-attempt.json"
+    payload = {**DUMMY_BRIEF, "request_id": str(uuid4())}
+    try:
+        with marker.open("x") as file:
+            json.dump(payload, file, indent=2)
+    except FileExistsError:
+        raise SystemExit("A benchmark was already attempted. Inspect its outcome before any further generation.")
+    start = time.monotonic()
+    # requests has no automatic POST retry. Never follow a redirect with credentials.
+    response = requests.post(endpoint, json=payload, headers={
+        "Modal-Key": key, "Modal-Secret": secret,
+    }, timeout=(15, 600), allow_redirects=False)
+    response.raise_for_status()
+    if response.status_code != 200 or response.headers.get("Content-Type", "").split(";")[0] != "audio/mpeg":
+        raise SystemExit("No audio returned; retain attempt marker and inspect Modal logs.")
+    if not 1000 < len(response.content) < 5_000_000:
+        raise SystemExit("Unexpected audio size; retain marker and inspect Modal logs.")
+    destination = directory / f"{payload['request_id']}.mp3"
+    destination.write_bytes(response.content)
+    report = {
+        "wall_seconds": round(time.monotonic() - start, 3),
+        "file_bytes": destination.stat().st_size,
+        "audio_file": str(destination),
+        "requested_duration_seconds": 25,
+        "measurements": {k: v for k, v in response.headers.items() if k.lower().startswith("x-jingle-")},
+        "cost": "Not measured. Inspect Modal billing including build, startup, CPU, RAM and idle time.",
+    }
+    (directory / "benchmark-report.json").write_text(json.dumps(report, indent=2))
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == "__main__":
+    main()

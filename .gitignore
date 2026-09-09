@@ -41,3 +41,14 @@ dist/
 # Paid image output (keep directory scaffold)
 /data/generated_images/*
 !/data/generated_images/.gitkeep
+
+# Isolated jingle development and generated assets
+.venv-modal/
+.modal.toml
+.modal/
+/data/generated_audio/*
+!/data/generated_audio/.gitkeep
+/data/previews/jingles.sqlite3*
+/checkpoints/
+/model_weights/
+.cache/
