@@ -1,42 +1,41 @@
-/* Page-local drafts: no persistence or generation requests from Edit/Save/Cancel. */
+/* Page-local grouped drafts: no requests from Edit/Save/Cancel. */
 const profileEditing = (() => {
-    const fields = {
-        sourceTitle: {id: 'sourceTitleHeading', title: true, source: true},
-        sourceBody: {id: 'nonsenseBox'},
-        responseTitle: {id: 'crazyTitleBox', title: true},
-        responseBody: {id: 'crazyExtractBox'}
+    const groups = {
+        source: {title: 'sourceTitleHeading', body: 'nonsenseBox'},
+        response: {title: 'crazyTitleBox', body: 'crazyExtractBox'}
     };
     const get = id => document.getElementById(id);
     function close(key, focus) {
-        const field = fields[key];
-        get(field.id).hidden = false;
+        get(key + 'Display').hidden = false;
         get(key + 'Editor').hidden = true;
         get(key + 'Edit').setAttribute('aria-expanded', 'false');
         if (focus) get(key + 'Edit').focus();
     }
     return {
         edit(key) {
-            const field = fields[key], display = get(field.id), draft = get(key + 'Draft');
-            draft.value = field.source ? get('titleDescBox').value :
-                field.title ? (display.textContent ? display.textContent.slice(3, -3) : '') : display.value;
-            display.hidden = true;
+            if (!get(key + 'Editor').hidden) return;
+            const group = groups[key], title = get(group.title).textContent;
+            const titleDraft = get(key + 'TitleDraft'), bodyDraft = get(key + 'BodyDraft');
+            titleDraft.value = key === 'source' ? get('titleDescBox').value :
+                (title ? title.slice(3, -3) : '');
+            bodyDraft.value = get(group.body).value;
+            get(key + 'Display').hidden = true;
             get(key + 'Editor').hidden = false;
             get(key + 'Edit').setAttribute('aria-expanded', 'true');
-            draft.focus();
-            if (!field.title) autoResize(draft);
+            autoResize(titleDraft);
+            autoResize(bodyDraft);
+            titleDraft.focus();
         },
         save(key) {
-            const field = fields[key], value = get(key + 'Draft').value, display = get(field.id);
-            if (field.title) display.textContent = value ? `...${value}...` : '';
-            else display.value = value;
-            if (field.source) get('titleDescBox').value = value;
+            const group = groups[key], title = get(key + 'TitleDraft').value;
+            get(group.title).textContent = title ? `...${title}...` : '';
+            get(group.body).value = get(key + 'BodyDraft').value;
+            if (key === 'source') get('titleDescBox').value = title;
             close(key, true);
-            if (key.startsWith('response') && typeof responseEdited === 'function') responseEdited();
-            if (!field.title) autoResize(display);
+            autoResize(get(group.body));
+            if (key === 'response' && typeof responseEdited === 'function') responseEdited();
         },
         cancel(key) { close(key, true); },
-        reset(group) {
-            Object.keys(fields).filter(key => key.startsWith(group)).forEach(key => close(key, false));
-        }
+        reset(key) { close(key, false); }
     };
 })();

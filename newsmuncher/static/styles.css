@@ -144,25 +144,18 @@ body { isolation: isolate; }
 .image-ambient .wash-group.active { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .image-ambient .wash-group { transition: none; } }
 
-/* Profile-only full-browser artwork: pet → ambient ink → fade → content. */
+/* Profile-only full-browser artwork beneath ambient ink and content. */
 .profile-page {
-  --pet-hero-height: max(1100px, 120vh);
   --profile-reading: rgba(242, 240, 231, .94);
   --profile-soft-paper: rgba(242, 240, 231, .86);
   --profile-foreground: var(--ink);
   position: relative;
 }
-@supports (height: 100dvh) {
-  .profile-page { --pet-hero-height: max(1100px, 120dvh); }
-}
-.pet-backdrop, .pet-backdrop-overlay { position: absolute; inset: 0 0 auto;
-  height: var(--pet-hero-height); pointer-events: none; }
-.pet-backdrop { z-index: -3; overflow: hidden; }
-.pet-backdrop img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+.initial-background { position: fixed; inset: 0;
+  height: 100vh; height: 100dvh; pointer-events: none; }
+.initial-background { z-index: -3; overflow: hidden; }
+.initial-background img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
 .profile-page .image-ambient { z-index: -2; }
-.pet-backdrop-overlay { z-index: -1;
-  background: linear-gradient(to bottom, #f2f0e7b3 0%, #f2f0e71a 14%,
-    #f2f0e700 32%, #f2f0e72e 50%, #f2f0e780 67%, #f2f0e7d9 83%, var(--paper) 100%); }
 .profile-page .site-main { padding-top: 24px; }
 .profile-page .profile-container { color: var(--profile-foreground); border-radius: 0;
   background: linear-gradient(110deg, var(--profile-reading), var(--profile-soft-paper)); }
@@ -173,7 +166,7 @@ body { isolation: isolate; }
 .profile-page :focus-visible { outline: 3px solid var(--purple); outline-offset: 4px;
   box-shadow: 0 0 0 7px var(--paper); }
 @media (max-width: 620px) {
-  .pet-backdrop img { object-position: 50% 15%; }
+  .initial-background img { object-position: 50% 15%; }
   .profile-page #outputContainer { padding: 20px; }
 }
 
@@ -212,23 +205,15 @@ body { isolation: isolate; }
   .profile-page .image-toggle, .profile-page .image-toggle .funky-button { width: 100%; }
 }
 
-/* Scroll-driven pet → generated artwork, below the existing ambient ink. */
-.profile-page { --generated-background-progress: 0; }
-.profile-page .pet-backdrop { z-index: -5; opacity: calc(1 - var(--generated-background-progress)); transition: opacity .65s ease; }
+/* Continuous artwork; only loaded image slots crossfade, never scroll position. */
+.profile-page .initial-background { z-index: -5; }
 .profile-page .generated-backdrop { position: fixed; inset: 0; height: 100vh; height: 100dvh;
-  z-index: -4; pointer-events: none; overflow: hidden;
-  opacity: var(--generated-background-progress); transition: opacity .65s ease; }
+  z-index: -4; pointer-events: none; overflow: hidden; }
 .generated-backdrop > div { position: absolute; inset: 0; opacity: 0; transition: opacity .8s ease; }
 .generated-backdrop img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .profile-page .image-ambient { z-index: -3; }
-.profile-page .pet-backdrop-overlay { z-index: -2; opacity: calc(1 - var(--generated-background-progress)); transition: opacity .65s ease; }
-.generated-backdrop-shade { position: fixed; inset: 0; z-index: -2; pointer-events: none;
-  background: linear-gradient(to bottom, #f2f0e726, #f2f0e74d 45%, #f2f0e780);
-  opacity: var(--generated-background-progress); transition: opacity .65s ease; }
 @media (prefers-reduced-motion: reduce) {
-  .profile-page .pet-backdrop, .profile-page .generated-backdrop,
-  .generated-backdrop > div, .profile-page .pet-backdrop-overlay,
-  .generated-backdrop-shade { transition: none; }
+  .generated-backdrop > div { transition: none; }
 }
 
 /* Nine-slice artwork: 1199 × 1312 PNG, with the full corner folds retained.
@@ -327,25 +312,126 @@ body { isolation: isolate; }
 .profile-page #bankButton {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 56px; padding: 16px 24px; line-height: 1.25;
-  font-family: Rockwell, 'Rockwell Nova', Georgia, serif; font-weight: 800;
+  font-family: var(--print-headline-font); font-weight: 800;
 }
 .profile-page #bankButton { display: flex; width: fit-content; }
 .profile-page #bankButton.hidden { display: none; }
 .profile-page .source-choice[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 4px; }
-.profile-page .editable-section { position: relative; min-width: 0; padding-top: 52px; margin-bottom: 20px; }
-.profile-page .editable-section:last-child { margin-bottom: 0; }
-.profile-page .edit-tab { position: absolute; top: 0; left: -8px; transform: rotate(-5deg);
-  min-height: 44px; padding: 10px 20px; font-size: .95rem; }
-.profile-page .edit-tab:hover { transform: rotate(-5deg) translateY(-1px); }
-.profile-page .section-editor[hidden], .profile-page .editable-section > [hidden] { display: none; }
-.profile-page .section-editor input, .profile-page .section-editor textarea {
-  font-family: Georgia, serif; font-size: 1rem; text-shadow: none;
-  width: 100%; min-width: 0; border: 1px solid #817259; padding: 10px; margin: 0 0 12px;
+/* Anchor each overlay to its own parchment, including the response card. */
+.profile-page #outputContainer { position: relative; }
+
+/* Controls sit on the existing paper border, never in a reserved layout row. */
+.profile-page .edit-tab,
+.profile-page .edit-actions {
+  
+  position: absolute; top: 0; left: calc(-1 * var(--paper-edge)); right: auto; z-index: 3;
+  transform: translateX(-50%);
 }
-.profile-page .edit-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.profile-page .edit-actions .funky-button { min-height: 44px; padding: 10px 20px; }
-.profile-page .edit-notice { color: var(--print-ink); background: var(--paper); font-size: .85rem; padding: 8px 12px; }
+.profile-page .edit-tab { min-width: 190px; min-height: 90px; padding: 20px 28px; font-size: 1.5rem; }
+.profile-page .edit-tab:hover,
+.profile-page .edit-tab:active { transform: translateX(-50%); }
+.profile-page .edit-tab[aria-expanded="true"] { display: none; }
+.profile-page .section-editor[hidden], .profile-page .section-display[hidden] { display: none; }
+.profile-page :is(.profile-container, #outputContainer) .section-editor textarea {
+  background: transparent; appearance: none; box-shadow: none;
+  width: 100%; min-width: 0; border: 0; padding: 0;
+  resize: none; overflow: hidden;
+}
+.profile-page :is(.profile-container, #outputContainer) .section-editor textarea:focus {
+  background: transparent; box-shadow: none;
+  outline: 1px dashed #817259; outline-offset: 3px;
+}
+.profile-page :is(.profile-container, #outputContainer) .section-editor .headline-editor {
+  font-family: var(--print-headline-font); font-weight: 800;
+  font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1.18;
+  text-transform: uppercase; text-shadow: var(--print-headline-relief);
+  min-height: 0; margin: 0 0 24px; overflow-wrap: anywhere;
+}
+.profile-page .edit-actions { display: inline-flex; align-items: center; justify-content: flex-end; flex-wrap: nowrap; gap: 4px; max-width: 100%; }
+.profile-page .edit-actions .funky-button { min-height: 44px; padding: 10px 18px; font-size: 1rem; }
+
 @media (max-width: 620px) {
-  .profile-page .edit-tab { left: 0; transform: rotate(-2deg); }
-  .profile-page .edit-tab:hover { transform: rotate(-2deg); }
+
+  .profile-page .edit-tab,
+  .profile-page .edit-actions .funky-button { padding-inline: 12px; }
+}
+
+/* Attached paper controls: each group is anchored to its own card border. */
+.profile-page .profile-container, .profile-page #outputContainer { overflow: visible; }
+.profile-page .edit-tab, .profile-page .edit-actions .funky-button {
+  --tab-tint: sepia(.25) saturate(1.15) brightness(.86);
+}
+.profile-page .nonsense-container, .profile-page .generation-controls {
+  position: absolute; left: 50%; width: calc(100% + var(--paper-edge));
+  transform: translateX(-50%); z-index: 4; margin: 0; padding: 0;
+  display: flex; justify-content: center; align-items: center; gap: 8px;
+}
+.profile-page .nonsense-container {
+  top: calc(-1.25 * var(--paper-edge)); transform: translate(-50%, -32%);
+}
+.profile-page .generation-controls {
+  bottom: calc(-1 * var(--paper-edge)); transform: translate(-50%, 32%);
+}
+.profile-page #bankButton {
+  position: absolute; bottom: calc(-1 * var(--paper-edge)); left: 50%;
+  transform: translate(-50%, 32%); margin: 0; z-index: 4;
+  --tab-tint: sepia(1) saturate(3) hue-rotate(24deg) brightness(1.12);
+  color: var(--print-ink); text-shadow: var(--print-body-relief);
+}
+.profile-page #bankButton:hover, .profile-page #bankButton:active { transform: translate(-50%, 32%); }
+@media (max-width: 1200px) {
+  /* Keep the outer half reachable when the page has no wide side gutter. */
+  .profile-page .edit-tab, .profile-page .edit-actions { left: calc(95px - var(--paper-edge)); }
+}
+@media (max-width: 620px) {
+  .profile-page .edit-tab { min-width: 110px; min-height: 60px; padding: 12px 18px; font-size: 1.125rem; }
+  .profile-page .edit-tab, .profile-page .edit-actions {
+    left: calc(-1 * var(--paper-edge)); transform: none;
+  }
+  .profile-page .edit-tab:hover, .profile-page .edit-tab:active { transform: none; }
+  .profile-page .edit-actions { flex-direction: column; gap: 0; }
+  .profile-page .edit-actions .funky-button { min-height: 44px; padding: 8px 12px; }
+  .profile-page .nonsense-container { gap: 0; }
+  .profile-page .nonsense-container .source-choice { flex: 0 1 50%; min-height: 44px; padding: 10px 8px; }
+  .profile-page .generation-controls { gap: 0; }
+}
+
+/* Separate paper surfaces from controls so the sheet covers the EDIT tab artwork.
+   The existing border dimensions and nine-slice asset stay unchanged. */
+.profile-page :is(.profile-container, #outputContainer) {
+  isolation: isolate; background: transparent; border-image-source: none;
+}
+.profile-page :is(.profile-container, #outputContainer)::before {
+  content: ''; position: absolute; pointer-events: none; z-index: -1;
+  inset: calc(-1.25 * var(--paper-edge)) calc(-1 * var(--paper-edge))
+    calc(-1 * var(--paper-edge));
+  border: solid transparent;
+  border-width: calc(1.25 * var(--paper-edge)) var(--paper-edge) var(--paper-edge);
+  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  background: #eee5cf; background-clip: padding-box;
+}
+/* A sibling surface avoids the button transform trapping its paper above the sheet. */
+.profile-page :is(.profile-container, #outputContainer)::after {
+  content: ''; position: absolute; pointer-events: none; z-index: -2;
+  top: 0; left: calc(-1 * var(--paper-edge)); transform: translateX(-50%);
+  width: 190px; height: 90px; box-sizing: border-box;
+  border: solid transparent; border-width: 15px 12px 12px;
+  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  background: #eee5cf; background-clip: padding-box;
+  filter: sepia(.25) saturate(1.15) brightness(.86) drop-shadow(1px 3px 2px #49382266);
+}
+.profile-page :is(.profile-container, #outputContainer):has(.edit-tab[aria-expanded="true"])::after { display: none; }
+.profile-page .edit-tab { justify-content: flex-start; text-align: left; padding-left: 24px; }
+.profile-page .edit-tab::before { display: none; }
+.profile-page .funky-button::before {
+  filter: var(--tab-tint) drop-shadow(1px 3px 2px #49382266);
+}
+@media (max-width: 1200px) {
+  .profile-page :is(.profile-container, #outputContainer)::after { left: calc(95px - var(--paper-edge)); }
+}
+@media (max-width: 620px) {
+  .profile-page :is(.profile-container, #outputContainer)::after {
+    left: calc(-1 * var(--paper-edge)); transform: none; width: 110px; height: 60px;
+  }
+  .profile-page .edit-tab { padding-left: 18px; }
 }

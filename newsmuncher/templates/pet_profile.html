@@ -3,76 +3,68 @@
 {% block header %}{% endblock %}
 {% block body_attributes %} class="profile-page"{% endblock %}
 {% block background %}
-<div class="pet-backdrop" aria-hidden="true"><img src="/avatars/{{ pet.avatar }}" alt=""></div>
+<div id="initialBackground" class="initial-background" aria-hidden="true"></div>
 <div id="generatedBackdrop" class="generated-backdrop" aria-hidden="true"><div></div><div></div></div>
-<div class="generated-backdrop-shade" aria-hidden="true"></div>
-<div class="pet-backdrop-overlay" aria-hidden="true"></div>
 {% endblock %}
 {% block content %}
 <div id="imageAmbient" class="image-ambient" aria-hidden="true"><div class="wash-group"><span></span><span></span></div><div class="wash-group"><span></span><span></span></div></div>
 <div class="workshop">
-  <div class="container nonsense-container" role="group" aria-label="Source selection">
-    <button type="button" class="funky-button source-choice" data-source="fetch_historicalFunny_from_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">Drivel</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_wikipedia_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">Wikipedia</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_poem_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_poem_into_api')">Poem</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_people_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_people_into_api')">People</button>
-  </div>
 
-  <p class="edit-notice">Source edits are local and used by your next Shizzalise. Nominate saves your current response title and body.</p>
+
   <div class="container profile-container">
-    <div class="text-area-container">
-      <div id="loader" class="spinner hidden"></div>
-      <input type="hidden" id="titleDescBox">
-      <section class="editable-section" aria-label="Source title">
-      <button type="button" id="sourceTitleEdit" class="funky-button edit-tab" aria-label="Edit source title" aria-controls="sourceTitleEditor" aria-expanded="false" onclick="profileEditing.edit('sourceTitle')">Edit</button>
-      <h2 id="sourceTitleHeading" class="result-heading"></h2>
-      <div id="sourceTitleEditor" class="section-editor" hidden>
-        <input type="text" id="sourceTitleDraft" aria-label="Source title">
-        <div class="edit-actions"><button type="button" class="funky-button" onclick="profileEditing.save('sourceTitle')">Save</button><button type="button" class="funky-button" onclick="profileEditing.cancel('sourceTitle')">Cancel</button></div>
-      </div>
-    </section>
-      <section class="editable-section" aria-label="Source body">
-      <button type="button" id="sourceBodyEdit" class="funky-button edit-tab" aria-label="Edit source body" aria-controls="sourceBodyEditor" aria-expanded="false" onclick="profileEditing.edit('sourceBody')">Edit</button>
-      <textarea aria-label="The source" id="nonsenseBox" placeholder="Type Sentence..." readonly></textarea>
-      <div id="sourceBodyEditor" class="section-editor" hidden>
-        <textarea id="sourceBodyDraft" aria-label="Source body" oninput="autoResize(this)"></textarea>
-        <div class="edit-actions"><button type="button" class="funky-button" onclick="profileEditing.save('sourceBody')">Save</button><button type="button" class="funky-button" onclick="profileEditing.cancel('sourceBody')">Cancel</button></div>
-      </div>
-    </section>
-    </div>
+  <div class="container nonsense-container" role="group" aria-label="Source selection">
+    <button type="button" class="funky-button source-choice" data-source="fetch_historicalFunny_from_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">DRIVEL</button>
+    <button type="button" class="funky-button source-choice" data-source="fetch_wikipedia_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">WIKIPEDIA</button>
+    <button type="button" class="funky-button source-choice" data-source="fetch_poem_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_poem_into_api')">POEM</button>
+    <button type="button" class="funky-button source-choice" data-source="fetch_people_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_people_into_api')">PEOPLE</button>
   </div>
-
-
-  <div class="generation-controls">
+    <div id="loader" class="spinner hidden"></div>
+    <input type="hidden" id="titleDescBox">
+    <button type="button" id="sourceEdit" class="funky-button edit-tab" aria-label="Edit source" aria-controls="sourceEditor" aria-expanded="false" onclick="profileEditing.edit('source')">EDIT</button>
+    <div id="sourceDisplay" class="section-display">
+      <h2 id="sourceTitleHeading" class="result-heading"></h2>
+      <textarea aria-label="Source body" id="nonsenseBox" readonly></textarea>
+    </div>
+    <div id="sourceEditor" class="section-editor" hidden>
+      <textarea id="sourceTitleDraft" class="headline-editor" rows="1" aria-label="Source title" oninput="autoResize(this)"></textarea>
+      <textarea id="sourceBodyDraft" aria-label="Source body" oninput="autoResize(this)"></textarea>
+      <div class="edit-actions" role="group" aria-label="Source editing">
+        <button type="button" class="funky-button" onclick="profileEditing.save('source')">SAVE</button>
+        <button type="button" class="funky-button" onclick="profileEditing.cancel('source')">CANCEL</button>
+      </div>
+    </div>
+<div class="generation-controls">
     <label class="image-toggle">
       <input type="checkbox" id="generateImages" autocomplete="off">
-      <span class="funky-button">Image Generation Mode</span>
+      <span class="funky-button">IMAGE GENERATION MODE</span>
     </label>
-    <button class="funky-button shizzle-button" onclick="confirmData()">Shizzalise</button>
+    <button class="funky-button shizzle-button" onclick="confirmData()">SHIZZALISE</button>
   </div>
+  </div>
+
+
+
 
   <div id="outputContainer" class="container hidden">
-    <section class="editable-section" aria-label="Response title">
-      <button type="button" id="responseTitleEdit" class="funky-button edit-tab" aria-label="Edit response title" aria-controls="responseTitleEditor" aria-expanded="false" onclick="profileEditing.edit('responseTitle')">Edit</button>
+    <button type="button" id="responseEdit" class="funky-button edit-tab" aria-label="Edit response" aria-controls="responseEditor" aria-expanded="false" onclick="profileEditing.edit('response')">EDIT</button>
+    <div id="responseDisplay" class="section-display">
       <h2 id="crazyTitleBox" class="result-heading"></h2>
-      <div id="responseTitleEditor" class="section-editor" hidden>
-        <input type="text" id="responseTitleDraft" aria-label="Response title">
-        <div class="edit-actions"><button type="button" class="funky-button" onclick="profileEditing.save('responseTitle')">Save</button><button type="button" class="funky-button" onclick="profileEditing.cancel('responseTitle')">Cancel</button></div>
+      <textarea aria-label="Response body" id="crazyExtractBox" readonly></textarea>
+    </div>
+    <div id="responseEditor" class="section-editor" hidden>
+      <textarea id="responseTitleDraft" class="headline-editor" rows="1" aria-label="Response title" oninput="autoResize(this)"></textarea>
+      <textarea id="responseBodyDraft" aria-label="Response body" oninput="autoResize(this)"></textarea>
+      <div class="edit-actions" role="group" aria-label="Response editing">
+        <button type="button" class="funky-button" onclick="profileEditing.save('response')">SAVE</button>
+        <button type="button" class="funky-button" onclick="profileEditing.cancel('response')">CANCEL</button>
       </div>
-    </section>
-    <section class="editable-section" aria-label="Response body">
-      <button type="button" id="responseBodyEdit" class="funky-button edit-tab" aria-label="Edit response body" aria-controls="responseBodyEditor" aria-expanded="false" onclick="profileEditing.edit('responseBody')">Edit</button>
-      <textarea aria-label="Your Shizzalise result" id="crazyExtractBox" readonly></textarea>
-      <div id="responseBodyEditor" class="section-editor" hidden>
-        <textarea id="responseBodyDraft" aria-label="Response body" oninput="autoResize(this)"></textarea>
-        <div class="edit-actions"><button type="button" class="funky-button" onclick="profileEditing.save('responseBody')">Save</button><button type="button" class="funky-button" onclick="profileEditing.cancel('responseBody')">Cancel</button></div>
-      </div>
-    </section>
+    </div>
     <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
+  <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
   </div>
 
 
-  <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">Nominate</button>
+
 
 </div>
 {% endblock %}

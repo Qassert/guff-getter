@@ -221,3 +221,11 @@ def update_entry_image(id: str, payload: ImageUpdate, active_pet: str = Cookie(N
     if not result.matched_count:
         raise HTTPException(status_code=404, detail='Matching rewrite not found.')
     return {'message': 'Image associated with rewrite.'}
+
+
+@router.get("/profile-background")
+def profile_background():
+    from fastapi.responses import JSONResponse
+    from newsmuncher.services.profile_background import random_nominated_background
+    return JSONResponse(random_nominated_background(collection),
+                        headers={"Cache-Control": "no-store"})

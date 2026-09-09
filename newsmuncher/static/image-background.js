@@ -1,34 +1,14 @@
-/* Reuses stored image URLs only. Two slots, one passive scroll listener. */
+/* Reuses stored image URLs only. Two crossfade slots, independent of scrolling. */
 const generatedBackground = (() => {
     let active = -1;
     let revision = 0;
-    let queued = false;
     let lastURL = null;
     const layer = () => document.getElementById('generatedBackdrop');
-
-    function updateScroll() {
-        queued = false;
-        if (active < 0 || !layer()) return;
-        const result = document.getElementById('outputContainer');
-        const y = window.scrollY || 0;
-        const viewport = window.innerHeight;
-        const resultTop = result.getBoundingClientRect().top + y;
-        const available = Math.max(1, document.documentElement.scrollHeight - viewport);
-        const end = Math.max(1, Math.min(available, resultTop - viewport * .35));
-        const progress = Math.max(0, Math.min(1, y / end));
-        document.body.style.setProperty('--generated-background-progress', String(progress));
-    }
-
-    function scheduleScroll() {
-        if (queued) return;
-        queued = true;
-        requestAnimationFrame(updateScroll);
-    }
 
     function preload(url, isCurrent) {
         if (!isCurrent() || !layer()) return;
         const token = ++revision;
-        if (url === lastURL) { updateScroll(); return; }
+        if (url === lastURL) return;
         const image = new Image();
         image.alt = '';
         image.onload = () => {
@@ -51,15 +31,36 @@ const generatedBackground = (() => {
             incoming.style.opacity = '1';
             active = next;
             lastURL = url;
-            // Handles arrival after the user has already scrolled to the result.
-            updateScroll();
         };
         image.onerror = () => {}; // Keep the previous artwork; never expose a broken slot.
         image.src = url;
     }
 
-    window.addEventListener('scroll', scheduleScroll, {passive: true});
-    window.addEventListener('resize', scheduleScroll);
-    window.addEventListener('pageshow', scheduleScroll);
+    async function loadInitial() {
+        const initial = document.getElementById('initialBackground');
+        if (!initial) return;
+        try {
+            const response = await fetch('/profile-background', {cache: 'no-store'});
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data || !data.image_url || active >= 0) return;
+            const image = new Image();
+            image.alt = '';
+            image.onload = () => {
+                // A late startup request must not replace newer generated artwork.
+                if (active >= 0) return;
+                initial.replaceChildren(image);
+                if (typeof applyImageColors === 'function') {
+                    applyImageColors(image, () => active < 0);
+                }
+            };
+            image.onerror = () => {}; // Warm paper remains if the file disappeared.
+            image.src = data.image_url;
+        } catch (_) {
+            // A failed metadata request must never affect the working page.
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadInitial);
     return {preload};
 })();

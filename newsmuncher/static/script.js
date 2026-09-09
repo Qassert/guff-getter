@@ -13,7 +13,7 @@ function workingSession() {
 }
 function setNominationState(data) {
     const button = document.getElementById('bankButton');
-    button.textContent = data.nominated ? 'Nominated' : 'Nominate';
+    button.textContent = data.nominated ? 'NOMINATED' : 'NOMINATE';
     button.disabled = false;
     nominatedSnapshot = data.nominated ? JSON.stringify({
         crazyReplacement1Title: data.crazyReplacement1Title || '',
@@ -21,7 +21,7 @@ function setNominationState(data) {
     }) : null;
 }
 function responseEdited() {
-    if (nominatedSnapshot) document.getElementById('bankButton').textContent = 'Update nomination';
+    if (nominatedSnapshot) document.getElementById('bankButton').textContent = 'UPDATE NOMINATION';
 }
 
 function autoResize(textarea) {
@@ -148,13 +148,12 @@ let nominationPending = false;
 function bankThisBeauty() {
     if (nominationPending) return;
     const title = document.getElementById('crazyTitleBox').textContent;
-    const titleEditor = document.getElementById('responseTitleEditor');
-    const bodyEditor = document.getElementById('responseBodyEditor');
+    const editor = document.getElementById('responseEditor');
     const response = {
-        crazyReplacement1Title: titleEditor && !titleEditor.hidden
+        crazyReplacement1Title: editor && !editor.hidden
             ? document.getElementById('responseTitleDraft').value
             : (title ? title.slice(3, -3) : ''),
-        crazyReplacement1Extract: bodyEditor && !bodyEditor.hidden
+        crazyReplacement1Extract: editor && !editor.hidden
             ? document.getElementById('responseBodyDraft').value
             : document.getElementById('crazyExtractBox').value
     };
@@ -177,7 +176,7 @@ function bankThisBeauty() {
         .then(() => {
             if (nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence) {
                 nominatedSnapshot = snapshot;
-                document.getElementById('bankButton').textContent = 'Nominated';
+                document.getElementById('bankButton').textContent = 'NOMINATED';
             }
             alert("Result nominated (saved for possible promotion).");
             hideLoader();
