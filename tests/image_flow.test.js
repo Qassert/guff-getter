@@ -18,7 +18,7 @@ function setup(options = {}) {
   let samples=0;
   const storage = new Map(options.restore ? [["newsmuncher.imageRewrite", "saved"]] : []);
   let rewriteSuccess=true, imageResolve;
-  const context = {generatedBackground:{preload(){}},console, setTimeout:(fn,delay)=>{if(delay===0) fn();else timers.push([fn,delay]);}, requestAnimationFrame:fn=>frames.push(fn),
+  const context = {alert(){},generatedBackground:{preload(){}},console, setTimeout:(fn,delay)=>{if(delay===0) fn();else timers.push([fn,delay]);}, requestAnimationFrame:fn=>frames.push(fn),
     document:{getElementById:id=>elements[id], createElement(){
       samples++;
       if(options.sampleFails) throw new Error('canvas unavailable');
@@ -70,6 +70,24 @@ function setup(options = {}) {
   t=setup({restore:true,reduced:true});t.context.window.onload();await flush();t.paint();
   assert.equal(t.elements.generateImages.checked,false);assert.equal(t.elements.crazyTitleBox.textContent,'...SAVED...');assert.equal(t.samples,1);
   assert(!t.calls.some(([url])=>url==='/temp/generate_image'));
+  t=setup();t.elements.generateImages.checked=true;t.context.confirmData();await flush();t.paint();await flush();
+  t.elements.crazyTitleBox.textContent='...Edited title...';t.elements.crazyExtractBox.value='Edited body';
+  t.resolveImage(true);await flush();t.paint();t.finishFade();
+  assert.equal(t.elements.crazyTitleBox.textContent,'...Edited title...');assert.equal(t.elements.crazyExtractBox.value,'Edited body');
+  t=setup();t.context.confirmData();await flush();
+  assert.equal(t.elements.bankButton.textContent,'Nominate');
+  t.context.bankThisBeauty();t.context.bankThisBeauty();await flush();
+  assert.equal(t.elements.bankButton.textContent,'Nominated');
+  assert.equal(t.calls.filter(([url])=>url.startsWith('/temp/confirm_data')).length,1);
+  t.context.bankThisBeauty();await flush();
+  assert.equal(t.calls.filter(([url])=>url.startsWith('/temp/confirm_data')).length,1);
+  t.elements.crazyExtractBox.value='edited nomination';t.context.responseEdited();
+  assert.equal(t.elements.bankButton.textContent,'Update nomination');
+  t.context.bankThisBeauty();await flush();
+  assert.equal(t.calls.filter(([url])=>url.startsWith('/temp/confirm_data')).length,2);
+  t.context.confirmData();await flush();assert.equal(t.elements.bankButton.textContent,'Nominate');
+  const rewriteCalls=t.calls.filter(([url])=>url==='/temp/shizzalise_data');
+  assert.equal(JSON.parse(rewriteCalls[0][1].body).draft_session,JSON.parse(rewriteCalls[1][1].body).draft_session);
   const colors=t.context.representativeColors(new Uint8ClampedArray([255,255,255,255,0,0,0,255,200,40,50,0,180,40,60,255,30,110,170,255]));
   assert.equal(JSON.stringify(colors),'[[180,40,60],[30,110,170]]');
   assert.equal(t.context.representativeColors(new Uint8ClampedArray([255,255,255,255])),null);

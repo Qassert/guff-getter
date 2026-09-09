@@ -1,17 +1,18 @@
 from newsmuncher.utils.source_preprocessing import log_overlap
 from newsmuncher.config import PROJECT_ROOT, PROMPT_FILE, TEMP_FILE, TEMP_SHIZZ_FILE
 from fastapi import APIRouter, HTTPException, Request, Cookie, Body
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import json
 import requests
 import subprocess
 import sys
 import os
+from uuid import uuid4
 from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result
 from newsmuncher.utils.file_handler import load_prompt
 
 
-from newsmuncher.services.image_generation import store, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE
+from newsmuncher.services.image_generation import store, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path
 
 router = APIRouter()
 
@@ -26,35 +27,36 @@ def get_temp_data():
     with open(TEMP_FILE, "r") as file:
         return json.load(file)
 
+class NominationResponse(BaseModel):
+    crazyReplacement1Title: str
+    crazyReplacement1Extract: str
+
+
 # ✅ 2. FINAL BANKING
 @router.post("/confirm_data")
-def confirm_temp_data(request: Request, rewrite_id: str | None = None):
+def confirm_temp_data(request: Request, rewrite_id: str | None = None, payload: NominationResponse | None = None):
     if rewrite_id:
-        return bank_image_rewrite(request, rewrite_id)
-    if not os.path.exists(TEMP_SHIZZ_FILE):
-        raise HTTPException(status_code=404, detail="No temporary shizzalised data available.")
-
-    with open(TEMP_SHIZZ_FILE, "r") as file:
-        data = json.load(file)
-
-    active_pet = request.cookies.get("active_pet")
-    if not active_pet:
-        raise HTTPException(status_code=401, detail="No active pet selected.")
-
-    try:
-        print(data)
-        response = requests.post(
-            f"{ENTRIES_API_BASE_URL}/create/",
-            json=data,
-            cookies={"active_pet": active_pet}
-        )
-        print(response.status_code)
-        response.raise_for_status()
-        os.remove(TEMP_FILE)
-        os.remove(TEMP_SHIZZ_FILE)
-        return {"message": "Data banked successfully!"}
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error posting data: {str(e)}")
+        return bank_image_rewrite(request, rewrite_id, payload)
+    owner = request.cookies.get('active_pet')
+    if not owner:
+        raise HTTPException(status_code=401, detail='No active pet selected.')
+    # Compatibility for a pre-upgrade JSON preview: assign its stable identity
+    # before any persistence call, then use the same nomination lifecycle.
+    with store.transaction() as db:
+        if not os.path.exists(TEMP_SHIZZ_FILE):
+            raise HTTPException(status_code=404, detail='No temporary shizzalised data available.')
+        with open(TEMP_SHIZZ_FILE) as file:
+            data = json.load(file)
+        rewrite_id = data.get('rewrite_id') or str(uuid4())
+        row = db.execute('SELECT state FROM rewrites WHERE id=?', (rewrite_id,)).fetchone()
+        if row:
+            read_image_rewrite(db, rewrite_id, owner)
+        else:
+            data['rewrite_id'] = rewrite_id
+            store.save(db, rewrite_id, dict(result=data, owner=owner, entry_id=None))
+        with open(TEMP_SHIZZ_FILE, 'w') as file:
+            json.dump(data, file)
+    return bank_image_rewrite(request, rewrite_id, payload)
 
 # ✅ 3. SCRIPT TRIGGER
 @router.get("/run_script/{script_name}")
@@ -82,15 +84,18 @@ class ShizzRequest(BaseModel):
     description: str
     extract: str
     generate_images: bool = False
+    draft_session: str = Field(default="legacy", min_length=1, max_length=100)
 
 @router.post("/shizzalise_data")
 def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), active_pet: str = Cookie(None)):
-    if payload.generate_images and not active_pet:
+    if not active_pet:
         raise HTTPException(status_code=401, detail="No active pet selected.")
+    source = payload.model_dump(exclude={'generate_images', 'draft_session'})
+    rewrite_id = store.begin_draft({**source, 'creationUser': creationUser}, active_pet, payload.draft_session)
     with open(TEMP_FILE, "w") as f:
-        json.dump({**payload.dict(exclude={"generate_images"}), "creationUser": creationUser}, f)
+        json.dump({**source, "creationUser": creationUser}, f)
 
-    prompt_template = prepare_prompt(payload.dict(exclude={"generate_images"}), 10, load_prompt(PROMPT_FILE))
+    prompt_template = prepare_prompt(source, 10, load_prompt(PROMPT_FILE))
     if not prompt_template:
         raise HTTPException(status_code=400, detail="Prompt preparation failed.")
 
@@ -105,16 +110,15 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         raise HTTPException(status_code=500, detail="Generated title or extract is invalid.")
 
     full_result = {
-        **payload.dict(exclude={"generate_images"}),
+        **source,
         **result,
         "creationUser": creationUser
     }
 
-    if payload.generate_images:
-        full_result = store.create(full_result, active_pet)
-
-    with open(TEMP_SHIZZ_FILE, "w") as f:
-        json.dump(full_result, f)
+    full_result = store.complete_draft(rewrite_id, active_pet, full_result)
+    if full_result is None:
+        raise HTTPException(status_code=409, detail='Draft superseded by a newer rewrite.')
+    # New drafts live only in the session's SQLite slot. Legacy JSON is not an archive.
 
     return full_result
 
@@ -131,9 +135,12 @@ class ImageRequest(BaseModel):
     rewrite_id: str
 
 
-def read_image_rewrite(db, rewrite_id, owner):
+def read_image_rewrite(db, rewrite_id, owner, allow_discarded=False):
     try:
-        return store.read(db, rewrite_id, owner)
+        state = store.read(db, rewrite_id, owner)
+        if state.get('discarded') and not allow_discarded:
+            raise HTTPException(status_code=410, detail='Draft discarded.')
+        return state
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     except PermissionError as exc:
@@ -167,6 +174,8 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
     cached = None
     with store.transaction() as db:
         state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+        if state.get('generating'):
+            raise HTTPException(status_code=409, detail='Rewrite is not ready.')
         if state['result'].get('image_url'):
             # Even partial legacy metadata must not trigger another paid image.
             defaults = dict(image_prompt=build_image_prompt(state['result']), image_model='unknown',
@@ -198,11 +207,20 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
     try:
         metadata = get_provider().generate_image(prompt, payload.rewrite_id)
         with store.transaction() as db:
-            state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
+            if state.get('discarded'):
+                image_path(payload.rewrite_id).unlink(missing_ok=True)
+                raise HTTPException(status_code=410, detail='Draft discarded; generated file removed.')
             state['result'].update(metadata)
             state['image_attempt']['status'] = 'complete'
             store.save(db, payload.rewrite_id, state)
     except Exception as exc:
+        with store.transaction() as db:
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
+            if state.get('discarded'):
+                image_path(payload.rewrite_id).unlink(missing_ok=True)
+        if isinstance(exc, HTTPException):
+            raise
         raise HTTPException(status_code=502, detail='Image unavailable; your rewrite is unchanged. No automatic paid retry.') from exc
     sync_image_metadata(payload.rewrite_id, active_pet)
     return metadata
@@ -235,17 +253,40 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
     return result
 
 
-def bank_image_rewrite(request, rewrite_id):
+def bank_image_rewrite(request, rewrite_id, payload=None):
     owner = request.cookies.get('active_pet')
+    # Persist before HTTP: a timeout may mean Mongo committed successfully.
     with store.transaction() as db:
         state = read_image_rewrite(db, rewrite_id, owner)
+        if state.get('generating'):
+            raise HTTPException(status_code=409, detail='Rewrite is not ready.')
         if not state['entry_id']:
+            state['nomination_pending'] = True
+            store.save(db, rewrite_id, state)
+    with store.transaction() as db:
+        state = read_image_rewrite(db, rewrite_id, owner)
+        if state['entry_id'] and payload is not None and any(
+                state['result'].get(key) != value for key, value in payload.model_dump().items()):
+            try:
+                response = requests.put(f"{ENTRIES_API_BASE_URL}/entry/{state['entry_id']}",
+                    params=payload.model_dump(), cookies={'active_pet': owner}, timeout=15)
+                response.raise_for_status()
+                state['result'].update(payload.model_dump())
+                store.save(db, rewrite_id, state)
+            except requests.RequestException as exc:
+                raise HTTPException(status_code=502, detail='Could not update nominated response.') from exc
+        if not state['entry_id']:
+            if payload is not None:
+                state['result'].update(payload.model_dump())
             try:
                 response = requests.post(f'{ENTRIES_API_BASE_URL}/create/',
                     json={**state['result'], 'image_owner': owner},
                     cookies={'active_pet': owner}, timeout=15)
                 response.raise_for_status()
                 state['entry_id'] = response.json()['id']
+                state['result']['nominated'] = True
+                state['result']['gallery_status'] = 'pending'
+                state.pop('nomination_pending', None)
                 state['image_synced'] = bool(state['result'].get('image_url'))
                 store.save(db, rewrite_id, state)
             except requests.RequestException as exc:
@@ -260,4 +301,4 @@ def bank_image_rewrite(request, rewrite_id):
             os.remove(TEMP_SHIZZ_FILE)
             if os.path.exists(TEMP_FILE):
                 os.remove(TEMP_FILE)
-    return {'message': 'Data banked successfully!'}
+    return {'message': 'Data banked successfully!', 'nominated': True, 'rewrite_id': rewrite_id}

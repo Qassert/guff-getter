@@ -66,7 +66,7 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
 .container { padding: var(--space-3); margin-bottom: var(--space-3); }
 .nonsense-container { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: transparent; border: 0; box-shadow: none; padding: 0 0 12px; }
 .nonsense-container button { background: var(--surface); }
-.nonsense-container button:nth-of-type(2) { background: var(--accent); }
+.nonsense-container button[aria-pressed="true"] { background: var(--accent); }
 .profile-container { position: relative; display: block; padding: var(--space-4);
   background: transparent; border: 0; box-shadow: none; }
 .profile-container textarea { background: transparent; border: 0; border-radius: 0; padding-inline: 0; }
@@ -177,16 +177,15 @@ body { isolation: isolate; }
   .profile-page #outputContainer { padding: 20px; }
 }
 
-/* Source buttons stay at the top; their artwork-backed row sets the hero depth. */
-.profile-page .nonsense-container {
-  min-height: calc(50vh - 24px); margin-bottom: 0;
-  align-content: flex-start; align-items: flex-start; padding-bottom: 24px;
-}
+/* Keep the artwork lead-in above the controls, not between tabs and paper. */
+.profile-page .workshop { padding-top: calc(50vh - 24px); }
 @supports (height: 100dvh) {
-  .profile-page .nonsense-container { min-height: calc(50dvh - 24px); }
+  .profile-page .workshop { padding-top: calc(50dvh - 24px); }
 }
+.profile-page .nonsense-container { min-height: 0; margin-bottom: 0;
+  justify-content: center; align-items: center; padding-bottom: 8px; }
 .profile-page .generation-controls { display: flex; flex-wrap: wrap; align-items: stretch;
-  gap: 16px; margin-bottom: var(--space-4); }
+  gap: 16px; justify-content: center; margin-bottom: 8px; }
 .profile-page .generation-controls .shizzle-button { margin: 0; }
 .profile-page .image-toggle { position: relative; display: inline-flex; cursor: pointer; }
 /* Visually hidden, but retains native checkbox focus, Space-key and label activation. */
@@ -203,9 +202,9 @@ body { isolation: isolate; }
 .profile-page .image-toggle:hover .funky-button { transform: translate(-1px, -1px); }
 .profile-page .image-toggle:active .funky-button { transform: translate(2px, 2px); box-shadow: none; }
 @media (max-width: 620px), (max-height: 500px) {
-  .profile-page .nonsense-container { min-height: max(132px, calc(42vh - 24px)); }
+  .profile-page .workshop { padding-top: max(0px, calc(42vh - 24px)); }
   @supports (height: 100dvh) {
-    .profile-page .nonsense-container { min-height: max(132px, calc(42dvh - 24px)); }
+    .profile-page .workshop { padding-top: max(0px, calc(42dvh - 24px)); }
   }
 }
 @media (max-width: 620px) {
@@ -230,4 +229,123 @@ body { isolation: isolate; }
   .profile-page .pet-backdrop, .profile-page .generated-backdrop,
   .generated-backdrop > div, .profile-page .pet-backdrop-overlay,
   .generated-backdrop-shade { transition: none; }
+}
+
+/* Nine-slice artwork: 1199 × 1312 PNG, with the full corner folds retained.
+   Border widths share one scale so the corner proportions remain unchanged.
+   Only the centre has an opaque backing; transparent torn margins stay clear. */
+.profile-page .profile-container,
+.profile-page #outputContainer {
+  --paper-edge: clamp(32px, 5vw, 60px);
+  background: #eee5cf;
+  background-clip: padding-box;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(var(--paper-edge) * 1.25) var(--paper-edge) var(--paper-edge);
+  border-image-source: url('parchment.png');
+  border-image-slice: 300 240 240 240 fill;
+  border-image-width: 1;
+  border-image-repeat: round;
+  border-radius: 0;
+  box-shadow: none;
+  padding: clamp(12px, 2vw, 24px);
+  min-width: 0;
+}
+.profile-page .profile-container textarea,
+.profile-page #outputContainer textarea {
+  background: transparent;
+  color: var(--ink);
+}
+
+/* Ink pressed into parchment; scoped to printed copy, never UI controls. */
+.profile-page {
+  --print-ink: #30291f;
+  --print-headline-font: Rockwell, 'Rockwell Nova', 'Roboto Slab', Georgia, 'Times New Roman', serif;
+  --print-body-font: Georgia, 'Times New Roman', serif;
+  --print-headline-relief: 0 .8px 0 #fff5df, 0 -.5px 0 #554632;
+  --print-body-relief: 0 .4px 0 #fff5df, 0 -.2px 0 #675740;
+}
+.profile-page .profile-container .result-heading,
+.profile-page #outputContainer .result-heading {
+  font-family: var(--print-headline-font);
+  font-weight: 800;
+  font-style: normal;
+  color: var(--print-ink);
+  text-shadow: var(--print-headline-relief);
+}
+.profile-page .profile-container textarea,
+.profile-page #outputContainer textarea {
+  font-family: var(--print-body-font);
+  color: var(--print-ink);
+  text-shadow: var(--print-body-relief);
+}
+
+/* Parchment tabs: texture and tint live beneath the readable ink labels. */
+.profile-page .funky-button,
+.profile-page .nonsense-container button,
+.profile-page .image-toggle .funky-button,
+.profile-page .image-toggle input:checked + .funky-button,
+.profile-page #bankButton {
+  --tab-tint: brightness(1);
+  position: relative; isolation: isolate; background: transparent;
+  border: 0; border-radius: 0; box-shadow: none;
+  padding: 16px 24px; min-height: 52px;
+  font-family: var(--print-headline-font); font-weight: 800; font-style: normal;
+  font-size: 1rem; line-height: 1.3; text-align: center;
+  color: var(--print-ink); text-shadow: var(--print-body-relief);
+}
+.profile-page .funky-button::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  border: solid transparent; border-width: 15px 12px 12px;
+  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  background: #eee5cf; background-clip: padding-box;
+  filter: var(--tab-tint) drop-shadow(1px 2px 1px #594b3540);
+}
+.profile-page .nonsense-container button[aria-pressed="true"],
+.profile-page .generation-controls .shizzle-button,
+.profile-page .image-toggle input:checked + .funky-button {
+  --tab-tint: sepia(1) saturate(3) hue-rotate(24deg) brightness(1.12);
+}
+.profile-page #bankButton { --tab-tint: brightness(.24); color: var(--accent); text-shadow: none; display: block; margin-inline: auto; }
+.profile-page #bankButton.hidden { display: none; }
+.profile-page .funky-button:hover { transform: translateY(-1px); box-shadow: none; }
+.profile-page .funky-button:active { transform: translateY(1px); box-shadow: none; }
+.profile-page .image-toggle input:focus-visible + .funky-button,
+.profile-page button.funky-button:focus-visible {
+  outline: 3px solid var(--purple); outline-offset: 3px; box-shadow: 0 0 0 6px var(--paper);
+}
+@media (max-width: 620px) {
+  .profile-page .nonsense-container button { flex: 0 1 auto; }
+  .profile-page .generation-controls { align-items: center; }
+  .profile-page .generation-controls > *,
+  .profile-page .generation-controls .shizzle-button { width: min(100%, 290px); min-width: 0; }
+}
+
+/* Consistent label alignment and corner editing tabs; paper geometry is unchanged. */
+.profile-page .funky-button,
+.profile-page .image-toggle .funky-button,
+.profile-page #bankButton {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 56px; padding: 16px 24px; line-height: 1.25;
+  font-family: Rockwell, 'Rockwell Nova', Georgia, serif; font-weight: 800;
+}
+.profile-page #bankButton { display: flex; width: fit-content; }
+.profile-page #bankButton.hidden { display: none; }
+.profile-page .source-choice[aria-pressed="true"] { text-decoration: underline; text-underline-offset: 4px; }
+.profile-page .editable-section { position: relative; min-width: 0; padding-top: 52px; margin-bottom: 20px; }
+.profile-page .editable-section:last-child { margin-bottom: 0; }
+.profile-page .edit-tab { position: absolute; top: 0; left: -8px; transform: rotate(-5deg);
+  min-height: 44px; padding: 10px 20px; font-size: .95rem; }
+.profile-page .edit-tab:hover { transform: rotate(-5deg) translateY(-1px); }
+.profile-page .section-editor[hidden], .profile-page .editable-section > [hidden] { display: none; }
+.profile-page .section-editor input, .profile-page .section-editor textarea {
+  font-family: Georgia, serif; font-size: 1rem; text-shadow: none;
+  width: 100%; min-width: 0; border: 1px solid #817259; padding: 10px; margin: 0 0 12px;
+}
+.profile-page .edit-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.profile-page .edit-actions .funky-button { min-height: 44px; padding: 10px 20px; }
+.profile-page .edit-notice { color: var(--print-ink); background: var(--paper); font-size: .85rem; padding: 8px 12px; }
+@media (max-width: 620px) {
+  .profile-page .edit-tab { left: 0; transform: rotate(-2deg); }
+  .profile-page .edit-tab:hover { transform: rotate(-2deg); }
 }

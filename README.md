@@ -127,3 +127,40 @@ and is not an anonymization guarantee. Actions, quantities and connective langua
 are intentionally retained. Existing stored text that was lowercased by older
 fetchers cannot recover its original capitalization; newly fetched text preserves it.
 Overlap logging is diagnostic only and does not reject or regenerate output.
+
+### Drafts, nomination, and future moderation
+
+Each browser working session has one current draft slot in
+`data/previews/image_rewrites.sqlite3`, for text-only and image-enabled rewrites.
+A new Shizzalise replaces the un-nominated draft in that slot. Each revision gets a
+fresh UUID (a discarded UUID is never reused for a paid image request). Nominate
+saves the displayed/edited response to MongoDB with `nominated: true` and
+`gallery_status: "pending"`. Subsequent edits can intentionally update the same
+nomination; a new Shizzalise always starts a separate draft. Refresh in the same
+browser session restores the current result without generating an image again.
+
+Discarding a draft deletes its locally generated PNG and removes its content and
+image metadata from SQLite. A tiny UUID/owner tombstone is retained to reject late
+workers and repeated paid requests. Late image completions delete their output.
+Cleanup also runs opportunistically when another Shizzalise begins: new-style
+un-nominated drafts expire 24 hours after creation, and files left against discarded
+tombstones are removed. There is no background scheduler. Closing the tab alone
+therefore does not immediately delete a draft. Nominated rows/images never expire.
+
+An uncertain nomination HTTP outcome is quarantined with `nomination_pending`:
+it may already have committed in MongoDB, so cleanup does not delete its image.
+Retrying the same nomination resolves to the same deterministic Mongo `_id`,
+preventing duplicate inserts. If the user abandons that operation, reconciliation
+is still required before its protected state can be safely removed. Existing
+pre-upgrade rows/files without reliable lifecycle ownership are not bulk-deleted.
+Legacy JSON previews are adopted into the same stable-ID nomination flow on save.
+
+Legacy Mongo records with no moderation fields are interpreted at read time:
+completed/banked rewrites are nominated and pending; incomplete source entries are
+not nominated. Nothing is automatically approved and no destructive migration runs.
+`services/moderation.py` defines status validation and the future gallery predicate
+(`nominated == true` and `gallery_status == "approved"`), but exposes no route.
+The current pet-password login sets an `active_pet` cookie; it is not a signed,
+server-validated admin session. Before moderation can be exposed, implement genuine
+server-side session validation, an explicit privileged role, ownership/authorization
+checks, and an authenticated moderation endpoint. No gallery or video system exists.

@@ -1,5 +1,28 @@
 let rewriteSequence = 0;
 let displayedRewriteId = null;
+let nominatedSnapshot = null;
+let draftSession = null;
+function workingSession() {
+    if (draftSession) return draftSession;
+    try { draftSession = sessionStorage.getItem('newsmuncher.draftSession'); } catch (_) {}
+    if (!draftSession) {
+        draftSession = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        try { sessionStorage.setItem('newsmuncher.draftSession', draftSession); } catch (_) {}
+    }
+    return draftSession;
+}
+function setNominationState(data) {
+    const button = document.getElementById('bankButton');
+    button.textContent = data.nominated ? 'Nominated' : 'Nominate';
+    button.disabled = false;
+    nominatedSnapshot = data.nominated ? JSON.stringify({
+        crazyReplacement1Title: data.crazyReplacement1Title || '',
+        crazyReplacement1Extract: data.crazyReplacement1Extract || ''
+    }) : null;
+}
+function responseEdited() {
+    if (nominatedSnapshot) document.getElementById('bankButton').textContent = 'Update nomination';
+}
 
 function autoResize(textarea) {
     textarea.style.height = 'auto';
@@ -26,6 +49,7 @@ function populateTempData() {
             const nonsenseBox = document.getElementById("nonsenseBox");
             const titleDescBox = document.getElementById("titleDescBox");
 
+            if (typeof profileEditing !== 'undefined') profileEditing.reset('source');
             nonsenseBox.value = data.extract || "";
             titleDescBox.value = `${data.title || ""} - ${data.description || ""}`.trim();
 
@@ -39,6 +63,9 @@ function populateTempData() {
 }
 
 function fetchAndDisplay(scriptName) {
+    document.querySelectorAll('.source-choice').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.source === scriptName));
+    });
     showLoader();
     fetch(`/temp/run_script/${scriptName}`, {
         credentials: 'include'
@@ -58,6 +85,7 @@ function fetchAndDisplay(scriptName) {
 
 function confirmData() {
     const sequence = ++rewriteSequence;
+    document.getElementById('bankButton').disabled = true;
     const imagesEnabled = document.getElementById("generateImages").checked;
     resetImagePanel();
     showLoader();
@@ -71,7 +99,7 @@ function confirmData() {
             'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({ title, description, extract, ...(imagesEnabled ? {generate_images: true} : {}) })
+        body: JSON.stringify({ title, description, extract, draft_session: workingSession(), ...(imagesEnabled ? {generate_images: true} : {}) })
     })
         .then(response => {
             if (!response.ok) throw new Error("Error shizzalising data.");
@@ -80,6 +108,7 @@ function confirmData() {
         .then(data => {
             if (sequence !== rewriteSequence) return;
             displayedRewriteId = data.rewrite_id || null;
+            setNominationState(data);
             try {
                 if (displayedRewriteId) sessionStorage.setItem('newsmuncher.imageRewrite', displayedRewriteId);
                 else sessionStorage.removeItem('newsmuncher.imageRewrite');
@@ -87,6 +116,7 @@ function confirmData() {
             const titleBox = document.getElementById("crazyTitleBox");
             const extractBox = document.getElementById("crazyExtractBox");
 
+            if (typeof profileEditing !== 'undefined') profileEditing.reset('response');
             titleBox.textContent = data.crazyReplacement1Title ? `...${data.crazyReplacement1Title}...` : "";
             extractBox.value = data.crazyReplacement1Extract || "";
 
@@ -114,24 +144,49 @@ function confirmData() {
         });
 }
 
+let nominationPending = false;
 function bankThisBeauty() {
+    if (nominationPending) return;
+    const title = document.getElementById('crazyTitleBox').textContent;
+    const titleEditor = document.getElementById('responseTitleEditor');
+    const bodyEditor = document.getElementById('responseBodyEditor');
+    const response = {
+        crazyReplacement1Title: titleEditor && !titleEditor.hidden
+            ? document.getElementById('responseTitleDraft').value
+            : (title ? title.slice(3, -3) : ''),
+        crazyReplacement1Extract: bodyEditor && !bodyEditor.hidden
+            ? document.getElementById('responseBodyDraft').value
+            : document.getElementById('crazyExtractBox').value
+    };
+    const snapshot = JSON.stringify(response);
+    if (snapshot === nominatedSnapshot) return;
+    nominationPending = true;
+    const nominatingId = displayedRewriteId;
+    const nominatingSequence = rewriteSequence;
     showLoader();
     fetch("/temp/confirm_data" + (displayedRewriteId ? `?rewrite_id=${encodeURIComponent(displayedRewriteId)}` : ""), {
         method: "POST",
-        credentials: 'include'
+        credentials: 'include',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(response)
     })
         .then(response => {
             if (!response.ok) throw new Error("Error banking data.");
             return response.json();
         })
         .then(() => {
-            alert("Beauty successfully banked!");
+            if (nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence) {
+                nominatedSnapshot = snapshot;
+                document.getElementById('bankButton').textContent = 'Nominated';
+            }
+            alert("Result nominated (saved for possible promotion).");
             hideLoader();
         })
         .catch(error => {
             console.error("Error banking the beauty:", error);
             hideLoader();
-        });
+        })
+        .finally(() => { nominationPending = false; });
 }
 
 function resetImagePanel() {
@@ -199,8 +254,10 @@ async function restoreImageRewrite() {
         const data = await response.json();
         if (sequence !== rewriteSequence || data.rewrite_id !== id) return;
         displayedRewriteId = id;
+        setNominationState(data);
         const title = document.getElementById('crazyTitleBox');
         const extract = document.getElementById('crazyExtractBox');
+        if (typeof profileEditing !== 'undefined') profileEditing.reset('response');
         title.textContent = data.crazyReplacement1Title ? `...${data.crazyReplacement1Title}...` : '';
         extract.value = data.crazyReplacement1Extract || '';
         document.getElementById('outputContainer').style.display = 'block';

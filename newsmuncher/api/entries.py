@@ -8,6 +8,7 @@ import certifi
 from dotenv import load_dotenv  # type: ignore
 from pydantic import BaseModel, field_validator  # type: ignore
 import datetime
+import hashlib
 
 # Load environment variables
 load_dotenv(ENV_FILE)
@@ -19,6 +20,9 @@ db = client["funny_json_db"]
 collection = db["entries"]
 
 router = APIRouter()
+
+from newsmuncher.services.moderation import nomination_state
+
 
 class ImageMetadata(BaseModel):
     image_url: str | None = None
@@ -80,7 +84,17 @@ def create_entry(post: Post, request: Request):
         new_entry.update(rewrite_id=post.rewrite_id, image_owner=creation_user)
         new_entry.update({key: getattr(post, key) for key in ImageMetadata.model_fields
                           if getattr(post, key) is not None})
-    inserted_id = collection.insert_one(new_entry).inserted_id
+    new_entry.update(nominated=True, gallery_status='pending')
+    if post.rewrite_id:
+        # Stable Mongo identity makes retry after an uncertain insert safe, including
+        # across workers, without requiring a live index migration.
+        inserted_id = ObjectId(hashlib.sha256(f'{creation_user}:{post.rewrite_id}'.encode()).hexdigest()[:24])
+        response_fields = {key: new_entry.pop(key) for key in
+                           ('crazyReplacement1Title', 'crazyReplacement1Extract')}
+        collection.update_one({'_id': inserted_id},
+                              {'$setOnInsert': new_entry, '$set': response_fields}, upsert=True)
+    else:
+        inserted_id = collection.insert_one(new_entry).inserted_id
 
     return {
         "id": str(inserted_id),
@@ -106,12 +120,13 @@ def get_entries():
         "creationDate": 1,
         "creationUser": 1,
         **{key: 1 for key in ImageMetadata.model_fields},
-        "rewrite_id": 1
+        "rewrite_id": 1, "nominated": 1, "gallery_status": 1
     }).sort("creationDate", -1))
 
     return [
         {
             "id": str(post["_id"]),
+            **nomination_state(post),
             "title": post["title"],
             "description": post.get("description", ""),
             "extract": post["extract"],
@@ -133,6 +148,7 @@ def get_entry(id: str):
     post = collection.find_one({"_id": ObjectId(id)})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
+    post.update(nomination_state(post))
     post["_id"] = str(post["_id"])
     return post
 
@@ -144,7 +160,7 @@ def update_crazy_fields(
     request: Request = None
 ):
     update_fields = {}
-    if crazyReplacement1Title:
+    if crazyReplacement1Title is not None:
         update_fields["crazyReplacement1Title"] = crazyReplacement1Title
         update_fields["crazyReplacement1Extract"] = crazyReplacement1Extract
         update_fields["crazyReplacement1done"] = True

@@ -11,19 +11,34 @@
 {% block content %}
 <div id="imageAmbient" class="image-ambient" aria-hidden="true"><div class="wash-group"><span></span><span></span></div><div class="wash-group"><span></span><span></span></div></div>
 <div class="workshop">
-  <div class="container nonsense-container">
-    <button class="funky-button" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">Drivel</button>
-    <button class="funky-button" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">Wikipedia</button>
-    <button class="funky-button" onclick="fetchAndDisplay('fetch_poem_into_api')">Poem</button>
-    <button class="funky-button" onclick="fetchAndDisplay('fetch_people_into_api')">People</button>
+  <div class="container nonsense-container" role="group" aria-label="Source selection">
+    <button type="button" class="funky-button source-choice" data-source="fetch_historicalFunny_from_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">Drivel</button>
+    <button type="button" class="funky-button source-choice" data-source="fetch_wikipedia_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">Wikipedia</button>
+    <button type="button" class="funky-button source-choice" data-source="fetch_poem_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_poem_into_api')">Poem</button>
+    <button type="button" class="funky-button source-choice" data-source="fetch_people_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_people_into_api')">People</button>
   </div>
 
+  <p class="edit-notice">Source edits are local and used by your next Shizzalise. Nominate saves your current response title and body.</p>
   <div class="container profile-container">
     <div class="text-area-container">
       <div id="loader" class="spinner hidden"></div>
       <input type="hidden" id="titleDescBox">
+      <section class="editable-section" aria-label="Source title">
+      <button type="button" id="sourceTitleEdit" class="funky-button edit-tab" aria-label="Edit source title" aria-controls="sourceTitleEditor" aria-expanded="false" onclick="profileEditing.edit('sourceTitle')">Edit</button>
       <h2 id="sourceTitleHeading" class="result-heading"></h2>
-      <textarea aria-label="The source" id="nonsenseBox" placeholder="Type Sentence..."></textarea>
+      <div id="sourceTitleEditor" class="section-editor" hidden>
+        <input type="text" id="sourceTitleDraft" aria-label="Source title">
+        <div class="edit-actions"><button type="button" class="funky-button" onclick="profileEditing.save('sourceTitle')">Save</button><button type="button" class="funky-button" onclick="profileEditing.cancel('sourceTitle')">Cancel</button></div>
+      </div>
+    </section>
+      <section class="editable-section" aria-label="Source body">
+      <button type="button" id="sourceBodyEdit" class="funky-button edit-tab" aria-label="Edit source body" aria-controls="sourceBodyEditor" aria-expanded="false" onclick="profileEditing.edit('sourceBody')">Edit</button>
+      <textarea aria-label="The source" id="nonsenseBox" placeholder="Type Sentence..." readonly></textarea>
+      <div id="sourceBodyEditor" class="section-editor" hidden>
+        <textarea id="sourceBodyDraft" aria-label="Source body" oninput="autoResize(this)"></textarea>
+        <div class="edit-actions"><button type="button" class="funky-button" onclick="profileEditing.save('sourceBody')">Save</button><button type="button" class="funky-button" onclick="profileEditing.cancel('sourceBody')">Cancel</button></div>
+      </div>
+    </section>
     </div>
   </div>
 
@@ -31,20 +46,34 @@
   <div class="generation-controls">
     <label class="image-toggle">
       <input type="checkbox" id="generateImages" autocomplete="off">
-      <span class="funky-button">Generate images</span>
+      <span class="funky-button">Image Generation Mode</span>
     </label>
     <button class="funky-button shizzle-button" onclick="confirmData()">Shizzalise</button>
   </div>
 
   <div id="outputContainer" class="container hidden">
-    <h2 id="crazyTitleBox" class="result-heading"></h2>
-    <textarea aria-label="Your Shizzalise result" id="crazyExtractBox" readonly></textarea>
+    <section class="editable-section" aria-label="Response title">
+      <button type="button" id="responseTitleEdit" class="funky-button edit-tab" aria-label="Edit response title" aria-controls="responseTitleEditor" aria-expanded="false" onclick="profileEditing.edit('responseTitle')">Edit</button>
+      <h2 id="crazyTitleBox" class="result-heading"></h2>
+      <div id="responseTitleEditor" class="section-editor" hidden>
+        <input type="text" id="responseTitleDraft" aria-label="Response title">
+        <div class="edit-actions"><button type="button" class="funky-button" onclick="profileEditing.save('responseTitle')">Save</button><button type="button" class="funky-button" onclick="profileEditing.cancel('responseTitle')">Cancel</button></div>
+      </div>
+    </section>
+    <section class="editable-section" aria-label="Response body">
+      <button type="button" id="responseBodyEdit" class="funky-button edit-tab" aria-label="Edit response body" aria-controls="responseBodyEditor" aria-expanded="false" onclick="profileEditing.edit('responseBody')">Edit</button>
+      <textarea aria-label="Your Shizzalise result" id="crazyExtractBox" readonly></textarea>
+      <div id="responseBodyEditor" class="section-editor" hidden>
+        <textarea id="responseBodyDraft" aria-label="Response body" oninput="autoResize(this)"></textarea>
+        <div class="edit-actions"><button type="button" class="funky-button" onclick="profileEditing.save('responseBody')">Save</button><button type="button" class="funky-button" onclick="profileEditing.cancel('responseBody')">Cancel</button></div>
+      </div>
+    </section>
     <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
   </div>
 
 
-  <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">Bank this Beauty</button>
+  <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">Nominate</button>
 
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}

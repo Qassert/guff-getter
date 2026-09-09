@@ -111,7 +111,8 @@ class ImageTests(unittest.TestCase):
         routes.format_shizzalise_result.return_value = self.result
         for enabled in (False, True):
             result = routes.shizzalise_data(routes.ShizzRequest(title='source', description='', extract='source', generate_images=enabled), 'alice', 'alice')
-            self.assertEqual('rewrite_id' in result, enabled)
+            self.assertIn('rewrite_id', result)
+            self.assertFalse(result['nominated'])
             self.assertNotIn('generate_images', result)
             self.assertEqual(result['crazyReplacement1Title'], 'Moon soup')
 
@@ -127,7 +128,7 @@ class ImageTests(unittest.TestCase):
             payload = dict(title='title', description='', extract='text')
             if image: payload.update(rewrite_id='rewrite', **LocalStubProvider().generate_image('prompt'))
             routes.create_entry(routes.Post(**payload), request)
-            saved = routes.collection.insert_one.call_args.args[0]
+            saved = ({**routes.collection.update_one.call_args.args[1]['$setOnInsert'], **routes.collection.update_one.call_args.args[1]['$set']} if image else routes.collection.insert_one.call_args.args[0])
             self.assertEqual('image_url' in saved, image)
             if image: self.assertEqual(saved['image_owner'], 'alice')
 
@@ -255,7 +256,55 @@ class ImageTests(unittest.TestCase):
         self.assertEqual(restored['image_provider'], 'openai')
         self.assertEqual(self.api.call_count, 1)
 
+    def test_nomination_current_response_both_paths(self):
+        import json
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        for images in (False, True):
+            for edited in (False, True):
+                with self.subTest(images=images, edited=edited):
+                    routes = self.previews()
+                    result = self.store.create(self.result, 'alice') if images else dict(self.result)
+                    routes.TEMP_FILE.write_text('{}')
+                    routes.TEMP_SHIZZ_FILE.write_text(json.dumps(result))
+                    payload = dict(crazyReplacement1Title='Edited title' if edited else self.result['crazyReplacement1Title'],
+                                   crazyReplacement1Extract='Edited body' if edited else self.result['crazyReplacement1Extract'])
+                    response = MagicMock()
+                    response.json.return_value = {'id':'saved-id'}
+                    app = FastAPI(); app.include_router(routes.router, prefix='/temp')
+                    with patch.object(routes.requests, 'post', return_value=response) as post, TestClient(app) as client:
+                        client.cookies.set('active_pet', 'alice')
+                        url = '/temp/confirm_data' + ('?rewrite_id=' + result['rewrite_id'] if images else '')
+                        self.assertEqual(client.post(url, json=payload).status_code, 200)
+                        self.assertEqual(post.call_count, 1)
+                        saved = post.call_args.kwargs['json']
+                        for key, value in payload.items(): self.assertEqual(saved[key], value)
+                        self.assertEqual(saved['title'], self.result['title'])
+                        self.assertEqual(saved['extract'], self.result['extract'])
+                    if images:
+                        with self.store.transaction() as db:
+                            saved = self.store.read(db, result['rewrite_id'], 'alice')['result']
+                            self.assertEqual(saved['crazyReplacement1Title'], payload['crazyReplacement1Title'])
+
+    def test_renomination_updates_existing_entry_without_duplicate_insert(self):
+        routes = self.previews()
+        result = self.store.create(self.result, 'alice')
+        rid = result['rewrite_id']
+        with self.store.transaction() as db:
+            state = self.store.read(db, rid, 'alice')
+            state['entry_id'] = 'saved-id'
+            self.store.save(db, rid, state)
+        payload = routes.NominationResponse(crazyReplacement1Title='', crazyReplacement1Extract='New body')
+        request = types.SimpleNamespace(cookies={'active_pet':'alice'})
+        with patch.object(routes.requests, 'put', return_value=MagicMock()) as put, patch.object(routes.requests, 'post') as post:
+            routes.bank_image_rewrite(request, rid, payload)
+            routes.bank_image_rewrite(request, rid, payload)
+            put.assert_called_once()
+            self.assertEqual(put.call_args.kwargs['params'], payload.model_dump())
+            post.assert_not_called()
+
     def test_javascript(self):
         import subprocess
         subprocess.run(['node', 'tests/image_flow.test.js'], check=True)
         subprocess.run(['node', 'tests/image_background.test.js'], check=True)
+        subprocess.run(['node', 'tests/profile_editing.test.js'], check=True)

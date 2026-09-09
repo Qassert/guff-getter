@@ -6,6 +6,7 @@ import os
 import tempfile
 import json
 import sqlite3
+import time
 from typing import Protocol
 from uuid import uuid4, UUID
 
@@ -112,6 +113,7 @@ class RewriteStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with closing(sqlite3.connect(self.path, timeout=30)) as db, db:
             db.execute('CREATE TABLE IF NOT EXISTS rewrites (id TEXT PRIMARY KEY, state TEXT)')
+            db.execute('CREATE TABLE IF NOT EXISTS draft_slots (owner TEXT, session TEXT, rewrite_id TEXT, PRIMARY KEY(owner, session))')
             db.execute('BEGIN IMMEDIATE')
             yield db
 
@@ -121,6 +123,47 @@ class RewriteStore:
         with self.transaction() as db:
             self.save(db, rewrite_id, dict(result=result, owner=owner, entry_id=None))
         return result
+
+    def discard(self, db, rewrite_id, state):
+        # A nomination with an uncertain HTTP outcome may already exist in Mongo.
+        # Never delete its file until that association can be reconciled.
+        if state.get('entry_id') or state.get('nomination_pending'):
+            return
+        image_path(rewrite_id).unlink(missing_ok=True)
+        # Retain only a tombstone: late workers cannot resurrect the draft or pay again.
+        self.save(db, rewrite_id, dict(owner=state['owner'], entry_id=None, discarded=True,
+                                      result={'rewrite_id': rewrite_id}))
+
+    def begin_draft(self, source, owner, session):
+        rewrite_id = str(uuid4())
+        with self.transaction() as db:
+            # Opportunistic expiry of new-style abandoned drafts; legacy rows without
+            # expiry and uncertain nominations are intentionally not bulk-deleted.
+            for old_id, encoded in db.execute('SELECT id, state FROM rewrites').fetchall():
+                old_state = json.loads(encoded)
+                if old_state.get('discarded'):
+                    image_path(old_id).unlink(missing_ok=True)
+                elif old_state.get('expires_at', float('inf')) < time.time():
+                    self.discard(db, old_id, old_state)
+            previous = db.execute('SELECT rewrite_id FROM draft_slots WHERE owner=? AND session=?',
+                                  (owner, session)).fetchone()
+            if previous:
+                old = self.read(db, previous[0], owner)
+                self.discard(db, previous[0], old)
+            result = {**source, 'rewrite_id': rewrite_id, 'nominated': False}
+            self.save(db, rewrite_id, dict(result=result, owner=owner, entry_id=None, generating=True, expires_at=time.time() + 86400))
+            db.execute('INSERT OR REPLACE INTO draft_slots VALUES (?, ?, ?)', (owner, session, rewrite_id))
+        return rewrite_id
+
+    def complete_draft(self, rewrite_id, owner, result):
+        with self.transaction() as db:
+            state = self.read(db, rewrite_id, owner)
+            if state.get('discarded'):
+                return None
+            state['result'] = {**result, 'rewrite_id': rewrite_id, 'nominated': False}
+            state['generating'] = False
+            self.save(db, rewrite_id, state)
+            return state['result']
 
     def read(self, db, rewrite_id, owner):
         row = db.execute('SELECT state FROM rewrites WHERE id=?', (rewrite_id,)).fetchone()
