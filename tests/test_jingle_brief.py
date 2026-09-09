@@ -48,3 +48,28 @@ class JingleBriefTests(unittest.TestCase):
     def test_generated_assets_ignored(self):
         self.assertIn("/data/generated_audio/*", Path(".gitignore").read_text())
         self.assertIn(".venv-modal/", Path(".gitignore").read_text())
+
+class BenchmarkFailureTests(unittest.TestCase):
+    def test_failed_gpu_request_is_recorded_and_never_repeated(self):
+        import tempfile
+        from unittest.mock import Mock
+        import requests
+        from scripts import benchmark_jingle
+        response = requests.Response()
+        response.status_code = 502
+        response._content = b'Generation failed'
+        with tempfile.TemporaryDirectory() as folder, patch.object(
+                benchmark_jingle, 'DATA_DIR', Path(folder)), patch.object(
+                benchmark_jingle, 'load_dotenv'), patch.dict(
+                'os.environ', {'MODAL_JINGLE_ENDPOINT': 'https://example.modal.run',
+                               'MODAL_JINGLE_KEY': 'test', 'MODAL_JINGLE_SECRET': 'test'}), patch(
+                'sys.argv', ['benchmark', '--generate']), patch.object(
+                benchmark_jingle.requests, 'post', return_value=response) as post:
+            with self.assertRaises(requests.HTTPError):
+                benchmark_jingle.main()
+            report = json.loads((Path(folder) / 'generated_audio/benchmark-report.json').read_text())
+            self.assertEqual(report['http_status'], 502)
+            self.assertIsNone(report['audio_file'])
+            with self.assertRaises(SystemExit):
+                benchmark_jingle.main()
+            post.assert_called_once()

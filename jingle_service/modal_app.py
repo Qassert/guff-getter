@@ -11,7 +11,9 @@ from jingle_service.contract import GenerationRequest
 
 ACE_REVISION = "ca1e85fe9430179831e6bc6be790c332190a3866"
 MODEL = "acestep-v15-turbo"
-GPU = "T4"
+GPU = os.getenv("NEWSMUNCHER_JINGLE_GPU", "T4")
+if GPU not in {"T4", "L4"}:
+    raise ValueError("Jingle proof permits only T4 or L4; GPU changes require approval.")
 
 app = modal.App("newsmuncher-jingles")
 outputs = modal.Volume.from_name("newsmuncher-jingle-results", create_if_missing=True)
@@ -23,11 +25,13 @@ image = (
         "git clone https://github.com/ace-step/ACE-Step-1.5.git /opt/acestep",
         f"git -C /opt/acestep checkout {ACE_REVISION}",
         "cd /opt/acestep && uv sync --frozen --no-dev",
-        # Download only the DiT, VAE and text encoder during CPU image build.
+        # Upstream checks for its bundled LM even when inference disables LM.
+        # Cache all required components on CPU to avoid downloads on billed GPU time.
         'cd /opt/acestep && .venv/bin/python -c "from huggingface_hub import snapshot_download; '
         "snapshot_download('ACE-Step/Ace-Step1.5', local_dir='checkpoints', "
-        "allow_patterns=['acestep-v15-turbo/*','vae/*','Qwen3-Embedding-0.6B/*'])\"",
+        "allow_patterns=['acestep-v15-turbo/*','vae/*','Qwen3-Embedding-0.6B/*','acestep-5Hz-lm-1.7B/*'])\"",
     )
+    .pip_install("fastapi[standard]>=0.115,<1")
     .env({"PYTHONPATH": "/opt/acestep:/opt/acestep/.venv/lib/python3.11/site-packages"})
     .add_local_python_source("jingle_service")
 )

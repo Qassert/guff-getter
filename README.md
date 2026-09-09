@@ -237,3 +237,25 @@ Official references:
 - [OpenAI brief model](https://developers.openai.com/api/docs/models/gpt-4.1-mini)
 
 See JINGLE_IMPLEMENTATION_STATUS.md for remaining work.
+
+### First live proof result (2026-09-09)
+
+Deployment succeeded after installing FastAPI in Modal's serving environment before
+adding ACE-Step's Python path. The single authenticated T4 request failed with HTTP
+502: ACE-Step produced NaN latents in float16 before audio decoding. No MP3 exists.
+
+Modal request duration: 63.3 seconds; function execution: 11.8 seconds; logged
+diffusion: 2.373 seconds. Exact client wall time was not retained on that failure;
+the benchmark now saves failure timings too. Workspace metered usage showed $0.02,
+offset by $0.02 credits, billed $0.00 (includes build/setup, not a successful-song
+unit cost). There is no measured cost per successful jingle.
+
+The deployment was stopped after the test. No further GPU request is authorized.
+Before another test, ask the user. L4 is a candidate because it supports bfloat16;
+the T4 path used float16 and overflowed. Set NEWSMUNCHER_JINGLE_GPU=L4 only with
+approval. The next build also caches the bundled LM files checked by upstream,
+even though the LM is not initialized or used; this avoids startup downloads.
+
+Modal CLI curl did not authenticate this .modal.run Web Function. Use the proxy
+token pair in root .env; credentials were configured privately. The only auth retry
+retained the same ID after a confirmed proxy 401, before any GPU execution.

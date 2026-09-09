@@ -61,3 +61,25 @@ in root .env; do not print them.
 Full offline suite: 61 tests passed (57 existing + four new).
 Modal app import and dummy benchmark dry-run pass locally.
 No changes to application routes/templates/frontend in this checkpoint.
+
+## Live proof update — 2026-09-09, evening
+- Modal login qassert completed. Explicit user approval: deploy and exactly ONE
+  25-second T4 generation, no payment method, no additional GPU runs without asking.
+- Deployment succeeded. Serving FastAPI must be installed before setting PYTHONPATH.
+- First HTTP request got proxy 401 (no GPU). Created proxy token privately, stored
+  pair in ignored root .env. Same request ID resumed after confirmed auth rejection.
+- ONE authenticated T4 request reached inference and failed with NaN float16 latents.
+  Diffusion 2.3731787s; logged request duration63.3s, execution11.8s; no audio.
+  Exact client wall time was not retained by failure path; reporting improved offline.
+- Workspace metered$0.02, credits-$0.02, billed$0.00. Not a cost per successful song.
+- Stopped newsmuncher-jingles deployment, no containers running.
+- Offline fixes: cache upstream-required bundled LM files during CPU build; expose
+  optional L4 configuration for a future separately approved bfloat16 test; record
+  failed HTTP timing/status and test refusal to rerun a failed request.
+- T4 float32 suggestion in upstream error is not actually wired as ACESTEP_DTYPE
+  in pinned initializer; do not blindly set that env var as a purported fix.
+- Backend/UI still awaits successful proof per requested phase order.
+- Next authorization required: ONE additional L4 test (or explicit T4 precision
+  workaround test). Do NOT run without approval. Do not reuse the failed attempt
+  ID or delete markers merely to get past safeguards; retain audit and use a
+  separately approved benchmark attempt mechanism.
