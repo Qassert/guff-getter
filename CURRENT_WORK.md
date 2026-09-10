@@ -1,9 +1,9 @@
 STATUS: READY
 OWNER: NONE
 BRANCH: feature/jingle-generation
-LAST_COMPLETED_FEATURE: Jingle persistence and lifecycle hardening
-LAST_COMPLETED_COMMIT: :/^Harden jingle persistence and lifecycle
-LAST_OWNER: CODEX
+LAST_COMPLETED_FEATURE: Fix duplicate jingle controls after refresh
+LAST_COMPLETED_COMMIT: :/^Fix duplicate jingle controls after refresh
+LAST_OWNER: ANTIGRAVITY
 HANDOVER: JINGLE_IMPLEMENTATION_STATUS.md
 
 ## Status Values
@@ -15,10 +15,11 @@ HANDOVER: JINGLE_IMPLEMENTATION_STATUS.md
 
 CURRENT_TASK: NONE
 
-REVIEW_SUMMARY: Backend saved-jingle discovery, ownership-proven deletion retirement,
-  metadata reconciliation/matched-update verification, Mongo-only mismatch warning.
-VALIDATION: 34 targeted jingle tests; 91 full-suite tests; JS/template/syntax checks passed.
-APPROVAL: Andy approved committing and pushing the completed lifecycle hardening.
+REVIEW_SUMMARY: Removed duplicate savedJingles section, selector dropdown, and duplicate controls.
+  Discovered audio hydrates the single existing nomination parchment jingle control.
+  No nomination title rendered by discovery; displayed rewrite/title remains untouched.
+  PLAY/STOP works directly through the existing parchment control.
+VALIDATION: 34 targeted jingle tests (27 backend + 5 brief + 2 frontend suites);
+  91 full-suite tests passed; JS syntax checks passed.
+APPROVAL: Andy approved browser smoke test and completed changes.
 NEXT_STEP: Ready for the next assigned task. No live generation authorized.
-
-REVIEW_FIXES: Deterministic sorting, exact-entry discovery, preserved missing/404 semantics, saved-selector refresh completed.
