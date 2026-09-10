@@ -11,7 +11,7 @@ from jingle_service.contract import GenerationRequest
 
 ACE_REVISION = "ca1e85fe9430179831e6bc6be790c332190a3866"
 MODEL = "acestep-v15-turbo"
-GPU = os.getenv("NEWSMUNCHER_JINGLE_GPU", "T4")
+GPU = os.getenv("NEWSMUNCHER_JINGLE_GPU", "L4")
 if GPU not in {"T4", "L4"}:
     raise ValueError("Jingle proof permits only T4 or L4; GPU changes require approval.")
 
@@ -32,7 +32,8 @@ image = (
         "allow_patterns=['acestep-v15-turbo/*','vae/*','Qwen3-Embedding-0.6B/*','acestep-5Hz-lm-1.7B/*'])\"",
     )
     .pip_install("fastapi[standard]>=0.115,<1")
-    .env({"PYTHONPATH": "/opt/acestep:/opt/acestep/.venv/lib/python3.11/site-packages"})
+    .env({"PYTHONPATH": "/opt/acestep:/opt/acestep/.venv/lib/python3.11/site-packages",
+          "NEWSMUNCHER_JINGLE_GPU": GPU})
     .add_local_python_source("jingle_service")
 )
 

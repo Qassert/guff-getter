@@ -60,6 +60,13 @@
       </div>
     </div>
     <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
+    <div id="jingleControls" class="jingle-controls" hidden>
+      <div class="jingle-buttons">
+        <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled>MAKE JINGLE</button>
+        <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
+      </div>
+      <p id="jingleMessage" role="status" aria-live="polite"></p>
+    </div>
   <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
   </div>
 
@@ -68,4 +75,4 @@
 
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}

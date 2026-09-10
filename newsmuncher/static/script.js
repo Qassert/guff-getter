@@ -12,6 +12,7 @@ function workingSession() {
     return draftSession;
 }
 function setNominationState(data) {
+    if (typeof jingleUI !== "undefined") jingleUI.show(data);
     const button = document.getElementById('bankButton');
     button.textContent = data.nominated ? 'NOMINATED' : 'NOMINATE';
     button.disabled = false;
@@ -84,6 +85,7 @@ function fetchAndDisplay(scriptName) {
 }
 
 function confirmData() {
+    if (typeof jingleUI !== "undefined") jingleUI.show({nominated: false});
     const sequence = ++rewriteSequence;
     document.getElementById('bankButton').disabled = true;
     const imagesEnabled = document.getElementById("generateImages").checked;
@@ -173,10 +175,11 @@ function bankThisBeauty() {
             if (!response.ok) throw new Error("Error banking data.");
             return response.json();
         })
-        .then(() => {
+        .then(data => {
             if (nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence) {
                 nominatedSnapshot = snapshot;
                 document.getElementById('bankButton').textContent = 'NOMINATED';
+                if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
             }
             alert("Result nominated (saved for possible promotion).");
             hideLoader();

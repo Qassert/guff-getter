@@ -17,3 +17,6 @@ TEMP_FILE = PREVIEWS_DIR / "temp_data.json"
 TEMP_SHIZZ_FILE = PREVIEWS_DIR / "shizz_data.json"
 
 GENERATED_IMAGES_DIR = DATA_DIR / "generated_images"
+
+GENERATED_AUDIO_DIR = DATA_DIR / "generated_audio"
+JINGLE_STATE_FILE = PREVIEWS_DIR / "jingles.sqlite3"

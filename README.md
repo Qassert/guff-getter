@@ -165,97 +165,146 @@ server-validated admin session. Before moderation can be exposed, implement genu
 server-side session validation, an explicit privileged role, ownership/authorization
 checks, and an authenticated moderation endpoint. No gallery or video system exists.
 
-## Jingle feature — isolated proof stage (not yet enabled in the UI)
+## Nominated-entry jingles
 
-One real ACE-Step jingle must succeed before backend/UI integration.
-Nothing currently auto-generates music on nomination. The application stays Python
-3.13; the Modal image uses Python 3.11 and the upstream ACE-Step dependency lockfile.
-Do not install ACE-Step into .venv.
+After nominating a rewrite, MAKE JINGLE creates one approximately 25-second song.
+PLAY JINGLE and STOP use its stored MP3; they never generate another song.
+Nothing auto-generates on nomination. The original source article is never used
+for the music brief.
 
-Prepared architecture: nominated rewritten text → one bounded OpenAI JSON brief →
-private Modal HTTPS endpoint → ACE-Step 1.5 turbo (eight steps, one 25-second output,
-no extra ACE language model) → MP3 → local generated-audio storage. The proof uses
-a dummy brief, so it spends no OpenAI tokens.
+Architecture: nominated Mongo entry → bounded server-side OpenAI structured brief
+→ private Modal HTTPS endpoint → ACE-Step 1.5 turbo on L4 → local MP3 + Mongo
+metadata. The app remains Python 3.13; Modal runs a separate Python 3.11 ML image.
+Do not install ACE-Step into the app's .venv.
 
-Setup (separate CLI environment):
+### Configuration
+
+Root .env (see .env.example; never commit secrets):
+
+- OPENAI_API_KEY: existing key, reused.
+- MODAL_JINGLE_ENDPOINT: deployed private Web Function URL.
+- MODAL_JINGLE_KEY / MODAL_JINGLE_SECRET: Modal Proxy Token pair, server-side only.
+- NEWSMUNCHER_JINGLE_BRIEF_MODEL: gpt-4.1-mini by default; max400 output tokens,
+  structured JSON, no tools, no reasoning configuration and no automatic retries.
+- NEWSMUNCHER_JINGLE_ENABLED: true by default, provided credentials are configured;
+  set false to disable new generation while preserving playback.
+- NEWSMUNCHER_JINGLE_DAILY_LIMIT: default20 new claims globally per UTC day.
+- NEWSMUNCHER_JINGLE_GPU: deployment-only, default L4 (the successful benchmark).
+
+Run the existing app normally:
+
+    python -m uvicorn newsmuncher.main:app --reload --host 127.0.0.1 --port 8000
+
+Generate a rewrite, NOMINATE it, then click MAKE JINGLE explicitly. It shows a
+disabled loading control until the response arrives. On completion, use PLAY
+JINGLE/STOP. Refresh/restoration fetches status only. Switching rewrites discards
+stale UI callbacks and stops old playback. No automatic music-generation retries.
+
+### Storage, limits and recovery
+
+MP3 files are stored in data/generated_audio/<Mongo nomination ID>.mp3 and served
+at /generated-audio/<ID>.mp3. Only .mp3 files are served; benchmark reports/markers
+are not public. Files and benchmark output are ignored by Git. LocalAudio in
+newsmuncher/services/jingles.py is the replaceable storage adapter.
+
+Mongo stores jingle URL/status/provider/model/time, brief, OpenAI token usage,
+and the nominated text snapshot/hash. It never stores audio bytes/base64.
+Updating a nomination retains the existing song and original text snapshot;
+the UI indicates when text has changed. No automatic regeneration or version fee.
+
+SQLite data/previews/jingles.sqlite3 reserves one claim per nomination before
+either provider call. BEGIN IMMEDIATE makes the claim and UTC daily count atomic
+across threads/workers on the same host. Failed claims count too, so retries cannot
+bypass the cap. Existing playback/status/duplicate requests do not use quota.
+All app workers MUST share this ledger and generated-audio directory. Multiple
+independent hosts would need shared transactional storage before deployment.
+
+Only entries with nominated == true and matching active-pet ownership can generate.
+GET /jingles/<rewrite_id> restores status; POST to the same path explicitly claims
+generation. No frontend-supplied nomination flag or rewritten text is trusted.
+
+A brief failure is safe to retry explicitly (no music was submitted); it consumes
+another daily claim. After Modal submission, transport/provider failures are
+conservatively marked uncertain and cannot automatically retry. Browser closure
+does not cancel the synchronous server worker. A server crash leaves the durable
+claim in place. Atomically saved local files are recovered on status requests;
+failed Mongo metadata sync is retried without another provider call.
+
+For an uncertain attempt, inspect the private Modal result volume/logs using the
+request_id stored in SQLite. Do not delete markers, reset the ledger or submit a
+new ID merely because a request timed out. If a completed remote file exists,
+operator-assisted retrieval can recover it without inference. Automated remote
+reconciliation is not included in this first version.
+
+### Modal deployment
+
+Separate development CLI:
 
     python3 -m venv .venv-modal
     .venv-modal/bin/python -m pip install -r jingle_service/requirements-dev.txt
     .venv-modal/bin/modal token new
-    .venv-modal/bin/modal deploy jingle_service/modal_app.py
+    NEWSMUNCHER_JINGLE_GPU=L4 .venv-modal/bin/modal deploy jingle_service/modal_app.py
 
-Deployment builds/downloads ML dependencies remotely and consumes Modal resources.
-Do not deploy until authenticated and available free allowance is confirmed. No
-payment method is required by this implementation.
+Use the existing workspace; do not add payment methods without authorization.
+Create a Proxy Token and store its pair only in root .env. Modal CLI curl did NOT
+authenticate this .modal.run Web Function in our test; use proxy credentials.
 
-Create a Modal Proxy Token in the workspace dashboard. Put the deployed endpoint
-and its token pair in root .env as MODAL_JINGLE_ENDPOINT, MODAL_JINGLE_KEY,
-and MODAL_JINGLE_SECRET. Never put them in browser JavaScript or commit them.
-Existing OPENAI_API_KEY is reused for the brief. The default brief model is
-NEWSMUNCHER_JINGLE_BRIEF_MODEL=gpt-4.1-mini, with 400 maximum output tokens,
-structured output, no tools and no automatic retries.
+The service is private, max one container/input, zero minimum/buffer containers,
+two-second scale-down window, no generation retries. Models load once per warm
+container. Source is pinned at ca1e85fe9430179831e6bc6be790c332190a3866.
+Remote CPU builds download the full set of files required by upstream's startup
+check; the bundled LM is not initialized or used. Eight turbo steps, one batch,
+25-second target; WAV is converted to browser-compatible 128kbps MP3.
 
-Offline tests and dry-run:
+Remote attempt markers and output files live on a Modal Volume. Do not run multiple
+deployments against that single-writer volume. Model weights and volume storage
+are not in Git. Model weight revision is not independently pinned yet.
+
+### Actual benchmark and cost
+
+2026-09-09: one T4 attempt failed with NaN float16 latents before decoding.
+A separately approved L4 attempt succeeded:
+
+- Client wall time: 53.869 seconds (cold request, excludes image build).
+- Model-load measurement: 8.216 seconds (excludes Python/container startup).
+- Generation + encoding measurement: 13.137 seconds.
+- MP3 duration: 25.032 seconds; 400,941 file bytes; stereo 48kHz, 128kbps.
+- File: data/generated_audio/l4-approved/309c2077-c511-4a36-8729-2e29d327425e.mp3.
+- Benchmark used a fixed dummy brief, so OpenAI usage/cost was ZERO.
+- Modal workspace rounded metered usage rose from $0.02 after T4 to $0.06 after
+  L4/builds; credits covered $0.06, billed $0.00.
+- Deployed-app meter rose from $0.00748483 to $0.03541200: approximately $0.02793
+  incremental deployed compute for this cold proof, not a guaranteed unit price.
+  The total $0.04 increment includes build/setup. Warm per-jingle cost is unmeasured.
+
+Official L4 rate at review: $0.000222/GPU-second. Applying that rate only to the
+13.137-second generation measurement gives about $0.00292 GPU compute, but EXCLUDES
+startup, other allocated time, CPU/RAM and storage. The cold test did not establish
+a one-penny total cost. Pricing and allowances can change.
+
+No further live OpenAI or GPU calls were used for application integration.
+Audio format/duration were locally verified; subjective musical quality is for
+listening review, not asserted by automated tests.
+
+### Offline testing
 
     .venv/bin/python -B -m unittest discover -s tests -q
+    node tests/jingles.test.js
     .venv/bin/python -m scripts.benchmark_jingle
 
-After authorization, ONE live proof:
+The benchmark defaults to dry-run. --generate is a LIVE cost-incurring request.
+Existing attempt markers prevent reruns. Never use another attempt identifier
+without explicit authorization. All automated provider tests are mocked.
 
-    .venv/bin/python -m scripts.benchmark_jingle --generate
-
-This writes an attempt marker before a single POST. Running again refuses another
-attempt. Do not delete the marker or choose a new ID after a timeout; inspect Modal
-logs/results first. Remote IDs retain durable markers/completed files and never
-automatically regenerate. Concurrent deployments sharing that volume are unsupported.
-
-Audio and benchmark reports live in data/generated_audio/ and are Git-ignored.
-MP3 uses 128 kbps. The proof returns model-load, generation and measured duration
-headers plus file size. Actual billable startup must be checked in Modal's dashboard.
-
-Pricing reviewed 2026-09-09: T4 $0.000164/GPU-second; L4 $0.000222/GPU-second.
-T4 is the lowest listed rate and the first candidate for the small turbo model;
-speed/quality are NOT yet benchmarked. At 60 GPU seconds, GPU alone would be
-$0.00984, before CPU, RAM, cold starts, build, storage and idle tail.
-This is not a claim of one-penny total generation. The service has zero minimum
-containers, one maximum container, two-second scale-down and no retries.
-Volume storage also costs money. Pricing can change.
-
-NEWSMUNCHER_JINGLE_DAILY_LIMIT=20 is reserved for backend integration: a transactional
-global UTC-day claim budget, with playback exempt. It is NOT yet enforced by the
-private proof endpoint. Do not expose it to browsers or connect MAKE JINGLE yet.
-Planned update policy: keep the brief/text snapshot with the audio; nomination
-edits never silently regenerate music.
+For cloud hosting, move audio to durable shared storage, replace local quota/claim
+SQLite with a shared transactional ledger, retain the existing authenticated-owner
+checks, protect/rotate proxy credentials, and add operational reconciliation and
+monitoring. No Cloudflare/R2 or other new account is needed locally.
 
 Official references:
-- [ACE-Step inference API](https://ace-step.github.io/ACE-Step-1.5/en/INFERENCE)
+- [ACE-Step inference](https://ace-step.github.io/ACE-Step-1.5/en/INFERENCE)
 - [ACE-Step GPU compatibility](https://ace-step.github.io/ACE-Step-1.5/en/GPU_COMPATIBILITY)
-- [Pinned source](https://github.com/ace-step/ACE-Step-1.5/tree/ca1e85fe9430179831e6bc6be790c332190a3866)
 - [Modal pricing](https://modal.com/pricing)
 - [Modal scaling](https://modal.com/docs/guide/scale)
 - [Modal proxy authentication](https://modal.com/docs/guide/webhook-proxy-auth)
 - [OpenAI brief model](https://developers.openai.com/api/docs/models/gpt-4.1-mini)
-
-See JINGLE_IMPLEMENTATION_STATUS.md for remaining work.
-
-### First live proof result (2026-09-09)
-
-Deployment succeeded after installing FastAPI in Modal's serving environment before
-adding ACE-Step's Python path. The single authenticated T4 request failed with HTTP
-502: ACE-Step produced NaN latents in float16 before audio decoding. No MP3 exists.
-
-Modal request duration: 63.3 seconds; function execution: 11.8 seconds; logged
-diffusion: 2.373 seconds. Exact client wall time was not retained on that failure;
-the benchmark now saves failure timings too. Workspace metered usage showed $0.02,
-offset by $0.02 credits, billed $0.00 (includes build/setup, not a successful-song
-unit cost). There is no measured cost per successful jingle.
-
-The deployment was stopped after the test. No further GPU request is authorized.
-Before another test, ask the user. L4 is a candidate because it supports bfloat16;
-the T4 path used float16 and overflowed. Set NEWSMUNCHER_JINGLE_GPU=L4 only with
-approval. The next build also caches the bundled LM files checked by upstream,
-even though the LM is not initialized or used; this avoids startup downloads.
-
-Modal CLI curl did not authenticate this .modal.run Web Function. Use the proxy
-token pair in root .env; credentials were configured privately. The only auth retry
-retained the same ID after a confirmed proxy 401, before any GPU execution.

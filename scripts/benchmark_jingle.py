@@ -25,6 +25,8 @@ def main():
     parser.add_argument("--endpoint", help="Deployed HTTPS URL (not a secret).")
     parser.add_argument("--modal-auth", action="store_true", help="Use existing Modal CLI login for the proof.")
     parser.add_argument("--resume-auth-failure", action="store_true", help="Resume same ID only after proven proxy 401 (no inference).")
+    parser.add_argument("--attempt", choices=["benchmark", "l4-approved"], default="benchmark",
+                        help="Separate explicitly approved proof; never overwrites prior attempts.")
     args = parser.parse_args()
     if not args.generate:
         print(json.dumps(DUMMY_BRIEF, indent=2))
@@ -37,6 +39,8 @@ def main():
     if not endpoint.startswith("https://") or (not args.modal_auth and (not key or not secret)):
         raise SystemExit("Set MODAL_JINGLE_ENDPOINT, MODAL_JINGLE_KEY and MODAL_JINGLE_SECRET in root .env.")
     directory = DATA_DIR / "generated_audio"
+    if args.attempt != "benchmark":
+        directory = directory / args.attempt
     directory.mkdir(parents=True, exist_ok=True)
     marker = directory / "benchmark-attempt.json"
     payload = {**DUMMY_BRIEF, "request_id": str(uuid4())}

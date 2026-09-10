@@ -435,3 +435,10 @@ body { isolation: isolate; }
   }
   .profile-page .edit-tab { padding-left: 18px; }
 }
+
+/* Optional nominated-entry audio; existing paper/button surfaces are reused. */
+.profile-page .jingle-controls { margin: 20px 0 12px; }
+.profile-page .jingle-controls[hidden],
+.profile-page #jingleStop[hidden] { display: none; }
+.profile-page .jingle-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.profile-page #jingleMessage { font-family: var(--print-body-font); font-size: .9rem; overflow-wrap: anywhere; }
