@@ -181,6 +181,7 @@ function bankThisBeauty() {
                 document.getElementById('bankButton').textContent = 'NOMINATED';
                 if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
             }
+            if (typeof jingleUI !== 'undefined') jingleUI.discover();
             alert("Result nominated (saved for possible promotion).");
             hideLoader();
         })
@@ -273,6 +274,7 @@ window.onload = () => {
     document.getElementById('generateImages').checked = false;
     populateTempData();
     restoreImageRewrite();
+    if (typeof jingleUI !== "undefined") jingleUI.discover();
 };
 window.addEventListener('pageshow', () => {
     document.getElementById('generateImages').checked = false;

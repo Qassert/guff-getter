@@ -83,3 +83,58 @@ No live MongoDB writes or live browser-generated jingle during implementation.
 ## Git
 Checkpoints c149da7 (proof) and 7cc582d (T4 results/fixes), followed by final
 implementation commit. Push feature branch only; never merge main.
+
+## Lifecycle hardening — approved, 2026-09-10
+
+Completed CODEX work; Andy approved commit/push as "Harden jingle persistence and lifecycle".
+
+- GET /jingles/ discovers the active pet's saved nomination jingles from MongoDB,
+  reusing the existing nominated/owner checks. Profile startup fetches this list
+  independently of sessionStorage. A small saved-jingle selector provides stored
+  PLAY/STOP without replacing the current draft, editor, or nomination controls.
+- Stable Mongo entry-ID filenames and provider request IDs are unchanged.
+- Discovery and GET /jingles/{rewrite_id} are the reconciliation path: a valid
+  local MP3 plus SQLite brief/snapshot restores Mongo metadata without generation.
+  Mongo write failures preserve recoverable audio/state and metadata_pending.
+- Metadata sync now checks matched_count. A vanished nomination is not reported
+  as successfully attached. Missing entries detected after provider completion
+  trigger proven-owned cleanup rather than leaving a silently successful result.
+- All existing entry-delete routes capture candidate IDs, delete matching entries,
+  then verify absence before retiring their jingles. Ownership requires either
+  the matching deterministic SQLite request ID or exact local URL + modal provider
+  metadata. No directory sweep; ambiguous files and symlinks remain untouched.
+- Retired SQLite rows retain only status and request ID; daily quota claims remain.
+  These tombstones prevent late preparation/generation from resurrecting audio or
+  allowing a duplicate paid request. Audio writes and retirement share the SQLite
+  transaction lock. The existing provider call itself cannot be cancelled/refunded.
+- Nomination edits keep the MP3 and original text snapshot. Mismatch warnings now
+  also work from Mongo metadata if the local SQLite row is absent.
+
+Validation: 32 targeted jingle tests and all 89 offline tests passed. Includes
+Node frontend tests, JavaScript syntax, template rendering/unique IDs, fresh-session
+playback, ownership, sync repair, deletion routes/races, ambiguous audio preservation,
+and Mongo-only text mismatch. Python syntax and git diff --check passed.
+Existing datetime/Starlette dependency deprecation warnings remain. The benchmark
+failure printed by tests is a mocked failure-path fixture, not a live generation.
+No OpenAI/Modal/ACE-Step/Mongo services were contacted, and no audio was generated.
+
+Operational limits: audio and SQLite still require persistent shared disk and backups.
+Deletion is not an atomic cross-database transaction. If the process crashes after
+Mongo deletion but before retirement, an operator can retry
+service.retire_deleted(collection, {"_id": ObjectId(entry_id)}) for a known deleted
+entry; its ownership/absence checks remain mandatory. File-removal failures log a
+cleanup warning and keep the retirement tombstone. Out-of-band Mongo deletions are
+not automatically swept, and ambiguous legacy files require manual review.
+
+## Final review fixes — approved
+- Discovery explicitly sorts creationDate descending, then _id descending.
+- entry_status uses the exact discovered Mongo entry and preserves owner checks;
+  duplicate legacy rewrite IDs cannot pair another entry's audio with its title.
+- Confirmed zero-match sync remains 404 even when retirement fails; failures log
+  a retry warning rather than becoming successful metadata_pending responses.
+- Nomination saves and completed jingle responses refresh saved playback choices.
+  Refresh preserves selection/playback by entry_id and URL, updating title/warnings
+  independently of the displayed rewrite.
+- Validation: 34 targeted tests and full 91-test suite passed, including JS/template
+  checks. Full 91-test suite reconfirmed before commit. No live services called.
+  Existing deprecation warnings remain.

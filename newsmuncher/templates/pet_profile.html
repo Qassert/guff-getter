@@ -74,5 +74,14 @@
 
 
 </div>
+<section id="savedJingles" class="jingle-controls" hidden aria-label="Saved nomination jingles">
+  <label for="savedJingleSelect">Saved jingles</label>
+  <select id="savedJingleSelect" aria-label="Choose a nominated jingle" onchange="jingleUI.selectSaved()" style="max-width:100%"></select>
+  <div class="jingle-buttons">
+    <button type="button" id="savedJinglePlay" class="funky-button" onclick="jingleUI.playSaved()" disabled>▶ PLAY JINGLE</button>
+    <button type="button" id="savedJingleStop" class="funky-button" onclick="jingleUI.stopSaved()" hidden>■ STOP</button>
+  </div>
+  <p id="savedJingleMessage" role="status" aria-live="polite"></p>
+</section>
 {% endblock %}
 {% block scripts %}<script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}

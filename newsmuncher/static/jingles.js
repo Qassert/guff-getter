@@ -22,6 +22,7 @@ const jingleUI = (() => {
             if (token !== revision || id !== rewrite) return;
             if (!response.ok) throw new Error(data.detail || 'Jingle status unavailable.');
             render(data);
+            if (data.jingle_status === 'complete') discover();
             if (['started', 'submitted'].includes(data.jingle_status) && polls < 60) {
                 timer = setTimeout(() => refresh(token, id, polls + 1), 3000);
             }
@@ -43,6 +44,7 @@ const jingleUI = (() => {
     async function act() {
         if (pending || !rewrite || !state) return;
         if (state.jingle_url) {
+            stopSaved();
             if (!audio) {
                 audio = new Audio(state.jingle_url);
                 audio.onended = () => { get('jingleStop').hidden = true; };
@@ -70,6 +72,7 @@ const jingleUI = (() => {
                 return;
             }
             render(data);
+            if (data.jingle_status === 'complete') discover();
             if (['started', 'submitted'].includes(data.jingle_status)) refresh(token, id);
         } catch (_) {
             if (token !== revision) return;
@@ -78,5 +81,65 @@ const jingleUI = (() => {
             refresh(token, id);
         }
     }
-    return {show, act, stop};
+    // Persistent saved playback is independent of the current draft/editor.
+    let saved = [], savedAudio = null, discovery = 0;
+    function stopSaved() {
+        if (savedAudio) { savedAudio.pause(); savedAudio.currentTime = 0; }
+        get('savedJingleStop').hidden = true;
+    }
+    function selectSaved() {
+        stopSaved();
+        savedAudio = null;
+        updateSavedMessage();
+    }
+    function updateSavedMessage() {
+        const item = saved[Number(get('savedJingleSelect').value)];
+        get('savedJinglePlay').disabled = !item?.jingle_url;
+        get('savedJingleMessage').textContent = item?.text_changed ?
+            'This jingle belongs to the earlier nominated text; it will not regenerate automatically.' :
+            (item?.message || '');
+    }
+    async function discover() {
+        const token = ++discovery;
+        try {
+            const response = await fetch('/jingles/', {credentials: 'include', cache: 'no-store'});
+            if (!response.ok) return;
+            const data = await response.json();
+            if (token !== discovery) return;
+            const previous = saved[Number(get('savedJingleSelect').value)];
+            saved = data.jingles || [];
+            const select = get('savedJingleSelect');
+            select.replaceChildren();
+            saved.forEach((item, index) => {
+                const option = document.createElement('option');
+                option.value = String(index);
+                option.textContent = item.title || 'Nominated jingle';
+                select.appendChild(option);
+            });
+            const index = saved.findIndex(item => previous && item.entry_id === previous.entry_id &&
+                item.jingle_url === previous.jingle_url);
+            select.value = String(index < 0 ? 0 : index);
+            get('savedJingles').hidden = saved.length === 0;
+            if (index < 0) selectSaved();
+            else updateSavedMessage();
+        } catch (_) {} // No generation or change to the current rewrite on failure.
+    }
+    async function playSaved() {
+        const item = saved[Number(get('savedJingleSelect').value)];
+        if (!item?.jingle_url) return;
+        stop();
+        if (!savedAudio) savedAudio = new Audio(item.jingle_url);
+        const playing = savedAudio;
+        playing.onended = () => {
+            if (playing === savedAudio) get('savedJingleStop').hidden = true;
+        };
+        try {
+            await playing.play();
+            if (playing !== savedAudio) { playing.pause(); return; }
+            get('savedJingleStop').hidden = false;
+        } catch (_) {
+            if (playing === savedAudio) get('savedJingleMessage').textContent = 'Stored audio could not play.';
+        }
+    }
+    return {show, act, stop, discover, selectSaved, playSaved, stopSaved};
 })();

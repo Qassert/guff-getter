@@ -3,6 +3,7 @@ from contextlib import contextmanager, closing
 from datetime import datetime, timezone
 import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 import re
@@ -161,14 +162,87 @@ class Jingles:
         }
 
     def sync(self, collection, entry, metadata):
-        collection.update_one({"_id": entry["_id"], "nominated": True},
+        result = collection.update_one({"_id": entry["_id"], "nominated": True},
                               {"$set": metadata})
+        if result.matched_count == 0:
+            self.try_retire_deleted(collection, entry)
+            raise JingleError(404, "Nomination no longer exists; jingle was not attached.")
+
+    def try_retire_deleted(self, collection, entry):
+        # Cleanup must never hide an already confirmed missing-entry outcome.
+        try:
+            self.retire_deleted(collection, entry)
+        except Exception:
+            logging.getLogger(__name__).warning("Jingle retirement needs retry for %s", entry["_id"])
+
+    def retire_deleted(self, collection, entry):
+        """Remove only proven local ownership; retain a tombstone against late workers.
+
+        Keep quota claims. Never glob audio, follow symlinks, or remove unknown files.
+        A later call can retry cleanup if filesystem removal fails.
+        """
+        key = str(entry["_id"])
+        if not re.fullmatch(r"[a-f0-9]{24}", key):
+            return
+        with self.transaction() as db:
+            if collection.find_one({"_id": entry["_id"]}) is not None:
+                return
+            state = self.read(db, key)
+            request_id = str(uuid5(NAMESPACE_URL, "newsmuncher-jingle:" + key))
+            owned = (state and state.get("request_id") == request_id) or (
+                entry.get("jingle_provider") == "modal"
+                and entry.get("jingle_url") == self.audio.url(key))
+            if not owned:
+                return
+            self.save(db, key, {"status": "retired", "request_id": request_id})
+            path = self.audio.path(key)
+            if path.is_file() and not path.is_symlink():
+                try:
+                    path.unlink()
+                except OSError:
+                    logging.getLogger(__name__).warning("Retired jingle %s needs file cleanup", key)
+
+    def discover(self, collection, owner):
+        """Persistent discovery also reconciles completed local files with Mongo.
+
+        Uses the same ownership checks as MAKE; never calls a generation provider.
+        """
+        if not owner:
+            raise JingleError(401, "Select a pet first.")
+        entries = collection.find({"nominated": True, "$or": [
+            {"image_owner": owner},
+            {"image_owner": {"$exists": False}, "creationUser": owner}]}).sort(
+                [("creationDate", -1), ("_id", -1)])
+        saved = []
+        for entry in entries:
+            if not entry.get("rewrite_id"):
+                continue
+            try:
+                result = self.entry_status(collection, entry, owner)
+            except JingleError as exc:
+                if exc.status in (403, 404):
+                    continue  # Deleted or ownership changed during discovery.
+                raise
+            if result.get("jingle_url") or entry.get("jingle_url"):
+                saved.append({"entry_id": str(entry["_id"]), "rewrite_id": entry["rewrite_id"],
+                              "title": self.snapshot(entry)["title"], **result})
+        return {"jingles": saved}
 
     def status(self, collection, rewrite_id, owner):
         entry = self.nomination(collection, rewrite_id, owner)
+        return self.entry_status(collection, entry, owner)
+
+    def entry_status(self, collection, entry, owner):
+        # Discovery keeps the exact entry identity; never re-resolve a legacy rewrite ID.
+        if not owner or entry.get("nominated") is not True or (
+                entry.get("image_owner") or entry.get("creationUser")) != owner:
+            raise JingleError(403, "Only your nominated entry may access a jingle.")
         key = str(entry["_id"])
         with self.transaction() as db:
             state = self.read(db, key)
+            if state and state["status"] == "retired":
+                return {"jingle_status": "retired", "can_generate": False,
+                        "message": "Jingle retired; no automatic regeneration."}
             # File is durable before metadata; recover that gap without provider calls.
             if state and state.get("brief") and self.audio.exists(key):
                 state["status"] = "complete"
@@ -182,6 +256,8 @@ class Jingles:
             pending = False
             try:
                 self.sync(collection, entry, metadata)
+            except JingleError:
+                raise
             except Exception:
                 pending = True  # Local audio remains usable, later GET retries only the sync.
             return {"jingle_status": "complete", "jingle_url": metadata["jingle_url"],
@@ -195,6 +271,8 @@ class Jingles:
             return {"jingle_status": "complete" if self.audio.exists(key) else "unavailable",
                     "jingle_url": self.audio.url(key) if self.audio.exists(key) else None,
                     "can_generate": False,
+                    "text_changed": bool(entry.get("jingle_text_snapshot")) and
+                        entry["jingle_text_snapshot"] != self.snapshot(entry),
                     "message": "Stored jingle; no automatic regeneration."}
         status = state["status"] if state else "none"
         allowed = status in {"none", "brief_failed"} and remaining > 0 and bool(self.enabled())
@@ -245,21 +323,38 @@ class Jingles:
             brief, usage = self.brief_factory(entry)
         except Exception:
             with self.transaction() as db:
+                if (self.read(db, key) or {}).get("status") == "retired":
+                    raise JingleError(404, "Nomination was deleted during preparation.")
                 state["status"] = "brief_failed"
                 self.save(db, key, state)
             return self.status(collection, rewrite_id, owner)
         with self.transaction() as db:
+            if (self.read(db, key) or {}).get("status") == "retired":
+                raise JingleError(404, "Nomination was deleted during preparation.")
             state.update(status="submitted", brief=brief.model_dump(), brief_usage=usage)
             self.save(db, key, state)  # Commit before sending to a paid provider.
         try:
             data = self.provider(brief, state["request_id"])
-            self.audio.save(key, data)
+            with self.transaction() as db:
+                current = self.read(db, key)
+                if current and current["status"] == "retired":
+                    raise JingleError(404, "Nomination was deleted during generation.")
+                self.audio.save(key, data)
+        except JingleError:
+            raise
         except Exception:
             with self.transaction() as db:
+                if (self.read(db, key) or {}).get("status") == "retired":
+                    raise JingleError(404, "Nomination was deleted during generation.")
                 state["status"] = "uncertain"
                 self.save(db, key, state)
             return self.status(collection, rewrite_id, owner)
-        return self.status(collection, rewrite_id, owner)
+        try:
+            return self.status(collection, rewrite_id, owner)
+        except JingleError as exc:
+            if exc.status == 404:
+                self.try_retire_deleted(collection, entry)
+            raise
 
 
 service = Jingles()

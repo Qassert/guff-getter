@@ -15,6 +15,15 @@ def invoke(action, rewrite_id, owner):
         raise HTTPException(exc.status, detail=str(exc)) from exc
 
 
+@router.get("/")
+def saved_jingles(active_pet: str = Cookie(None)):
+    try:
+        return JSONResponse(service.discover(collection, active_pet),
+                            headers={"Cache-Control": "no-store"})
+    except JingleError as exc:
+        raise HTTPException(exc.status, detail=str(exc)) from exc
+
+
 @router.get("/{rewrite_id}")
 def jingle_status(rewrite_id: str, active_pet: str = Cookie(None)):
     return invoke(service.status, rewrite_id, active_pet)
