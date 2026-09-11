@@ -8,7 +8,7 @@ import subprocess
 import sys
 import os
 from uuid import uuid4
-from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result
+from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result, copy_edit_pass
 from newsmuncher.utils.file_handler import load_prompt
 
 
@@ -109,10 +109,17 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     if not result:
         raise HTTPException(status_code=500, detail="Generated title or extract is invalid.")
 
+    # Pass 2: copy-editing.  Receives only pass-1 output — never source text.
+    # Falls back to the pass-1 result on any failure.
+    polished = copy_edit_pass(result)
+    if polished:
+        result = polished
+
     full_result = {
         **source,
         **result,
-        "creationUser": creationUser
+        "creationUser": creationUser,
+        "contenders": prompt_template.get("contenders", {})
     }
 
     full_result = store.complete_draft(rewrite_id, active_pet, full_result)

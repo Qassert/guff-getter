@@ -442,3 +442,4 @@ body { isolation: isolate; }
 .profile-page #jingleStop[hidden] { display: none; }
 .profile-page .jingle-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .profile-page #jingleMessage { font-family: var(--print-body-font); font-size: .9rem; overflow-wrap: anywhere; }
+

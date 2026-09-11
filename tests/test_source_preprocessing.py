@@ -55,6 +55,10 @@ class SourceTests(unittest.TestCase):
                        'extract': 'Alice Smith did not fly to London.'}, 10, template)
         for literal in ['Alice', 'Smith', 'London']:
             self.assertNotIn(literal, result['full_prompt'])
+        self.assertEqual(set(word for words in result['contenders'].values() for word in words),
+                         set(result['preprocessing']['supplied_ingredients']))
+        self.assertNotIn('Alice', result['contenders']['names'])
+        self.assertNotIn('London', result['contenders']['places'])
         self.assertIn('Zelda', result['full_prompt'])
         self.assertIn('Mars', result['full_prompt'])
         self.assertIn('did not fly to', result['full_prompt'])

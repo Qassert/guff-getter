@@ -55,7 +55,7 @@ class ImageTests(unittest.TestCase):
     def previews(self):
         # Import route definitions without importing text generation/OpenAI at all.
         clean = types.ModuleType('newsmuncher.utils.clean_data')
-        for name in ('prepare_prompt','send_prompt','format_shizzalise_result'):
+        for name in ('prepare_prompt','send_prompt','format_shizzalise_result','copy_edit_pass'):
             setattr(clean, name, MagicMock())
         source = types.ModuleType('newsmuncher.utils.source_preprocessing')
         source.log_overlap = MagicMock()
@@ -109,6 +109,8 @@ class ImageTests(unittest.TestCase):
         routes.prepare_prompt.return_value = {'full_prompt':'prompt', 'preprocessing':None}
         routes.send_prompt.return_value = {'title':'Moon soup', 'extract':'A cat paints the moon.'}
         routes.format_shizzalise_result.return_value = self.result
+        # Make copy_edit_pass return None so it falls back to pass-1 result
+        routes.copy_edit_pass.return_value = None
         for enabled in (False, True):
             result = routes.shizzalise_data(routes.ShizzRequest(title='source', description='', extract='source', generate_images=enabled), 'alice', 'alice')
             self.assertIn('rewrite_id', result)

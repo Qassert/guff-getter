@@ -1,3 +1,4 @@
+from newsmuncher.services.word_shuffle import BANK_FILES, read_bank, shared_bags
 from newsmuncher.utils.source_preprocessing import preserve_source_text, preprocess_source, replacement_guidance, filter_word_banks
 from newsmuncher.config import ENV_FILE, WORDS_DIR
 import os, re, random, json
@@ -148,7 +149,9 @@ def load_random_words(NumberOfWords):
     random_words = {}
     for category, filename in CSV_FILES.items():
         file_path = os.path.join(WORDS_FOLDER, filename)
-        random_words[category] = extract_unique_words(file_path, NumberOfWords)  # removed category
+        random_words[category] = (shared_bags().draw(category, read_bank(file_path), NumberOfWords)
+                                  if category in BANK_FILES else
+                                  extract_unique_words(file_path, NumberOfWords))
     print(f"[DEBUG] Looking for word files in: {WORDS_FOLDER}")
     for category, filename in CSV_FILES.items():
         file_path = os.path.join(WORDS_FOLDER, filename)
@@ -282,6 +285,7 @@ def prepare_prompt(entry, NumberOfWords, prompt_template):
 
     return {
         "full_prompt": full_prompt,
+        "contenders": random_words,
         "preprocessing": preprocessing,  # Local only; never passed to send_prompt().
         "title_to_change": title_to_change,
         "extract_to_change": extract_to_change
@@ -358,52 +362,85 @@ def format_shizzalise_result(response_data):
         return None
 
 
-def correct_grammar(response_data):
-    """
-    Sends the initial response to the OpenAI API for grammar correction.
+def copy_edit_pass(pass1_result):
+    """Second AI pass: copy-edit pass-1 output only.
 
-    Args:
-        response_data (dict): The initial response data to correct.
+    Receives ONLY the title and extract produced by pass 1.  The original
+    source text is never included.  The purpose is to fix grammar, broken
+    sentence structure, subject-verb agreement, and flow while preserving
+    all absurdity, bizarre events, rude/slang words, strange names, surreal
+    imagery, invented relationships, and overall ridiculousness.
 
-    Returns:
-        dict: A dictionary containing the sanitized and corrected response.
-              Returns None if there's an error.
+    The model is instructed to act as a highly competent copy editor who
+    accepts that every insane thing in the article is completely true.
+
+    Parameters
+    ----------
+    pass1_result : dict
+        Must contain 'crazyReplacement1Title' and 'crazyReplacement1Extract'
+        (the sanitised pass-1 output from format_shizzalise_result).
+
+    Returns
+    -------
+    dict | None
+        A result dict in the same schema as format_shizzalise_result, or
+        None if the call fails.  The caller falls back to pass1_result on None.
     """
+    title = pass1_result.get('crazyReplacement1Title', '')
+    extract = pass1_result.get('crazyReplacement1Extract', '')
+    if not title or not extract:
+        return None
+
+    system_prompt = (
+        "You are a highly competent copy editor. "
+        "Your task is to improve the grammar, sentence structure, subject-verb agreement, "
+        "flow and readability of the text you are given. "
+        "You must accept that every single event, person, object and situation in the text "
+        "is completely and literally true. "
+        "Do NOT make the story sensible, sanitise it, revert it toward normal journalism, "
+        "remove any weird or absurd details, or explain any jokes. "
+        "Preserve: absurdity, bizarre events, rude or slang words, strange names, "
+        "surreal imagery, invented relationships and details, and overall ridiculousness. "
+        "Fix only: grammar, broken sentence structure, agreement, flow and readability. "
+        "Return the result as JSON with 'title' and 'extract' keys. "
+        "Do not add commentary, markdown or code fences."
+    )
+
+    user_content = json.dumps({'title': title, 'extract': extract}, ensure_ascii=False)
+
     try:
-        # Secondary call to correct grammar and pluralization
         with OpenAI(max_retries=0, timeout=30.0) as client:
-            corrected_response = client.responses.create(
+            response = client.responses.create(
                 model="gpt-5.6-luna",
                 input=[
-                    {"role": "system", "content": "You are an assistant that corrects grammar, spelling, case and pluralization in JSON text."},
-                    {"role": "user", "content": json.dumps(response_data)}
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_content},
                 ],
                 reasoning={"effort": "none"},
                 text={"format": JSON_FORMAT},
-                max_output_tokens=250,
+                max_output_tokens=750,
                 store=False,
             )
 
-        if corrected_response.status != "completed":
-            raise ValueError("OpenAI grammar response was incomplete.")
+        if response.status != "completed":
+            raise ValueError("Copy-edit response was incomplete.")
 
-        corrected_content = corrected_response.output_text
-        corrected_data = json.loads(corrected_content)
+        corrected = json.loads(response.output_text)
 
         print("\n********************************")
-        print("[DEBUG] Corrected Response Data:")
-        print(json.dumps(corrected_data, indent=4))
+        print("[DEBUG] Copy-edit pass 2 output:")
+        print(json.dumps(corrected, indent=4))
         print("********************************\n")
 
         return {
-            "crazyReplacement1Title": sanitize_text(corrected_data["title"]),
-            "crazyReplacement1Extract": sanitize_text(corrected_data["extract"]),
+            "crazyReplacement1Title": sanitize_text(corrected["title"]),
+            "crazyReplacement1Extract": sanitize_text(corrected["extract"]),
             "crazyReplacement1done": True,
             "flagForDeleteCount": 0,
             "flagForFunnyCount": 0,
-            "chatHistory": []
+            "chatHistory": [],
         }
 
-    except Exception as e:
-        print(f"Error correcting grammar: {e}")
+    except Exception as exc:
+        print(f"Copy-edit pass 2 failed (falling back to pass 1): {exc}")
         return None
