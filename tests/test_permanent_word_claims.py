@@ -41,11 +41,34 @@ class AtomicCollection:
                 raise DuplicateKeyError('duplicate')
             self.docs[doc['_id']] = deepcopy(doc)
 
+    def find_one_and_update(self, query, update, return_document):
+        from pymongo import ReturnDocument
+        assert return_document == ReturnDocument.AFTER
+        available, count = update[0]['$set']['last_claim']['$slice']
+        assert query['$expr'] == {'$gte': [{'$size': available}, count]}
+        words = available['$filter']['input']['$literal']
+        with self.lock:
+            doc = self.docs.get(query['_id'])
+            if doc is None or 'claimed_words' not in doc:
+                return None
+            unused = [w for w in words if w not in doc['claimed_words']]
+            if len(unused) < count:
+                return None
+            doc['last_claim'] = unused[:count]
+            doc['claimed_words'].extend(doc['last_claim'])
+            doc['version'] = doc.get('version', 0) + 1
+            return deepcopy(doc)
+
     def update_one(self, query, update):
         with self.lock:
             doc = self.docs.get(query['_id'])
             if doc is None:
                 return Mock(modified_count=0)
+            if query.get('claimed_words') == {'$exists': False} and 'claimed_words' in doc:
+                return Mock(modified_count=0)
+            for key in ('cursor', 'cycle', 'source_sha256'):
+                if key in query and doc.get(key) != query[key]:
+                    return Mock(modified_count=0)
             # Check optimistic‑concurrency version
             if query.get('version') is not None and doc.get('version') != query['version']:
                 return Mock(modified_count=0)
@@ -74,6 +97,20 @@ class PermanentClaimsTests(unittest.TestCase):
     def _digest(self, words):
         return hashlib.sha256(json.dumps(sorted(words), ensure_ascii=False).encode()).hexdigest()
 
+    def test_legacy_cursor_without_history_fails_closed(self):
+        for cycle in (1, 2):
+            old = {'_id':'legacy', 'words':['a','b'], 'cursor':1,
+                   'size':2, 'cycle':cycle, 'source_sha256':'old'}
+            self.db.docs['legacy'] = deepcopy(old)
+            with self.assertRaisesRegex(RuntimeError, 'historical claim recovery'):
+                self.claims.draw('legacy', ['a','b','new'], 1)
+            self.assertEqual(self.db.docs['legacy'], old)
+
+    def test_duplicate_and_dollar_prefixed_vocabulary(self):
+        self.assertEqual(self.claims.draw('bank', ['$word','$word','b'], 2), ['$word','b'])
+        with self.assertRaises(BankExhaustedError):
+            self.claims.draw('bank', ['$word','b'], 1)
+
     def test_basic_claim_and_exhaustion(self):
         """Words are claimed permanently; exhaustion raises BankExhaustedError."""
         words = ['a', 'b', 'c', 'd', 'e']
@@ -83,7 +120,7 @@ class PermanentClaimsTests(unittest.TestCase):
         # Bank is now exhausted in current vocabulary
         with self.assertRaises(BankExhaustedError) as cm:
             self.claims.draw('bank', words, 1)
-        self.assertIn("has 0 unclaimed word(s)", str(cm.exception))
+        self.assertIn("insufficient unclaimed", str(cm.exception))
 
     def test_claim_persists_across_vocabulary_changes(self):
         """A claimed word stays claimed even if CSV changes."""
@@ -213,31 +250,20 @@ class PermanentClaimsTests(unittest.TestCase):
         # Zero count is allowed and returns empty list
         self.assertEqual(self.claims.draw('bank', ['word'], 0), [])
 
-    def test_version_field_prevents_race_conditions(self):
-        """Optimistic concurrency (version field) prevents lost updates."""
-        words = ['a', 'b', 'c']
-        # Simulate concurrent modification by mocking update_one to fail first attempt
-        mock_collection = Mock()
-        doc = {'_id': 'bank', 'claimed_words': [], 'known_vocabulary_digest': self._digest(words), 'version': 1}
-        mock_collection.find_one.return_value = doc
-        
-        # First update attempt fails (simulating concurrent modification)
-        mock_collection.update_one.side_effect = [
-            Mock(modified_count=0),  # first attempt fails
-            Mock(modified_count=1),  # second succeeds
-        ]
-        
-        claims = PermanentWordClaims(mock_collection, shuffle=lambda x: None)
-        result = claims.draw('bank', words, 1, max_attempts=5)
-        self.assertEqual(result, ['a'])
-        # Should have called update_one twice (retry)
-        self.assertEqual(mock_collection.update_one.call_count, 2)
+    def test_selection_is_atomic_without_reading_unused_words(self):
+        db = Mock()
+        db.find_one_and_update.return_value = {'last_claim': ['b']}
+        result = PermanentWordClaims(db, shuffle=lambda x: None).draw('bank', ['a','b'], 1)
+        self.assertEqual(result, ['b'])
+        db.find_one.assert_not_called()
+        db.update_one.assert_not_called()
+        db.find_one_and_update.assert_called_once()
 
     def test_database_failure_does_not_fall_back(self):
         """If the database operation fails, the caller receives the error."""
         from unittest.mock import Mock
         db = Mock()
-        db.find_one.side_effect = RuntimeError('offline')
+        db.find_one_and_update.side_effect = RuntimeError('offline')
         db.insert_one = Mock()
         with self.assertRaises(RuntimeError):
             PermanentWordClaims(db).draw('a', ['one'], 1)

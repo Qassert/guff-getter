@@ -116,10 +116,27 @@ class CopyEditPassTests(unittest.TestCase):
             result = copy_edit_pass(bad_result)
             self.assertIsNone(result, f"Should return None for {bad_result}")
 
-    def test_copy_edit_pass_integration_with_previews(self):
-        """Verify that the previews route falls back to pass‑1 when copy‑edit returns None.
+    def test_empty_polish_is_rejected(self):
+        mocked, client = self._mock_openai(response_json={'title':' ', 'extract':'body'})
+        with patch('newsmuncher.utils.clean_data.OpenAI', new=mocked):
+            self.assertIsNone(copy_edit_pass(self.pass1_result))
 
-        This integration is already covered by the existing test_image_generation.py
-        tests which mock the previews module.
-        """
-        pass
+    def test_copy_edit_pass_integration_with_previews(self):
+        import test_image_generation as fixtures
+        fixture = fixtures.ImageTests()
+        fixture.setUp()
+        try:
+            routes = fixture.previews()
+            routes.prepare_prompt.return_value = {'full_prompt':'masked', 'preprocessing':None}
+            routes.send_prompt.return_value = {'title':'crazy', 'extract':'crazy body'}
+            first = {k:v for k,v in fixture.result.items() if k.startswith('crazy')}
+            routes.format_shizzalise_result.return_value = first
+            for polished in (None, {**first, 'crazyReplacement1Title':'Polished'}):
+                routes.copy_edit_pass.return_value = polished
+                result = routes.shizzalise_data(routes.ShizzRequest(title='ORIGINAL',description='',extract='SECRET'), 'alice','alice')
+                routes.copy_edit_pass.assert_called_with(first)
+                self.assertNotIn('ORIGINAL', str(routes.copy_edit_pass.call_args))
+                self.assertEqual(result['crazyReplacement1Title'], (polished or first)['crazyReplacement1Title'])
+        finally:
+            fixture.tearDown()
+            fixture.doCleanups()

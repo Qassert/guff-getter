@@ -432,14 +432,7 @@ def copy_edit_pass(pass1_result):
         print(json.dumps(corrected, indent=4))
         print("********************************\n")
 
-        return {
-            "crazyReplacement1Title": sanitize_text(corrected["title"]),
-            "crazyReplacement1Extract": sanitize_text(corrected["extract"]),
-            "crazyReplacement1done": True,
-            "flagForDeleteCount": 0,
-            "flagForFunnyCount": 0,
-            "chatHistory": [],
-        }
+        return format_shizzalise_result(corrected)
 
     except Exception as exc:
         print(f"Copy-edit pass 2 failed (falling back to pass 1): {exc}")

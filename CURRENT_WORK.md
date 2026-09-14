@@ -1,5 +1,5 @@
 STATUS: REVIEW
-OWNER: KIRO
+OWNER: CODEX
 BRANCH: feature/global-word-shuffle
 LAST_COMPLETED_FEATURE: Fix duplicate jingle controls after refresh
 LAST_COMPLETED_COMMIT: :/^Fix duplicate jingle controls after refresh
@@ -15,7 +15,8 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 
 CURRENT_TASK: (1) Remove visible contender words, (2) permanent global one-time word use, (3) second AI copy-editing pass
 
-REVIEW_SUMMARY: Implemented: removed floating contender UI; changed word claims from cycling to permanent one-time global use (exhaustion raises BankExhaustedError, no recycling); added second AI copy-editing pass (pass-2 receives only pass-1 output, preserves absurdity, fallback to pass-1 on failure). All 110 tests pass.
-VALIDATION: 9 updated word-shuffle tests, 3 contender-frontend tests, 7 new copy-edit-pass tests; full suite passes.
-APPROVAL: Implementation authorized; commit/push explicitly withheld pending review.
-NEXT_STEP: Review WORD_SHUFFLE_STATUS.md and uncommitted diff.
+REVIEW_SUMMARY: Preserved historical ledger; moved claim selection into atomic Mongo pipeline;
+  legacy cursor-only history fails closed; rejected empty polished output; verified no contender UI.
+VALIDATION: 25 targeted tests passed; full suite: 116 passed (one run).
+APPROVAL: Local review checkpoint authorized; do not push without approval.
+NEXT_STEP: Review checkpoint. Legacy cursor/reset documents require historical recovery before use.
