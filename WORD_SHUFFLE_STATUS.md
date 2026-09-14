@@ -63,3 +63,22 @@ produces the explicit history-recovery error without modifying the document.
 Valid ledgers missing optional metadata continue working, preserving all claims.
 16 targeted tests and full 118-test suite passed offline. No real MongoDB data,
 CSVs, or main were modified; no migration or generation performed.
+
+## Authorized real-data migration — 2026-09-14
+
+Re-read all five legacy banks; exact stored array hashes, fields, cycle=1, cursor=80,
+sizes and current CSV fingerprints matched the read-only inspection. Canonical
+Extended JSON backup (BSON type-preserving) saved outside Git:
+/Users/andrewwhite/NewsMuncher-backups/newsmuncher-migration-20260914T163713Z/legacy-word-banks.ejson
+SHA256: 2eb2bfdfd056c98eed4260ef1e95aacbb8ee2379f8b82b1cab065e5b11c79173
+
+One snapshot/majority transaction conditionally added claimed_words=words[:80]
+and version=1 to slang, nouns, adverbs, animals and places. All original fields
+and arrays unchanged. Read-back verified exactly 80 unique claims per bank (400
+bank-specific claims). Read-only claim predicates accept all five banks; no draw
+or SHIZZALISE was performed. No database contents committed.
+16 targeted tests and full 118-test suite passed offline (full suite once).
+Ready for an explicitly authorized browser SHIZZALISE test; that test will consume
+new permanent claims and make two text-model calls. No such calls made here.
+Historical uncertainty predating the preserved experimental records remains as
+documented; this migration preserves every claim provable from those records.

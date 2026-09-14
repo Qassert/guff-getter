@@ -15,8 +15,8 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 
 CURRENT_TASK: (1) Remove visible contender words, (2) permanent global one-time word use, (3) second AI copy-editing pass
 
-REVIEW_SUMMARY: Guarded aggregation array operands against missing/null/scalar legacy claimed_words.
-  Invalid ledgers remain unmodified and fail closed pending historical recovery.
-VALIDATION: 16 targeted word-claim tests; full suite 118 passed (one run), all offline.
-APPROVAL: Small local checkpoint authorized; no push authorized.
-NEXT_STEP: Review checkpoint. Legacy banks still require historical recovery; no real database migration performed.
+REVIEW_SUMMARY: Authorized five-bank migration completed atomically; 80 proven claims per bank preserved.
+  Original fields unchanged; backup outside Git documented in WORD_SHUFFLE_STATUS.md.
+VALIDATION: 16 targeted tests; full suite 118 passed (one run); read-only claim predicates accept all banks.
+APPROVAL: Migration and local docs checkpoint authorized; no generation or push performed.
+NEXT_STEP: Review; ready for separately authorized browser SHIZZALISE test.
