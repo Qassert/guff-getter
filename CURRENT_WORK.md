@@ -15,8 +15,8 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 
 CURRENT_TASK: (1) Remove visible contender words, (2) permanent global one-time word use, (3) second AI copy-editing pass
 
-REVIEW_SUMMARY: Preserved historical ledger; moved claim selection into atomic Mongo pipeline;
-  legacy cursor-only history fails closed; rejected empty polished output; verified no contender UI.
-VALIDATION: 25 targeted tests passed; full suite: 116 passed (one run).
-APPROVAL: Local review checkpoint authorized; do not push without approval.
-NEXT_STEP: Review checkpoint. Legacy cursor/reset documents require historical recovery before use.
+REVIEW_SUMMARY: Guarded aggregation array operands against missing/null/scalar legacy claimed_words.
+  Invalid ledgers remain unmodified and fail closed pending historical recovery.
+VALIDATION: 16 targeted word-claim tests; full suite 118 passed (one run), all offline.
+APPROVAL: Small local checkpoint authorized; no push authorized.
+NEXT_STEP: Review checkpoint. Legacy banks still require historical recovery; no real database migration performed.

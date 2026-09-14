@@ -51,3 +51,15 @@ Copy-edit model calls mocked. No live services or generated media.
   Existing claimed_words ledger integrity and persistent database/backups are required.
 - Copy-edit preservation is prompt-based; it cannot guarantee semantic fidelity.
   A successful rewrite incurs two text calls; none were made live during this work.
+
+## Legacy missing-array runtime fix
+
+The second operand of $in was unguarded $claimed_words. MongoDB may evaluate
+$expr before its sibling $type predicate, causing findAndModify to fail on legacy
+records. $cond/$isArray now supplies a safe array to $in and $setUnion. The type
+predicate still rejects invalid ledgers: the empty expression fallback is NOT a
+new unused ledger and does not authorize claims. Missing/null/scalar history
+produces the explicit history-recovery error without modifying the document.
+Valid ledgers missing optional metadata continue working, preserving all claims.
+16 targeted tests and full 118-test suite passed offline. No real MongoDB data,
+CSVs, or main were modified; no migration or generation performed.

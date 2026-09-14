@@ -49,9 +49,16 @@ class AtomicCollection:
         words = available['$filter']['input']['$literal']
         with self.lock:
             doc = self.docs.get(query['_id'])
-            if doc is None or 'claimed_words' not in doc:
+            if doc is None:
                 return None
-            unused = [w for w in words if w not in doc['claimed_words']]
+            # Model $expr evaluation BEFORE the ordinary type predicate, as Mongo may.
+            operand = available['$filter']['cond']['$not'][0]['$in'][1]
+            assert operand == {'$cond': [{'$isArray': '$claimed_words'}, '$claimed_words', []]}
+            ledger = doc.get('claimed_words')
+            safe_ledger = ledger if isinstance(ledger, list) else []
+            unused = [w for w in words if w not in safe_ledger]
+            if not isinstance(ledger, list):
+                return None
             if len(unused) < count:
                 return None
             doc['last_claim'] = unused[:count]
@@ -105,6 +112,22 @@ class PermanentClaimsTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'historical claim recovery'):
                 self.claims.draw('legacy', ['a','b','new'], 1)
             self.assertEqual(self.db.docs['legacy'], old)
+
+    def test_incomplete_ledgers_fail_closed_without_losing_history(self):
+        for extra in ({}, {'claimed_words': None}, {'claimed_words': 'used'}):
+            old = {'_id':'legacy', 'words':['used','unused'], 'cursor':1,
+                   'size':2, 'source_sha256':'old', **extra}
+            self.db.docs['legacy'] = deepcopy(old)
+            with self.assertRaisesRegex(RuntimeError, 'historical claim recovery'):
+                self.claims.draw('legacy', ['used','unused','new'], 1)
+            self.assertEqual(self.db.docs['legacy'], old)
+
+    def test_valid_history_without_optional_metadata_is_preserved(self):
+        self.db.docs['bank'] = {'_id':'bank', 'claimed_words':['used']}
+        self.assertEqual(self.claims.draw('bank', ['used','new'], 1), ['new'])
+        self.assertEqual(self.db.docs['bank']['claimed_words'], ['used','new'])
+        with self.assertRaises(BankExhaustedError):
+            PermanentWordClaims(self.db).draw('bank', ['used','new'], 1)
 
     def test_duplicate_and_dollar_prefixed_vocabulary(self):
         self.assertEqual(self.claims.draw('bank', ['$word','$word','b'], 2), ['$word','b'])

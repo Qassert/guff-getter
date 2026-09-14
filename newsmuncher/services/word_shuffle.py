@@ -65,13 +65,16 @@ class PermanentWordClaims:
         for _ in range(max_attempts):
             # Both eligibility and selection are evaluated against the current ledger
             # by MongoDB in the same atomic operation. Literal protects '$'-prefixed words.
+            # Query predicates do not short-circuit $expr evaluation. Keep array
+            # operators safe even for rejected missing/null/scalar legacy ledgers.
+            safe_claimed = {'$cond': [{'$isArray': '$claimed_words'}, '$claimed_words', []]}
             available = {'$filter': {'input': {'$literal': vocabulary}, 'as': 'word',
-                'cond': {'$not': [{'$in': ['$$word', '$claimed_words']}]}}}
+                'cond': {'$not': [{'$in': ['$$word', safe_claimed]}]}}}
             result = self.collection.find_one_and_update(
                 {'_id': bank, 'claimed_words': {'$type': 'array'},
                  '$expr': {'$gte': [{'$size': available}, count]}},
                 [{'$set': {'last_claim': {'$slice': [available, count]}}},
-                 {'$set': {'claimed_words': {'$setUnion': ['$claimed_words', '$last_claim']},
+                 {'$set': {'claimed_words': {'$setUnion': [safe_claimed, '$last_claim']},
                            'known_vocabulary_digest': digest,
                            'version': {'$add': [{'$ifNull': ['$version', 0]}, 1]}}}],
                 return_document=ReturnDocument.AFTER)
@@ -80,7 +83,7 @@ class PermanentWordClaims:
             state = self.collection.find_one({'_id': bank})
             if state is None:
                 raise RuntimeError('Word ledger disappeared; refusing to recreate claim history')
-            if 'claimed_words' in state:
+            if isinstance(state.get('claimed_words'), list):
                 raise BankExhaustedError(f"Bank '{bank}' has insufficient unclaimed words for {count}; never recycled.")
             # Old cursor/reset records cannot prove the full historical used set.
             # Fail closed rather than make an erased claim available again.
