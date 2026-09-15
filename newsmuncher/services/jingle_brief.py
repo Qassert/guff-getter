@@ -6,6 +6,47 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from newsmuncher.config import ENV_FILE
 from jingle_service.contract import MusicBrief
+import random
+
+# Approved genre pool for random selection
+GENRES = [
+    "Drum and Bass",
+    "Opera",
+    "Heavy Metal",
+    "Jazz",
+    "Synthwave",
+    "Reggae",
+    "Flamenco",
+    "Techno",
+    "Gospel",
+    "Ambient",
+    "Neurofunk",
+    "Speed Garage",
+    "Liquid Funk",
+    "Jump Up",
+    "Footwork",
+    "Jungle",
+    "Tech House",
+    "Deep House",
+    "Acid House",
+    "Psytrance",
+    "Uplifting Trance",
+    "Hardstyle",
+    "Gabber",
+    "Dubstep",
+    "Riddim",
+    "Glitch Hop",
+    "Breakbeat",
+    "Big Beat",
+    "UK Funky",
+    "Grime",
+    "2-Step Garage",
+    "Hardcore",
+    "Frenchcore",
+    "Minimal Techno",
+    "Electro Swing",
+]
+
 
 
 def create_jingle_brief(entry):
@@ -43,6 +84,12 @@ def create_jingle_brief(entry):
     if response.status != "completed":
         raise ValueError("Jingle brief was incomplete; no music generation started.")
     brief = MusicBrief.model_validate_json(response.output_text)
+    # Randomly choose a genre and prepend it, then append a short description of the rewritten content
+    genre = random.choice(GENRES)
+    # Build a concise description of the rewritten news story
+    story_desc = f"Story subject: {title}. {body}".strip()
+    brief.music_prompt = f"{genre}. {brief.music_prompt}. {story_desc}"
+    usage = response.usage
     usage = response.usage
     return brief, {
         "model": response.model,
