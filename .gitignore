@@ -55,3 +55,6 @@ dist/
 
 # Temporary standalone TTS comparison output
 /data/tts-comparison/
+
+# Saved-item narration MP3s and incomplete local writes
+/data/generated_narration/

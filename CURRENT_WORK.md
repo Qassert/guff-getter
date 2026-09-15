@@ -13,13 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Temporary standalone TTS comparison harness (mocked validation only)
+CURRENT_TASK: On-demand saved-item narration (OpenAI TTS; mocked validation only)
 
-REVIEW_SUMMARY: Authorized five-bank migration completed atomically; 80 proven claims per bank preserved.
-  Original fields unchanged; backup outside Git documented in WORD_SHUFFLE_STATUS.md.
-VALIDATION: 16 targeted tests; full suite 118 passed (one run); read-only claim predicates accept all banks.
-APPROVAL: Migration and local docs checkpoint authorized; no generation or push performed.
-NEXT_STEP: Review; ready for separately authorized browser SHIZZALISE test.
+REVIEW_SUMMARY: On-demand OpenAI narration ready for review; comparison harness preserved.
+VALIDATION: 68 targeted pytest tests and 9 subtests passed; no live generation/services.
+APPROVAL: Commit/push of current feature branch authorized; no live speech authorized.
+NEXT_STEP: Andy may test a single READ ALOUD after nominating a rewrite (paid speech call).
 
 ## Image style wording refinement
 
@@ -48,3 +47,54 @@ VALIDATION: 7 targeted mocked tests passed; no synthesis/provider API calls made
 STATUS: REVIEW / CODEX; user authorized committing and pushing this harness.
 Earlier image-style changes are already committed; older uncommitted wording above
 is historical. No unrelated files changed in this harness task.
+
+
+## On-demand saved-item narration — 2026-09-15
+
+Shared provider: newsmuncher/services/openai_tts.py (gpt-4o-mini-tts, Cedar/Marin/Coral,
+random.choice, MP3, 60-second timeout, zero SDK retries). Comparison CLI still uses it.
+Only the READ ALOUD click sends POST /narrations/{entry_id}. JSON contains current
+visible response title/body, including open edit drafts, never original source text.
+Title punctuation/newline separation only; no additional text-model call.
+Nominate first; draft READ ALOUD stays disabled. After success PLAY and audio controls
+reuse backend audio. Saved narrations selector discovers existing audio with no
+sessionStorage requirement and never replaces the displayed rewrite. Late responses
+are guarded by UI revision. Generation never blocks SHIZZALISE/images/jingles.
+
+Mongo entries gain an optional narration object on the first explicit request:
+entry_id, status, voice, voice_name, model, provider, snapshot (title/body), storage_key,
+url, requested_at, generated_at on completion/recovery. No migration/backfill or live
+DB operations performed during development. Exact Mongo _id is the stable identity;
+rewrite lookup rejects legacy duplicate matches. Existing pet ownership checks apply.
+Atomic update conditional on absent narration, acknowledged with majority write concern,
+claims once across workers. A failure/uncertain response leaves the durable claim and
+never retries synthesis. Missing keys/invalid text fail before claiming. Claims are
+not expiring locks. Operators must investigate failed/interrupted claims; there is
+intentionally no regenerate/reset UI or automatic retry.
+
+Files: data/generated_narration/<entry_id>.mp3, ignored; temporary .part files atomically
+published. GET status repairs completion metadata from owned files without synthesis.
+Authenticated GET /narrations/{entry_id}/audio uses FileResponse (200/206/416 tested).
+Mongo metadata and files both need durable backups; multiple hosts must share this
+filesystem. Lost files remain unavailable rather than causing another paid call.
+Deletion during generation is checked before file publication/metadata completion.
+Existing files after later entry deletion are inaccessible through the authenticated
+endpoint but may remain on disk for operator cleanup; no unrelated deletion refactor.
+Narration snapshot is immutable; later nomination edits report text_changed and do not
+regenerate. UI can narrate unsaved response edits without altering the nomination.
+Input limited to 3500 combined title/body characters; longer text is rejected, not cut.
+
+Manual test (requires OPENAI_API_KEY in environment/root .env):
+1. Start: .venv/bin/python -m uvicorn newsmuncher.main:app --reload --host 127.0.0.1 --port 8000
+2. Log in/select your pet; use a rewrite and NOMINATE it. Optional response edits can
+   be made before READ ALOUD. Generating a new rewrite separately invokes paid text APIs.
+3. Click READ ALOUD once, wait for PLAY narration and Voice label; play via button/audio.
+4. Reload: PLAY remains available. In a fresh browser session select the same pet and
+   use Saved narrations; no speech call occurs. Repeated POSTs also reuse existing state.
+
+Validation command:
+./.venv/bin/python -m pytest tests/test_narration.py tests/test_compare_tts.py tests/test_image_generation.py tests/test_jingle_frontend.py tests/test_jingles.py -q
+68 passed, 9 subtests passed; existing dependency deprecation warnings only.
+Includes mocked OpenAI/Mongo, JS syntax/behavior and Jinja rendering checks. No live
+OpenAI, MongoDB, image, jingle, Modal or ACE-Step calls; no real audio generated.
+No dependencies added. Main untouched. REVIEW / CODEX; commit/push authorized.

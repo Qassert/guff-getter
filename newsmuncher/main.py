@@ -8,6 +8,7 @@ from newsmuncher.api.pets import router as pet_router
 from newsmuncher.api.previews import router as temp_router
 
 from newsmuncher.api.jingles import router as jingle_router
+from newsmuncher.api.narrations import router as narration_router
 
 app = FastAPI()
 
@@ -29,6 +30,7 @@ class AudioFiles(StaticFiles):
 
 app.mount("/generated-audio", AudioFiles(directory=GENERATED_AUDIO_DIR), name="generated-audio")
 app.include_router(jingle_router)
+app.include_router(narration_router)
 
 # ✅ Include API routers properly
 app.include_router(main_api_router)

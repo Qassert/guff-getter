@@ -67,12 +67,23 @@
       </div>
       <p id="jingleMessage" role="status" aria-live="polite"></p>
     </div>
+  <button type="button" id="narrationButton" class="funky-button" onclick="narrationUI.act()" disabled>READ ALOUD</button>
   <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
   </div>
+  <div id="narrationControls" class="container">
+    <p id="narrationMessage" role="status" aria-live="polite">Nominate a rewrite to use READ ALOUD.</p>
+    <audio id="narrationAudio" controls preload="none" hidden style="max-width:100%"></audio>
+    <div id="savedNarrationControls" hidden>
+      <label for="savedNarrations">Saved narrations</label>
+      <select id="savedNarrations" style="max-width:100%"></select>
+      <button type="button" class="funky-button" onclick="narrationUI.playSaved()">PLAY saved narration</button>
+    </div>
+  </div>
+
 
 
 
 
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}

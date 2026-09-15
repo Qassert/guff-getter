@@ -17,13 +17,16 @@ class ComparisonTests(unittest.TestCase):
         self.output = Path(self.tmp.name) / 'tts-comparison'
         for target, kwargs in (
             ('OUTPUT_DIR', {'new': self.output}), ('load_dotenv', {}),
-            ('OpenAI', {}), ('requests.post', {}),
+            ('requests.post', {}),
         ):
             p = patch.object(tts, target, **kwargs) if '.' not in target else patch(
                 'scripts.compare_tts.' + target, **kwargs)
             mock = p.start()
             self.addCleanup(p.stop)
             setattr(self, target.replace('.', '_'), mock)
+        sdk = patch('newsmuncher.services.openai_tts.OpenAI')
+        self.OpenAI = sdk.start()
+        self.addCleanup(sdk.stop)
         env = patch.dict(os.environ, {key: 'test-key' for key in tts.KEYS.values()}, clear=True)
         env.start()
         self.addCleanup(env.stop)

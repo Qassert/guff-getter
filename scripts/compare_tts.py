@@ -10,10 +10,10 @@ import random
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from openai import OpenAI
 import requests
 
 from newsmuncher.config import DATA_DIR, ENV_FILE
+from newsmuncher.services.openai_tts import MODEL, VOICES, generate_openai
 
 SAMPLE_TEXT = (
     "Local councillor Nigel Cheeseboard has denied launching twelve ferrets into the "
@@ -23,25 +23,17 @@ OUTPUT_DIR = DATA_DIR / "tts-comparison"
 TIMEOUT = 60
 KEYS = {"openai": "OPENAI_API_KEY", "elevenlabs": "ELEVENLABS_API_KEY",
         "cartesia": "CARTESIA_API_KEY"}
-MODELS = {"openai": "gpt-4o-mini-tts", "elevenlabs": "eleven_multilingual_v2",
+MODELS = {"openai": MODEL, "elevenlabs": "eleven_multilingual_v2",
           "cartesia": "sonic-3.6"}
 CARTESIA_VERSION = "2026-08-14"
 # (Display label, API voice ID). Static pools: no paid/list-voices calls to select.
 VOICE_POOLS = {
-    "openai": (("Cedar", "cedar"), ("Marin", "marin"), ("Coral", "coral")),
+    "openai": VOICES,
     "elevenlabs": (("George", "JBFqnCBsd6RMkjVDRZzb"),
                    ("Rachel", "21m00Tcm4TlvDq8ikWAM")),
     "cartesia": (("Docs example voice", "db6b0ed5-d5d3-463d-ae85-518a07d3c2b4"),
                  ("Barbershop Man", "a0e99841-438c-4a64-b679-ae501e7d6091")),
 }
-
-
-def generate_openai(key, voice, text):
-    with OpenAI(api_key=key, max_retries=0, timeout=TIMEOUT) as client:
-        with client.audio.speech.with_streaming_response.create(
-            model=MODELS["openai"], voice=voice, input=text, response_format="mp3"
-        ) as response:
-            return response.read()
 
 
 def post_audio(url, headers, payload, **kwargs):
