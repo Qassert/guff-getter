@@ -87,8 +87,25 @@ def create_jingle_brief(entry):
     # Randomly choose a genre and prepend it, then append a short description of the rewritten content
     genre = random.choice(GENRES)
     # Build a concise description of the rewritten news story
-    story_desc = f"Story subject: {title}. {body}".strip()
-    brief.music_prompt = f"{genre}. {brief.music_prompt}. {story_desc}"
+    story_desc_full = f"Story subject: {title}. {body}".strip()
+    # Safe limit (including genre and existing prompt). Use a margin of 25 chars.
+    MAX_PROMPT_LEN = 575
+    # Fixed prefix (genre + existing AI prompt + separator)
+    prefix = f"{genre}. {brief.music_prompt}. "
+    remaining = MAX_PROMPT_LEN - len(prefix)
+    if remaining <= 0:
+        trimmed_story = ""
+    else:
+        # Prefer to keep only the title part if full description would exceed the budget
+        title_part = f"Story subject: {title}."
+        if len(story_desc_full) <= remaining:
+            trimmed_story = story_desc_full
+        elif len(title_part) <= remaining:
+            trimmed_story = title_part
+        else:
+            # Not enough room even for title – drop story description entirely
+            trimmed_story = ""
+    brief.music_prompt = f"{prefix}{trimmed_story}"
     usage = response.usage
     usage = response.usage
     return brief, {
