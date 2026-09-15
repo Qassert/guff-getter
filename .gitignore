@@ -52,3 +52,6 @@ dist/
 /checkpoints/
 /model_weights/
 .cache/
+
+# Temporary standalone TTS comparison output
+/data/tts-comparison/
