@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: On-demand saved-item narration (OpenAI TTS; mocked validation only)
+CURRENT_TASK: Isolated narration-reference jingle A/B experiment; no live generation
 
-REVIEW_SUMMARY: On-demand OpenAI narration ready for review; comparison harness preserved.
-VALIDATION: 68 targeted pytest tests and 9 subtests passed; no live generation/services.
-APPROVAL: Commit/push of current feature branch authorized; no live speech authorized.
-NEXT_STEP: Andy may test a single READ ALOUD after nominating a rewrite (paid speech call).
+REVIEW_SUMMARY: Isolated narration-reference A/B harness ready; no live experiment/deploy.
+VALIDATION: 47 targeted tests passed; provider/ACE-Step calls mocked.
+APPROVAL: Commit/push authorized; real A/B generation not authorized or performed.
+NEXT_STEP: Review, then deploy updated Modal code before a separately authorized A/B run.
 
 ## Image style wording refinement
 
@@ -98,3 +98,51 @@ Validation command:
 Includes mocked OpenAI/Mongo, JS syntax/behavior and Jinja rendering checks. No live
 OpenAI, MongoDB, image, jingle, Modal or ACE-Step calls; no real audio generated.
 No dependencies added. Main untouched. REVIEW / CODEX; commit/push authorized.
+
+
+## Isolated narration-reference jingle A/B — 2026-09-15
+
+scripts/compare_jingle_reference.py defaults to dry-run; --run explicitly opts into
+at most two single-attempt Modal POSTs. No OpenAI/TTS imports or calls. Reads existing
+narration at data/generated_narration/<entry_id>.mp3 and brief from read-only SQLite
+(data/previews/jingles.sqlite3, jingles.state.brief for same entry ID). If unavailable,
+--brief-json PATH accepts an existing exported MusicBrief JSON containing music_prompt,
+lyrics, duration_seconds. No brief generation, genre redraw, Mongo access or production
+writes. Narration may reflect earlier/unsaved edits: operator must choose matching inputs.
+
+Both variants retain caption/genre, lyrics, duration, turbo model, 8 steps, English,
+LM disabled, output settings and fixed seed (default 1729). Only B adds reference.
+GenerationConfig uses use_random_seed=False,seeds=[seed]; Python random is seeded for
+reference segment sampling. src_audio and audio_cover_strength are never set.
+
+Contract optional experimental namespace/seed/base64/SHA256 fields are validated;
+reference requires strict base64, <=2 MB decoded MP3 and matching SHA256. Modal stages
+reference inside TemporaryDirectory, checks codec and 0<duration<=120 via ffprobe,
+then passes reference_audio to text2music. Cleanup occurs on success/failure. No
+fallback generation without reference if validation fails. Full decoder/silence
+validation still belongs to ACE-Step; that validation can fail after A succeeds.
+
+Production marker shape/default inference settings remain unchanged. Experimental
+files/markers use /results/experiments/narration-reference-v1/<request_uuid>.*. IDs
+are deterministic and derived from entry ID, brief, seed, reference hash and A/B label;
+not production IDs. Markers record checksum instead of base64. Existing complete
+requests return cached audio; changed-input or uncertain attempts fail closed.
+Untracked audio is never overwritten. Local outputs/attempt manifest are ignored at
+data/jingle-reference-comparison/<input-hash>/{A.mp3,B.mp3,attempt.json}. Exclusive
+pair-directory creation before requests prevents repeated/concurrent CLI runs from
+spending again; interrupted runs require inspection, not deletion/retry guessing.
+
+Commands from repository root (replace ENTRY_ID with the same nominated item's ID):
+./.venv/bin/python -m scripts.compare_jingle_reference --entry-id ENTRY_ID --seed 1729 --dry-run
+./.venv/bin/python -m scripts.compare_jingle_reference --entry-id ENTRY_ID --seed 1729 --run
+The second command is for a future explicitly authorized A/B run only. It expects
+MODAL_JINGLE_ENDPOINT, MODAL_JINGLE_KEY, MODAL_JINGLE_SECRET in environment/root .env.
+Updated jingle_service/modal_app.py must be deployed first; no deployment performed.
+Existing deployment will reject new experiment fields. No UI or production lifecycle
+integration. Comparison output must not be promoted/attached to production entries.
+
+Targeted command: ./.venv/bin/python -m pytest tests/test_jingle_reference.py tests/test_jingles.py -q
+47 passed; two existing dependency deprecation warnings. Endpoint tests execute its
+actual body with mocked Modal/ACE-Step/subprocess boundaries, verify cache compatibility,
+fixed A/B inputs, production isolation and temporary cleanup. No live provider or
+GPU calls. No actual audio generated. Main untouched. REVIEW / CODEX.

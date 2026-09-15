@@ -65,12 +65,15 @@ class JingleGenerator:
         from acestep.inference import GenerationParams, GenerationConfig, generate_music
         import subprocess
 
-        request = GenerationRequest.model_validate(payload)
-        identifier = str(request.request_id)
-        audio = Path("/results") / f"{identifier}.mp3"
+        try:
+            request = GenerationRequest.model_validate(payload)
+        except ValueError:
+            raise HTTPException(422, "Invalid generation request or reference audio.") from None
+        audio = request.output_path("/results")
         marker = audio.with_suffix(".json")
         outputs.reload()
-        brief = request.model_dump(mode="json")
+        audio.parent.mkdir(parents=True, exist_ok=True)
+        brief = request.marker_request()
         if marker.exists():
             prior = json.loads(marker.read_text())
             if prior["request"] != brief:
@@ -80,19 +83,40 @@ class JingleGenerator:
                                 headers={"X-Jingle-Cached": "true"})
             raise HTTPException(409, "Previous outcome uncertain; inspect Modal logs. Do not resubmit with a new ID.")
 
+        if audio.exists():
+            raise HTTPException(409, "Untracked audio exists; refusing overwrite.")
+
         # Durable marker before inference: interrupted attempts never silently regenerate.
         with marker.open("x") as stream:
             json.dump({"request": brief, "status": "started"}, stream)
         outputs.commit()
         start = time.monotonic()
         with tempfile.TemporaryDirectory() as temporary:
+            reference_path = request.write_reference(temporary)
+            experimental_params = {}
+            experimental_config = {}
+            if request.experiment:
+                import random
+                random.seed(request.seed)  # Reference segment sampling is Python-random based.
+                experimental_params = {"task_type": "text2music", "seed": request.seed,
+                                       "reference_audio": reference_path}
+                experimental_config = {"use_random_seed": False, "seeds": [request.seed]}
+            if reference_path:
+                # Decode/probe before inference; malformed data never falls back to a no-reference run.
+                probe = json.loads(subprocess.check_output(
+                    ["ffprobe", "-v", "error", "-show_entries", "format=duration:stream=codec_name",
+                     "-of", "json", reference_path], text=True, timeout=10))
+                duration = float(probe.get("format", {}).get("duration", 0))
+                if not 0 < duration <= 120 or not any(
+                        stream.get("codec_name") == "mp3" for stream in probe.get("streams", [])):
+                    raise HTTPException(422, "Invalid reference MP3 duration/codec.")
             result = generate_music(
                 self.handler, None,
                 GenerationParams(caption=request.music_prompt, lyrics=request.lyrics,
                                  duration=request.duration_seconds, vocal_language="en",
                                  thinking=False, use_cot_metas=False, use_cot_caption=False,
-                                 use_cot_language=False, inference_steps=8),
-                GenerationConfig(batch_size=1, audio_format="wav"),
+                                 use_cot_language=False, inference_steps=8, **experimental_params),
+                GenerationConfig(batch_size=1, audio_format="wav", **experimental_config),
                 save_dir=temporary,
             )
             if not result.success or len(result.audios) != 1:

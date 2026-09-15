@@ -58,3 +58,6 @@ dist/
 
 # Saved-item narration MP3s and incomplete local writes
 /data/generated_narration/
+
+# Isolated narration-reference A/B experiment outputs and attempt records
+/data/jingle-reference-comparison/
