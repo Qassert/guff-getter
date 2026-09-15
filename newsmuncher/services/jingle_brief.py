@@ -3,7 +3,8 @@ import json
 import os
 
 from dotenv import load_dotenv
-from openai import OpenAI
+import openai
+OpenAI = getattr(openai, "OpenAI", None)  # Alias for OpenAI client
 from newsmuncher.config import ENV_FILE
 from jingle_service.contract import MusicBrief
 import random
@@ -99,7 +100,7 @@ def create_jingle_brief(entry):
     story_desc_full = f"Story subject: {title}. {body}".strip()
     MAX_PROMPT_LEN = 575
     # Prefix includes explicit primary genre cue and the AI-generated music_prompt
-    prefix = f"PRIMARY GENRE: {genre}. {brief.music_prompt}. "
+    prefix = f"{genre}. {brief.music_prompt}. "
     remaining = MAX_PROMPT_LEN - len(prefix)
     if remaining <= 0:
         trimmed_story = ""
