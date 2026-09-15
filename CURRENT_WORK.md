@@ -20,3 +20,13 @@ REVIEW_SUMMARY: Authorized five-bank migration completed atomically; 80 proven c
 VALIDATION: 16 targeted tests; full suite 118 passed (one run); read-only claim predicates accept all banks.
 APPROVAL: Migration and local docs checkpoint authorized; no generation or push performed.
 NEXT_STEP: Review; ready for separately authorized browser SHIZZALISE test.
+
+## Image style wording refinement
+
+Ultra-photorealistic editorial surrealism replaces the flat/cartoon direction in the
+image prompt only: believable figures/materials, cinematic lighting, connected scenes,
+absurd humour and 4–6 dominant colours. Flat style retained as PREVIOUS_IMAGE_STYLE;
+original graffiti/zine wording retained as ORIGINAL_IMAGE_STYLE, both reference-only.
+Image settings, rewritten scene inputs and lifecycle unchanged.
+VALIDATION: 18 image-generation tests passed offline, including frontend checks.
+No real images or external calls. Changes intentionally uncommitted/unpushed for review.

@@ -22,9 +22,31 @@ IMAGE_SIZE = "1024x1024"
 IMAGE_TIMEOUT = 180.0
 
 IMAGE_FIELDS = ('image_url', 'image_prompt', 'image_model', 'image_provider', 'image_generated_at')
-STYLE = ('Absurd editorial illustration, underground zine artwork, graffiti and stencil '
+# Previous style retained for reference only; not included in generated prompts.
+ORIGINAL_IMAGE_STYLE = ('Absurd editorial illustration, underground zine artwork, graffiti and stencil '
          'influences, screen-print texture, bold composition, strange surreal humour, '
          'visually chaotic but readable composition, no text, captions, logos or lettering in the image.')
+PREVIOUS_IMAGE_STYLE = ('Create a flat graphic editorial illustration using bold simplified shapes and a '
+         'restrained palette of 4 to 5 strong colours. Show oddly proportioned, slightly '
+         'caricatured human-like figures that still loosely resemble the described subject. '
+         'Place them in expansive, connected environments and landscapes with strong '
+         'composition and visual storytelling, forming one unified scene. Keep the scene '
+         'playful, surreal, absurd, artistic, stylised and clean, with a slightly eccentric '
+         'French-cartoon / European editorial and gallery-poster feel. Avoid comic-book '
+         'panel styling, photorealism, hyper-detailed realism, cyberpunk aesthetics and '
+         'floating disconnected objects. No text, captions, logos or lettering in the image.')
+STYLE = ('Create ultra-photorealistic editorial surrealism: render the absurd humour and '
+         'surreal events as if they exist in the real world. Use believable human figures, '
+         'faces, clothing and environments, with realistic anatomy and natural expressions. '
+         'Build a cohesive scene within an expansive, connected environment, using bold, '
+         'memorable cinematic composition and lighting. Use a restrained but strong palette '
+         'of 4 to 6 dominant colours, realistic textured materials and grounded atmospheric '
+         'detail. Subtle stylisation is welcome, but the overall image should feel like '
+         'a real photographed scene rather than an illustration. Preserve the strange '
+         'specificity and absurdity of the described scene. Avoid flat illustration, '
+         'comic-book or graphic novel panels, zine or graffiti styling, cel shading, '
+         'cartoon rendering, doodles, exaggerated caricature and disconnected floating '
+         'objects. No text, captions, logos or lettering in the image.')
 
 
 def build_image_prompt(result):
