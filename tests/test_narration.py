@@ -123,7 +123,7 @@ def test_voice_snapshot_file_and_one_speech_call(setup):
     assert state['storage_key'] == f"{entry['_id']}.mp3"
     assert service.path(str(entry['_id'])).read_bytes() == MP3
     assert state['generated_at']
-    speech.assert_called_once_with(model=MODEL, voice='coral', input='Edited mayor!\n\nTwelve ferrets win.', response_format='mp3')
+    speech.assert_called_once_with(model=MODEL, voice='coral', input='Twelve ferrets win.', response_format='mp3')
     sdk.assert_called_once_with(api_key='mock-key', max_retries=0, timeout=60)
     assert 'SECRET SOURCE' not in str(speech.call_args)
     assert entry['crazyReplacement1Title'] == 'Teapot mayor'
@@ -298,7 +298,7 @@ def test_frontend_and_template():
 def test_null_metadata_and_oversize_text_fail_without_spending(setup):
     service, collection, entry, sdk, speech = setup
     with pytest.raises(NarrationError) as exc:
-        generate(setup, {'title': 'Long', 'body': 'x' * 3500})
+        generate(setup, {'title': 'Long', 'body': 'x' * 3501})
     assert exc.value.status == 422
     entry['narration'] = None
     assert generate(setup)['can_generate'] is False
@@ -317,4 +317,29 @@ def test_deletion_between_file_write_and_metadata_sync_is_missing(setup):
         generate(setup)
     assert exc.value.status == 404
     assert not service.path(str(entry['_id'])).exists()
+    speech.assert_called_once()
+
+
+def test_existing_title_inclusive_audio_reused_unchanged(setup):
+    service, collection, entry, sdk, speech = setup
+    key = str(entry['_id'])
+    service.directory.mkdir(parents=True, exist_ok=True)
+    original = b'ID3existing-title-and-body-audio'
+    service.path(key).write_bytes(original)
+    entry['narration'] = {'entry_id': key, 'status': 'complete',
+        'voice': 'coral', 'voice_name': 'Coral',
+        'snapshot': {'title': 'Old spoken title', 'body': 'Old spoken body'}}
+    before = copy.deepcopy(entry['narration'])
+    result = generate(setup, {'title': 'New title', 'body': 'New body'})
+    assert result['narration_status'] == 'complete'
+    assert entry['narration'] == before
+    assert service.path(key).read_bytes() == original
+    sdk.assert_not_called()
+
+
+def test_body_only_preserves_internal_punctuation_and_newlines(setup):
+    _, _, _, _, speech = setup
+    body = '  Ferrets vote!\nBiscuits win?  '
+    generate(setup, {'title': 'DO NOT SPEAK THIS TITLE', 'body': body})
+    assert speech.call_args.kwargs['input'] == body.strip()
     speech.assert_called_once()

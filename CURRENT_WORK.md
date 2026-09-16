@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Compact rhythmic jingle lyric prompt
+CURRENT_TASK: Body-only narration and jingle story inputs
 
-REVIEW_SUMMARY: Single-call lyric instructions target 16–28 words in four short lines; genre profiles unchanged.
-VALIDATION: 72 targeted mocked tests passed; no live calls or deployment.
-APPROVAL: Commit/push authorized. Main unchanged.
-NEXT_STEP: Restart local app and test a new nominated item's jingle manually when desired.
+REVIEW_SUMMARY: New speech receives displayed body only; new jingle brief receives rewritten body only.
+VALIDATION: 95 targeted tests and 3 subtests passed with providers mocked.
+APPROVAL: Commit/push authorized. No deployment or generation; main unchanged.
+NEXT_STEP: Restart local app; new audio requests use body only. Existing audio remains reusable.
 
 ## Image style wording refinement
 
@@ -281,3 +281,27 @@ prompt-only change requires no new Modal deploy). Log in/select pet, nominate an
 without an existing jingle, press MAKE JINGLE once, listen and inspect stored lyrics.
 Refresh/replay should reuse audio. Manual generation costs money; Codex did not run it.
 REVIEW / CODEX; commit/push authorized. Existing jingles/briefs are not regenerated.
+
+
+## Body-only audio inputs — 2026-09-16
+
+Narrations.generate sends text_snapshot['body'].strip() only to TTS, preserving
+internal punctuation/newlines. Body must be nonempty and <=3500 characters; title
+no longer consumes speech budget. Title stays in UI/request/snapshot metadata and
+existing mismatch reporting is unchanged. Existing audio returns before input
+validation or synthesis, including older recordings that spoke the title.
+
+create_jingle_brief now validates only rewritten body as story content and sends
+JSON {"body": body[:1800]} to the same single OpenAI call. Existing body input cap,
+16–28-word/four-line lyric guidance, random genre, profile caption, BPM/meter and
+25-second duration unchanged. No title-derived caption text. Existing briefs,
+media, snapshots and cache identities are not rewritten or regenerated.
+No image/UI/routes/shared TTS helper/Modal changes; no Modal redeploy required
+assuming the prior genre-profile service is already deployed.
+
+Files: newsmuncher/services/narration.py, newsmuncher/services/jingle_brief.py,
+tests/test_narration.py, tests/test_jingle_brief.py, CURRENT_WORK.md.
+Validation: ./.venv/bin/python -m pytest tests/test_narration.py tests/test_compare_tts.py tests/test_jingle_brief.py tests/test_jingle_genre.py tests/test_jingle_genre_truncate.py tests/test_jingle_reference.py tests/test_modal_schema_diagnostic.py tests/test_jingles.py tests/test_jingle_frontend.py -q
+95 passed, 3 subtests passed; two existing dependency warnings. Mocked providers;
+legacy narration replay explicitly tested without synthesis. No live services called.
+REVIEW / CODEX. Commit/push authorized; main unchanged.

@@ -37,7 +37,10 @@ class JingleBriefTests(unittest.TestCase):
             api.assert_called_once()
             payload = api.call_args.kwargs
             self.assertNotIn("SECRET", payload["input"])
-            self.assertIn("Teapot town", payload["input"])
+            self.assertEqual(json.loads(payload["input"]), {"body": "The mayor whistles biscuits."})
+            self.assertNotIn("Teapot town", str(payload))
+            self.assertNotIn("Teapot town", brief.music_prompt)
+            self.assertNotIn("Story subject:", brief.music_prompt)
             self.assertEqual(payload["max_output_tokens"], 400)
             self.assertEqual(client.call_args.kwargs["max_retries"], 0)
 

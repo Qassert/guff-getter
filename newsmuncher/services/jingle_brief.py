@@ -15,10 +15,9 @@ from jingle_service.genres import GENRES, GENRE_PROFILES
 def create_jingle_brief(entry):
     if entry.get("nominated") is not True:
         raise ValueError("Only a nominated entry can receive a jingle.")
-    title = entry.get("crazyReplacement1Title")
     body = entry.get("crazyReplacement1Extract")
-    if not isinstance(title, str) or not title.strip() or not isinstance(body, str) or not body.strip():
-        raise ValueError("Nominated rewritten title and body are required.")
+    if not isinstance(body, str) or not body.strip():
+        raise ValueError("Nominated rewritten body is required.")
     load_dotenv(ENV_FILE)
     # Choose genre BEFORE the OpenAI request
     genre = random.choice(GENRES)
@@ -58,7 +57,7 @@ def create_jingle_brief(entry):
                 "instruments and vocal treatment using the supplied caption. No artist names, "
                 "copyrighted song imitation or existing lyrics. Return duration_seconds=25."
             ),
-            input=json.dumps({"title": title[:300], "body": body[:1800]}, ensure_ascii=False),
+            input=json.dumps({"body": body[:1800]}, ensure_ascii=False),
             text={"format": {"type": "json_schema", "name": "jingle_brief",
                              "strict": True, "schema": schema}},
             max_output_tokens=400, store=False,

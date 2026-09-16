@@ -121,11 +121,11 @@ class Narrations:
         existing = self.status(collection, key, owner)
         if not existing['can_generate']:
             return existing
-        title, body = text_snapshot['title'].strip(), text_snapshot['body'].strip()
-        if not title or not body or len(title) + len(body) > 3500:
-            raise NarrationError(422, 'Narration needs title and body totalling at most 3500 characters.')
-        # Separate title/body naturally, without changing source or requesting text generation.
-        spoken = title + ('' if title[-1] in '.!?' else '.') + '\n\n' + body
+        body = text_snapshot['body'].strip()
+        if not body or len(body) > 3500:
+            raise NarrationError(422, 'Narration needs a body of at most 3500 characters.')
+        # Titles remain display/snapshot metadata only; never send them to speech synthesis.
+        spoken = body
         load_dotenv(ENV_FILE, override=False)
         key_value = os.environ.get('OPENAI_API_KEY', '').strip()
         if not key_value:
