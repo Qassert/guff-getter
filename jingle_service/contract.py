@@ -4,8 +4,22 @@ import hashlib
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, model_serializer
 from uuid import UUID
+
+
+class GenreProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    label: str = Field(min_length=1, max_length=60)
+    bpm: int = Field(ge=30, le=300)
+    timesignature: Literal["2", "3", "4", "6"] = "4"
+    cues: str = Field(min_length=1, max_length=300)
+    avoid: str = Field(default="", max_length=80)
+
+    def caption(self):
+        meter = "6/8" if self.timesignature == "6" else f"{self.timesignature}/4"
+        caption = f"{self.label}. {self.bpm} BPM; {meter}. {self.cues}."
+        return caption + (f" Avoid {self.avoid}." if self.avoid else "")
 
 
 class MusicBrief(BaseModel):
@@ -13,6 +27,20 @@ class MusicBrief(BaseModel):
     music_prompt: str = Field(min_length=1, max_length=600)
     lyrics: str = Field(min_length=1, max_length=500)
     duration_seconds: int = Field(default=25, ge=20, le=30)
+    genre_profile: GenreProfile | None = None
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_shape(self, handler):
+        data = handler(self)
+        if self.genre_profile is None:
+            data.pop("genre_profile", None)
+        return data
+
+    def genre_params(self):
+        if self.genre_profile is None:
+            return {}
+        return {"bpm": self.genre_profile.bpm, "timesignature": self.genre_profile.timesignature}
+
 
 
 class GenerationRequest(MusicBrief):

@@ -42,6 +42,7 @@ def test_prompt_length_limit(entry, monkeypatch):
     # Genre must still be first
     assert brief.music_prompt.startswith(f"{chosen}.")
     # Original AI prompt must still be present
-    assert "original prompt" in brief.music_prompt
+    assert "original prompt" not in brief.music_prompt
+    assert brief.genre_profile.cues in brief.music_prompt
     # The story description should be truncated (cannot contain the full long body)
     assert long_body[:10] not in brief.music_prompt

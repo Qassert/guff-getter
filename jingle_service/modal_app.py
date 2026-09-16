@@ -133,7 +133,7 @@ class JingleGenerator:
                 GenerationParams(caption=request.music_prompt, lyrics=request.lyrics,
                                  duration=request.duration_seconds, vocal_language="en",
                                  thinking=False, use_cot_metas=False, use_cot_caption=False,
-                                 use_cot_language=False, inference_steps=8, **experimental_params),
+                                 use_cot_language=False, inference_steps=8, **request.genre_params(), **experimental_params),
                 GenerationConfig(batch_size=1, audio_format="wav", **experimental_config),
                 save_dir=temporary,
             )

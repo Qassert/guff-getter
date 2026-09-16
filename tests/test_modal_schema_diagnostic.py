@@ -45,4 +45,4 @@ def test_cpu_diagnostic_and_single_baked_source():
     assert result['modal_app_file'] == module.__file__
     assert result['modal_app_sha256'] == hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
     assert result['fields'] == sorted(['music_prompt', 'lyrics', 'duration_seconds', 'request_id',
-                                      'experiment', 'seed', 'reference_audio_b64', 'reference_sha256'])
+                                      'experiment', 'seed', 'reference_audio_b64', 'reference_sha256', 'genre_profile'])

@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Safely resume recovered narration-reference experiment with B only
+CURRENT_TASK: Structured jingle genre conditioning
 
-REVIEW_SUMMARY: Verified A is skipped; per-variant durable state prevents ambiguous retries.
-VALIDATION: 31 targeted offline tests passed; real recovered A validated read-only.
-APPROVAL: Commit/push authorized. No deployment or generation performed.
-NEXT_STEP: Andy may run the documented --resume command to submit only B.
+REVIEW_SUMMARY: Same random genre pool; persisted profiles supply concise caption, BPM and meter.
+VALIDATION: 71 targeted mocked tests passed; no live generation or deployment.
+APPROVAL: Commit/push authorized. Main unchanged.
+NEXT_STEP: Deploy updated Modal contract before testing new-profile jingles; existing audio is reused.
 
 ## Image style wording refinement
 
@@ -211,3 +211,47 @@ Tests: ./.venv/bin/python -m pytest tests/test_jingle_reference.py tests/test_mo
 31 passed, all provider interactions mocked. No deployment, live service calls or
 new audio. Recovered A.mp3/A.json and attempt.json not modified or committed.
 REVIEW / CODEX. Commit/push authorized; main unchanged.
+
+
+## Structured genre conditioning — 2026-09-16
+
+jingle_service/genres.py defines all 35 existing genres in the same order. Random
+choice occurs once in create_jingle_brief. Immutable GenreProfile snapshots persist
+label, bpm, timesignature, cues and optional avoid text in MusicBrief and request
+markers. Modal forwards snapshot bpm and timesignature directly to GenerationParams;
+no inference-time genre redraw. New captions are deterministic, below 512 characters,
+without story prose or potentially conflicting model-generated instrumentation.
+The same single OpenAI request/schema returns short production caption and existing
+20–40-word absurd lyrics; its lyrics are preserved, caption is enforced from profile.
+No narration, new call, duration, GPU, generation, retry or storage lifecycle changes.
+
+Acid House: bpm=125, timesignature="4" (4/4); dominant TB-303, TR-909 four-on-floor,
+open hats/clap, repetitive groove, sparse vocal chants. Avoid pop/rock/orchestral is
+caption guidance only. No lm_negative_prompt passed: LM is disabled, turbo does not
+support ordinary CFG, so a true negative-conditioning guarantee would be misleading.
+Pinned source ca1e85fe9430179831e6bc6be790c332190a3866/acestep/inference.py defines
+bpm Optional[int], timesignature str, and forwards both to DiT generation metadata.
+https://github.com/ace-step/ACE-Step-1.5/blob/ca1e85fe9430179831e6bc6be790c332190a3866/acestep/inference.py
+
+All BPM values are editable arrangement targets, not authoritative genre definitions.
+Opera/Jazz/Gospel/Ambient/Flamenco/Heavy Metal/Hardcore especially approximate. All
+presets use simple 4/4; Flamenco deliberately chooses tangos, not 12-beat compas.
+Audio adherence remains probabilistic and has not been evaluated with live generation.
+Legacy briefs omit absent genre_profile in serialization, preserving old markers,
+caches and A/B identities. No backfill/regeneration of existing jingles. Deploy new
+Modal contract BEFORE sending new-profile briefs (old deployment rejects extra field).
+Diagnostic field list now additionally contains genre_profile; compare current hashes.
+
+Read-only profile verification (no keys/services):
+./.venv/bin/python -c 'from jingle_service.genres import GENRE_PROFILES; p=GENRE_PROFILES["Acid House"]; print(p.model_dump()); print(p.caption())'
+
+Targeted tests:
+./.venv/bin/python -m pytest tests/test_jingle_brief.py tests/test_jingle_genre.py tests/test_jingle_genre_truncate.py tests/test_jingle_reference.py tests/test_modal_schema_diagnostic.py tests/test_jingles.py tests/test_jingle_frontend.py -q
+71 passed; two existing dependency deprecation warnings. Tests cover one brief call,
+profile persistence through the actual mocked endpoint, BPM/meter, no reference,
+cache reuse, legacy schema shape, and A/B recovery. No deployment or real generation.
+Manual: after separately deploying updated Modal service, start local uvicorn, log
+in/select pet, nominate a rewrite without an existing jingle, click MAKE JINGLE once.
+Random genre remains random; inspect stored profile/Modal metadata for selected tempo.
+Play and refresh: existing audio must be reused. This manual click incurs normal paid
+brief/GPU calls; it was not performed. Existing saved jingles are not regenerated.

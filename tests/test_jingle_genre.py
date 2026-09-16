@@ -37,10 +37,12 @@ def test_genre_prefix_and_description(entry, monkeypatch):
     brief, usage = create_jingle_brief(entry)
     # Expect genre first
     assert brief.music_prompt.startswith(f"{chosen}.")
-    # Expect original generated prompt remains after genre
-    assert "original prompt" in brief.music_prompt
-    # Expect story description appended
-    assert "Story subject: Test Title. Test body of the rewritten article." in brief.music_prompt
+    # Profile owns sonic conditioning rather than decorative model prose
+    assert "original prompt" not in brief.music_prompt
+    assert brief.genre_profile.label == chosen
+    # Story remains in lyrics rather than dilution of the production caption
+    assert "Story subject:" not in brief.music_prompt
+    assert brief.genre_profile.cues in brief.music_prompt
     # Confirm genre is from approved list
     assert chosen in GENRES
 
