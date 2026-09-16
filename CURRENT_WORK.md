@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Body-only narration and jingle story inputs
+CURRENT_TASK: Lyric-friendly production genre pool
 
-REVIEW_SUMMARY: New speech receives displayed body only; new jingle brief receives rewritten body only.
-VALIDATION: 95 targeted tests and 3 subtests passed with providers mocked.
-APPROVAL: Commit/push authorized. No deployment or generation; main unchanged.
-NEXT_STEP: Restart local app; new audio requests use body only. Existing audio remains reusable.
+REVIEW_SUMMARY: Exact requested 20-genre production pool, explicit clear lead vocals; historical profiles retained.
+VALIDATION: 93 targeted mocked tests passed; no external calls or deployment.
+APPROVAL: Commit/push authorized. Main unchanged.
+NEXT_STEP: Restart local app to use new pool; no Modal redeploy required for this profile-data change.
 
 ## Image style wording refinement
 
@@ -305,3 +305,26 @@ Validation: ./.venv/bin/python -m pytest tests/test_narration.py tests/test_comp
 95 passed, 3 subtests passed; two existing dependency warnings. Mocked providers;
 legacy narration replay explicitly tested without synthesis. No live services called.
 REVIEW / CODEX. Commit/push authorized; main unchanged.
+
+
+## Lyric-friendly production pool — 2026-09-16
+
+GENRES now explicitly lists Country, Folk, Heavy Metal, Punk Rock, Pop Rock,
+Indie Rock, Glam Rock, Blues, Soul, Funk, Gospel, Ska, Reggae, Rockabilly,
+Bluegrass, Musical Theatre, Opera, Power Ballad, Disco, Electro-pop.
+Reused Heavy Metal/Gospel/Reggae/Opera tempos and strengthened clear lead-vocal cues;
+16 others newly added. All 35 historical profiles remain available (51 total).
+Old persisted snapshots/audio remain unchanged; removed genres cannot be randomly
+selected in production but remain usable by direct profile reference.
+Representative editable tempos, all 4/4; neither defines every arrangement in a genre.
+
+Only genre profile data/pool, tests and this handover changed. One OpenAI call,
+body-only input, 16–28-word/four-line lyrics, BPM/meter plumbing, 25 seconds,
+idempotency and production no-reference behavior unchanged. No schema changes.
+Modal consumes the supplied snapshot, not its local genre pool: no redeploy needed
+assuming the prior structured-profile service is deployed. Restart local app.
+
+Validation: ./.venv/bin/python -m pytest tests/test_jingle_brief.py tests/test_jingle_genre.py tests/test_jingle_genre_truncate.py tests/test_jingle_reference.py tests/test_modal_schema_diagnostic.py tests/test_jingles.py tests/test_jingle_frontend.py -q
+93 passed, two existing dependency warnings. Tests exercise every active genre,
+explicit vocal cues, single-call brief, historical Acid House BPM/meter and cache reuse.
+No live services, deployment or audio generation. REVIEW / CODEX; push authorized.

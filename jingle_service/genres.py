@@ -8,17 +8,17 @@ inference: the full selected profile is persisted in the brief.
 """
 from jingle_service.contract import GenreProfile
 
-# Preserve the approved pool/order and uniform random genre selection.
+# Retain historical profiles for direct references and stored experiments.
 _PRESETS = [
     ('Drum and Bass', 174, 'fast broken drums; rolling sub bass; chopped vocal hook'),
-    ('Opera', 90, 'operatic solo voice; orchestral strings; sustained sung phrases'),
-    ('Heavy Metal', 140, 'distorted guitar riffs; electric bass; double-kick drums; forceful vocals'),
+    ('Opera', 90, 'prominent clear operatic lead vocal; orchestral strings; sustained sung phrases'),
+    ('Heavy Metal', 140, 'distorted guitar riffs; electric bass; double-kick drums; clear forceful sung/shouted lead vocal'),
     ('Jazz', 120, 'swung ride cymbal; upright bass; piano comping; brass; sung hook'),
     ('Synthwave', 100, 'analog synth arpeggios; gated snare; pulsing synth bass; sung hook'),
-    ('Reggae', 80, 'one-drop drums; offbeat guitar skank; deep bass; relaxed sung hook'),
+    ('Reggae', 80, 'one-drop drums; offbeat guitar skank; deep bass; clear relaxed sung lead vocal'),
     ('Flamenco', 100, 'tangos rhythm; nylon-string guitar; palmas; expressive singing'),
     ('Techno', 130, 'four-on-the-floor kick; sequenced synth; metallic percussion; sparse vocals'),
-    ('Gospel', 100, 'choir call-and-response; Hammond organ; piano; handclaps'),
+    ('Gospel', 100, 'prominent clear sung lead vocal; backing choir call-and-response; Hammond organ; piano; handclaps'),
     ('Ambient', 70, 'slow evolving pads; sustained drones; spacious sparse vocals; minimal percussion'),
     ('Neurofunk', 174, 'broken drums; modulated reese bass; precise syncopation; chopped vocals'),
     ('Speed Garage', 135, 'swung four-on-the-floor drums; wobbling sub bass; pitched vocal chops'),
@@ -45,10 +45,32 @@ _PRESETS = [
     ('Frenchcore', 200, 'fast distorted offbeat kicks; pitched bass; rave synth; brief shouted hook'),
     ('Minimal Techno', 125, 'four-on-the-floor kick; sparse clicks; repeating bass pulse; minimal vocals'),
     ('Electro Swing', 125, 'swung brass samples; walking bass; electronic kick; jazzy vocal hook'),
+    ('Country', 110, 'clear storytelling lead vocal; acoustic guitar; fiddle and pedal steel; steady drums'),
+    ('Folk', 95, 'clear intimate sung lead vocal; fingerpicked acoustic guitar; acoustic bass'),
+    ('Punk Rock', 165, 'clear energetic sung lead vocal; power-chord guitars; driving bass and drums'),
+    ('Pop Rock', 120, 'clear melodic sung lead vocal; guitar chords; electric bass; steady drums'),
+    ('Indie Rock', 115, 'clear conversational sung lead vocal; jangling guitars; bass; live drums'),
+    ('Glam Rock', 125, 'clear theatrical sung lead vocal; stomping drums; crunchy guitars; backing harmonies'),
+    ('Blues', 90, 'clear expressive sung lead vocal; shuffle drums; blues guitar; walking bass'),
+    ('Soul', 100, 'clear soulful sung lead vocal; warm organ; bass groove; drums; backing harmonies'),
+    ('Funk', 110, 'clear rhythmic sung lead vocal; syncopated bass; clipped guitar; tight drums'),
+    ('Ska', 145, 'clear upbeat sung lead vocal; offbeat guitar; walking bass; brass; brisk drums'),
+    ('Rockabilly', 150, 'clear rhythmic sung lead vocal; twangy guitar; slapped upright bass; snare'),
+    ('Bluegrass', 140, 'clear storytelling sung lead vocal; banjo rolls; fiddle; mandolin; upright bass'),
+    ('Musical Theatre', 110, 'clear theatrical sung lead vocal with crisp diction; piano; orchestral accompaniment'),
+    ('Power Ballad', 75, 'clear soaring sung lead vocal; piano; sustained electric guitar; slow rock drums'),
+    ('Disco', 120, 'clear melodic sung lead vocal; four-on-the-floor drums; octave bass; strings; rhythm guitar'),
+    ('Electro-pop', 115, 'clear melodic sung lead vocal; synth chords; electronic drums; pulsing bass'),
 ]
 GENRE_PROFILES = {
     label: GenreProfile(label=label, bpm=bpm, timesignature='4', cues=cues,
                         avoid='pop, rock or orchestral arrangement' if label == 'Acid House' else '')
     for label, bpm, cues in _PRESETS
 }
-GENRES = list(GENRE_PROFILES)
+# Production selection only. Existing serialized profile snapshots remain unchanged.
+GENRES = [
+    'Country', 'Folk', 'Heavy Metal', 'Punk Rock', 'Pop Rock', 'Indie Rock',
+    'Glam Rock', 'Blues', 'Soul', 'Funk', 'Gospel', 'Ska', 'Reggae',
+    'Rockabilly', 'Bluegrass', 'Musical Theatre', 'Opera', 'Power Ballad',
+    'Disco', 'Electro-pop',
+]

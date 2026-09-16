@@ -65,3 +65,36 @@ def test_brief_structure(entry, monkeypatch):
     assert hasattr(brief, "lyrics")
     assert hasattr(brief, "duration_seconds")
     assert brief.duration_seconds == 25
+
+
+@pytest.mark.parametrize('selected', GENRES)
+def test_production_pool_vocals_and_single_call(entry, monkeypatch, selected):
+    from jingle_service.genres import GENRE_PROFILES
+    expected = ['Country', 'Folk', 'Heavy Metal', 'Punk Rock', 'Pop Rock',
+        'Indie Rock', 'Glam Rock', 'Blues', 'Soul', 'Funk', 'Gospel', 'Ska',
+        'Reggae', 'Rockabilly', 'Bluegrass', 'Musical Theatre', 'Opera',
+        'Power Ballad', 'Disco', 'Electro-pop']
+    assert GENRES == expected
+    def choose(pool):
+        assert pool == expected
+        return selected
+    client = make_mock_client()
+    monkeypatch.setattr('newsmuncher.services.jingle_brief.random.choice', choose)
+    monkeypatch.setattr('newsmuncher.services.jingle_brief.load_dotenv', lambda *a: None)
+    monkeypatch.setattr('newsmuncher.services.jingle_brief.OpenAI', lambda **kw: client)
+    brief, _ = create_jingle_brief(entry)
+    profile = GENRE_PROFILES[selected]
+    assert brief.genre_profile == profile
+    assert 'clear' in profile.cues and 'lead vocal' in profile.cues
+    assert brief.music_prompt == profile.caption()
+    assert brief.genre_params() == {'bpm': profile.bpm, 'timesignature': '4'}
+    assert brief.duration_seconds == 25
+    assert 'reference_audio' not in brief.model_dump()
+    client.responses.create.assert_called_once()
+
+
+def test_historical_profiles_remain_available_but_not_selected():
+    from jingle_service.genres import GENRE_PROFILES
+    for genre in ('Acid House', 'Ambient', 'Techno', 'Drum and Bass', 'Jazz'):
+        assert genre in GENRE_PROFILES and genre not in GENRES
+    assert GENRE_PROFILES['Acid House'].bpm == 125

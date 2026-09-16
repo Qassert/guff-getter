@@ -401,7 +401,8 @@ def test_acid_profile_from_single_brief_call_to_ace_and_cache(endpoint, monkeypa
 
 def test_profiles_and_legacy_identity_unchanged():
     from jingle_service.genres import GENRE_PROFILES, GENRES
-    assert len(GENRES) == 35
+    assert len(GENRES) == 20
+    assert len(GENRE_PROFILES) == 51
     for label, profile in GENRE_PROFILES.items():
         assert label == profile.label and 30 <= profile.bpm <= 300
         assert len(profile.caption()) < 512
