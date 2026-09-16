@@ -11,6 +11,7 @@ from jingle_service.contract import GenerationRequest
 
 ACE_REVISION = "ca1e85fe9430179831e6bc6be790c332190a3866"
 MODEL = "acestep-v15-turbo"
+DIAGNOSTIC_BUILD = "reference-ab-schema-diagnostic-v1"
 GPU = os.getenv("NEWSMUNCHER_JINGLE_GPU", "L4")
 if GPU not in {"T4", "L4"}:
     raise ValueError("Jingle proof permits only T4 or L4; GPU changes require approval.")
@@ -34,14 +35,31 @@ image = (
     .pip_install("fastapi[standard]>=0.115,<1")
     .env({"PYTHONPATH": "/opt/acestep:/opt/acestep/.venv/lib/python3.11/site-packages",
           "NEWSMUNCHER_JINGLE_GPU": GPU})
-    .add_local_python_source("jingle_service")
+    .add_local_python_source("jingle_service", copy=True)
 )
+
+
+@app.function(image=image, gpu=None, cpu=0.125, memory=512, min_containers=0,
+              max_containers=1, timeout=30, retries=0, include_source=False)
+def diagnostic_schema():
+    """Temporary CPU-only inspection: no model/class instantiation or volume access."""
+    import hashlib
+    import jingle_service.contract as contract
+
+    return {
+        "build_identifier": DIAGNOSTIC_BUILD,
+        "contract_file": contract.__file__,
+        "contract_sha256": hashlib.sha256(Path(contract.__file__).read_bytes()).hexdigest(),
+        "fields": sorted(contract.GenerationRequest.model_fields),
+        "modal_app_file": __file__,
+        "modal_app_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    }
 
 
 @app.cls(image=image, gpu=GPU, cpu=2, memory=16384, min_containers=0,
          max_containers=1, buffer_containers=0, scaledown_window=2,
          timeout=180, startup_timeout=600, retries=0,
-         volumes={"/results": outputs})
+         volumes={"/results": outputs}, include_source=False)
 @modal.concurrent(max_inputs=1)
 class JingleGenerator:
     @modal.enter()

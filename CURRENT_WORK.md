@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Isolated narration-reference jingle A/B experiment; no live generation
+CURRENT_TASK: Temporary CPU-only deployed-schema diagnostic and deterministic source packaging
 
-REVIEW_SUMMARY: Isolated narration-reference A/B harness ready; no live experiment/deploy.
-VALIDATION: 47 targeted tests passed; provider/ACE-Step calls mocked.
-APPROVAL: Commit/push authorized; real A/B generation not authorized or performed.
-NEXT_STEP: Review, then deploy updated Modal code before a separately authorized A/B run.
+REVIEW_SUMMARY: CPU-only schema diagnostic added; package baked into image, implicit source disabled.
+VALIDATION: 21 targeted tests passed, Modal/ACE-Step mocked; no remote calls or deployment.
+APPROVAL: Commit/push authorized; deployment and diagnostic invocation left to Andy.
+NEXT_STEP: Redeploy in the existing Modal environment, invoke diagnostic_schema, compare file hashes.
 
 ## Image style wording refinement
 
@@ -146,3 +146,38 @@ Targeted command: ./.venv/bin/python -m pytest tests/test_jingle_reference.py te
 actual body with mocked Modal/ACE-Step/subprocess boundaries, verify cache compatibility,
 fixed A/B inputs, production isolation and temporary cleanup. No live provider or
 GPU calls. No actual audio generated. Main untouched. REVIEW / CODEX.
+
+
+## Temporary deployed-schema diagnostic — 2026-09-16
+
+jingle_service/modal_app.py adds diagnostic_schema, a separate @app.function with
+explicit gpu=None, min_containers=0, retries=0, no volume, same image as JingleGenerator.
+It never instantiates the class, loads ACE-Step or invokes generation. Returns build
+identifier reference-ab-schema-diagnostic-v1, contract/module file paths and SHA-256
+hashes, sorted GenerationRequest fields. The identifier is a label, not a Git hash;
+compare returned hashes against checkout files to prove exact content.
+
+Package inclusion now uses add_local_python_source("jingle_service", copy=True).
+Both class and diagnostic disable implicit source inclusion; module-mode deploy is
+required. Model/settings/production endpoint/proxy auth/volume unchanged. Image build
+will bake current source rather than overlay competing runtime source mounts.
+
+From repository root, using the existing Modal workspace/profile/environment:
+NEWSMUNCHER_JINGLE_GPU=L4 ./.venv-modal/bin/python -m modal deploy -m jingle_service.modal_app --tag reference-ab-schema-diagnostic-v1
+./.venv-modal/bin/python -c 'import json, modal; print(json.dumps(modal.Function.from_name("newsmuncher-jingles", "diagnostic_schema").remote(), indent=2))'
+shasum -a 256 jingle_service/contract.py jingle_service/modal_app.py
+
+Expect /root/jingle_service/contract.py and /root/jingle_service/modal_app.py,
+matching hashes, and fields: duration_seconds, experiment, lyrics, music_prompt,
+reference_audio_b64, reference_sha256, request_id, seed. Missing function means wrong
+or older deployment/environment. Wrong hashes/paths indicate stale/mismatched source.
+A matching diagnostic verifies same-image source without a GPU invocation; it does
+not prove a separately configured HTTP URL points to that deployment. Do not retry
+A/B until schema and endpoint identity are confirmed. Existing attempt directories
+were not inspected, changed or deleted. Actual CPU invocation can incur a small CPU
+charge; no paid or remote calls were made in this task. No deployment performed.
+
+Tests: ./.venv/bin/python -m pytest tests/test_modal_schema_diagnostic.py tests/test_jingle_reference.py -q
+21 passed. Mocked decorators prove CPU configuration, common image, deterministic
+package inclusion and absence of class instantiation. A/B regression tests retained.
+REVIEW / CODEX; commit/push authorized, main untouched.
