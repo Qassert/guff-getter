@@ -263,3 +263,100 @@ def test_bad_probe_fails_before_inference_and_cleans_temp(endpoint, monkeypatch)
         invoke(pair()['B'].model_dump(mode='json'))
     assert exc.value.status_code == 422 and not calls
     assert seen and not seen[0].exists()
+
+
+def recovered_pair():
+    identity, manifest, requests = cli.make_pair(ENTRY, BRIEF, MP3, 1729)
+    directory = cli.OUTPUT_ROOT / identity
+    directory.mkdir(parents=True)
+    (directory / 'attempt.json').write_text(json.dumps(manifest))
+    (directory / 'A.mp3').write_bytes(MP3)
+    (directory / 'A.json').write_text(json.dumps({
+        'request': requests['A'].marker_request(), 'status': 'complete', 'bytes': len(MP3)}))
+    return directory, requests
+
+
+def test_resume_only_b_and_completed_resume_zero_calls(inputs, monkeypatch):
+    directory, requests = recovered_pair()
+    original = {p.name: p.read_bytes() for p in directory.iterdir()}
+    def fetch(request, *args, observe):
+        assert request == requests['B']
+        state = json.loads((directory / 'B.state.json').read_text())
+        assert state['stage'] == 'submitted'
+        assert state['canonical_request'] == request.marker_request()
+        assert state['expected_modal_volume_path'] == str(request.output_path('/results'))
+        observe(status_code=200, content_type='audio/mpeg', byte_count=len(MP3))
+        return MP3
+    provider = Mock(side_effect=fetch)
+    monkeypatch.setattr(cli, 'fetch_audio', provider)
+    # Stored brief is authoritative, even if the production brief has since changed.
+    inputs[1].unlink()
+    assert cli.main(['--resume', str(directory)]) == 0
+    provider.assert_called_once()
+    assert json.loads((directory / 'A.state.json').read_text())['recovered']
+    assert json.loads((directory / 'B.state.json').read_text())['stage'] == 'completed'
+    assert (directory / 'B.mp3').read_bytes() == MP3
+    assert all((directory / name).read_bytes() == data for name, data in original.items())
+    assert cli.main(['--resume', str(directory)]) == 0
+    provider.assert_called_once()
+
+
+@pytest.mark.parametrize('bad', ['request', 'status', 'size', 'signature', 'missing', 'manifest', 'reference'])
+def test_resume_invalid_recovery_no_calls(inputs, monkeypatch, bad):
+    directory, requests = recovered_pair()
+    marker = json.loads((directory / 'A.json').read_text())
+    if bad == 'request':
+        marker['request']['seed'] += 1
+    elif bad == 'status':
+        marker['status'] = 'started'
+    elif bad == 'size':
+        marker['bytes'] += 1
+    elif bad == 'signature':
+        (directory / 'A.mp3').write_bytes(b'BAD' + MP3[3:])
+    elif bad == 'missing':
+        (directory / 'A.mp3').unlink()
+    elif bad == 'manifest':
+        manifest = json.loads((directory / 'attempt.json').read_text())
+        manifest['seed'] += 1
+        (directory / 'attempt.json').write_text(json.dumps(manifest))
+    elif bad == 'reference':
+        inputs[0].write_bytes(MP3 + b'changed')
+    (directory / 'A.json').write_text(json.dumps(marker))
+    provider = Mock()
+    monkeypatch.setattr(cli.requests, 'post', provider)
+    assert cli.main(['--resume', str(directory)]) == 1
+    provider.assert_not_called()
+
+
+def test_resume_ambiguous_records_response_never_retries(inputs, monkeypatch, capsys):
+    directory, requests = recovered_pair()
+    response = Mock(status_code=303, headers={'Content-Type': 'text/html'})
+    post = Mock()
+    post.return_value.__enter__ = Mock(return_value=response)
+    post.return_value.__exit__ = Mock(return_value=False)
+    monkeypatch.setattr(cli.requests, 'post', post)
+    assert cli.main(['--resume', str(directory)]) == 1
+    state = json.loads((directory / 'B.state.json').read_text())
+    assert state['stage'] == 'ambiguous'
+    assert state['status_code'] == 303 and state['content_type'] == 'text/html'
+    assert state['byte_count'] == 0
+    assert 'Unexpected HTTP status' in state['safe_error_category']
+    assert 'Unexpected HTTP status' in capsys.readouterr().out
+    assert cli.main(['--resume', str(directory)]) == 1
+    post.assert_called_once()
+    # Recovery of the exact B result permits completion without another POST.
+    (directory / 'B.mp3').write_bytes(MP3)
+    (directory / 'B.json').write_text(json.dumps({
+        'request': requests['B'].marker_request(), 'status': 'complete', 'bytes': len(MP3)}))
+    assert cli.main(['--resume', str(directory)]) == 0
+    post.assert_called_once()
+
+
+def test_resume_concurrent_lock_prevents_calls(inputs, monkeypatch):
+    directory, _ = recovered_pair()
+    provider = Mock()
+    monkeypatch.setattr(cli, 'fetch_audio', provider)
+    with (directory / '.resume.lock').open('a') as lock:
+        cli.fcntl.flock(lock, cli.fcntl.LOCK_EX | cli.fcntl.LOCK_NB)
+        assert cli.main(['--resume', str(directory)]) == 1
+    provider.assert_not_called()

@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Temporary CPU-only deployed-schema diagnostic and deterministic source packaging
+CURRENT_TASK: Safely resume recovered narration-reference experiment with B only
 
-REVIEW_SUMMARY: CPU-only schema diagnostic added; package baked into image, implicit source disabled.
-VALIDATION: 21 targeted tests passed, Modal/ACE-Step mocked; no remote calls or deployment.
-APPROVAL: Commit/push authorized; deployment and diagnostic invocation left to Andy.
-NEXT_STEP: Redeploy in the existing Modal environment, invoke diagnostic_schema, compare file hashes.
+REVIEW_SUMMARY: Verified A is skipped; per-variant durable state prevents ambiguous retries.
+VALIDATION: 31 targeted offline tests passed; real recovered A validated read-only.
+APPROVAL: Commit/push authorized. No deployment or generation performed.
+NEXT_STEP: Andy may run the documented --resume command to submit only B.
 
 ## Image style wording refinement
 
@@ -181,3 +181,33 @@ Tests: ./.venv/bin/python -m pytest tests/test_modal_schema_diagnostic.py tests/
 21 passed. Mocked decorators prove CPU configuration, common image, deterministic
 package inclusion and absence of class instantiation. A/B regression tests retained.
 REVIEW / CODEX; commit/push authorized, main untouched.
+
+
+## A/B recovery and B-only resume — 2026-09-16
+
+--resume DIRECTORY uses the frozen attempt.json brief/seed plus the existing narration
+checksum, verifies the deterministic directory identity, and requires valid A.mp3/A.json.
+A marker must be complete and match the exact canonical request; MP3 signature/size
+and marker byte count must agree. A files/manifest remain untouched. A gets zero POSTs.
+Same checks permit recovery of B without any generation after an ambiguous outcome.
+The existing local A was validated read-only; no actual variant state was written.
+
+Per-variant *.state.json records UUID, canonical request (no base64), volume/path,
+stage, HTTP status, allowlisted content type, byte count and safe error category.
+Submitted state is atomically persisted/fsynced before POST. Local flock prevents
+concurrent resume processes. Submitted/ambiguous/failed states never retry; only
+pending or previously unattempted B may POST. Response errors remain ambiguous,
+including non-200 responses. No redirect following, no generation retries.
+Audio is atomically published; missing/incomplete marker pairs fail closed for
+operator recovery. Existing telemetry survives artifact recovery. Legacy attempt
+manifests lack B progress: this resume assumes the operator-confirmed A-only attempt;
+it cannot prove an unrecorded historical B request never occurred. Keep attempt files.
+fcntl locking targets existing macOS/Linux environments. No production changes.
+
+Command from repository root (explicitly generates B; NOT executed by Codex):
+./.venv/bin/python -m scripts.compare_jingle_reference --resume data/jingle-reference-comparison/d625b73f0949f58c5f9d9435a560b3b1e9a11a37224f3fe679c12bae4b6c163a
+
+Tests: ./.venv/bin/python -m pytest tests/test_jingle_reference.py tests/test_modal_schema_diagnostic.py -q
+31 passed, all provider interactions mocked. No deployment, live service calls or
+new audio. Recovered A.mp3/A.json and attempt.json not modified or committed.
+REVIEW / CODEX. Commit/push authorized; main unchanged.
