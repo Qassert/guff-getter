@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Structured jingle genre conditioning
+CURRENT_TASK: Compact rhythmic jingle lyric prompt
 
-REVIEW_SUMMARY: Same random genre pool; persisted profiles supply concise caption, BPM and meter.
-VALIDATION: 71 targeted mocked tests passed; no live generation or deployment.
+REVIEW_SUMMARY: Single-call lyric instructions target 16–28 words in four short lines; genre profiles unchanged.
+VALIDATION: 72 targeted mocked tests passed; no live calls or deployment.
 APPROVAL: Commit/push authorized. Main unchanged.
-NEXT_STEP: Deploy updated Modal contract before testing new-profile jingles; existing audio is reused.
+NEXT_STEP: Restart local app and test a new nominated item's jingle manually when desired.
 
 ## Image style wording refinement
 
@@ -255,3 +255,29 @@ in/select pet, nominate a rewrite without an existing jingle, click MAKE JINGLE 
 Random genre remains random; inspect stored profile/Modal metadata for selected tempo.
 Play and refresh: existing audio must be reused. This manual click incurs normal paid
 brief/GPU calls; it was not performed. Existing saved jingles are not regenerated.
+
+
+## Compact jingle lyrics — 2026-09-16
+
+Only the existing brief prompt changed: target 16–28 words total, preferably four
+newline-separated lines, roughly 3–7 words per line. Simple rhythmic phrases, light
+rhyme/repetition, absurd rewritten imagery; avoid dense clauses, punctuation-heavy
+lines, tongue twisters, stage directions and section labels. Not four isolated words.
+Lyrics remain separate from the unchanged deterministic genre caption. Random pool,
+profile, BPM/meter, duration, provider settings and production reference behavior unchanged.
+
+These are prompt targets, not a hard word-count guarantee. Existing 500-character
+MusicBrief validation remains; no truncation existed and none was added. No padding,
+fallback rewrite, second call or retry. Tests verify instruction delivery and intact
+compact mocked lyrics, not real model compliance or audible vocal density.
+Genre profiles with sparse vocals intentionally remain sparse; four easier lines may
+improve usable delivery but cannot force ACE-Step to sing every word in 25 seconds.
+
+Files: newsmuncher/services/jingle_brief.py, tests/test_jingle_brief.py, CURRENT_WORK.md.
+Tests: ./.venv/bin/python -m pytest tests/test_jingle_brief.py tests/test_jingle_genre.py tests/test_jingle_genre_truncate.py tests/test_jingle_reference.py tests/test_modal_schema_diagnostic.py tests/test_jingles.py tests/test_jingle_frontend.py -q
+72 passed, two existing dependency warnings. All generation mocked; no live calls.
+Manual: restart local uvicorn; use deployed genre-profile service from 89a93ec (this
+prompt-only change requires no new Modal deploy). Log in/select pet, nominate an item
+without an existing jingle, press MAKE JINGLE once, listen and inspect stored lyrics.
+Refresh/replay should reuse audio. Manual generation costs money; Codex did not run it.
+REVIEW / CODEX; commit/push authorized. Existing jingles/briefs are not regenerated.

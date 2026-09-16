@@ -41,6 +41,41 @@ class JingleBriefTests(unittest.TestCase):
             self.assertEqual(payload["max_output_tokens"], 400)
             self.assertEqual(client.call_args.kwargs["max_retries"], 0)
 
+    def test_compact_lyrics_prompt_and_intact_lines(self):
+        from jingle_service.genres import GENRE_PROFILES
+        lyrics = ("Teapot mayor shakes the moon\n"
+                  "Biscuit trumpets hum a tune\n"
+                  "Ferret bankers stamp and sway\n"
+                  "Moonlit kettles steal the day")
+        with patch("newsmuncher.services.jingle_brief.OpenAI") as client, patch(
+                "newsmuncher.services.jingle_brief.load_dotenv"), patch(
+                "newsmuncher.services.jingle_brief.random.choice", return_value="Acid House") as choose:
+            api = client.return_value.__enter__.return_value.responses.create
+            api.return_value = SimpleNamespace(status="completed", model="mock",
+                usage=SimpleNamespace(input_tokens=10, output_tokens=20),
+                output_text=json.dumps({"music_prompt": "ignored decorative prose",
+                                        "lyrics": lyrics, "duration_seconds": 25}))
+            brief, _ = create_jingle_brief({"nominated": True,
+                "crazyReplacement1Title": "Teapot mayor",
+                "crazyReplacement1Extract": "Ferret bankers dance with biscuit trumpets."})
+            api.assert_called_once()
+            choose.assert_called_once()
+            instructions = api.call_args.kwargs["instructions"]
+            for phrase in ("16–28 words total", "4 short lines", "3–7 words per line",
+                           "newline characters", "Light rhyme and repetition",
+                           "stage directions", "tongue-twister", "not just four isolated words",
+                           "Keep lyrics separate from music_prompt"):
+                self.assertIn(phrase, instructions)
+            self.assertEqual(brief.lyrics, lyrics)  # no cutting, padding or rewriting
+            self.assertEqual(len(brief.lyrics.splitlines()), 4)
+            self.assertTrue(16 <= len(brief.lyrics.split()) <= 28)
+            self.assertTrue(all(3 <= len(line.split()) <= 7 for line in brief.lyrics.splitlines()))
+            self.assertEqual(brief.genre_profile, GENRE_PROFILES["Acid House"])
+            self.assertEqual(brief.music_prompt, GENRE_PROFILES["Acid House"].caption())
+            self.assertEqual(brief.genre_params(), {"bpm": 125, "timesignature": "4"})
+            self.assertEqual(brief.duration_seconds, 25)
+            self.assertNotIn("reference_audio", brief.model_dump())
+
     def test_wire_contract_limits_duration_and_input(self):
         with self.assertRaises(ValueError):
             GenerationRequest(request_id="bad", music_prompt="test", lyrics="test", duration_seconds=90)
