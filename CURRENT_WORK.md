@@ -13,12 +13,11 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Claim only word-bank candidates used in the accepted rewrite
-
-REVIEW_SUMMARY: Prompt candidates remain unclaimed; only exact candidates used in the accepted final rewrite are committed atomically.
-VALIDATION: 52 targeted mocked tests and 6 subtests passed; no external calls.
-APPROVAL: Commit/push authorized. Main unchanged.
-NEXT_STEP: Review and optionally run the guarded development-only word-claim reset command; do not run it in production.
+CURRENT_TASK: Add DATING as the first centred source button
+REVIEW_SUMMARY: DATING shares the reusable source job and usage flow; DRIVEL defaults unchanged.
+VALIDATION: 4 offline source tests and the profile-editing Node test passed.
+APPROVAL: Commit/push authorized, including Andy's manual historicalFunnies.json update.
+NEXT_STEP: Review DATING; no deployment performed.
 
 ## Image style wording refinement
 
@@ -404,3 +403,29 @@ read_bank function passed; exact existing prefix and prepared suffix confirmed;
 all 1,710 entries case-insensitively unique. No application logic changes,
 Mongo access, claims changes, reset, provider calls, deployment or main changes.
 Files: nouns.csv and CURRENT_WORK.md. Commit/push authorized.
+
+
+## DATING reusable source — 2026-09-22
+
+REVIEW / CODEX. pet_profile.html inserts DATING before DRIVEL in the existing
+centred, wrapping source group. No CSS or existing button changes. The previews
+script mapping invokes the existing historical-funny job with argument dating.
+That job uses the existing get_all/increment_usage API with source=dating;
+random least-used selection, preview fields and SHIZZALISE workflow are shared.
+
+DRIVEL reads Mongo reusable_entries, not the seed JSON on each click. Its default
+API behavior remains unchanged. DATING reads data/seeds/lonelyHearts.json and
+idempotently seeds a separate dating_entries collection using content-derived IDs
+and $setOnInsert, retaining existing usage counts. Missing numberOftimesUsed is 0;
+extract is retained when present, otherwise description supplies the source body.
+Counters persist in Mongo, not the seed file. Changed seed content becomes a new
+entry; this initialization does not delete previously seeded entries.
+
+Included Andy's authorized manual historicalFunnies.json update unchanged; JSON
+parsing checked. No live Mongo/provider calls, claims changes, deployment or main
+changes. Rewrite/image/narration/jingle logic untouched.
+Validation: ./.venv/bin/python -m pytest tests/test_dating_source.py -q
+4 passed (two dependency deprecation warnings), with fake Mongo and HTTP. Covers
+real seed reading, fields, missing counts, persisted increments, least-used selection,
+DRIVEL isolation/regression, rendered button order and existing centring/wrapping CSS.
+node --test tests/profile_editing.test.js: 1 passed. git diff --check passed.

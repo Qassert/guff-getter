@@ -63,6 +63,7 @@ def confirm_temp_data(request: Request, rewrite_id: str | None = None, payload: 
 @router.get("/run_script/{script_name}")
 def run_script(script_name: str):
     script_mapping = {
+        "fetch_dating_from_api": [sys.executable, "-m", "newsmuncher.jobs.fetch_historical_funny", "dating"],
         "fetch_historicalFunny_from_api": [sys.executable, "-m", "newsmuncher.jobs.fetch_historical_funny"],
         "fetch_wikipedia_into_api": [sys.executable, "-m", "newsmuncher.jobs.fetch_wikipedia"],
         "fetch_poem_into_api": [sys.executable, "-m", "newsmuncher.jobs.fetch_poem"],

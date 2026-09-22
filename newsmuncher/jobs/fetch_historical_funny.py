@@ -6,11 +6,12 @@ import requests  # type: ignore
 
 REUSABLE_API_BASE_URL = os.getenv("REUSABLE_API_BASE_URL", "http://127.0.0.1:8000/reusable")
 
-def fetch_historical_funny_from_api():
+def fetch_historical_funny_from_api(source=None):
     """Fetch the least used historical funny entry from the API and store it temporarily."""
+    suffix = "?source=dating" if source == "dating" else ""
     try:
         # Fetch all entries from the API
-        response = requests.get(f"{REUSABLE_API_BASE_URL}/get_all/")
+        response = requests.get(f"{REUSABLE_API_BASE_URL}/get_all/{suffix}")
         response.raise_for_status()
         all_entries = response.json()
 
@@ -28,7 +29,7 @@ def fetch_historical_funny_from_api():
         selected_entry = random.choice(least_used_entries)
 
         # Increment the number of times used via the API
-        increment_response = requests.put(f"{REUSABLE_API_BASE_URL}/increment_usage/{selected_entry['id']}")
+        increment_response = requests.put(f"{REUSABLE_API_BASE_URL}/increment_usage/{selected_entry['id']}{suffix}")
         increment_response.raise_for_status()
 
         temp_data = {
@@ -52,4 +53,5 @@ def fetch_historical_funny_from_api():
         return None
 
 if __name__ == "__main__":
-    fetch_historical_funny_from_api()
+    import sys
+    fetch_historical_funny_from_api(sys.argv[1] if len(sys.argv) > 1 else None)
