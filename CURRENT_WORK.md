@@ -388,3 +388,19 @@ WORD_SHUFFLE_STATUS.md, CURRENT_WORK.md.
 Validation: ./.venv/bin/python -m pytest tests/test_permanent_word_claims.py tests/test_copy_edit_pass.py tests/test_source_preprocessing.py tests/test_image_generation.py -q
 52 passed, 6 subtests passed; existing dependency/cache warnings only. All providers
 mocked; no live OpenAI/Mongo calls, reset, deployment or media generation. REVIEW/CODEX.
+
+
+## Nouns bank expansion — 2026-09-22
+
+REVIEW / CODEX. User authorized including the pre-existing nouns.csv edit.
+That edit already appended all 1,000 entries from Downloads/
+newsmuncher_1000_new_nouns_comma_separated.txt in source order. Preserved the
+authorized CSV byte-for-byte; no second append was needed.
+Counts against HEAD: old 710, added 1,000, new 1,710; duplicate additions 0.
+Against the working bank, all 1,000 prepared entries were already present and
+therefore skipped on re-import. No existing nouns removed or altered.
+Validation: strict csv.reader parsing and isolated execution of the application's
+read_bank function passed; exact existing prefix and prepared suffix confirmed;
+all 1,710 entries case-insensitively unique. No application logic changes,
+Mongo access, claims changes, reset, provider calls, deployment or main changes.
+Files: nouns.csv and CURRENT_WORK.md. Commit/push authorized.
