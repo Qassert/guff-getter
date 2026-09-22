@@ -145,7 +145,7 @@ def extract_unique_words(file_path, num_words):
 
 # Function to load all random words into a dictionary
 def load_random_words(NumberOfWords):
-    """Load a fresh batch of random words, ensuring uniqueness across prompts."""
+    """Load unclaimed prompt candidates without permanently consuming them."""
     random_words = {}
     for category, filename in CSV_FILES.items():
         file_path = os.path.join(WORDS_FOLDER, filename)
@@ -158,6 +158,15 @@ def load_random_words(NumberOfWords):
         print(f"[DEBUG] Checking: {file_path} → Exists: {os.path.exists(file_path)}")
 
     return random_words
+
+
+def claim_used_words(contenders, result):
+    """Claim only supplied bank words present in the accepted final rewrite."""
+    return shared_bags().claim_used(
+        contenders,
+        result['crazyReplacement1Title'],
+        result['crazyReplacement1Extract'],
+    )
 
 
 # --------------

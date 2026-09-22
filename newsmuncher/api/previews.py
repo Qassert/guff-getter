@@ -8,8 +8,9 @@ import subprocess
 import sys
 import os
 from uuid import uuid4
-from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result, copy_edit_pass
+from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result, copy_edit_pass, claim_used_words
 from newsmuncher.utils.file_handler import load_prompt
+from newsmuncher.services.word_shuffle import WordClaimConflict
 
 
 from newsmuncher.services.image_generation import store, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path
@@ -122,7 +123,15 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         "contenders": prompt_template.get("contenders", {})
     }
 
-    full_result = store.complete_draft(rewrite_id, active_pet, full_result)
+    try:
+        full_result = store.complete_draft(
+            rewrite_id,
+            active_pet,
+            full_result,
+            before_save=lambda: claim_used_words(prompt_template.get('contenders', {}), result),
+        )
+    except WordClaimConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     if full_result is None:
         raise HTTPException(status_code=409, detail='Draft superseded by a newer rewrite.')
     # New drafts live only in the session's SQLite slot. Legacy JSON is not an archive.

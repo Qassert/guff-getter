@@ -127,7 +127,9 @@ class CopyEditPassTests(unittest.TestCase):
         fixture.setUp()
         try:
             routes = fixture.previews()
-            routes.prepare_prompt.return_value = {'full_prompt':'masked', 'preprocessing':None}
+            contenders = {'nouns': ['pass-one', 'pass-two']}
+            routes.prepare_prompt.return_value = {
+                'full_prompt':'masked', 'preprocessing':None, 'contenders': contenders}
             routes.send_prompt.return_value = {'title':'crazy', 'extract':'crazy body'}
             first = {k:v for k,v in fixture.result.items() if k.startswith('crazy')}
             routes.format_shizzalise_result.return_value = first
@@ -135,8 +137,58 @@ class CopyEditPassTests(unittest.TestCase):
                 routes.copy_edit_pass.return_value = polished
                 result = routes.shizzalise_data(routes.ShizzRequest(title='ORIGINAL',description='',extract='SECRET'), 'alice','alice')
                 routes.copy_edit_pass.assert_called_with(first)
+                routes.claim_used_words.assert_called_with(contenders, polished or first)
                 self.assertNotIn('ORIGINAL', str(routes.copy_edit_pass.call_args))
                 self.assertEqual(result['crazyReplacement1Title'], (polished or first)['crazyReplacement1Title'])
+        finally:
+            fixture.tearDown()
+            fixture.doCleanups()
+
+    def test_failed_generation_never_attempts_word_claim(self):
+        import test_image_generation as fixtures
+        fixture = fixtures.ImageTests()
+        fixture.setUp()
+        try:
+            routes = fixture.previews()
+            routes.prepare_prompt.return_value = {
+                'full_prompt': 'masked', 'preprocessing': None,
+                'contenders': {'nouns': ['unused']},
+            }
+            routes.send_prompt.return_value = None
+            with self.assertRaises(routes.HTTPException) as error:
+                routes.shizzalise_data(
+                    routes.ShizzRequest(title='source', description='', extract='source'),
+                    'alice', 'alice')
+            self.assertEqual(error.exception.status_code, 500)
+            routes.claim_used_words.assert_not_called()
+        finally:
+            fixture.tearDown()
+            fixture.doCleanups()
+
+    def test_concurrent_word_claim_conflict_does_not_complete_draft(self):
+        import test_image_generation as fixtures
+        fixture = fixtures.ImageTests()
+        fixture.setUp()
+        try:
+            routes = fixture.previews()
+            routes.prepare_prompt.return_value = {
+                'full_prompt': 'masked', 'preprocessing': None,
+                'contenders': {'nouns': ['moon']},
+            }
+            routes.send_prompt.return_value = {'title': 'Moon', 'extract': 'Body'}
+            routes.format_shizzalise_result.return_value = self.pass1_result
+            routes.copy_edit_pass.return_value = None
+            routes.claim_used_words.side_effect = routes.WordClaimConflict('concurrent claim')
+            with self.assertRaises(routes.HTTPException) as error:
+                routes.shizzalise_data(
+                    routes.ShizzRequest(title='source', description='', extract='source'),
+                    'alice', 'alice')
+            self.assertEqual(error.exception.status_code, 409)
+            with fixture.store.transaction() as db:
+                row = db.execute('SELECT state FROM rewrites').fetchone()
+                state = json.loads(row[0])
+            self.assertTrue(state['generating'])
+            self.assertNotIn('crazyReplacement1Title', state['result'])
         finally:
             fixture.tearDown()
             fixture.doCleanups()

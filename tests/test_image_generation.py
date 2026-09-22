@@ -55,7 +55,7 @@ class ImageTests(unittest.TestCase):
     def previews(self):
         # Import route definitions without importing text generation/OpenAI at all.
         clean = types.ModuleType('newsmuncher.utils.clean_data')
-        for name in ('prepare_prompt','send_prompt','format_shizzalise_result','copy_edit_pass'):
+        for name in ('prepare_prompt','send_prompt','format_shizzalise_result','copy_edit_pass','claim_used_words'):
             setattr(clean, name, MagicMock())
         source = types.ModuleType('newsmuncher.utils.source_preprocessing')
         source.log_overlap = MagicMock()
@@ -106,7 +106,7 @@ class ImageTests(unittest.TestCase):
     def test_rewrite_off_payload_and_on_identity(self):
         routes = self.previews()
         routes.load_prompt = MagicMock(return_value='prompt')
-        routes.prepare_prompt.return_value = {'full_prompt':'prompt', 'preprocessing':None}
+        routes.prepare_prompt.return_value = {'full_prompt':'prompt', 'preprocessing':None, 'contenders':{}}
         routes.send_prompt.return_value = {'title':'Moon soup', 'extract':'A cat paints the moon.'}
         routes.format_shizzalise_result.return_value = self.result
         # Make copy_edit_pass return None so it falls back to pass-1 result

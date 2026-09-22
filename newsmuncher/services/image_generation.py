@@ -177,11 +177,13 @@ class RewriteStore:
             db.execute('INSERT OR REPLACE INTO draft_slots VALUES (?, ?, ?)', (owner, session, rewrite_id))
         return rewrite_id
 
-    def complete_draft(self, rewrite_id, owner, result):
+    def complete_draft(self, rewrite_id, owner, result, before_save=None):
         with self.transaction() as db:
             state = self.read(db, rewrite_id, owner)
             if state.get('discarded'):
                 return None
+            if before_save:
+                before_save()
             state['result'] = {**result, 'rewrite_id': rewrite_id, 'nominated': False}
             state['generating'] = False
             self.save(db, rewrite_id, state)

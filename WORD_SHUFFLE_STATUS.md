@@ -1,4 +1,4 @@
-# Permanent global word claims and copy-edit pass
+# Final-output global word claims and copy-edit pass
 
 Branch: feature/global-word-shuffle. CODEX review checkpoint; do not push without approval.
 Baseline: e2bf84a (Kiro/Codex WIP). No CSVs modified in this pass.
@@ -10,17 +10,21 @@ Baseline: e2bf84a (Kiro/Codex WIP). No CSVs modified in this pass.
 - MongoDB funny_json_db.word_shuffle_bags stores one permanent claimed_words ledger
   per bank. It is never cleared on fingerprint changes. Existing ledger documents
   continue working unchanged; version and known_vocabulary_digest are informational.
-- find_one_and_update evaluates eligibility and selects a slice inside MongoDB,
-  unions it into claimed_words and returns that operation's last_claim atomically.
-  Python shuffles the full deduplicated master vocabulary, not a read of unused words.
-  Concurrent workers cannot return overlapping claims. Majority writes and TLS remain.
+- Candidate drawing reads the current ledger, excludes claimed words and makes no
+  permanent claim. After the accepted pass-2 result (or pass-1 fallback) is known,
+  exact case-insensitive candidate occurrences in its title/body are committed.
+  Unused candidates and failed generations consume nothing.
+- Final claims across banks use one Mongo transaction. Each conditional update rejects
+  any word claimed by a concurrent completed rewrite; a conflict aborts the transaction
+  and returns HTTP 409 before the rewrite is completed or returned. Majority writes and
+  TLS remain.
 - CSV additions become eligible if never claimed; unclaimed retained words remain
   eligible; removals are excluded from each request's vocabulary; removal/re-addition
   never clears historical claims. Exact string identity is retained (case changes are
   distinct words); no compound normalization. Banks remain independent. Names retain
   existing local sampling, outside the five shared-bank scope.
-- Insufficient words raises BankExhaustedError with no partial claim in that bank.
-  Claims in earlier banks, failed rewrites and filtered words remain consumed.
+- Insufficient words raises BankExhaustedError. Draws and filtered words remain
+  unclaimed; only exact occurrences in the final accepted output are permanent.
 - Legacy cursor-only documents fail closed. The earlier fingerprint-reset design
   could erase history, so a cursor prefix is not sufficient proof of all past usage.
   Recover history from authoritative backups/audits before converting such documents;
@@ -37,14 +41,13 @@ validated formatter and falls back safely. No original source is included in pas
 
 ## Verification
 
-25 targeted tests passed (14 permanent claims, 8 copy-edit, 3 UI-removal).
-Full suite: 116 tests passed, run once after targeted checks.
-Claims concurrency tested with a lock-backed Mongo operation mock, not live Atlas.
-Copy-edit model calls mocked. No live services or generated media.
+52 targeted tests passed plus 6 subtests. Claims concurrency and transaction rollback
+were tested with a lock-backed Mongo mock, not live Atlas. Copy-edit and generation
+calls were mocked. No live services or generated media.
 
 ## Risks / operations
 
-- MongoDB 4.2+ required for pipeline updates; one bank's ledger must fit 16 MiB.
+- MongoDB must support multi-document transactions; one bank's ledger must fit 16 MiB.
 - All instances must deploy the same current CSVs. An old worker with stale CSV
   contents can still claim an unclaimed removed word; coordinate vocabulary rollout.
 - Already erased historical claims cannot be reconstructed from a reset document.

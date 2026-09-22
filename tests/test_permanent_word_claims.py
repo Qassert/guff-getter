@@ -1,34 +1,23 @@
-"""Tests for permanent word claims independent of CSV changes.
-
-No MongoDB or paid services are contacted; all operations use the mocked
-AtomicCollection that implements the new claimed‑words set semantics.
-"""
+"""Offline tests for candidate selection and final-output word claims."""
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from pathlib import Path
 import hashlib
-import json
 import threading
-import time
 import unittest
 from unittest.mock import Mock, patch
+
 from pymongo.errors import DuplicateKeyError
-from newsmuncher.services.word_shuffle import PermanentWordClaims, read_bank, BANK_FILES, BankExhaustedError
+
+from newsmuncher.services.word_shuffle import (
+    BANK_FILES, BankExhaustedError, PermanentWordClaims, WordClaimConflict,
+)
 
 
 class AtomicCollection:
-    """Mock MongoDB collection for the new permanent‑claim schema.
-
-    Each document has:
-        _id: bank name
-        claimed_words: list of strings
-        known_vocabulary_digest: sha256 of sorted vocabulary
-        version: optimistic‑concurrency counter
-    """
-
     def __init__(self):
         self.docs = {}
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
     def find_one(self, query):
         with self.lock:
@@ -41,255 +30,128 @@ class AtomicCollection:
                 raise DuplicateKeyError('duplicate')
             self.docs[doc['_id']] = deepcopy(doc)
 
-    def find_one_and_update(self, query, update, return_document):
-        from pymongo import ReturnDocument
-        assert return_document == ReturnDocument.AFTER
-        available, count = update[0]['$set']['last_claim']['$slice']
-        assert query['$expr'] == {'$gte': [{'$size': available}, count]}
-        words = available['$filter']['input']['$literal']
+    def update_one(self, query, update, session=None):
         with self.lock:
             doc = self.docs.get(query['_id'])
-            if doc is None:
-                return None
-            # Model $expr evaluation BEFORE the ordinary type predicate, as Mongo may.
-            operand = available['$filter']['cond']['$not'][0]['$in'][1]
-            assert operand == {'$cond': [{'$isArray': '$claimed_words'}, '$claimed_words', []]}
-            ledger = doc.get('claimed_words')
-            safe_ledger = ledger if isinstance(ledger, list) else []
-            unused = [w for w in words if w not in safe_ledger]
-            if not isinstance(ledger, list):
-                return None
-            if len(unused) < count:
-                return None
-            doc['last_claim'] = unused[:count]
-            doc['claimed_words'].extend(doc['last_claim'])
-            doc['version'] = doc.get('version', 0) + 1
-            return deepcopy(doc)
+            claimed = doc.get('claimed_words') if doc else None
+            condition = query['claimed_words']
+            if not isinstance(claimed, list) or any(word in claimed for word in condition['$nin']):
+                return Mock(matched_count=0)
+            for word in update['$addToSet']['claimed_words']['$each']:
+                if word not in claimed:
+                    claimed.append(word)
+            doc['last_claim'] = deepcopy(update['$set']['last_claim'])
+            doc['version'] = doc.get('version', 0) + update['$inc']['version']
+            return Mock(matched_count=1)
 
-    def update_one(self, query, update):
+    def transaction(self, operation):
         with self.lock:
-            doc = self.docs.get(query['_id'])
-            if doc is None:
-                return Mock(modified_count=0)
-            if query.get('claimed_words') == {'$exists': False} and 'claimed_words' in doc:
-                return Mock(modified_count=0)
-            for key in ('cursor', 'cycle', 'source_sha256'):
-                if key in query and doc.get(key) != query[key]:
-                    return Mock(modified_count=0)
-            # Check optimistic‑concurrency version
-            if query.get('version') is not None and doc.get('version') != query['version']:
-                return Mock(modified_count=0)
-            # Apply update
-            if '$set' in update:
-                doc.update(update['$set'])
-            if '$addToSet' in update:
-                claimed = doc.setdefault('claimed_words', [])
-                to_add = update['$addToSet']['claimed_words']['$each']
-                for word in to_add:
-                    if word not in claimed:
-                        claimed.append(word)
-            if '$inc' in update:
-                for key, val in update['$inc'].items():
-                    doc[key] = doc.get(key, 0) + val
-            return Mock(modified_count=1)
+            snapshot = deepcopy(self.docs)
+            try:
+                return operation(None)
+            except Exception:
+                self.docs = snapshot
+                raise
 
 
-class PermanentClaimsTests(unittest.TestCase):
-    """Tests for the new permanent‑word‑claims independent of CSV changes."""
-
+class FinalWordClaimsTests(unittest.TestCase):
     def setUp(self):
         self.db = AtomicCollection()
-        self.claims = PermanentWordClaims(self.db, shuffle=lambda x: None)  # no shuffle
+        self.claims = PermanentWordClaims(
+            self.db, shuffle=lambda words: None, transaction_runner=self.db.transaction)
 
-    def _digest(self, words):
-        return hashlib.sha256(json.dumps(sorted(words), ensure_ascii=False).encode()).hexdigest()
+    def test_draw_selects_without_claiming(self):
+        self.assertEqual(self.claims.draw('nouns', ['teapot', 'moon'], 2), ['teapot', 'moon'])
+        self.assertEqual(self.db.docs['nouns']['claimed_words'], [])
 
-    def test_legacy_cursor_without_history_fails_closed(self):
-        for cycle in (1, 2):
-            old = {'_id':'legacy', 'words':['a','b'], 'cursor':1,
-                   'size':2, 'cycle':cycle, 'source_sha256':'old'}
-            self.db.docs['legacy'] = deepcopy(old)
-            with self.assertRaisesRegex(RuntimeError, 'historical claim recovery'):
-                self.claims.draw('legacy', ['a','b','new'], 1)
-            self.assertEqual(self.db.docs['legacy'], old)
+    def test_only_candidates_used_in_final_response_are_claimed(self):
+        candidates = {'nouns': ['teapot', 'moon'], 'animals': ['cat', 'yak']}
+        for bank, words in candidates.items():
+            self.claims.draw(bank, words, len(words))
+        used = self.claims.claim_used(candidates, 'The TEAPOT returns', 'A yak dances. Catsup stays.')
+        self.assertEqual(used, {'nouns': ['teapot'], 'animals': ['yak']})
+        self.assertEqual(self.db.docs['nouns']['claimed_words'], ['teapot'])
+        self.assertEqual(self.db.docs['animals']['claimed_words'], ['yak'])
 
-    def test_incomplete_ledgers_fail_closed_without_losing_history(self):
-        for extra in ({}, {'claimed_words': None}, {'claimed_words': 'used'}):
-            old = {'_id':'legacy', 'words':['used','unused'], 'cursor':1,
-                   'size':2, 'source_sha256':'old', **extra}
-            self.db.docs['legacy'] = deepcopy(old)
-            with self.assertRaisesRegex(RuntimeError, 'historical claim recovery'):
-                self.claims.draw('legacy', ['used','unused','new'], 1)
-            self.assertEqual(self.db.docs['legacy'], old)
+    def test_unused_and_failed_generation_claim_nothing(self):
+        candidates = {'nouns': ['unused']}
+        self.claims.draw('nouns', candidates['nouns'], 1)
+        # A failed provider never reaches claim_used.
+        self.assertEqual(self.db.docs['nouns']['claimed_words'], [])
+        self.assertEqual(self.claims.claim_used(candidates, 'Other title', 'Other body'), {})
+        self.assertEqual(self.db.docs['nouns']['claimed_words'], [])
+        self.assertEqual(self.claims.draw('nouns', ['unused'], 1), ['unused'])
 
-    def test_valid_history_without_optional_metadata_is_preserved(self):
-        self.db.docs['bank'] = {'_id':'bank', 'claimed_words':['used']}
-        self.assertEqual(self.claims.draw('bank', ['used','new'], 1), ['new'])
-        self.assertEqual(self.db.docs['bank']['claimed_words'], ['used','new'])
-        with self.assertRaises(BankExhaustedError):
-            PermanentWordClaims(self.db).draw('bank', ['used','new'], 1)
+    def test_concurrent_final_claim_has_one_winner(self):
+        candidates = {'nouns': ['moon']}
+        self.claims.draw('nouns', ['moon'], 1)
+        barrier = threading.Barrier(2)
 
-    def test_duplicate_and_dollar_prefixed_vocabulary(self):
-        self.assertEqual(self.claims.draw('bank', ['$word','$word','b'], 2), ['$word','b'])
-        with self.assertRaises(BankExhaustedError):
-            self.claims.draw('bank', ['$word','b'], 1)
+        def worker():
+            barrier.wait()
+            try:
+                self.claims.claim_used(candidates, 'Moon', 'body')
+                return 'claimed'
+            except WordClaimConflict:
+                return 'conflict'
 
-    def test_basic_claim_and_exhaustion(self):
-        """Words are claimed permanently; exhaustion raises BankExhaustedError."""
-        words = ['a', 'b', 'c', 'd', 'e']
-        self.assertEqual(self.claims.draw('bank', words, 2), ['a', 'b'])
-        self.assertEqual(self.claims.draw('bank', words, 2), ['c', 'd'])
-        self.assertEqual(self.claims.draw('bank', words, 1), ['e'])
-        # Bank is now exhausted in current vocabulary
-        with self.assertRaises(BankExhaustedError) as cm:
-            self.claims.draw('bank', words, 1)
-        self.assertIn("insufficient unclaimed", str(cm.exception))
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            outcomes = list(pool.map(lambda _: worker(), range(2)))
+        self.assertCountEqual(outcomes, ['claimed', 'conflict'])
+        self.assertEqual(self.db.docs['nouns']['claimed_words'], ['moon'])
 
-    def test_claim_persists_across_vocabulary_changes(self):
-        """A claimed word stays claimed even if CSV changes."""
-        words_v1 = ['apple', 'banana', 'cherry']
-        # Claim 'banana'
-        self.assertEqual(self.claims.draw('fruit', words_v1, 1), ['apple'])  # no shuffle
-        # Change CSV: remove 'apple', add 'date', keep 'banana', 'cherry'
-        words_v2 = ['banana', 'cherry', 'date']
-        # 'apple' is no longer in vocabulary → can't be claimed
-        # 'banana' and 'cherry' are still available
-        self.assertEqual(sorted(self.claims.draw('fruit', words_v2, 2)), ['banana', 'cherry'])
-        # 'date' is new and available
-        self.assertEqual(self.claims.draw('fruit', words_v2, 1), ['date'])
-        # Bank exhausted
-        with self.assertRaises(BankExhaustedError):
-            self.claims.draw('fruit', words_v2, 1)
+    def test_cross_bank_conflict_rolls_back_entire_claim(self):
+        for bank in ('nouns', 'animals'):
+            self.claims.draw(bank, ['moon'], 1)
+        self.claims.claim_used({'animals': ['moon']}, '', 'moon')
+        with self.assertRaises(WordClaimConflict):
+            self.claims.claim_used({'nouns': ['moon'], 'animals': ['moon']}, 'moon', '')
+        self.assertEqual(self.db.docs['nouns']['claimed_words'], [])
+        self.assertEqual(self.db.docs['animals']['claimed_words'], ['moon'])
 
-    def test_new_words_added_become_available(self):
-        """New words added to CSV become available for future claims."""
-        words_v1 = ['x', 'y']
-        self.assertEqual(self.claims.draw('bank', words_v1, 2), ['x', 'y'])
-        # Add new word 'z'
-        words_v2 = ['x', 'y', 'z']
-        # 'x' and 'y' are already claimed, 'z' is new and available
-        self.assertEqual(self.claims.draw('bank', words_v2, 1), ['z'])
-        with self.assertRaises(BankExhaustedError):
-            self.claims.draw('bank', words_v2, 1)
-
-    def test_removed_words_cannot_be_claimed(self):
-        """Words removed from CSV are not claimable (they're absent)."""
-        words_v1 = ['alpha', 'beta', 'gamma']
-        self.assertEqual(self.claims.draw('bank', words_v1, 1), ['alpha'])
-        # Remove 'beta' from CSV
-        words_v2 = ['alpha', 'gamma']
-        # Only 'gamma' is available ('alpha' claimed, 'beta' gone)
-        self.assertEqual(self.claims.draw('bank', words_v2, 1), ['gamma'])
-        with self.assertRaises(BankExhaustedError):
-            self.claims.draw('bank', words_v2, 1)
-
-    def test_previously_used_word_removed_and_readded_stays_used(self):
-        """If a previously used word is removed and later added back, it remains used."""
-        words_v1 = ['one', 'two', 'three']
-        self.assertEqual(self.claims.draw('bank', words_v1, 1), ['one'])  # claim 'one'
-        # Remove 'one' from CSV
-        words_v2 = ['two', 'three']
-        self.assertEqual(self.claims.draw('bank', words_v2, 2), ['two', 'three'])
-        # Add 'one' back
-        words_v3 = ['one', 'two', 'three']
-        # 'one' was previously claimed, so still unavailable
-        with self.assertRaises(BankExhaustedError):
-            self.claims.draw('bank', words_v3, 1)
-
-    def test_concurrent_claims_never_overlap(self):
-        """Multiple threads claiming from the same bank receive disjoint words."""
-        words = [str(i) for i in range(100)]
-        claimed = set()
-        lock = threading.Lock()
-        
-        # Use a single shared claims instance (atomicity is in the database layer)
-        # but we need to ensure each worker sees updated state.
-        # For the mock, we'll share the same self.db which has thread-safe locking.
-        def worker(_):
-            # Use the same claims instance but with deterministic shuffle
-            # Create a new instance with reverse shuffle for predictable order
-            local_claims = PermanentWordClaims(self.db, shuffle=lambda x: x.reverse())
-            result = local_claims.draw('shared', words, 5, max_attempts=20)
-            with lock:
-                for w in result:
-                    # In a real concurrent scenario with optimistic concurrency,
-                    # overlaps would be prevented by the version check.
-                    # For this test, we just verify no duplicates in our results.
-                    if w in claimed:
-                        # This shouldn't happen with proper atomic updates
-                        # but our mock's update_one might not be perfectly thread-safe
-                        # across different PermanentWordClaims instances.
-                        pass
-                    claimed.add(w)
-            return result
-
-        with ThreadPoolExecutor(20) as pool:
-            batches = list(pool.map(worker, range(20)))
-        drawn = [word for batch in batches for word in batch]
-        # All 100 words should be claimed (might have duplicates if mock imperfect)
-        self.assertEqual(len(set(drawn)), 100)  # No duplicates
-        self.assertEqual(set(drawn), set(words))
-        # Bank is now exhausted
-        with self.assertRaises(BankExhaustedError):
-            self.claims.draw('shared', words, 1)
-
-    def test_bank_independence(self):
-        """Different banks have independent claimed‑words sets."""
-        self.claims.draw('animals', ['dog', 'cat', 'emu'], 3)
-        with self.assertRaises(BankExhaustedError):
-            self.claims.draw('animals', ['dog', 'cat', 'emu'], 1)
-        # 'places' bank untouched
-        self.assertEqual(self.claims.draw('places', ['London', 'Paris'], 1), ['London'])
-        self.assertEqual(self.claims.draw('places', ['London', 'Paris'], 1), ['Paris'])
-
-    def test_persistence_across_instances(self):
-        """A second PermanentWordClaims instance sees the same claimed words."""
-        words = ['x', 'y', 'z']
-        self.assertEqual(self.claims.draw('persist', words, 1), ['x'])
-        # Second instance (simulating a different process)
-        claims2 = PermanentWordClaims(self.db, shuffle=lambda x: None)
-        self.assertEqual(claims2.draw('persist', words, 1), ['y'])
-        # First instance sees same state
-        self.assertEqual(self.claims.draw('persist', words, 1), ['z'])
-
-    def test_csvs_read_only_and_not_modified(self):
-        """Actual CSV files are never modified; claimed state is separate."""
+    def test_claimed_words_are_excluded_and_csvs_stay_read_only(self):
         from newsmuncher.utils import clean_data
-        paths = [Path('newsmuncher/resources/words') / f for f in BANK_FILES.values()]
-        hashes = [hashlib.sha256(p.read_bytes()).hexdigest() for p in paths]
+        paths = [Path('newsmuncher/resources/words') / name for name in BANK_FILES.values()]
+        before = [hashlib.sha256(path.read_bytes()).hexdigest() for path in paths]
+        self.claims.draw('nouns', ['used', 'free'], 1)
+        self.claims.claim_used({'nouns': ['used']}, 'used', '')
+        self.assertEqual(self.claims.draw('nouns', ['used', 'free'], 1), ['free'])
         with patch.object(clean_data, 'shared_bags', return_value=self.claims), patch('builtins.print'):
-            result = clean_data.load_random_words(10)
-        for bank in BANK_FILES:
-            self.assertEqual(len(result[bank]), 10)
-        # CSV files unchanged
-        self.assertEqual(hashes, [hashlib.sha256(p.read_bytes()).hexdigest() for p in paths])
+            result = clean_data.load_random_words(2)
+        self.assertTrue(all(len(result[bank]) == 2 for bank in BANK_FILES))
+        self.assertEqual(before, [hashlib.sha256(path.read_bytes()).hexdigest() for path in paths])
 
-    def test_negative_count_or_empty_words_raises(self):
-        """Invalid arguments raise ValueError."""
+    def test_legacy_or_exhausted_ledgers_fail_closed(self):
+        self.db.docs['legacy'] = {'_id': 'legacy', 'claimed_words': None}
+        with self.assertRaisesRegex(RuntimeError, 'historical claim recovery'):
+            self.claims.draw('legacy', ['word'], 1)
+        self.db.docs['nouns'] = {'_id': 'nouns', 'claimed_words': ['used']}
+        with self.assertRaises(BankExhaustedError):
+            self.claims.draw('nouns', ['used'], 1)
+
+    def test_invalid_counts(self):
         with self.assertRaises(ValueError):
-            self.claims.draw('bank', ['word'], -1)
+            self.claims.draw('nouns', ['word'], -1)
         with self.assertRaises(ValueError):
-            self.claims.draw('bank', [], 1)
-        # Zero count is allowed and returns empty list
-        self.assertEqual(self.claims.draw('bank', ['word'], 0), [])
+            self.claims.draw('nouns', [], 1)
+        self.assertEqual(self.claims.draw('nouns', ['word'], 0), [])
 
-    def test_selection_is_atomic_without_reading_unused_words(self):
-        db = Mock()
-        db.find_one_and_update.return_value = {'last_claim': ['b']}
-        result = PermanentWordClaims(db, shuffle=lambda x: None).draw('bank', ['a','b'], 1)
-        self.assertEqual(result, ['b'])
-        db.find_one.assert_not_called()
-        db.update_one.assert_not_called()
-        db.find_one_and_update.assert_called_once()
 
-    def test_database_failure_does_not_fall_back(self):
-        """If the database operation fails, the caller receives the error."""
-        from unittest.mock import Mock
-        db = Mock()
-        db.find_one_and_update.side_effect = RuntimeError('offline')
-        db.insert_one = Mock()
-        with self.assertRaises(RuntimeError):
-            PermanentWordClaims(db).draw('a', ['one'], 1)
+class ResetWordClaimsTests(unittest.TestCase):
+    def test_reset_targets_only_supplied_word_claim_collection(self):
+        from scripts.reset_word_claims import COLLECTION, DATABASE, reset_word_claims
+        collection = Mock()
+        collection.delete_many.return_value.deleted_count = 5
+        self.assertEqual(reset_word_claims(collection), 5)
+        collection.delete_many.assert_called_once_with({})
+        self.assertEqual((DATABASE, COLLECTION), ('funny_json_db', 'word_shuffle_bags'))
+
+    def test_command_refuses_non_development_environment_before_connecting(self):
+        from scripts.reset_word_claims import main
+        with patch.dict('os.environ', {}, clear=True), patch('scripts.reset_word_claims.MongoClient') as client:
+            with self.assertRaises(SystemExit):
+                main(['--confirm', 'RESET-WORD-CLAIMS'])
+        client.assert_not_called()
 
 
 if __name__ == '__main__':

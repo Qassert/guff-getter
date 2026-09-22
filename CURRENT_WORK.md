@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Integrate narration controls into the profile parchment
+CURRENT_TASK: Claim only word-bank candidates used in the accepted rewrite
 
-REVIEW_SUMMARY: Narration is integrated into the response parchment with one context-sensitive control; manual saved selector and profile footer removed.
-VALIDATION: 18 targeted frontend/template tests passed; no external calls.
+REVIEW_SUMMARY: Prompt candidates remain unclaimed; only exact candidates used in the accepted final rewrite are committed atomically.
+VALIDATION: 52 targeted mocked tests and 6 subtests passed; no external calls.
 APPROVAL: Commit/push authorized. Main unchanged.
-NEXT_STEP: Review the profile page visually; current nominated rewrites still resolve and reuse saved narration automatically.
+NEXT_STEP: Review and optionally run the guarded development-only word-claim reset command; do not run it in production.
 
 ## Image style wording refinement
 
@@ -356,3 +356,35 @@ CURRENT_WORK.md.
 Validation: ./.venv/bin/python -m pytest tests/test_narration.py tests/test_jingle_frontend.py -q
 18 passed; two existing dependency warnings. Provider interactions remain mocked;
 no live calls, generation, deployment or media changes. REVIEW / CODEX.
+
+
+## Final-output word claims — 2026-09-22
+
+Root cause: load_random_words called PermanentWordClaims.draw during prepare_prompt;
+draw used find_one_and_update to append every selected candidate to claimed_words
+before pass 1 started. Consequently unused prompt words and failed requests consumed
+the full draw permanently.
+
+Draw now reads the ledger and selects unclaimed candidates without mutating claims.
+After pass 2 succeeds, or validated pass 1 becomes the fallback, exact whole-candidate
+matches in the accepted final title/body are calculated case-insensitively. Only those
+matches are committed. The commit runs across all affected bank documents in one Mongo
+transaction; each update requires that none of its words was already claimed. A
+concurrent conflict aborts every bank update and returns HTTP 409 before the local draft
+is completed or returned. Unused candidates and failed pass-1 generation claim nothing.
+CSV master vocabularies remain read-only; pass-2 prompts/behaviour are unchanged.
+
+Guarded development reset (not run):
+NEWSMUNCHER_ENV=development ./.venv/bin/python -m scripts.reset_word_claims --confirm RESET-WORD-CLAIMS
+The script hard-codes funny_json_db.word_shuffle_bags and calls delete_many only on
+that collection. It refuses to connect unless both the environment guard and exact
+confirmation are supplied. It does not touch nominations, pets, users or media state.
+
+Files: newsmuncher/services/word_shuffle.py, newsmuncher/utils/clean_data.py,
+newsmuncher/api/previews.py, newsmuncher/services/image_generation.py,
+scripts/reset_word_claims.py, tests/test_permanent_word_claims.py,
+tests/test_copy_edit_pass.py, tests/test_image_generation.py,
+WORD_SHUFFLE_STATUS.md, CURRENT_WORK.md.
+Validation: ./.venv/bin/python -m pytest tests/test_permanent_word_claims.py tests/test_copy_edit_pass.py tests/test_source_preprocessing.py tests/test_image_generation.py -q
+52 passed, 6 subtests passed; existing dependency/cache warnings only. All providers
+mocked; no live OpenAI/Mongo calls, reset, deployment or media generation. REVIEW/CODEX.
