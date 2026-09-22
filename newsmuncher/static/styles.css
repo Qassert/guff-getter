@@ -442,4 +442,14 @@ body { isolation: isolate; }
 .profile-page #jingleStop[hidden] { display: none; }
 .profile-page .jingle-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .profile-page #jingleMessage { font-family: var(--print-body-font); font-size: .9rem; overflow-wrap: anywhere; }
-
+.profile-page .narration-controls {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 8px 14px; margin: 20px 0 12px;
+}
+.profile-page .narration-controls audio { width: min(100%, 420px); }
+.profile-page .narration-controls audio[hidden],
+.profile-page .narration-controls #narrationButton[hidden] { display: none; }
+.profile-page #narrationMessage {
+  flex-basis: 100%; margin: 0; text-align: center;
+  font-family: var(--print-body-font); font-size: .9rem; overflow-wrap: anywhere;
+}

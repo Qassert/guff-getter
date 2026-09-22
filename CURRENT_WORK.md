@@ -13,12 +13,12 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Lyric-friendly production genre pool
+CURRENT_TASK: Integrate narration controls into the profile parchment
 
-REVIEW_SUMMARY: Exact requested 20-genre production pool, explicit clear lead vocals; historical profiles retained.
-VALIDATION: 93 targeted mocked tests passed; no external calls or deployment.
+REVIEW_SUMMARY: Narration is integrated into the response parchment with one context-sensitive control; manual saved selector and profile footer removed.
+VALIDATION: 18 targeted frontend/template tests passed; no external calls.
 APPROVAL: Commit/push authorized. Main unchanged.
-NEXT_STEP: Restart local app to use new pool; no Modal redeploy required for this profile-data change.
+NEXT_STEP: Review the profile page visually; current nominated rewrites still resolve and reuse saved narration automatically.
 
 ## Image style wording refinement
 
@@ -328,3 +328,31 @@ Validation: ./.venv/bin/python -m pytest tests/test_jingle_brief.py tests/test_j
 93 passed, two existing dependency warnings. Tests exercise every active genre,
 explicit vocal cues, single-call brief, historical Acid House BPM/meter and cache reuse.
 No live services, deployment or audio generation. REVIEW / CODEX; push authorized.
+
+
+## Profile narration UI cleanup — 2026-09-22
+
+The narration commit had appended narrationControls as a generic container sibling
+after outputContainer. Shared container styling created the large white card and its
+normal document flow pushed the rest of the page/footer downward. The original lower
+response parchment was never removed; outputContainer remained immediately above it.
+
+Narration controls now live inside outputContainer. Before audio exists, the single
+visible control is READ ALOUD. The existing per-rewrite lookup still resolves saved
+audio without a provider call; when audio exists, READ ALOUD is hidden and the native
+audio control plus a small voice/status line are shown. The manual Saved narrations
+select, its separate play button, and their list-fetching JS were removed. Narration
+and jingle APIs, generation, persistence and media are unchanged. Jingle controls,
+nomination, SHIZZALISE, image mode and both parchment surfaces remain intact.
+
+base.html now exposes its existing footer as an overridable block; pet_profile.html
+renders that block empty, removing the profile-page footer without changing other
+pages. Responsive audio width is bounded to the parchment.
+
+Files: newsmuncher/templates/base.html, newsmuncher/templates/pet_profile.html,
+newsmuncher/static/narration.js, newsmuncher/static/script.js,
+newsmuncher/static/styles.css, tests/narration.test.js, tests/test_narration.py,
+CURRENT_WORK.md.
+Validation: ./.venv/bin/python -m pytest tests/test_narration.py tests/test_jingle_frontend.py -q
+18 passed; two existing dependency warnings. Provider interactions remain mocked;
+no live calls, generation, deployment or media changes. REVIEW / CODEX.

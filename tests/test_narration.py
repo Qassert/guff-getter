@@ -291,8 +291,16 @@ def test_frontend_and_template():
     parser = IDs()
     parser.feed(html)
     assert len(parser.ids) == len(set(parser.ids))
+    assert html.count('id="narrationButton"') == 1
     assert 'onclick="narrationUI.act()"' in html
     assert 'preload="none"' in html
+    assert 'id="narrationControls" class="narration-controls"' in html
+    assert 'id="narrationControls" class="container"' not in html
+    assert 'savedNarration' not in html
+    assert 'PLAY saved narration' not in html
+    assert 'class="site-footer"' not in html
+    assert 'A little rough around the edges.' not in html
+    assert 'id="jingleControls" class="jingle-controls" hidden' in html
 
 
 def test_null_metadata_and_oversize_text_fail_without_spending(setup):

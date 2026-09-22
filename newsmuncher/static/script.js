@@ -184,7 +184,6 @@ function bankThisBeauty() {
                 document.getElementById('bankButton').textContent = 'NOMINATED';
                 if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
             }
-            if (typeof narrationUI !== 'undefined') narrationUI.discover();
             if (typeof jingleUI !== 'undefined') jingleUI.discover();
             alert("Result nominated (saved for possible promotion).");
             hideLoader();
@@ -275,7 +274,6 @@ async function restoreImageRewrite() {
 }
 
 window.onload = () => {
-    if (typeof narrationUI !== "undefined") narrationUI.discover();
     document.getElementById('generateImages').checked = false;
     populateTempData();
     restoreImageRewrite();

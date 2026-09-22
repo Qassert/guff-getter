@@ -16,7 +16,7 @@
   </header>
   {% endblock %}
   <main id="main-content" class="site-main">{% block content %}{% endblock %}</main>
-  <footer class="site-footer"><span>NEWSMUNCHER</span><span>A little rough around the edges.</span></footer>
+  {% block footer %}<footer class="site-footer"><span>NEWSMUNCHER</span><span>A little rough around the edges.</span></footer>{% endblock %}
   {% block scripts %}{% endblock %}
 </body>
 </html>
