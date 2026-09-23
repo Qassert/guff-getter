@@ -162,18 +162,30 @@
     const page = get('galleryPage'), status = get('galleryStatus'), promote = get('galleryPromote');
     const view = {
         loading() { status.textContent = 'Turning the page…'; promote.disabled = true; page.setAttribute('aria-busy', 'true'); },
-        empty() { page.hidden = true; status.textContent = 'The collection is waiting for its first nomination. Head back to NewsMuncher to nominate a creation.'; },
+        empty() { page.hidden = true; page.setAttribute('aria-busy', 'false'); status.textContent = 'The collection is waiting for its first nomination. Head back to NewsMuncher to nominate a creation.'; },
         show(item) {
             get('galleryTitle').textContent = item.title || 'Untitled creation';
             get('galleryBody').textContent = item.body || 'No saved text for this creation.';
             get('galleryPromoted').hidden = !item.promoted;
             promote.textContent = item.promoted ? 'PROMOTED' : 'PROMOTE';
             promote.disabled = item.promoted;
-            const image = get('galleryImage');
-            image.removeAttribute('src');
+            // A fresh image prevents a late error from an old URL hiding the new page.
+            const image = document.createElement('img');
+            image.id = 'galleryImage'; image.alt = ''; image.decoding = 'async';
+            get('galleryImage').replaceWith(image);
+            image.addEventListener('error', () => {
+                if (get('galleryImage') === image) {
+                    get('galleryIllustration').hidden = true;
+                    page.classList.remove('has-image');
+                }
+            });
+            page.classList.toggle('has-image', !!item.image_url);
             get('galleryIllustration').hidden = !item.image_url;
             if (item.image_url) image.src = item.image_url;
             page.hidden = false;
+            page.classList.remove('turning');
+            void page.offsetWidth;
+            page.classList.add('turning');
             page.setAttribute('aria-busy', 'false');
             status.textContent = '';
         },
@@ -196,7 +208,7 @@
     const gallery = new PromotionGallery({view, afterDisplay, media});
     get('galleryPlayAudio').addEventListener('click', () => media.play());
     get('galleryStopAudio').addEventListener('click', () => media.pause());
-    get('galleryImage').addEventListener('error', () => { get('galleryIllustration').hidden = true; });
+    page.addEventListener('animationend', () => page.classList.remove('turning'));
     get('galleryNext').addEventListener('click', () => gallery.next());
     promote.addEventListener('click', () => gallery.promote());
     window.addEventListener('pagehide', () => gallery.leave());

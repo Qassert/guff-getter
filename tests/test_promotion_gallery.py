@@ -277,3 +277,14 @@ def test_gallery_page_and_navigation(routes):
     assert 'promotion-gallery.js' in response.text
     assert 'script.js' not in response.text and 'MAKE JINGLE' not in response.text
     assert '/promotion-gallery/' in Path('newsmuncher/templates/pet_profile.html').read_text()
+
+
+def test_polish_accessibility_and_scoped_styles():
+    css = Path('newsmuncher/static/promotion-gallery.css').read_text()
+    template = Path('newsmuncher/templates/promotion_gallery.html').read_text()
+    assert '@media (prefers-reduced-motion: reduce)' in css
+    assert '.gallery-page.turning { animation: none; }' in css
+    assert '@media (max-width: 620px)' in css
+    assert '.promotion-gallery [hidden] { display: none !important; }' in css
+    assert 'aria-live="polite"' in template and 'aria-label="Review and page navigation"' in template
+    assert 'tabindex="-1"' not in template  # Native buttons/links, no focus trap.

@@ -17,3 +17,48 @@
 .gallery-audio { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .gallery-audio[hidden], .gallery-audio [hidden] { display: none; }
 .gallery-audio .funky-button { font-size: .8rem; }
+
+/* A shallow book fold, built from the existing parchment artwork. */
+.promotion-gallery-page .site-main { padding-top: 28px; }
+.promotion-gallery h1 { font-size: clamp(2.4rem, 5vw, 4.2rem); }
+.gallery-page {
+  position: relative; isolation: isolate; transform-origin: left center;
+  border: 24px solid transparent; border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  padding: clamp(12px, 2.8vw, 36px); background-clip: padding-box;
+  box-shadow: none; min-height: 260px;
+}
+.gallery-page::after {
+  content: ''; position: absolute; inset: 0 auto 0 0; width: 22px; z-index: -1;
+  background: linear-gradient(90deg, #5e472514, transparent); pointer-events: none;
+}
+.gallery-page.turning { animation: gallery-turn 360ms ease-out both; }
+@keyframes gallery-turn {
+  from { opacity: .35; transform: perspective(1600px) rotateY(-7deg) translateX(8px); }
+  to { opacity: 1; transform: perspective(1600px) rotateY(0) translateX(0); }
+}
+.gallery-page[aria-busy="true"] { opacity: .6; }
+.gallery-status { color: var(--muted); }
+.gallery-stamp { display: inline-block; border: 2px solid currentColor; padding: 4px 10px; transform: rotate(-3deg); }
+.gallery-nav a { text-decoration: none; }
+.gallery-controls button { min-height: 48px; }
+@media (min-width: 850px) {
+  .gallery-page.has-image { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  .gallery-page.has-image figure { position: sticky; top: 24px; margin: 0; }
+}
+@media (max-width: 620px) {
+  .promotion-gallery-page .site-main { width: calc(100% - 24px); padding-top: 20px; }
+  .gallery-nav > span { display: none; }
+  .gallery-nav a { font-size: .8rem; }
+  .promotion-gallery h1 { margin-top: 24px; }
+  .gallery-page { border-width: 14px; padding: 14px 10px; }
+  .gallery-page figure { margin-bottom: 24px; }
+  .gallery-page img { max-height: 48vh; }
+  .gallery-controls { gap: 12px; }
+  .gallery-controls button { flex: 1 1 140px; font-size: .85rem; }
+  .gallery-body { line-height: 1.65; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-page.turning { animation: none; }
+}
+/* Hidden states must win over the desktop image/text grid. */
+.promotion-gallery [hidden] { display: none !important; }

@@ -13,9 +13,9 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Promotion Gallery — milestone 4 media lifecycle complete
+CURRENT_TASK: Promotion Gallery — milestone 5 flip-book polish complete
 APPROVAL: Autonomous milestone commits/pushes authorized. No deployment or live generation.
-NEXT_STEP: Milestone 5 responsive page-turn polish and visual verification.
+NEXT_STEP: Milestone 6 regression, final diff review, edge-case fixes.
 
 ## Promotion Gallery milestone plan — 2026-09-22
 
@@ -24,7 +24,7 @@ OWNER: CODEX. Branch feature/promotion-gallery, based on 903f5d1.
 - [x] M2 Data/backend, private access, targeted tests
 - [x] M3 Gallery page/navigation/text/images/promotion
 - [x] M4 Media lifecycle and race tests
-- [ ] M5 Responsive flip-book polish and fallbacks
+- [x] M5 Responsive flip-book polish and fallbacks
 - [ ] M6 Regression, complete diff review, REVIEW checkpoint
 
 Discovery: pet_profile.html is served by api/pets.py. api/previews.py banks drafts
@@ -502,3 +502,12 @@ starts; explicit PLAY AUDIO is the browser-permission fallback. Missing/unsuppor
 media does not block navigation. No silent-audio or autoplay-policy bypass.
 9 Node gallery tests and 8 Python gallery tests pass offline, including late startup,
 rapid navigation, blocked autoplay, single/no tracks and deliberate restart.
+
+Promotion Gallery M5 checkpoint: existing parchment artwork, shallow CSS book-turn,
+desktop image/text spread and stacked mobile layout; reduced-motion override, native
+keyboard controls, loading/empty/sign-in and missing-image fallbacks. Hidden states
+explicitly override the desktop grid. Old image errors cannot hide a newer image.
+9 Python + 9 Node gallery tests passed offline. Visual screenshot/browser interaction
+check was attempted with a loopback fixture only, but no browser connection is available
+and native Computer Use permissions are not granted. No production app was opened.
+Antigravity: inspected agy --help only; no readily available read-only mode, skipped.
