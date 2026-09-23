@@ -56,3 +56,65 @@ test('late promotion does not change another page; leaving cancels retrieval', a
     assert.equal(gallery.current.promoted,false);
     gallery.leave(); assert(gallery.abort.signal.aborted);
 });
+
+const {GalleryMedia} = require('../newsmuncher/static/promotion-gallery.js');
+class FakeAudio {
+    constructor(start) { this.start=start; this.src=''; this.playing=false; this.events={}; this.calls=0; }
+    addEventListener(name, callback) {this.events[name]=callback;}
+    play() { this.calls++; return this.start().then(() => {this.playing=true; this.events.playing?.();}); }
+    pause() {this.playing=false;}
+    removeAttribute() {this.src='';}
+    load() {this.loaded=true;}
+}
+function mediaSetup(starts=[]) {
+    const players=[], states=[];
+    const media = new GalleryMedia({makeAudio:()=>{
+        const player=new FakeAudio(starts.shift() || (()=>Promise.resolve())); players.push(player); return player;
+    },status:s=>states.push(s)});
+    return {media,players,states};
+}
+test('both media play calls start together; text-only and single-track pages work', async()=>{
+    const music=deferred(), voice=deferred();
+    const {media,players}=mediaSetup([()=>music.promise,()=>voice.promise]);
+    const start=media.activate({jingle_url:'/music',narration_url:'/voice'});
+    assert.deepEqual(players.map(p=>p.calls),[1,1]);
+    music.resolve();voice.resolve();await start;
+    assert(players.every(p=>p.playing));
+    await media.activate({narration_url:'/voice-only'});
+    assert(players.slice(0,2).every(p=>!p.playing && p.src===''));
+    assert(players[2].playing);
+    await media.activate({}); assert(!players[2].playing);
+});
+test('rapid turns abort old media immediately and pending old startup cannot revive it', async()=>{
+    const old=deferred();
+    const {media,players}=mediaSetup([()=>old.promise]);
+    const pending=media.activate({jingle_url:'/old'});
+    await media.activate({narration_url:'/new'});
+    assert.equal(players[0].src,''); assert(players[0].loaded);
+    old.resolve();await pending;
+    assert(!players[0].playing && players[1].playing);
+    media.stop();assert(players.every(p=>!p.playing && p.src===''));
+});
+test('autoplay blocks gracefully and explicit play retries; missing media is silent', async()=>{
+    let blocked=true;
+    const {media,players,states}=mediaSetup([()=>blocked ? Promise.reject({name:'NotAllowedError'}) : Promise.resolve(),()=>Promise.reject({name:'NotSupportedError'})]);
+    await media.activate({jingle_url:'/music',narration_url:'/missing'});
+    assert.equal(states.at(-1).blocked,true);
+    blocked=false; await media.play(); assert(players[0].playing);
+    assert.equal(states.at(-1).blocked,false);
+});
+test('STOP cancels pending playback and permits deliberate restart',async()=>{
+    const old=deferred(); const {media,players}=mediaSetup([()=>old.promise]);
+    const pending=media.activate({jingle_url:'/old'});
+    media.pause(); old.resolve(); await pending;
+    assert(!players[0].playing);
+    await media.play(); assert(players[1].playing);
+});
+test('next stops current audio before waiting on retrieval and page exit stops playback',async()=>{
+    const pending=deferred(); const {media,players}=mediaSetup();
+    await media.activate({jingle_url:'/old'});
+    const {gallery}=setup(()=>pending.promise); gallery.media=media;
+    const task=gallery.next(); assert(!players[0].playing);
+    gallery.leave(); pending.resolve(response({item:item('late'),view_token:'late'})); await task;
+    assert(!gallery.current);
+});

@@ -13,9 +13,9 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Promotion Gallery — milestone 3 gallery page complete
+CURRENT_TASK: Promotion Gallery — milestone 4 media lifecycle complete
 APPROVAL: Autonomous milestone commits/pushes authorized. No deployment or live generation.
-NEXT_STEP: Implement milestone 4 audio lifecycle and race tests.
+NEXT_STEP: Milestone 5 responsive page-turn polish and visual verification.
 
 ## Promotion Gallery milestone plan — 2026-09-22
 
@@ -23,7 +23,7 @@ OWNER: CODEX. Branch feature/promotion-gallery, based on 903f5d1.
 - [x] M1 Discovery and design (planning checkpoint)
 - [x] M2 Data/backend, private access, targeted tests
 - [x] M3 Gallery page/navigation/text/images/promotion
-- [ ] M4 Media lifecycle and race tests
+- [x] M4 Media lifecycle and race tests
 - [ ] M5 Responsive flip-book polish and fallbacks
 - [ ] M6 Regression, complete diff review, REVIEW checkpoint
 
@@ -494,3 +494,11 @@ state, empty state and sign-in gate. No generation scripts loaded. Display ACK w
 for a visible painted page; next selection waits for the preceding ACK. Late network
 and promotion callbacks cannot replace the active item. 12 Python tests (gallery +
 DATING) and 5 Node tests (gallery + existing profile controls) pass offline.
+
+Promotion Gallery M4 checkpoint: per-item audio objects for stored jingle/narration,
+both play() calls issued together. NEXT/pagehide stop and unload old tracks before
+network waits; generation tokens guard late play promises/events. STOP cancels pending
+starts; explicit PLAY AUDIO is the browser-permission fallback. Missing/unsupported
+media does not block navigation. No silent-audio or autoplay-policy bypass.
+9 Node gallery tests and 8 Python gallery tests pass offline, including late startup,
+rapid navigation, blocked autoplay, single/no tracks and deliberate restart.

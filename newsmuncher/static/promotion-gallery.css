@@ -13,3 +13,7 @@
 .gallery-stamp { font-weight: 800; letter-spacing: .1em; color: #4c632d; }
 .gallery-controls { justify-content: center; margin: 24px 0; }
 .gallery-signin { margin-top: 32px; }
+
+.gallery-audio { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.gallery-audio[hidden], .gallery-audio [hidden] { display: none; }
+.gallery-audio .funky-button { font-size: .8rem; }

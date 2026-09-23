@@ -1,9 +1,85 @@
 /* Stored nominations only; never calls a generation endpoint. */
 (function (root) {
     'use strict';
+    class GalleryMedia {
+        constructor({makeAudio = () => new Audio(), status = () => {}} = {}) {
+            this.makeAudio = makeAudio;
+            this.status = status;
+            this.generation = 0;
+            this.players = [];
+            this.starting = false;
+        }
+        stop() {
+            this.generation++;
+            for (const player of this.players) {
+                player.pause();
+                player.removeAttribute('src');
+                player.load(); // Aborts pending network/decode/play for the old item.
+            }
+            this.players = [];
+            this.starting = false;
+            this.status({available: false, blocked: false});
+        }
+        activate(item) {
+            this.stop();
+            const generation = this.generation;
+            for (const url of [item.jingle_url, item.narration_url].filter(Boolean)) {
+                const player = this.makeAudio();
+                player.preload = 'auto';
+                player.src = url;
+                player.addEventListener('playing', () => {
+                    if (generation !== this.generation) player.pause();
+                });
+                this.players.push(player);
+            }
+            this.status({available: this.players.length > 0, blocked: false});
+            return this.play();
+        }
+        async play() {
+            if (this.starting || !this.players.length) return;
+            const generation = this.generation;
+            this.starting = true;
+            // Both calls occur in this same event turn; neither waits for the other.
+            const starts = this.players.map(player => {
+                try {
+                    return Promise.resolve(player.play()).then(() => {
+                        if (generation !== this.generation) player.pause();
+                        return false;
+                    }, error => generation === this.generation && error.name === 'NotAllowedError');
+                } catch (error) {
+                    return Promise.resolve(error.name === 'NotAllowedError');
+                }
+            });
+            const blocked = await Promise.all(starts);
+            if (generation !== this.generation) return;
+            this.starting = false;
+            this.status({available: true, blocked: blocked.some(Boolean)});
+        }
+        pause() {
+            // Keep this page's URLs so a deliberate PLAY AUDIO can resume them.
+            this.generation++;
+            this.players.forEach(player => player.pause());
+            // Pending starts must not revive playback after the user stops it.
+            const urls = this.players.map(player => player.src);
+            this.players.forEach(player => { player.removeAttribute('src'); player.load(); });
+            this.players = [];
+            this.starting = false;
+            const generation = this.generation;
+            for (const url of urls) {
+                const player = this.makeAudio();
+                player.src = url;
+                player.addEventListener('playing', () => {
+                    if (generation !== this.generation) player.pause();
+                });
+                this.players.push(player);
+            }
+            this.status({available: this.players.length > 0, blocked: true});
+        }
+    }
     class PromotionGallery {
-        constructor({view, fetcher = fetch, afterDisplay = () => Promise.resolve()}) {
+        constructor({view, fetcher = fetch, afterDisplay = () => Promise.resolve(), media = new GalleryMedia()}) {
             this.view = view;
+            this.media = media;
             this.fetcher = fetcher;
             this.afterDisplay = afterDisplay;
             this.sequence = 0;
@@ -33,6 +109,7 @@
         }
         async next() {
             const sequence = ++this.sequence;
+            this.media.stop();
             if (this.abort) this.abort.abort();
             this.abort = new AbortController();
             this.view.loading();
@@ -47,6 +124,7 @@
                 this.view.show(data.item);
                 await this.afterDisplay();
                 if (sequence !== this.sequence) return;
+                this.media.activate(data.item);
                 this.receipt = data.view_token;
                 await this.acknowledge();
             } catch (error) {
@@ -73,11 +151,12 @@
         }
         leave() {
             this.sequence++;
+            this.media.stop();
             if (this.abort) this.abort.abort();
         }
     }
     root.PromotionGallery = PromotionGallery;
-    if (typeof module !== 'undefined') module.exports = {PromotionGallery};
+    if (typeof module !== 'undefined') module.exports = {PromotionGallery, GalleryMedia};
     if (typeof document === 'undefined' || !document.getElementById('galleryPage')) return;
     const get = id => document.getElementById(id);
     const page = get('galleryPage'), status = get('galleryStatus'), promote = get('galleryPromote');
@@ -109,7 +188,14 @@
             if (!document.hidden) { document.removeEventListener('visibilitychange', visible); painted(); }
         });
     });
-    const gallery = new PromotionGallery({view, afterDisplay});
+    const media = new GalleryMedia({status({available, blocked}) {
+        get('galleryAudio').hidden = !available;
+        get('galleryPlayAudio').hidden = !blocked;
+        get('galleryAudioStatus').textContent = blocked ? 'Press PLAY AUDIO to listen.' : 'Saved audio';
+    }});
+    const gallery = new PromotionGallery({view, afterDisplay, media});
+    get('galleryPlayAudio').addEventListener('click', () => media.play());
+    get('galleryStopAudio').addEventListener('click', () => media.pause());
     get('galleryImage').addEventListener('error', () => { get('galleryIllustration').hidden = true; });
     get('galleryNext').addEventListener('click', () => gallery.next());
     promote.addEventListener('click', () => gallery.promote());
