@@ -2,7 +2,7 @@ STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/promotion-gallery
 LAST_COMPLETED_FEATURE: Promotion Gallery
-LAST_COMPLETED_COMMIT: :/^Complete Promotion Gallery regression and handover
+LAST_COMPLETED_COMMIT: :/^Fix gallery native fetch binding after browser review
 LAST_OWNER: CODEX
 HANDOVER: PROMOTION_GALLERY_STATUS.md
 
@@ -524,3 +524,16 @@ Complete diff reviewed and git diff --check passed. No paid/external generation,
 live Mongo calls, destructive migration, deployment or main changes. New detailed
 handover: PROMOTION_GALLERY_STATUS.md. Manual visual/audio QA remains unverified due
 to unavailable browser connection/Computer Use permission; no production app opened.
+
+## Promotion Gallery browser follow-up — 2026-09-23
+
+Native Chrome access became available. Local fixture review caught Illegal invocation
+from calling the default native fetch as this.fetcher. Wrapped the default fetch call
+so it retains correct browser invocation; added a regression test rejecting a gallery
+instance as native fetch receiver. Chrome now loads the gallery successfully.
+Visually checked desktop image/text and text-only pages, fixture promotion state,
+NEXT, and a 390px iframe viewport using the real template/CSS/JS. No real nomination
+or provider access. 16 Node tests pass (11 gallery tests plus 5 existing frontend
+suites). Prior 125 Python + 6 subtests unchanged; no backend changes.
+Real stored-audio playback/authenticated production end-to-end review remains manual.
+STATUS: REVIEW / CODEX; follow-up commit/push authorized by continued task.

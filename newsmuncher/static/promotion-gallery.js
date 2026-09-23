@@ -77,7 +77,7 @@
         }
     }
     class PromotionGallery {
-        constructor({view, fetcher = fetch, afterDisplay = () => Promise.resolve(), media = new GalleryMedia()}) {
+        constructor({view, fetcher = (url, options) => fetch(url, options), afterDisplay = () => Promise.resolve(), media = new GalleryMedia()}) {
             this.view = view;
             this.media = media;
             this.fetcher = fetcher;

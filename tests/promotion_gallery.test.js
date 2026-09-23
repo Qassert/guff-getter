@@ -128,3 +128,19 @@ test('expired acknowledgement releases navigation on the next attempt', async()=
     await gallery.next(); assert.equal(gallery.receipt,null);
     await gallery.next(); assert.equal(nexts,2);
 });
+
+test('default fetch adapter does not bind native fetch to the gallery instance', async () => {
+    const original = globalThis.fetch;
+    try {
+        globalThis.fetch = function () {
+            assert(!(this instanceof PromotionGallery), 'Native fetch rejects this receiver');
+            return Promise.resolve(response({item: null}));
+        };
+        let empty = false;
+        const gallery = new PromotionGallery({view: {
+            loading() {}, empty() { empty = true; }, error(message) { assert.fail(message); }
+        }});
+        await gallery.next();
+        assert(empty);
+    } finally { globalThis.fetch = original; }
+});

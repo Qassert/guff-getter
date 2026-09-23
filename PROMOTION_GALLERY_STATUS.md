@@ -88,8 +88,12 @@ Only existing dependency/datetime deprecation warnings. Diff reviewed; whitespac
 checks passed. Mongo/providers mocked and test media temporary. No live generation,
 Mongo migration, reset, deployment, or main modification.
 
-Browser visual/audio checks remain manual: browser connection unavailable and native
-Computer Use permissions denied. The loopback fixture server was stopped. Antigravity
+Initial browser review was blocked by unavailable Computer Use access. On the follow-up,
+native Chrome became available: desktop image/text, text-only, promotion state, NEXT
+and a 390px viewport were visually checked against a loopback fixture. This found and
+fixed a native fetch receiver bug; 16 Node tests now pass (11 gallery + 5 existing
+frontend suites). Real stored-audio playback and authenticated end-to-end checks still
+remain manual. No real nominations were accessed. The fixture server was stopped. Antigravity
 was not used for review: only `agy --help` inspected; no convenient enforced read-only
 mode found. No agent was permitted to edit the working tree.
 
@@ -100,3 +104,7 @@ nomination and stored-media nomination; turn rapidly during audio; verify STOP/P
 PROMOTE, reload persistence, keyboard access, narrow layout and reduced-motion mode.
 This requires retrieval and review-state writes only, no generation. Do not deploy
 or merge main without separate authorization.
+
+Follow-up checkpoint: `Fix gallery native fetch binding after browser review`.
+The controller wraps native fetch rather than storing it as an instance-bound method;
+Chrome had otherwise rejected the first request with Illegal invocation.
