@@ -13,15 +13,15 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Promotion Gallery — milestone 1 discovery/design complete
+CURRENT_TASK: Promotion Gallery — milestone 2 backend complete
 APPROVAL: Autonomous milestone commits/pushes authorized. No deployment or live generation.
-NEXT_STEP: Implement milestone 2 backend and offline tests.
+NEXT_STEP: Implement milestone 3 gallery template, route and navigation.
 
 ## Promotion Gallery milestone plan — 2026-09-22
 
 OWNER: CODEX. Branch feature/promotion-gallery, based on 903f5d1.
 - [x] M1 Discovery and design (planning checkpoint)
-- [ ] M2 Data/backend, private access, targeted tests
+- [x] M2 Data/backend, private access, targeted tests
 - [ ] M3 Gallery page/navigation/text/images/promotion
 - [ ] M4 Media lifecycle and race tests
 - [ ] M5 Responsive flip-book polish and fallbacks
@@ -476,3 +476,14 @@ Validation: ./.venv/bin/python -m pytest tests/test_dating_source.py -q
 real seed reading, fields, missing counts, persisted increments, least-used selection,
 DRIVEL isolation/regression, rendered button order and existing centring/wrapping CSS.
 node --test tests/profile_editing.test.js: 1 passed. git diff --check passed.
+
+
+Promotion Gallery M2 checkpoint: backend plus server-validated login sessions implemented.
+7 offline tests pass: rotation/display-only counts, retry/concurrency/rollback, legacy
+records, idempotent promotion, private routes, CSRF boundary, safe existing media and
+read-only unsynced jingle recovery, session cookies/password invalidation. Mongo and
+HTTP mocked; temporary files only. No real DB, provider, migration or deployment.
+Runtime needs Mongo transactions (already required for final-output word claims).
+Sessions use pet_adoption_db.gallery_sessions with hashed opaque tokens and 24-hour
+expiry; receipts use funny_json_db.promotion_gallery_views with 10-minute expiry.
+Indexes are non-destructive TTL indexes created on first runtime use.

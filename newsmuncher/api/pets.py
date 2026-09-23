@@ -10,6 +10,7 @@ import uuid
 import re
 from pymongo.errors import DuplicateKeyError
 from typing import List
+from newsmuncher.services.gallery_sessions import issue_session
 
 # Environment setup
 MONGO_URI = os.getenv("MONGO_URI")
@@ -171,6 +172,8 @@ async def adopt_pet(
 
     response = RedirectResponse(url=f"/pets/pet_profile/{avatar}", status_code=303)
     response.set_cookie(key="active_pet", value=avatar, httponly=True, max_age=86400)
+    await issue_session(db["gallery_sessions"], response, request,
+                        {"avatar": avatar, "password": hashed_password})
     return response
 
 @router.post("/use_pet/{avatar}")
@@ -208,6 +211,7 @@ async def use_pet(
 
     response = RedirectResponse(url=f"/pets/pet_profile/{avatar}", status_code=303)
     response.set_cookie(key="active_pet", value=avatar, httponly=True, max_age=86400)
+    await issue_session(db["gallery_sessions"], response, request, pet)
     return response
 
 @router.get("/pet_profile/{avatar}", response_class=HTMLResponse)

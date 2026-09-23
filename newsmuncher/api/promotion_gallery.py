@@ -1,0 +1,55 @@
+"""Private Promotion Gallery: stored nominations and assets only."""
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel, Field
+
+from newsmuncher.api.entries import collection, db
+from newsmuncher.api.pets import db as pet_db, pets_collection
+from newsmuncher.services.gallery_sessions import authenticate, COOKIE
+from newsmuncher.services.promotion_gallery import PromotionGallery
+
+router = APIRouter(prefix='/promotion-gallery', tags=['Promotion Gallery'])
+service = PromotionGallery(collection, db['promotion_gallery_views'])
+
+
+async def viewer(request: Request):
+    if request.method != 'GET':
+        # A custom header forces cross-origin browsers through a denied CORS preflight.
+        if request.headers.get('X-Gallery-Request') != '1':
+            raise HTTPException(403, 'Same-origin gallery request required.')
+        origin = request.headers.get('origin')
+        if origin and origin != str(request.base_url).rstrip('/'):
+            raise HTTPException(403, 'Same-origin gallery request required.')
+    return await authenticate(pet_db['gallery_sessions'], pets_collection, request.cookies.get(COOKIE))
+
+
+def response(value):
+    return JSONResponse(value, headers={'Cache-Control': 'private, no-store'})
+
+
+@router.get('/next')
+def next_item(user=Depends(viewer)):
+    return response(service.select(user['id']))
+
+
+class Displayed(BaseModel):
+    view_token: str = Field(min_length=36, max_length=36)
+
+
+@router.post('/displayed')
+def displayed(payload: Displayed, user=Depends(viewer)):
+    return response(service.displayed(user['id'], payload.view_token))
+
+
+@router.post('/items/{key}/promote')
+def promote(key: str, user=Depends(viewer)):
+    return response(service.promote(key))
+
+
+@router.get('/items/{key}/media/{kind}')
+def media(key: str, kind: str, user=Depends(viewer)):
+    path = service.media_path(service.entry(key), kind)
+    if not path:
+        raise HTTPException(404, 'Stored media unavailable.')
+    return FileResponse(path, media_type='image/png' if kind == 'image' else 'audio/mpeg',
+                        headers={'Cache-Control': 'private, no-store'})

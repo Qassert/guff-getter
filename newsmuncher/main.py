@@ -10,7 +10,10 @@ from newsmuncher.api.previews import router as temp_router
 from newsmuncher.api.jingles import router as jingle_router
 from newsmuncher.api.narrations import router as narration_router
 
+from newsmuncher.api.promotion_gallery import router as promotion_gallery_router
+
 app = FastAPI()
+app.include_router(promotion_gallery_router)
 
 # ✅ Serve avatars
 app.mount("/avatars", StaticFiles(directory=AVATARS_DIR), name="avatars")
