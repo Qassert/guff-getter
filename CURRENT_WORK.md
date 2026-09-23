@@ -13,16 +13,16 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Promotion Gallery — milestone 2 backend complete
+CURRENT_TASK: Promotion Gallery — milestone 3 gallery page complete
 APPROVAL: Autonomous milestone commits/pushes authorized. No deployment or live generation.
-NEXT_STEP: Implement milestone 3 gallery template, route and navigation.
+NEXT_STEP: Implement milestone 4 audio lifecycle and race tests.
 
 ## Promotion Gallery milestone plan — 2026-09-22
 
 OWNER: CODEX. Branch feature/promotion-gallery, based on 903f5d1.
 - [x] M1 Discovery and design (planning checkpoint)
 - [x] M2 Data/backend, private access, targeted tests
-- [ ] M3 Gallery page/navigation/text/images/promotion
+- [x] M3 Gallery page/navigation/text/images/promotion
 - [ ] M4 Media lifecycle and race tests
 - [ ] M5 Responsive flip-book polish and fallbacks
 - [ ] M6 Regression, complete diff review, REVIEW checkpoint
@@ -487,3 +487,10 @@ Runtime needs Mongo transactions (already required for final-output word claims)
 Sessions use pet_adoption_db.gallery_sessions with hashed opaque tokens and 24-hour
 expiry; receipts use funny_json_db.promotion_gallery_views with 10-minute expiry.
 Indexes are non-destructive TTL indexes created on first runtime use.
+
+Promotion Gallery M3 checkpoint: separate private page/template/CSS/controller;
+creation-page link and return navigation, one-item text/image rendering, promotion
+state, empty state and sign-in gate. No generation scripts loaded. Display ACK waits
+for a visible painted page; next selection waits for the preceding ACK. Late network
+and promotion callbacks cannot replace the active item. 12 Python tests (gallery +
+DATING) and 5 Node tests (gallery + existing profile controls) pass offline.

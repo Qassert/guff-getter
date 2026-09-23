@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Promotion Gallery · NewsMuncher{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', path='promotion-gallery.css') }}">{% endblock %}
+{% block body_attributes %} class="promotion-gallery-page"{% endblock %}
+{% block content %}
+<section class="promotion-gallery" aria-labelledby="gallery-heading">
+  <nav class="gallery-nav" aria-label="NewsMuncher navigation">
+    <a class="funky-button" href="{{ creation_url }}">BACK TO NEWSMUNCHER</a>
+    <span>THE NOMINATED COLLECTION</span>
+  </nav>
+  <h1 id="gallery-heading">Promotion Gallery</h1>
+  {% if signed_in %}
+  <p class="gallery-intro">A page of nonsense at a time. Keep the ones you love in the spotlight.</p>
+  <div id="galleryStatus" class="gallery-status" role="status" aria-live="polite">Opening the collection…</div>
+  <article id="galleryPage" class="gallery-page" aria-labelledby="galleryTitle" hidden>
+    <figure id="galleryIllustration" hidden><img id="galleryImage" alt="" decoding="async"></figure>
+    <div class="gallery-copy">
+      <p id="galleryPromoted" class="gallery-stamp" hidden>PROMOTED</p>
+      <h2 id="galleryTitle"></h2>
+      <div id="galleryBody" class="gallery-body"></div>
+    </div>
+  </article>
+  <div class="gallery-controls" role="group" aria-label="Review and page navigation">
+    <button id="galleryPromote" type="button" class="funky-button" disabled>PROMOTE</button>
+    <button id="galleryNext" type="button" class="funky-button">NEXT CREATION <span aria-hidden="true">→</span></button>
+  </div>
+  <noscript><p>Enable JavaScript to turn through the collection. No content is generated here.</p></noscript>
+  {% else %}
+  <div class="gallery-page gallery-signin">
+    <h2>Your private collection awaits</h2>
+    <p>Sign in to your pet to open the Promotion Gallery. If you were already signed in before this feature was added, sign in once more.</p>
+    <a class="funky-button" href="{{ login_url }}">SIGN IN</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}{% if signed_in %}<script src="{{ url_for('static', path='promotion-gallery.js') }}" defer></script>{% endif %}{% endblock %}

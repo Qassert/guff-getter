@@ -213,6 +213,8 @@ def routes(setup):
         spec.loader.exec_module(module)
     module.service = service
     app = FastAPI()
+    from fastapi.staticfiles import StaticFiles
+    app.mount('/static', StaticFiles(directory='newsmuncher/static'), name='static')
     app.include_router(module.router)
     return TestClient(app), sessions, pets
 
@@ -260,3 +262,18 @@ def test_session_issue_and_validation():
     pets = SimpleNamespace(find_one=AsyncMock(return_value={'avatar': 'pet', 'password': 'changed'}))
     with pytest.raises(HTTPException):
         asyncio.run(authenticate(collection, pets, 'token'))
+
+
+def test_gallery_page_and_navigation(routes):
+    client, _, _ = routes
+    response = client.get('/promotion-gallery/')
+    assert response.status_code == 200 and 'SIGN IN' in response.text
+    assert 'promotion-gallery.js' not in response.text
+    client.cookies.set('gallery_session', 'opaque')
+    response = client.get('/promotion-gallery/')
+    assert response.status_code == 200
+    assert 'NEXT CREATION' in response.text and 'galleryPage' in response.text
+    assert '/pets/pet_profile/pet' in response.text
+    assert 'promotion-gallery.js' in response.text
+    assert 'script.js' not in response.text and 'MAKE JINGLE' not in response.text
+    assert '/promotion-gallery/' in Path('newsmuncher/templates/pet_profile.html').read_text()

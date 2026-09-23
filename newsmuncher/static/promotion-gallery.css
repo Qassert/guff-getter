@@ -1,0 +1,15 @@
+.promotion-gallery { width: min(1080px, 100%); margin: 0 auto; }
+.gallery-nav, .gallery-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.gallery-nav > span { font-size: .75rem; letter-spacing: .15em; }
+.promotion-gallery h1 { margin: 32px 0 8px; }
+.gallery-intro { margin: 0 0 24px; }
+.gallery-status { min-height: 1.5em; margin-bottom: 12px; }
+.gallery-page { padding: clamp(24px, 5vw, 64px); background: #eee5cf; color: #29251f; box-shadow: 5px 8px 0 #29251f20; border: 1px solid #a89b80; }
+.gallery-page[hidden], .gallery-page [hidden] { display: none; }
+.gallery-page figure { margin: 0 0 32px; }
+.gallery-page img { display: block; width: 100%; max-height: 65vh; object-fit: contain; }
+.gallery-page h2 { font-size: clamp(1.6rem, 4vw, 3rem); line-height: 1.15; margin: 0 0 24px; overflow-wrap: anywhere; }
+.gallery-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; font-size: clamp(1.05rem, 2vw, 1.25rem); }
+.gallery-stamp { font-weight: 800; letter-spacing: .1em; color: #4c632d; }
+.gallery-controls { justify-content: center; margin: 24px 0; }
+.gallery-signin { margin-top: 32px; }

@@ -1,6 +1,9 @@
 """Private Promotion Gallery: stored nominations and assets only."""
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
+from urllib.parse import quote
+from newsmuncher.config import TEMPLATES_DIR
 from pydantic import BaseModel, Field
 
 from newsmuncher.api.entries import collection, db
@@ -53,3 +56,21 @@ def media(key: str, kind: str, user=Depends(viewer)):
         raise HTTPException(404, 'Stored media unavailable.')
     return FileResponse(path, media_type='image/png' if kind == 'image' else 'audio/mpeg',
                         headers={'Cache-Control': 'private, no-store'})
+
+
+@router.get('/')
+async def gallery_page(request: Request):
+    try:
+        user = await viewer(request)
+    except HTTPException as exc:
+        if exc.status_code != 401:
+            raise
+        user = None
+    pet = user['pet'] if user else request.cookies.get('active_pet', '')
+    pet_path = quote(pet, safe='')
+    return Jinja2Templates(directory=TEMPLATES_DIR).TemplateResponse(
+        request=request, name='promotion_gallery.html', context={
+            'signed_in': user is not None,
+            'creation_url': f'/pets/pet_profile/{pet_path}' if user else '/pets/view_pets',
+            'login_url': f'/pets/select/{pet_path}' if pet else '/pets/view_pets',
+        }, headers={'Cache-Control': 'private, no-store'})
