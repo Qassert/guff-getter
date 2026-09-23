@@ -1,10 +1,10 @@
 STATUS: REVIEW
 OWNER: CODEX
-BRANCH: feature/promotion-gallery
-LAST_COMPLETED_FEATURE: Promotion Gallery
-LAST_COMPLETED_COMMIT: :/^Play gallery jingle before narration
+BRANCH: experiment/video-smoke-test
+LAST_COMPLETED_FEATURE: Standalone video smoke-test harness (offline first pass)
+LAST_COMPLETED_COMMIT: :/^Add guarded standalone video comparison harness
 LAST_OWNER: CODEX
-HANDOVER: PROMOTION_GALLERY_STATUS.md
+HANDOVER: scripts/video_smoke_test.md
 
 ## Status Values
 
@@ -13,9 +13,9 @@ HANDOVER: PROMOTION_GALLERY_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Promotion Gallery — sequential audio playback; awaiting review
-APPROVAL: Autonomous milestone commits/pushes authorized. No deployment or live generation.
-NEXT_STEP: Manual browser review as documented in PROMOTION_GALLERY_STATUS.md.
+CURRENT_TASK: Standalone video smoke-test harness — offline first pass
+APPROVAL: Standalone harness only; stop after offline first pass. No live generation.
+NEXT_STEP: User supplies local image and environment keys; paid runs require explicit --confirm-spend.
 
 ## Promotion Gallery milestone plan — 2026-09-22
 
@@ -551,3 +551,28 @@ promotion, backend APIs, stored media, generation and Creation Page are unchange
 Validation: node --test tests/promotion_gallery.test.js tests/narration.test.js tests/jingles.test.js
 20 tests passed; all media/network mocked, no external/provider calls.
 No deployment or main changes. Commit/push authorized.
+
+## Standalone image-to-video comparison — 2026-09-23
+
+REVIEW / CODEX. Branch experiment/video-smoke-test from f7a65da; Promotion Gallery
+branch untouched. scripts/video_smoke_test.py is standalone and uses existing requests.
+Official current Wan/fal schemas, upload mechanisms, queue APIs and prices checked
+before implementation; sources and commands in scripts/video_smoke_test.md.
+Wan: supported multipart upload, 480p/5s, motion prompt and recorded random seed.
+SVD: documented image data URI, no prompt, motion_bucket_id=127, cond_aug=0.02, fps=25,
+recorded random seed. Same local image byte snapshot sent to both. No new dependencies.
+
+Default providers none; no confirmation means zero HTTP calls and no output files.
+All requested environment-only keys required before uploading/spending. Both
+WAVESPEED_API_KEY and FAL_KEY are currently absent from the agent environment; no
+.env values inspected. One generation submission per selected provider, no retries,
+fal server queue retries disabled, bounded polling/downloads. Failures halt further
+providers; attempt metadata persists before submission. No URL/credential logging.
+Gitignored tmp/video-smoke-test/ holds source snapshot, successful MP4s, results.json
+and local comparison HTML. Each new confirmed invocation is a fresh spend, not resume.
+
+16 mocked tests passed; syntax compile passed; actual local dry-run reported $0.125
+maximum estimate and zero calls. Missing-key and missing-image CLI checks returned
+clean errors before transport. Ignore rules and git diff --check passed. No paid
+API calls, live uploads, Mongo/nomination edits, app/gallery changes, deploy or main
+changes. Only script, experiment docs/tests, .gitignore and CURRENT_WORK.md changed.

@@ -61,3 +61,6 @@ dist/
 
 # Isolated narration-reference A/B experiment outputs and attempt records
 /data/jingle-reference-comparison/
+
+# Standalone video experiment inputs, outputs and attempt metadata
+/tmp/video-smoke-test/
