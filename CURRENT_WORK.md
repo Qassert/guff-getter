@@ -1,6 +1,6 @@
-STATUS: REVIEW
+STATUS: ACTIVE
 OWNER: CODEX
-BRANCH: feature/global-word-shuffle
+BRANCH: feature/promotion-gallery
 LAST_COMPLETED_FEATURE: Fix duplicate jingle controls after refresh
 LAST_COMPLETED_COMMIT: :/^Fix duplicate jingle controls after refresh
 LAST_OWNER: ANTIGRAVITY
@@ -13,11 +13,58 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Add DATING as the first centred source button
-REVIEW_SUMMARY: DATING shares the reusable source job and usage flow; DRIVEL defaults unchanged.
-VALIDATION: 4 offline source tests and the profile-editing Node test passed.
-APPROVAL: Commit/push authorized, including Andy's manual historicalFunnies.json update.
-NEXT_STEP: Review DATING; no deployment performed.
+CURRENT_TASK: Promotion Gallery — milestone 1 discovery/design complete
+APPROVAL: Autonomous milestone commits/pushes authorized. No deployment or live generation.
+NEXT_STEP: Implement milestone 2 backend and offline tests.
+
+## Promotion Gallery milestone plan — 2026-09-22
+
+OWNER: CODEX. Branch feature/promotion-gallery, based on 903f5d1.
+- [x] M1 Discovery and design (planning checkpoint)
+- [ ] M2 Data/backend, private access, targeted tests
+- [ ] M3 Gallery page/navigation/text/images/promotion
+- [ ] M4 Media lifecycle and race tests
+- [ ] M5 Responsive flip-book polish and fallbacks
+- [ ] M6 Regression, complete diff review, REVIEW checkpoint
+
+Discovery: pet_profile.html is served by api/pets.py. api/previews.py banks drafts
+via /create/ into funny_json_db.entries. Mongo _id is permanent nomination identity;
+rewritten fields are crazyReplacement1Title/Extract. Explicit nominated=False must
+stay excluded; legacy missing nominated uses crazyReplacement1done as in moderation.py.
+Existing gallery_status pending/approved/rejected is a separate unused moderation
+concept, preserved. Add promoted/promoted_at and promotion_gallery_seen_count to the
+same entries lazily, no backfill and no duplicate creation model. All pets' nominations
+participate, including promoted items. Gallery is review/retrieval only.
+
+Rotation: random among minimum valid seen counts. Selection does not increment;
+after DOM display, acknowledge a short-lived view receipt. A Mongo transaction marks
+the receipt consumed and increments the entry once, making retries idempotent.
+Transient promotion_gallery_views receipts expire (TTL index); no source usage changes.
+Frontend serializes display acknowledgements before selecting again and rejects stale
+selection/media callbacks. Multi-viewer in-flight selections may coincide; committed
+counts guide subsequent selections. Newly nominated items start at zero.
+
+Private access: existing active_pet cookie is unsigned. Issue an opaque, hashed,
+24-hour server session on successful login/adoption; validate it plus the adopted pet
+for gallery APIs/page/media. Existing users sign in once again. Session records expire;
+no global auth redesign. POSTs require a same-origin browser header check.
+
+Assets: existing image_url points to local UUID PNG; narration uses nomination-ID
+MP3 plus narration metadata; jingle uses nomination-ID MP3 and Mongo metadata or
+SQLite sidecar. Resolve local files read-only without importing generation services.
+Authenticated gallery media routes reuse the same files (no copies), allowing all
+nominated items to play while existing owner-specific narration routes stay unchanged.
+Missing/legacy/unsafe assets degrade to text. No generation endpoints in gallery JS.
+
+UI: separate template/CSS/JS, one creation, NEXT/PROMOTE and return navigation.
+DOM textContent for stored text. A modest page-turn animation, reduced-motion override,
+responsive parchment presentation. Independent audio elements start together; page turn
+immediately pauses/unloads both and invalidates pending starts. Explicit PLAY AUDIO
+fallback when autoplay is blocked. No public gallery/social/editor/generation controls.
+
+Tests: fake Mongo transactions/files/HTTP, JS deferred promises and fake media; run
+existing nomination/image/narration/jingle/source/profile regression tests at M6.
+Antigravity optional; skip unless a safe read-only invocation is readily available.
 
 ## Image style wording refinement
 
