@@ -13,7 +13,7 @@ test('loads one creation and acknowledges only after display; promotion is idemp
     const calls=[], painted=deferred();
     const {gallery,shown} = setup(async (url, options) => {
         calls.push({url,options});
-        return response(url.endsWith('/next') ? {item:item('a'),view_token:'token'} : {promoted:true});
+        return response(url.split('?')[0].endsWith('/next') ? {item:item('a'),view_token:'token'} : {promoted:true});
     }, () => painted.promise);
     const task=gallery.next();
     await new Promise(setImmediate);
@@ -28,7 +28,7 @@ test('loads one creation and acknowledges only after display; promotion is idemp
 test('rapid turns discard late requests without counting or replacing the active page', async () => {
     const old=deferred(); let requests=0; const acks=[];
     const {gallery,shown}=setup(async (url,opts)=>{
-        if(url.endsWith('/next')) return ++requests===1 ? old.promise : response({item:item('new'),view_token:'new'});
+        if(url.split('?')[0].endsWith('/next')) return ++requests===1 ? old.promise : response({item:item('new'),view_token:'new'});
         acks.push(JSON.parse(opts.body).view_token); return response({recorded:true});
     });
     const first=gallery.next(); await new Promise(setImmediate);
@@ -38,7 +38,7 @@ test('rapid turns discard late requests without counting or replacing the active
 test('failed count is retried before another selection; empty collection is valid', async () => {
     let nexts=0, acks=0;
     const {gallery,shown,errors}=setup(async url=>{
-        if(url.endsWith('/next')) return response(++nexts===1 ? {item:item('a'),view_token:'a'} : {item:null});
+        if(url.split('?')[0].endsWith('/next')) return response(++nexts===1 ? {item:item('a'),view_token:'a'} : {item:null});
         if(++acks===1) throw new Error('offline');
         return response({recorded:true});
     });
@@ -49,7 +49,7 @@ test('late promotion does not change another page; leaving cancels retrieval', a
     const promotion=deferred(); let n=0;
     const {gallery}=setup(async url=>{
         if(url.endsWith('/promote')) return promotion.promise;
-        return response(url.endsWith('/next') ? {item:item(String(++n)),view_token:String(n)} : {});
+        return response(url.split('?')[0].endsWith('/next') ? {item:item(String(++n)),view_token:String(n)} : {});
     });
     await gallery.next(); const p=gallery.promote(); await gallery.next();
     promotion.resolve(response({promoted:true})); await p;
@@ -117,4 +117,14 @@ test('next stops current audio before waiting on retrieval and page exit stops p
     const task=gallery.next(); assert(!players[0].playing);
     gallery.leave(); pending.resolve(response({item:item('late'),view_token:'late'})); await task;
     assert(!gallery.current);
+});
+
+test('expired acknowledgement releases navigation on the next attempt', async()=>{
+    let nexts=0;
+    const {gallery}=setup(async url=>{
+        if (url.split('?')[0].endsWith('/next')) return response(++nexts===1 ? {item:item('a'),view_token:'expired'} : {item:null});
+        return {ok:false,status:409};
+    });
+    await gallery.next(); assert.equal(gallery.receipt,null);
+    await gallery.next(); assert.equal(nexts,2);
 });

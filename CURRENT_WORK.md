@@ -1,10 +1,10 @@
-STATUS: ACTIVE
+STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/promotion-gallery
-LAST_COMPLETED_FEATURE: Fix duplicate jingle controls after refresh
-LAST_COMPLETED_COMMIT: :/^Fix duplicate jingle controls after refresh
-LAST_OWNER: ANTIGRAVITY
-HANDOVER: WORD_SHUFFLE_STATUS.md
+LAST_COMPLETED_FEATURE: Promotion Gallery
+LAST_COMPLETED_COMMIT: :/^Complete Promotion Gallery regression and handover
+LAST_OWNER: CODEX
+HANDOVER: PROMOTION_GALLERY_STATUS.md
 
 ## Status Values
 
@@ -13,9 +13,9 @@ HANDOVER: WORD_SHUFFLE_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Promotion Gallery — milestone 5 flip-book polish complete
+CURRENT_TASK: Promotion Gallery — all six milestones complete; awaiting review
 APPROVAL: Autonomous milestone commits/pushes authorized. No deployment or live generation.
-NEXT_STEP: Milestone 6 regression, final diff review, edge-case fixes.
+NEXT_STEP: Manual browser review as documented in PROMOTION_GALLERY_STATUS.md.
 
 ## Promotion Gallery milestone plan — 2026-09-22
 
@@ -25,7 +25,7 @@ OWNER: CODEX. Branch feature/promotion-gallery, based on 903f5d1.
 - [x] M3 Gallery page/navigation/text/images/promotion
 - [x] M4 Media lifecycle and race tests
 - [x] M5 Responsive flip-book polish and fallbacks
-- [ ] M6 Regression, complete diff review, REVIEW checkpoint
+- [x] M6 Regression, complete diff review, REVIEW checkpoint
 
 Discovery: pet_profile.html is served by api/pets.py. api/previews.py banks drafts
 via /create/ into funny_json_db.entries. Mongo _id is permanent nomination identity;
@@ -511,3 +511,16 @@ explicitly override the desktop grid. Old image errors cannot hide a newer image
 check was attempted with a loopback fixture only, but no browser connection is available
 and native Computer Use permissions are not granted. No production app was opened.
 Antigravity: inspected agy --help only; no readily available read-only mode, skipped.
+
+Promotion Gallery M6 final checkpoint — 2026-09-23: REVIEW/CODEX.
+125 Python tests + 6 subtests and 15 Node tests passed; only existing dependency and
+datetime deprecation warnings. Regression covers DATING/DRIVEL, rewrite/word claims,
+nomination, images, narration, jingles and profile controls. New login/adoption tests
+prove gallery sessions are issued only after successful credentials/adoption.
+Final fixes: expired/deleted receipts no longer strand navigation, BSON int64 counters
+remain valid, malformed jingle sidecar state degrades safely, and previous-item
+exclusion avoids immediate repeats when equal-minimum alternatives exist.
+Complete diff reviewed and git diff --check passed. No paid/external generation,
+live Mongo calls, destructive migration, deployment or main changes. New detailed
+handover: PROMOTION_GALLERY_STATUS.md. Manual visual/audio QA remains unverified due
+to unavailable browser connection/Computer Use permission; no production app opened.

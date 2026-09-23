@@ -92,9 +92,13 @@
                 credentials: 'same-origin', cache: 'no-store', ...options,
                 headers: {'Content-Type': 'application/json', 'X-Gallery-Request': '1'}
             });
-            if (!response.ok) throw new Error(response.status === 401
-                ? 'Please sign in again to open the Promotion Gallery.'
-                : 'The collection could not be loaded. Please try again.');
+            if (!response.ok) {
+                const error = new Error(response.status === 401
+                    ? 'Please sign in again to open the Promotion Gallery.'
+                    : 'The collection could not be loaded. Please try again.');
+                error.status = response.status;
+                throw error;
+            }
             return response.json();
         }
         acknowledge() {
@@ -104,6 +108,11 @@
             this.acknowledging = this.request('/displayed', {
                 method: 'POST', body: JSON.stringify({view_token: token})
             }).then(() => { if (this.receipt === token) this.receipt = null; })
+                .catch(error => {
+                    // Deleted items and expired receipts must not strand navigation.
+                    if ([404, 409].includes(error.status) && this.receipt === token) this.receipt = null;
+                    throw error;
+                })
                 .finally(() => { this.acknowledging = null; });
             return this.acknowledging;
         }
@@ -117,7 +126,8 @@
                 // Do not select again until the previous displayed item is counted.
                 await this.acknowledge();
                 if (sequence !== this.sequence) return;
-                const data = await this.request('/next', {signal: this.abort.signal});
+                const previous = this.current ? '?previous=' + encodeURIComponent(this.current.id) : '';
+                const data = await this.request('/next' + previous, {signal: this.abort.signal});
                 if (sequence !== this.sequence) return;
                 this.current = data.item;
                 if (!data.item) { this.view.empty(); return; }

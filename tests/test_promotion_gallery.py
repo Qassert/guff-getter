@@ -288,3 +288,72 @@ def test_polish_accessibility_and_scoped_styles():
     assert '.promotion-gallery [hidden] { display: none !important; }' in css
     assert 'aria-live="polite"' in template and 'aria-label="Review and page navigation"' in template
     assert 'tabindex="-1"' not in template  # Native buttons/links, no focus trap.
+
+
+def test_cycle_boundary_avoids_previous_and_int64_counts(setup):
+    from bson.int64 import Int64
+    from newsmuncher.services.promotion_gallery import seen
+    service, entries, _ = setup
+    assert seen({'promotion_gallery_seen_count': Int64(42)}) == 42
+    assert seen({'promotion_gallery_seen_count': True}) == 0
+    last = str(entries.docs[-1]['_id'])
+    assert service.select('v', previous=last)['item']['id'] != last
+    entries.docs = entries.docs[-1:]
+    assert service.select('v', previous=last)['item']['id'] == last
+
+
+def test_no_generation_dependency_or_outbound_network_in_gallery(routes):
+    import ast
+    import socket
+    files = ['newsmuncher/services/promotion_gallery.py', 'newsmuncher/api/promotion_gallery.py']
+    for file in files:
+        tree = ast.parse(Path(file).read_text())
+        imports = [n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)]
+        assert not any(name and any(word in name for word in ('image_generation', 'jingle_brief', 'openai_tts')) for name in imports)
+    client, _, _ = routes
+    client.cookies.set('gallery_session', 'opaque')
+    with patch.object(socket.socket, 'connect', side_effect=AssertionError('No live network')):
+        selected = client.get('/promotion-gallery/next').json()
+        assert selected['item']
+        assert client.post('/promotion-gallery/displayed', json={'view_token': selected['view_token']}, headers={'X-Gallery-Request': '1'}).status_code == 200
+
+
+@pytest.mark.parametrize('adopting', [False, True])
+def test_successful_pet_login_and_adoption_issue_gallery_session(adopting):
+    from unittest.mock import MagicMock
+    pets = SimpleNamespace(find_one=AsyncMock(), create_index=AsyncMock(),
+        update_one=AsyncMock(return_value=SimpleNamespace(matched_count=1)))
+    sessions = SimpleNamespace(create_index=AsyncMock(), insert_one=AsyncMock())
+    db = {'pets': pets, 'gallery_sessions': sessions}
+    with patch('motor.motor_asyncio.AsyncIOMotorClient') as mongo:
+        mongo.return_value.__getitem__.return_value = db
+        spec = importlib.util.spec_from_file_location('isolated_gallery_pets', 'newsmuncher/api/pets.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    module.verify_password = MagicMock(return_value=True)
+    module.get_password_hash = MagicMock(return_value='stored-hash')
+    app = FastAPI()
+    from fastapi.staticfiles import StaticFiles
+    app.mount('/static', StaticFiles(directory='newsmuncher/static'), name='static')
+    app.include_router(module.router, prefix='/pets')
+    client = TestClient(app)
+    if adopting:
+        pets.find_one.side_effect = [{'avatar': 'pet.jpg', 'adopted': False}, None]
+        response = client.post('/pets/adopt_pet/pet.jpg', data={
+            'name': 'Andy', 'password': 'test-only', 'confirm_password': 'test-only'}, follow_redirects=False)
+    else:
+        pets.find_one.return_value = {'avatar': 'pet.jpg', 'adopted': True, 'password': 'stored-hash'}
+        response = client.post('/pets/use_pet/pet.jpg', data={'password': 'test-only'}, follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers['location'] == '/pets/pet_profile/pet.jpg'
+    assert client.cookies.get('active_pet') == 'pet.jpg'
+    assert client.cookies.get('gallery_session')
+    assert sessions.insert_one.await_count == 1
+    record = sessions.insert_one.call_args.args[0]
+    assert record['_id'] == digest(client.cookies.get('gallery_session'))
+    assert record['password_version'] == digest('stored-hash')
+    if not adopting:
+        module.verify_password.return_value = False
+        denied = client.post('/pets/use_pet/pet.jpg', data={'password': 'wrong'}, follow_redirects=False)
+        assert 'Incorrect password' in denied.text
+        assert sessions.insert_one.await_count == 1

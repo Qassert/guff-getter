@@ -31,8 +31,8 @@ def response(value):
 
 
 @router.get('/next')
-def next_item(user=Depends(viewer)):
-    return response(service.select(user['id']))
+def next_item(previous: str | None = None, user=Depends(viewer)):
+    return response(service.select(user['id'], previous))
 
 
 class Displayed(BaseModel):

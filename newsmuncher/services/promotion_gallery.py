@@ -23,7 +23,7 @@ NOMINATED = {'$or': [{'nominated': True},
 
 def seen(entry):
     count = entry.get('promotion_gallery_seen_count', 0)
-    return count if type(count) is int and count >= 0 else 0
+    return count if isinstance(count, int) and not isinstance(count, bool) and count >= 0 else 0
 
 
 class PromotionGallery:
@@ -79,7 +79,7 @@ class PromotionGallery:
                     with closing(sqlite3.connect(self.jingles.resolve().as_uri() + '?mode=ro', uri=True)) as db:
                         row = db.execute('SELECT state FROM jingles WHERE id=?', (key,)).fetchone()
                     state = json.loads(row[0]) if row else {}
-                    if state.get('status') == 'retired' or not state.get('brief'):
+                    if not isinstance(state, dict) or state.get('status') == 'retired' or not state.get('brief'):
                         return None
                 except (sqlite3.Error, ValueError, TypeError):
                     return None
@@ -96,13 +96,16 @@ class PromotionGallery:
             **{kind + '_url': f'/promotion-gallery/items/{key}/media/{kind}'
                if self.media_path(entry, kind) else None for kind in ('image', 'narration', 'jingle')}}
 
-    def select(self, viewer):
+    def select(self, viewer, previous=None):
         # Only IDs/counts are scanned; content/assets are loaded for one item.
         candidates = list(self.entries.find(NOMINATED, {'promotion_gallery_seen_count': 1}))
         if not candidates:
             return {'item': None}
         minimum = min(map(seen, candidates))
-        selected = self.choose([e for e in candidates if seen(e) == minimum])
+        eligible = [e for e in candidates if seen(e) == minimum]
+        # At a cycle boundary, avoid immediately repeating the page just left.
+        alternatives = [e for e in eligible if str(e['_id']) != previous]
+        selected = self.choose(alternatives or eligible)
         entry = self.entry(str(selected['_id']))
         token = str(uuid4())
         self.receipts.create_index('expires_at', expireAfterSeconds=0)
@@ -120,7 +123,6 @@ class PromotionGallery:
                 raise HTTPException(409, 'View expired. Turn to another creation.')
             if receipt['displayed']:
                 return {'recorded': True}
-            self.entry(str(receipt['entry_id']), session)
             self.receipts.update_one({**query, 'displayed': False},
                                      {'$set': {'displayed': True}}, session=session)
             # Legacy missing/null/invalid counters begin at zero, without a migration.
