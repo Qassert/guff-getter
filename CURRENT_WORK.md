@@ -2,7 +2,7 @@ STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/promotion-gallery
 LAST_COMPLETED_FEATURE: Promotion Gallery
-LAST_COMPLETED_COMMIT: :/^Fix gallery native fetch binding after browser review
+LAST_COMPLETED_COMMIT: :/^Play gallery jingle before narration
 LAST_OWNER: CODEX
 HANDOVER: PROMOTION_GALLERY_STATUS.md
 
@@ -13,7 +13,7 @@ HANDOVER: PROMOTION_GALLERY_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Promotion Gallery — all six milestones complete; awaiting review
+CURRENT_TASK: Promotion Gallery — sequential audio playback; awaiting review
 APPROVAL: Autonomous milestone commits/pushes authorized. No deployment or live generation.
 NEXT_STEP: Manual browser review as documented in PROMOTION_GALLERY_STATUS.md.
 
@@ -58,7 +58,7 @@ Missing/legacy/unsafe assets degrade to text. No generation endpoints in gallery
 
 UI: separate template/CSS/JS, one creation, NEXT/PROMOTE and return navigation.
 DOM textContent for stored text. A modest page-turn animation, reduced-motion override,
-responsive parchment presentation. Independent audio elements start together; page turn
+responsive parchment presentation. Jingle plays before narration; page turn
 immediately pauses/unloads both and invalidates pending starts. Explicit PLAY AUDIO
 fallback when autoplay is blocked. No public gallery/social/editor/generation controls.
 
@@ -537,3 +537,17 @@ or provider access. 16 Node tests pass (11 gallery tests plus 5 existing fronten
 suites). Prior 125 Python + 6 subtests unchanged; no backend changes.
 Real stored-audio playback/authenticated production end-to-end review remains manual.
 STATUS: REVIEW / CODEX; follow-up commit/push authorized by continued task.
+
+## Promotion Gallery sequential audio — 2026-09-23
+
+REVIEW/CODEX. Frontend GalleryMedia now plays jingle first and advances to narration
+only on the active jingle's natural ended event. Single tracks start immediately;
+text-only pages remain silent. Generation guards invalidate ended/playing callbacks
+and pending play promises when turning pages or stopping. PLAY AUDIO retries the
+current blocked track; STOP/PLAY restarts that track and retains only the remaining
+sequence, so stopping narration never replays an already-finished jingle.
+Only gallery JS, targeted frontend tests and handover docs changed. Selection,
+promotion, backend APIs, stored media, generation and Creation Page are unchanged.
+Validation: node --test tests/promotion_gallery.test.js tests/narration.test.js tests/jingles.test.js
+20 tests passed; all media/network mocked, no external/provider calls.
+No deployment or main changes. Commit/push authorized.

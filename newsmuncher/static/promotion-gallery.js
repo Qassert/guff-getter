@@ -20,59 +20,56 @@
             this.starting = false;
             this.status({available: false, blocked: false});
         }
-        activate(item) {
-            this.stop();
+        prepare(urls) {
             const generation = this.generation;
-            for (const url of [item.jingle_url, item.narration_url].filter(Boolean)) {
+            this.index = 0;
+            for (const url of urls) {
                 const player = this.makeAudio();
                 player.preload = 'auto';
                 player.src = url;
                 player.addEventListener('playing', () => {
                     if (generation !== this.generation) player.pause();
                 });
+                player.addEventListener('ended', () => {
+                    // Only the active track's natural end may advance this page.
+                    if (generation !== this.generation ||
+                        this.players[this.index] !== player || !player.ended) return;
+                    this.index++;
+                    this.starting = false;
+                    if (this.index < this.players.length) this.play();
+                });
                 this.players.push(player);
             }
+        }
+        activate(item) {
+            this.stop();
+            this.prepare([item.jingle_url, item.narration_url].filter(Boolean));
             this.status({available: this.players.length > 0, blocked: false});
             return this.play();
         }
         async play() {
-            if (this.starting || !this.players.length) return;
+            const player = this.players[this.index];
+            if (this.starting || !player) return;
             const generation = this.generation;
             this.starting = true;
-            // Both calls occur in this same event turn; neither waits for the other.
-            const starts = this.players.map(player => {
-                try {
-                    return Promise.resolve(player.play()).then(() => {
-                        if (generation !== this.generation) player.pause();
-                        return false;
-                    }, error => generation === this.generation && error.name === 'NotAllowedError');
-                } catch (error) {
-                    return Promise.resolve(error.name === 'NotAllowedError');
-                }
-            });
-            const blocked = await Promise.all(starts);
-            if (generation !== this.generation) return;
+            let blocked = false;
+            try {
+                await player.play();
+                if (generation !== this.generation) player.pause();
+            } catch (error) {
+                blocked = error.name === 'NotAllowedError';
+            }
+            // A previous track's late promise must not update the next track's UI.
+            if (generation !== this.generation || this.players[this.index] !== player) return;
             this.starting = false;
-            this.status({available: true, blocked: blocked.some(Boolean)});
+            this.status({available: true, blocked});
         }
         pause() {
-            // Keep this page's URLs so a deliberate PLAY AUDIO can resume them.
-            this.generation++;
-            this.players.forEach(player => player.pause());
-            // Pending starts must not revive playback after the user stops it.
-            const urls = this.players.map(player => player.src);
-            this.players.forEach(player => { player.removeAttribute('src'); player.load(); });
-            this.players = [];
-            this.starting = false;
-            const generation = this.generation;
-            for (const url of urls) {
-                const player = this.makeAudio();
-                player.src = url;
-                player.addEventListener('playing', () => {
-                    if (generation !== this.generation) player.pause();
-                });
-                this.players.push(player);
-            }
+            // STOP discards pending starts. PLAY restarts the current track, keeping
+            // only its remaining sequence (never replaying an already-ended jingle).
+            const urls = this.players.slice(this.index).map(player => player.src);
+            this.stop();
+            this.prepare(urls);
             this.status({available: this.players.length > 0, blocked: true});
         }
     }

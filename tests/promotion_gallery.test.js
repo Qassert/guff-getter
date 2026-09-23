@@ -62,6 +62,7 @@ class FakeAudio {
     constructor(start) { this.start=start; this.src=''; this.playing=false; this.events={}; this.calls=0; }
     addEventListener(name, callback) {this.events[name]=callback;}
     play() { this.calls++; return this.start().then(() => {this.playing=true; this.events.playing?.();}); }
+    finish() {this.playing=false; this.ended=true; this.events.ended?.();}
     pause() {this.playing=false;}
     removeAttribute() {this.src='';}
     load() {this.loaded=true;}
@@ -73,17 +74,44 @@ function mediaSetup(starts=[]) {
     },status:s=>states.push(s)});
     return {media,players,states};
 }
-test('both media play calls start together; text-only and single-track pages work', async()=>{
-    const music=deferred(), voice=deferred();
-    const {media,players}=mediaSetup([()=>music.promise,()=>voice.promise]);
-    const start=media.activate({jingle_url:'/music',narration_url:'/voice'});
+test('jingle starts first and narration starts only after its natural end', async()=>{
+    const {media,players}=mediaSetup();
+    await media.activate({jingle_url:'/music',narration_url:'/voice'});
+    assert.deepEqual(players.map(p=>p.calls),[1,0]);
+    assert(players[0].playing && !players[1].playing);
+    players[0].finish(); await new Promise(setImmediate);
     assert.deepEqual(players.map(p=>p.calls),[1,1]);
-    music.resolve();voice.resolve();await start;
-    assert(players.every(p=>p.playing));
-    await media.activate({narration_url:'/voice-only'});
+    assert(!players[0].playing && players[1].playing);
+    players[0].finish(); await new Promise(setImmediate);
+    assert.equal(players[1].calls,1);
+});
+test('single tracks start immediately and text-only pages are silent', async()=>{
+    const {media,players,states}=mediaSetup();
+    await media.activate({jingle_url:'/music'});
+    assert(players[0].playing);
+    await media.activate({narration_url:'/voice'});
+    assert(!players[0].playing && players[1].playing);
+    await media.activate({});
+    assert(!players[1].playing);
+    assert.deepEqual(states.at(-1),{available:false,blocked:false});
+});
+test('page turn during jingle cancels queued narration even after a late ended event', async()=>{
+    const {media,players}=mediaSetup();
+    await media.activate({jingle_url:'/old-music',narration_url:'/old-voice'});
+    await media.activate({jingle_url:'/new-music',narration_url:'/new-voice'});
+    players[0].finish(); await new Promise(setImmediate);
+    assert.equal(players[1].calls,0);
+    assert(players.slice(0,2).every(p=>!p.playing && p.src===''));
+    assert(players[2].playing && !players[3].playing);
+});
+test('page turn during narration stops and unloads it', async()=>{
+    const {media,players}=mediaSetup();
+    await media.activate({jingle_url:'/music',narration_url:'/voice'});
+    players[0].finish(); await new Promise(setImmediate);
+    assert(players[1].playing);
+    await media.activate({narration_url:'/new'});
     assert(players.slice(0,2).every(p=>!p.playing && p.src===''));
     assert(players[2].playing);
-    await media.activate({}); assert(!players[2].playing);
 });
 test('rapid turns abort old media immediately and pending old startup cannot revive it', async()=>{
     const old=deferred();
@@ -102,6 +130,8 @@ test('autoplay blocks gracefully and explicit play retries; missing media is sil
     assert.equal(states.at(-1).blocked,true);
     blocked=false; await media.play(); assert(players[0].playing);
     assert.equal(states.at(-1).blocked,false);
+    players[0].finish(); await new Promise(setImmediate);
+    assert.equal(players[1].calls,1); assert.equal(states.at(-1).blocked,false);
 });
 test('STOP cancels pending playback and permits deliberate restart',async()=>{
     const old=deferred(); const {media,players}=mediaSetup([()=>old.promise]);
@@ -143,4 +173,54 @@ test('default fetch adapter does not bind native fetch to the gallery instance',
         await gallery.next();
         assert(empty);
     } finally { globalThis.fetch = original; }
+});
+
+test('autoplay fallback retries the active track without restarting the sequence', async()=>{
+    let musicBlocked=true, voiceBlocked=true;
+    const {media,players,states}=mediaSetup([
+        ()=>musicBlocked ? Promise.reject({name:'NotAllowedError'}) : Promise.resolve(),
+        ()=>voiceBlocked ? Promise.reject({name:'NotAllowedError'}) : Promise.resolve()
+    ]);
+    await media.activate({jingle_url:'/music',narration_url:'/voice'});
+    assert(states.at(-1).blocked); assert.equal(players[1].calls,0);
+    musicBlocked=false; await media.play();
+    players[0].finish(); await new Promise(setImmediate);
+    assert(states.at(-1).blocked);
+    voiceBlocked=false; await media.play();
+    assert.equal(players[0].calls,2); assert(players[1].playing);
+    assert(!states.at(-1).blocked);
+});
+test('STOP during jingle invalidates ended callbacks and preserves the remaining sequence', async()=>{
+    const {media,players}=mediaSetup();
+    await media.activate({jingle_url:'/music',narration_url:'/voice'});
+    media.pause(); players[0].finish(); await new Promise(setImmediate);
+    assert(players.every(p=>!p.playing)); assert.equal(players[1].calls,0);
+    await media.play(); assert(players[2].playing); assert.equal(players[3].calls,0);
+    players[2].finish(); await new Promise(setImmediate);
+    assert(players[3].playing);
+    media.pause(); await media.play();
+    assert.equal(players[4].src,'/voice'); assert(players[4].playing);
+});
+test('rapid sequential pages never revive old queued narration or overlap active tracks', async()=>{
+    const starts=[deferred(),deferred(),deferred()];
+    const {media,players}=mediaSetup([()=>starts[0].promise,()=>Promise.resolve(),
+        ()=>starts[1].promise,()=>Promise.resolve(),()=>starts[2].promise,()=>Promise.resolve()]);
+    const pending=starts.map((_,i)=>media.activate({jingle_url:'/music'+i,narration_url:'/voice'+i}));
+    starts.forEach(d=>d.resolve()); await Promise.all(pending);
+    players[0].finish(); players[2].finish(); await new Promise(setImmediate);
+    assert.deepEqual(players.filter(p=>p.playing).map(p=>p.src),['/music2']);
+    assert.equal(players[1].calls+players[3].calls+players[5].calls,0);
+    players[4].finish(); await new Promise(setImmediate);
+    assert.deepEqual(players.filter(p=>p.playing).map(p=>p.src),['/voice2']);
+});
+
+test('page turn cancels narration whose play promise is still pending', async()=>{
+    const voice=deferred();
+    const {media,players}=mediaSetup([()=>Promise.resolve(),()=>voice.promise]);
+    await media.activate({jingle_url:'/music',narration_url:'/voice'});
+    players[0].finish();
+    await media.activate({jingle_url:'/new'});
+    voice.resolve(); await new Promise(setImmediate);
+    assert(!players[1].playing && players[1].src==='');
+    assert.deepEqual(players.filter(p=>p.playing).map(p=>p.src),['/new']);
 });

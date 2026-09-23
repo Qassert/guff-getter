@@ -64,11 +64,13 @@ Gallery media routes authenticate access and serve those same files, with range
 support for audio. Missing, empty, symlinked, unsafe or unsupported legacy/external
 references fall back to text. No remote image proxy/fetch or asset regeneration.
 
-JS uses separate audio objects per active page. Both play calls are made in the same
-event turn. NEXT/pagehide immediately pause/unload old audio and invalidate late
-callbacks. Autoplay failure offers PLAY AUDIO; STOP cancels even pending starts.
-No attempt to bypass browser autoplay policy. Exact sample-synchronization is not
-promised; network buffering and browser policy still apply.
+JS uses separate audio objects per active page. With both tracks present, the jingle
+plays first; only its natural ended event starts narration. A lone track starts
+immediately, and text-only items remain silent. NEXT/pagehide immediately pause/unload
+old audio and invalidate late ended/playing callbacks and pending play promises.
+Autoplay failure offers PLAY AUDIO to retry the current track. STOP cancels pending
+starts; PLAY restarts the stopped track and its remaining sequence. Stopping narration
+does not replay the completed jingle. No browser autoplay-policy bypass.
 
 ## Validation
 
@@ -108,3 +110,8 @@ or merge main without separate authorization.
 Follow-up checkpoint: `Fix gallery native fetch binding after browser review`.
 The controller wraps native fetch rather than storing it as an instance-bound method;
 Chrome had otherwise rejected the first request with Illegal invocation.
+
+Sequential-audio follow-up: `Play gallery jingle before narration`.
+20 targeted frontend tests passed (18 gallery + narration/jingle suites), including
+page turns during either track, stale ended events, pending narration starts, rapid
+turns, single/no tracks, and autoplay fallback at either stage. No provider calls.
