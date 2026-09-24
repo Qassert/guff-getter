@@ -47,8 +47,12 @@ class FakeSession:
     def request(self, method, url, **kwargs):
         self.calls.append((method, url, kwargs))
         assert kwargs['allow_redirects'] is False
-        if url.endswith('/media/upload/binary'):
-            return Response({'data': {'download_url': 'https://storage.invalid/input?secret=upload'}})
+        if url.endswith('/media/uploads'):
+            return Response({'data': {'upload': {'url': 'https://storage.invalid/put?secret=signed',
+                'headers': {'Content-Type': 'image/png'}},
+                'download_url': 'https://storage.invalid/input?secret=upload'}})
+        if method == 'PUT':
+            return Response(status=204)
         if method == 'POST':
             if self.fail == 'submit':
                 raise requests.Timeout('DO NOT LOG test-key https://secret.invalid')
@@ -114,7 +118,7 @@ def test_success_same_image_one_generation_each_and_safe_artifacts(image, monkey
     run = runs[0]
     assert (run / 'source-image.png').read_bytes() == PNG
     assert (run / 'wan.mp4').read_bytes() == (run / 'svd.mp4').read_bytes() == MP4
-    posts = [c for c in fake.calls if c[0] == 'POST' and 'json' in c[2]]
+    posts = [c for c in fake.calls if c[0] == 'POST' and not c[1].endswith('/media/uploads')]
     assert len(posts) == 2
     wan, svd = posts
     assert wan[2]['json']['duration'] == 5
@@ -122,8 +126,13 @@ def test_success_same_image_one_generation_each_and_safe_artifacts(image, monkey
     assert 'prompt' not in svd[2]['json']
     assert svd[2]['headers']['X-Fal-No-Retry'] == '1'
     assert base64.b64decode(svd[2]['json']['image_url'].split(',')[1]) == PNG
-    upload = next(c for c in fake.calls if 'files' in c[2])
-    assert upload[2]['files']['file'][1] == PNG
+    upload = next(c for c in fake.calls if c[0] == 'PUT')
+    assert upload[2]['data'] == PNG
+    assert upload[2]['headers'] == {'Content-Type': 'image/png'}
+    ticket = fake.calls[0]
+    assert ticket[1] == video.WAN_BASE + '/media/uploads'
+    assert ticket[2]['json'] == {'filename': 'source-image.png', 'size': len(PNG), 'content_type': 'image/png'}
+    assert wan[2]['json']['image'] == 'https://storage.invalid/input?secret=upload'
     assert fake.trust_env is False
     metadata = json.loads((run / 'results.json').read_text())
     assert metadata['providers']['svd']['parameters']['fps'] == 25
@@ -146,11 +155,17 @@ def test_failure_never_resubmits_or_starts_next_provider(image, monkeypatch, cap
     if failure == 'timeout': monkeypatch.setattr(video, 'POLL_TIMEOUT', 0)
     with patch.object(video.requests, 'Session', return_value=fake):
         assert video.main(run_args(image) + ['--confirm-spend']) == 1
-    assert len([c for c in fake.calls if c[0] == 'POST' and 'json' in c[2]]) == 1
+    assert len([c for c in fake.calls if c[0] == 'POST' and not c[1].endswith('/media/uploads')]) == 1
     run = next(video.OUTPUT_ROOT.iterdir())
     assert not list(run.glob('*.mp4')) and not list(run.glob('*.part'))
     metadata = json.loads((run / 'results.json').read_text())
     assert metadata['providers']['wan']['state'] == 'failed_or_uncertain'
+    error = metadata['providers']['wan']['error']
+    assert error['stage'] == {'submit': 'model_submission', 'poll': 'prediction_polling',
+                              'download': 'output_download', 'timeout': 'prediction_polling'}[failure]
+    assert error['http_status'] == (None if failure in ('submit', 'timeout') else 200)
+    if failure == 'submit':
+        assert error['exception_type'] == 'Timeout'
     assert metadata['providers']['svd']['state'] == 'not_started'
     if failure != 'submit': assert metadata['providers']['wan']['request_id'] == 'wan-id'
     output = capsys.readouterr()
@@ -173,3 +188,102 @@ def test_svd_only_does_not_upload_to_wavespeed(image, monkeypatch):
     assert not any('wavespeed' in c[1] for c in fake.calls)
     run = next(video.OUTPUT_ROOT.iterdir())
     assert (run / 'svd.mp4').exists() and not (run / 'wan.mp4').exists()
+
+
+@pytest.mark.parametrize('stage,status', [
+    ('auth_upload_ticket', 401), ('auth_upload_ticket', 503),
+    ('image_upload', 403), ('model_submission', 422),
+    ('prediction_polling', 500), ('output_download', 404),
+])
+def test_stage_http_errors_are_safe_and_never_retry(image, monkeypatch, capsys, stage, status):
+    monkeypatch.setenv('WAVESPEED_API_KEY', 'test-key')
+    fake = FakeSession()
+    original = fake.request
+    def request(method, url, **kwargs):
+        current = ('auth_upload_ticket' if url.endswith('/media/uploads') else
+                   'image_upload' if method == 'PUT' else
+                   'model_submission' if method == 'POST' else 'prediction_polling')
+        if current == stage:
+            fake.calls.append((method, url, kwargs))
+            return Response({'message': 'Input rejected', 'error': {
+                'detail': 'test-key https://storage.invalid/put?secret=signed'},
+                'headers': {'Authorization': 'Bearer unknown-secret'},
+                'token': 'unknown-secret'}, status=status)
+        return original(method, url, **kwargs)
+    fake.request = request
+    if stage == 'output_download':
+        fake.get = lambda *a, **k: Response({'message': 'Output expired'}, status=status)
+    with patch.object(video.requests, 'Session', return_value=fake):
+        assert video.main(['--image', str(image), '--providers', 'wan', '--confirm-spend']) == 1
+    run = next(video.OUTPUT_ROOT.iterdir())
+    raw = (run / 'results.json').read_text()
+    record = json.loads(raw)['providers']['wan']
+    error = record['error']
+    assert error['stage'] == stage
+    assert error['http_status'] == status
+    assert error['exception_type'] == 'SmokeError'
+    assert ('Output expired' if stage == 'output_download' else 'Input rejected') in error['provider_message']
+    assert all(s['state'] == 'complete' for s in record['stages'][:-1])
+    assert len([c for c in fake.calls if c[0] == 'POST' and not c[1].endswith('/media/uploads')]) <= 1
+    output = capsys.readouterr()
+    assert stage in output.err and str(status) in output.err
+    for forbidden in ('test-key', 'unknown-secret', 'Authorization', 'secret=signed', 'https://storage.invalid'):
+        assert forbidden not in raw + output.out + output.err
+
+
+@pytest.mark.parametrize('key_present', [False, True])
+def test_diagnose_wan_always_offline_even_with_spend_flags(image, monkeypatch, key_present, capsys):
+    if key_present:
+        monkeypatch.setenv('WAVESPEED_API_KEY', 'test-key')
+    with patch.object(video.requests, 'Session') as session:
+        assert video.main(run_args(image) + ['--diagnose-wan', '--confirm-spend']) == (0 if key_present else 1)
+        session.assert_not_called()
+    assert not video.OUTPUT_ROOT.exists()
+    assert 'test-key' not in capsys.readouterr().out
+
+
+def test_success_records_all_wan_stages(image, monkeypatch):
+    monkeypatch.setenv('WAVESPEED_API_KEY', 'test-key')
+    with patch.object(video.requests, 'Session', return_value=FakeSession()):
+        assert video.main(['--image', str(image), '--providers', 'wan', '--confirm-spend']) == 0
+    record = json.loads(next(video.OUTPUT_ROOT.glob('*/results.json')).read_text())['providers']['wan']
+    assert [s['stage'] for s in record['stages']][1:] == [
+        'auth_upload_ticket', 'image_upload', 'model_submission', 'prediction_polling', 'output_download']
+    assert all(s['state'] == 'complete' for s in record['stages'])
+    assert [s['http_status'] for s in record['stages']][1:] == [200, 204, 200, 200, 200]
+    assert 'error' not in record
+
+
+@pytest.mark.parametrize('failure', ['network', 'malformed_ticket', 'error_envelope', 'invalid_json'])
+def test_ticket_protocol_and_transport_failures(image, monkeypatch, capsys, failure):
+    monkeypatch.setenv('WAVESPEED_API_KEY', 'test-key')
+    fake = FakeSession()
+    def request(*args, **kwargs):
+        fake.calls.append(args)
+        if failure == 'network':
+            raise requests.ConnectionError('Connection failed test-key https://private.invalid/path')
+        if failure == 'malformed_ticket':
+            return Response({'data': {'upload': {'url': 123, 'headers': {}}, 'download_url': None}})
+        if failure == 'error_envelope':
+            return Response({'code': 400, 'message': 'Upload capacity exceeded'})
+        response = Response()
+        def invalid():
+            raise ValueError('Invalid JSON')
+        response.json = invalid
+        return response
+    fake.request = request
+    with patch.object(video.requests, 'Session', return_value=fake):
+        assert video.main(['--image', str(image), '--providers', 'wan', '--confirm-spend']) == 1
+    assert len(fake.calls) == 1
+    raw = next(video.OUTPUT_ROOT.glob('*/results.json')).read_text()
+    error = json.loads(raw)['providers']['wan']['error']
+    assert error['stage'] == 'auth_upload_ticket'
+    assert error['http_status'] == (None if failure == 'network' else 200)
+    if failure == 'network':
+        assert error['exception_type'] == 'ConnectionError'
+        assert 'Connection failed' in error['exception_message']
+    if failure == 'error_envelope':
+        assert 'Upload capacity exceeded' in error['provider_message']
+    output = capsys.readouterr()
+    assert 'test-key' not in raw + output.err
+    assert 'private.invalid' not in raw + output.err

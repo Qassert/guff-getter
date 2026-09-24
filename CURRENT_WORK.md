@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: experiment/video-smoke-test
-LAST_COMPLETED_FEATURE: Standalone video smoke-test harness (offline first pass)
-LAST_COMPLETED_COMMIT: :/^Add guarded standalone video comparison harness
+LAST_COMPLETED_FEATURE: WaveSpeed ticket upload and secret-safe stage diagnostics
+LAST_COMPLETED_COMMIT: :/^Improve WaveSpeed upload flow and failure diagnostics
 LAST_OWNER: CODEX
 HANDOVER: scripts/video_smoke_test.md
 
@@ -13,9 +13,10 @@ HANDOVER: scripts/video_smoke_test.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Standalone video smoke-test harness — offline first pass
-APPROVAL: Standalone harness only; stop after offline first pass. No live generation.
-NEXT_STEP: User supplies local image and environment keys; paid runs require explicit --confirm-spend.
+CURRENT_TASK: WaveSpeed staged diagnostics and ticket upload; mocked validation only
+APPROVAL: Standalone harness diagnostics only; no provider calls during implementation or tests.
+NEXT_STEP: Andy reviews diagnostics; --diagnose-wan checks local inputs/config only. Paid runs still require explicit --confirm-spend.
+VALIDATION: 29 targeted mocked tests passed; no provider calls. Ticket/PUT flow, five failure stages, safe errors and unchanged no-retry spend guard.
 
 ## Promotion Gallery milestone plan — 2026-09-22
 

@@ -45,6 +45,64 @@ class SmokeError(Exception):
     """Only fixed, non-secret diagnostics may be placed in this exception."""
 
 
+class Diagnostics:
+    """Persist only selected, sanitized diagnostic fields; never raw HTTP objects."""
+
+    def __init__(self, record, checkpoint):
+        self.record, self.checkpoint = record, checkpoint
+        self.secrets = [os.environ.get(k, '').strip() for k in KEYS.values()]
+        self.current = None
+
+    def safe(self, value):
+        text = str(value)
+        for secret in sorted((v for v in self.secrets if isinstance(v, str) and v), key=len, reverse=True):
+            text = text.replace(secret, '[redacted]')
+        # Omit credential/header dumps altogether, including unknown provider secrets.
+        if re.search(r'authorization|bearer|api[_ -]?key|token|secret|signature|credential|password|headers', text, re.I):
+            return '[sensitive diagnostic omitted]'
+        text = re.sub(r'https?://[^\s<>"\']+', '[URL redacted]', text)
+        text = re.sub(r'data:[^\s]+', '[data redacted]', text)
+        return ''.join(c for c in text if c.isprintable())[:500]
+
+    def start(self, stage):
+        if self.current:
+            self.current['state'] = 'complete'
+        self.current = {'stage': stage, 'state': 'started', 'http_status': None,
+                        'provider_message': None}
+        self.record.setdefault('stages', []).append(self.current)
+        self.checkpoint()
+
+    def body(self, value):
+        # Only diagnostic fields: do not serialize payloads, URLs, headers or inputs.
+        if isinstance(value, dict):
+            parts = [self.body(value[k]) for k in ('code', 'message', 'error', 'detail') if k in value]
+            return '; '.join(filter(None, parts)) or None
+        if isinstance(value, (str, int)):
+            return self.safe(value)
+        return None
+
+    def response(self, response):
+        self.current['http_status'] = response.status_code
+        self.current['provider_message'] = None
+        if not 200 <= response.status_code < 300:
+            try:
+                message = self.body(response.json())
+            except ValueError:
+                message = '[non-JSON response body omitted]'
+            self.current['provider_message'] = message
+            raise SmokeError('HTTP request rejected; no automatic retry.')
+
+    def fail(self, exc):
+        self.current.update(state='failed', exception_type=type(exc).__name__,
+                            exception_message=self.safe(exc))
+        self.record['error'] = dict(self.current)
+        self.checkpoint()
+        status = self.current['http_status']
+        return (f"{self.current['stage']} (HTTP {status if status is not None else 'unavailable'}): "
+                f"{self.current['exception_type']}: {self.current['exception_message']}"
+                + (f" — {self.current['provider_message']}" if self.current['provider_message'] else ''))
+
+
 def read_image(path):
     try:
         with path.open('rb') as source:
@@ -71,14 +129,15 @@ def https_url(url):
     return url
 
 
-def request_json(session, method, url, **kwargs):
-    # No redirects, no retries. Never print provider bodies, headers, URLs or exceptions.
+def request_json(session, method, url, diagnostics, **kwargs):
+    # No redirects or retries; only sanitized diagnostics may leave this function.
+    diagnostics.current.update(http_status=None, provider_message=None)
     with session.request(method, url, timeout=(15, 60), allow_redirects=False, **kwargs) as response:
-        if not 200 <= response.status_code < 300:
-            raise SmokeError('Provider HTTP request failed; no automatic retry.')
+        diagnostics.response(response)
         result = response.json()
         if not isinstance(result, dict):
             raise SmokeError('Provider returned an invalid response.')
+        diagnostics.current['provider_message'] = diagnostics.body(result)
         return result
 
 
@@ -115,12 +174,27 @@ section{{padding:16px;border:1px solid #aaa}}pre{{white-space:pre-wrap;overflow-
     (directory / 'compare.html').write_text(page, encoding='utf-8')
 
 
-def generate(session, name, key, image, mime, parameters, record, checkpoint):
+def generate(session, name, key, image, mime, parameters, record, checkpoint, diagnostics):
     if name == 'wan':
         headers = {'Authorization': f'Bearer {key}'}
-        uploaded = request_json(session, 'POST', WAN_BASE + '/media/upload/binary', headers=headers,
-            files={'file': ('source-image', image, mime)})
-        image_url = https_url(uploaded['data']['download_url'])
+        diagnostics.start('auth_upload_ticket')
+        uploaded = request_json(session, 'POST', WAN_BASE + '/media/uploads', diagnostics,
+            headers=headers, json={'filename': 'source-image.' + mime.split('/')[1],
+                                   'size': len(image), 'content_type': mime})
+        ticket = uploaded['data']
+        upload = ticket['upload']
+        diagnostics.secrets.extend([upload['url'], ticket['download_url']])
+        upload_headers = upload['headers']
+        if not isinstance(upload_headers, dict) or not all(
+                isinstance(k, str) and isinstance(v, str) for k, v in upload_headers.items()):
+            raise SmokeError('Invalid upload headers in ticket.')
+        diagnostics.secrets.extend(upload_headers.values())
+        upload_url = https_url(upload['url'])
+        image_url = https_url(ticket['download_url'])
+        diagnostics.start('image_upload')
+        with session.request('PUT', upload_url, headers=upload_headers, data=image,
+                             timeout=(15, 60), allow_redirects=False) as response:
+            diagnostics.response(response)
         endpoint = WAN_BASE + '/' + MODELS[name]
         payload = {**parameters, 'image': image_url}
     else:
@@ -129,35 +203,41 @@ def generate(session, name, key, image, mime, parameters, record, checkpoint):
         payload = {**parameters, 'image_url': f'data:{mime};base64,' + base64.b64encode(image).decode('ascii')}
     record['state'] = 'submission_started'  # Save before the single potentially billable POST.
     checkpoint()
-    submitted = request_json(session, 'POST', endpoint, headers=headers, json=payload)
+    diagnostics.start('model_submission')
+    submitted = request_json(session, 'POST', endpoint, diagnostics, headers=headers, json=payload)
     identifier = job_id(submitted['data']['id'] if name == 'wan' else submitted['request_id'])
     record.update(request_id=identifier, state='submitted')
     checkpoint()
     result_url = (WAN_BASE + f'/predictions/{identifier}/result' if name == 'wan'
                   else FAL_BASE + f'/requests/{identifier}')
+    diagnostics.start('prediction_polling')
     deadline = time.monotonic() + POLL_TIMEOUT
     while time.monotonic() < deadline:
         time.sleep(POLL_SECONDS)
-        response = request_json(session, 'GET', result_url if name == 'wan' else result_url + '/status', headers=headers)
+        response = request_json(session, 'GET', result_url if name == 'wan' else result_url + '/status', diagnostics, headers=headers)
         state = response['data'] if name == 'wan' else response
         status = state['status']
         if status == ('completed' if name == 'wan' else 'COMPLETED'):
             if name == 'wan':
                 return https_url(state['outputs'][0])
-            result = request_json(session, 'GET', result_url, headers=headers)
+            result = request_json(session, 'GET', result_url, diagnostics, headers=headers)
             if type(result.get('seed')) is int:
                 record['returned_seed'] = result['seed']
             return https_url(result['video']['url'])
         if status not in ('created', 'pending', 'processing', 'in_queue', 'IN_QUEUE', 'IN_PROGRESS'):
+            diagnostics.current['provider_message'] = diagnostics.body(state)
             raise SmokeError('Provider job failed or returned an unknown state; no regeneration.')
     raise SmokeError('Polling deadline reached; the remote job may still finish. Do not resubmit.')
 
 
-def download(session, url, target):
+def download(session, url, target, diagnostics):
     # This session has no provider Authorization header; output URLs are never persisted.
+    diagnostics.secrets.append(url)
+    diagnostics.start('output_download')
     part = target.with_suffix('.mp4.part')
     try:
         with session.get(https_url(url), timeout=(15, 60), allow_redirects=False, stream=True) as response:
+            diagnostics.response(response)
             if response.status_code != 200:
                 raise SmokeError('Video download failed; no regeneration.')
             size = 0
@@ -182,10 +262,19 @@ def main(argv=None):
     parser.add_argument('--prompt', default=DEFAULT_PROMPT)
     parser.add_argument('--providers', choices=['wan', 'svd', 'wan,svd'], default='')
     parser.add_argument('--confirm-spend', action='store_true')
+    parser.add_argument('--diagnose-wan', action='store_true', help='Local checks only; never makes HTTP calls.')
     args = parser.parse_args(argv)
     directory = None
     try:
         image, mime, suffix = read_image(args.image)
+        if args.diagnose_wan:
+            if not args.prompt.strip():
+                raise SmokeError('Wan requires a nonempty motion prompt. Zero provider calls.')
+            present = bool(os.environ.get('WAVESPEED_API_KEY', '').strip())
+            print(f'Offline Wan diagnostic: image signature {mime}, {len(image)} bytes; prompt present; '
+                  f"WAVESPEED_API_KEY {'present' if present else 'missing'}. Zero provider calls. "
+                  'Credentials and provider availability are not verified.')
+            return 0 if present else 1
         selected = args.providers.split(',') if args.providers else []
         if 'wan' in selected and not args.prompt.strip():
             raise SmokeError('Wan requires a nonempty motion prompt.')
@@ -220,20 +309,23 @@ def main(argv=None):
             session.trust_env = False
             for name in selected:
                 record = records[name]
+                diagnostics = Diagnostics(record, checkpoint)
+                diagnostics.start('local_preparation')
                 try:
                     record['state'] = 'preparing_input'
                     checkpoint()
                     url = generate(session, name, os.environ[KEYS[name]].strip(), image, mime,
-                                   record['parameters'], record, checkpoint)
+                                   record['parameters'], record, checkpoint, diagnostics)
                     record['state'] = 'generated'
                     checkpoint()
-                    download(session, url, directory / f'{name}.mp4')
+                    download(session, url, directory / f'{name}.mp4', diagnostics)
+                    diagnostics.current['state'] = 'complete'
                     record.update(state='complete', output_file=f'{name}.mp4')
                     checkpoint()
-                except (Exception, KeyboardInterrupt):
+                except (Exception, KeyboardInterrupt) as exc:
                     record['state'] = 'failed_or_uncertain'
-                    checkpoint()
-                    raise SmokeError('Stopped without retry. Inspect results.json and provider job history before any new run.') from None
+                    detail = diagnostics.fail(exc)
+                    raise SmokeError(detail + '. Stopped without retry. Inspect results.json and provider job history before any new run.') from None
         print(f'Comparison saved: {directory / "compare.html"}')
         return 0
     except SmokeError as exc:
