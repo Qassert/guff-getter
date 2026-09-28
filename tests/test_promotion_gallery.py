@@ -357,3 +357,36 @@ def test_successful_pet_login_and_adoption_issue_gallery_session(adopting):
         denied = client.post('/pets/use_pet/pet.jpg', data={'password': 'wrong'}, follow_redirects=False)
         assert 'Incorrect password' in denied.text
         assert sessions.insert_one.await_count == 1
+
+
+def test_gallery_video_only_serves_completed_local_association(routes, setup, tmp_path):
+    from uuid import uuid4
+    client, _, _ = routes
+    service, entries, _ = setup
+    service.videos = tmp_path / 'videos'
+    service.videos.mkdir()
+    entry = entries.docs[-1]
+    key, rewrite = str(entry['_id']), str(uuid4())
+    entry['rewrite_id'] = rewrite
+    entry['video'] = {'rewrite_id': rewrite, 'status': 'complete', 'storage_key': f'{rewrite}.mp4',
+                      'request_id': 'not-for-gallery-ui', 'prompt': 'not-for-gallery-ui'}
+    path = service.videos / f'{rewrite}.mp4'
+    path.write_bytes(b'\0\0\0\x18ftypmp42fixture')
+    url = f'/promotion-gallery/items/{key}/media/video'
+    assert client.get(url).status_code == 401
+    client.cookies.set('gallery_session', 'opaque')
+    response = client.get(url, headers={'Range': 'bytes=0-3'})
+    assert response.status_code == 206 and response.headers['content-type'] == 'video/mp4'
+    result = service.serialize(entry)
+    assert result['video_url'] == url
+    assert 'not-for-gallery-ui' not in json.dumps(result)
+    entry['video']['status'] = 'started'
+    assert client.get(url).status_code == 404
+    entry['video']['status'] = 'complete'
+    entry['video']['storage_key'] = '../elsewhere.mp4'
+    assert client.get(url).status_code == 404
+    entry['video']['storage_key'] = f'{rewrite}.mp4'
+    outside = tmp_path / 'other.mp4'; outside.write_bytes(path.read_bytes())
+    path.unlink(); path.symlink_to(outside)
+    assert client.get(url).status_code == 404
+    assert service.serialize(entry)['video_url'] is None

@@ -62,3 +62,11 @@
 }
 /* Hidden states must win over the desktop image/text grid. */
 .promotion-gallery [hidden] { display: none !important; }
+
+/* The still determines layout; decoded video fades over exactly the same rectangle. */
+#galleryIllustration { position: relative; }
+#galleryIllustration video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 600ms ease; pointer-events: none; }
+#galleryIllustration.animation-playing video { opacity: 1; }
+#galleryStopVideo { position: absolute; bottom: 8px; right: 8px; z-index: 1; font-size: .65rem; padding: 6px 10px; }
+@media (min-width: 850px) { .gallery-page.has-image #galleryIllustration { position: sticky; } }
+@media (prefers-reduced-motion: reduce) { #galleryIllustration video { display: none; transition: none; } }

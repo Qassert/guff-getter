@@ -15,7 +15,7 @@ HANDOVER: scripts/video_smoke_test.md
 
 CURRENT_TASK: Optional manual WaveSpeed animation for existing rewrites and nominations.
 APPROVAL: Implement/test offline, milestone commits/pushes. No live provider calls or deployment.
-NEXT_STEP: M5 gallery transition and lifecycle. M3 commit b5e2baf; M4 validation: 9 Node tests/suites passed with fake HTTP/media. M2 commit 02b36ed; M3 backend/image/client validation: 60 tests + 6 subtests passed offline.
+NEXT_STEP: M6 complete regression/diff review and handover. M4 commit cd1e7e0; M5 validation: 14 Python + 23 Node gallery tests passed. M3 commit b5e2baf; M4 validation: 9 Node tests/suites passed with fake HTTP/media. M2 commit 02b36ed; M3 backend/image/client validation: 60 tests + 6 subtests passed offline.
 M3: SQLite claim + worker_started guard; authenticated POST schedules BackgroundTasks once, GET/status/media never generate.
 Media recovery and metadata-only nomination sync; draft tombstones keep claims. Interrupted work becomes uncertain after 30 minutes; no retry.
 
@@ -27,7 +27,7 @@ client; main and experiment branch remain unchanged. No unrelated dirty files.
 - [x] M2 shared WaveSpeed service, deterministic prompt, mocked tests
 - [x] M3 rewrite state, explicit authenticated API, background task, duplicate guard
 - [x] M4 compact Creation Page controls and status polling
-- [ ] M5 gallery still-to-video playback, cleanup and reduced motion
+- [x] M5 gallery still-to-video playback, cleanup and reduced motion
 - [ ] M6 regression, review and final handover
 
 Design: existing RewriteStore SQLite transaction serializes one permanent video claim

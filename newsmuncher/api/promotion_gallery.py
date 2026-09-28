@@ -54,7 +54,7 @@ def media(key: str, kind: str, user=Depends(viewer)):
     path = service.media_path(service.entry(key), kind)
     if not path:
         raise HTTPException(404, 'Stored media unavailable.')
-    return FileResponse(path, media_type='image/png' if kind == 'image' else 'audio/mpeg',
+    return FileResponse(path, media_type={'image': 'image/png', 'video': 'video/mp4'}.get(kind, 'audio/mpeg'),
                         headers={'Cache-Control': 'private, no-store'})
 
 

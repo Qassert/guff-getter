@@ -224,3 +224,61 @@ test('page turn cancels narration whose play promise is still pending', async()=
     assert(!players[1].playing && players[1].src==='');
     assert.deepEqual(players.filter(p=>p.playing).map(p=>p.src),['/new']);
 });
+
+const {GalleryVideo} = require('../newsmuncher/static/promotion-gallery.js');
+function videoSetup(start=()=>Promise.resolve()) {
+    const players=[], timers=[], revealed=[], cancelled=[]; let reduce=false;
+    const visual=new GalleryVideo({makeVideo(){
+        const player=new FakeAudio(start);
+        player.setAttribute=()=>{}; player.remove=()=>{player.removed=true;};
+        players.push(player); return player;
+    },mount(){},reveal(value){revealed.push(value);},reduced:()=>reduce,
+    schedule(fn,delay){timers.push({fn,delay});return timers.length;},cancel(id){cancelled.push(id);}});
+    return {visual,players,timers,revealed,cancelled,reduce(){reduce=true;}};
+}
+const animated={image_url:'/still',video_url:'/stored-video'};
+test('still loads first; 1.5s delay then muted inline loop fades only on playing', async()=>{
+    const {visual,players,timers,revealed}=videoSetup(); const image=deferred();
+    visual.activate(animated,image.promise); await Promise.resolve();
+    assert.equal(timers.length,0); image.resolve(true); await Promise.resolve();
+    assert.equal(timers[0].delay,1500); assert.equal(players.length,0);
+    await timers[0].fn(); const video=players[0];
+    assert(video.muted && video.defaultMuted && video.playsInline && video.loop);
+    assert.equal(video.src,'/stored-video'); assert.equal(revealed.at(-1),true);
+});
+test('video page turn cancels delay, old image load and late play/event completion', async()=>{
+    const pending=deferred(); const {visual,players,timers,revealed}=videoSetup(()=>pending.promise);
+    visual.activate(animated); await Promise.resolve(); const oldTimer=timers[0];
+    visual.stop(); await oldTimer.fn(); assert.equal(players.length,0);
+    const image=deferred(); visual.activate(animated,image.promise); visual.stop();
+    image.resolve(true); await Promise.resolve(); assert.equal(timers.length,1);
+    visual.activate(animated); await Promise.resolve(); const play=timers[1].fn();
+    const old=players[0]; visual.stop(); pending.resolve(); await play;
+    old.events.playing(); assert(!old.playing); assert(old.removed); assert.equal(old.src,'');
+    assert.equal(revealed.at(-1),false);
+});
+test('image-only, text-only, failed image and reduced motion never start video', async()=>{
+    const {visual,players,timers,reduce}=videoSetup();
+    visual.activate({image_url:'/still'}); visual.activate({video_url:'/stored'});
+    visual.activate(animated,Promise.resolve(false)); await Promise.resolve();
+    reduce(); visual.activate(animated); await Promise.resolve();
+    assert.equal(timers.length,0); assert.equal(players.length,0);
+});
+test('autoplay rejection or media error retains the still; reduced motion rechecked at delay', async()=>{
+    const {visual,players,timers,revealed}=videoSetup(()=>Promise.reject(Object.assign(Error(),{name:'NotAllowedError'})));
+    visual.activate(animated); await Promise.resolve(); await timers[0].fn();
+    assert.equal(revealed.at(-1),false); assert(players[0].removed);
+    const second=videoSetup(); second.visual.activate(animated); await Promise.resolve();
+    second.reduce(); await second.timers[0].fn(); assert.equal(second.players.length,0);
+    const third=videoSetup(); third.visual.activate(animated); await Promise.resolve(); await third.timers[0].fn();
+    third.players[0].events.error(); assert.equal(third.revealed.at(-1),false);
+});
+test('gallery navigation and leave stop visuals before retrieval, independent of audio', async()=>{
+    const calls=[]; const wait=deferred();
+    const gallery=new PromotionGallery({view:{loading(){calls.push('loading');},empty(){}},
+        media:{stop(){calls.push('audio-stop');}},visual:{stop(){calls.push('video-stop');}},
+        fetcher:()=>wait.promise});
+    const next=gallery.next(); assert.deepEqual(calls,['audio-stop','video-stop','loading']);
+    gallery.leave(); assert.deepEqual(calls.slice(-2),['audio-stop','video-stop']);
+    wait.resolve(response({item:null})); await next;
+});

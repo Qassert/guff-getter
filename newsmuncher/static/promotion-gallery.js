@@ -73,10 +73,59 @@
             this.status({available: this.players.length > 0, blocked: true});
         }
     }
+    class GalleryVideo {
+        constructor({makeVideo = () => document.createElement('video'), mount = () => {}, reveal = () => {},
+                     reduced = () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+                     schedule = setTimeout, cancel = clearTimeout} = {}) {
+            Object.assign(this, {makeVideo, mount, reveal, reduced, schedule, cancel});
+            this.generation = 0;
+        }
+        stop() {
+            this.generation++;
+            this.cancel(this.timer);
+            if (this.player) {
+                this.player.pause(); this.player.removeAttribute('src'); this.player.load(); this.player.remove();
+                this.player = null;
+            }
+            this.reveal(false);
+        }
+        activate(item, imageReady = Promise.resolve(true)) {
+            this.stop();
+            if (!item.image_url || !item.video_url || this.reduced()) return;
+            const generation = this.generation;
+            Promise.resolve(imageReady).then(loaded => {
+                if (!loaded || generation !== this.generation || this.reduced()) return;
+                // Count the delay from the still's load, so a slow image is shown first.
+                this.timer = this.schedule(() => this.play(item.video_url, generation), 1500);
+            }).catch(() => {}); // Failed still images retain the existing text-only fallback.
+        }
+        async play(url, generation) {
+            if (generation !== this.generation || this.reduced()) return;
+            const player = this.makeVideo();
+            this.player = player;
+            player.muted = true; player.defaultMuted = true; player.playsInline = true;
+            player.loop = true; player.preload = 'auto'; player.src = url;
+            player.setAttribute('aria-hidden', 'true');
+            player.addEventListener('playing', () => {
+                if (generation !== this.generation) { player.pause(); return; }
+                if (this.reduced()) { this.stop(); return; }
+                this.reveal(true); // Fade only when decoded frames are actually playing.
+            });
+            player.addEventListener('error', () => { if (generation === this.generation) this.stop(); });
+            this.mount(player);
+            try {
+                await player.play();
+                if (generation !== this.generation) player.pause();
+            } catch (_) {
+                if (generation === this.generation) this.stop(); // Keep the still on autoplay failure.
+            }
+        }
+    }
     class PromotionGallery {
-        constructor({view, fetcher = (url, options) => fetch(url, options), afterDisplay = () => Promise.resolve(), media = new GalleryMedia()}) {
+        constructor({view, fetcher = (url, options) => fetch(url, options), afterDisplay = () => Promise.resolve(), media = new GalleryMedia(), visual = new GalleryVideo()}) {
             this.view = view;
             this.media = media;
+            this.visual = visual;
             this.fetcher = fetcher;
             this.afterDisplay = afterDisplay;
             this.sequence = 0;
@@ -116,6 +165,7 @@
         async next() {
             const sequence = ++this.sequence;
             this.media.stop();
+            this.visual.stop();
             if (this.abort) this.abort.abort();
             this.abort = new AbortController();
             this.view.loading();
@@ -132,6 +182,7 @@
                 await this.afterDisplay();
                 if (sequence !== this.sequence) return;
                 this.media.activate(data.item);
+                this.visual.activate(data.item, this.view.imageReady);
                 this.receipt = data.view_token;
                 await this.acknowledge();
             } catch (error) {
@@ -159,11 +210,12 @@
         leave() {
             this.sequence++;
             this.media.stop();
+            this.visual.stop();
             if (this.abort) this.abort.abort();
         }
     }
     root.PromotionGallery = PromotionGallery;
-    if (typeof module !== 'undefined') module.exports = {PromotionGallery, GalleryMedia};
+    if (typeof module !== 'undefined') module.exports = {PromotionGallery, GalleryMedia, GalleryVideo};
     if (typeof document === 'undefined' || !document.getElementById('galleryPage')) return;
     const get = id => document.getElementById(id);
     const page = get('galleryPage'), status = get('galleryStatus'), promote = get('galleryPromote');
@@ -180,6 +232,11 @@
             const image = document.createElement('img');
             image.id = 'galleryImage'; image.alt = ''; image.decoding = 'async';
             get('galleryImage').replaceWith(image);
+            this.imageReady = new Promise(resolve => {
+                image.addEventListener('load', () => resolve(true), {once: true});
+                image.addEventListener('error', () => resolve(false), {once: true});
+                if (!item.image_url) resolve(false);
+            });
             image.addEventListener('error', () => {
                 if (get('galleryImage') === image) {
                     get('galleryIllustration').hidden = true;
@@ -212,7 +269,17 @@
         get('galleryPlayAudio').hidden = !blocked;
         get('galleryAudioStatus').textContent = blocked ? 'Press PLAY AUDIO to listen.' : 'Saved audio';
     }});
-    const gallery = new PromotionGallery({view, afterDisplay, media});
+    const visual = new GalleryVideo({
+        mount(player) { get('galleryIllustration').appendChild(player); },
+        reveal(playing) {
+            get('galleryIllustration').classList.toggle('animation-playing', playing);
+            get('galleryStopVideo').hidden = !playing;
+        }
+    });
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    motionPreference.addEventListener('change', event => { if (event.matches) visual.stop(); });
+    get('galleryStopVideo').addEventListener('click', () => visual.stop());
+    const gallery = new PromotionGallery({view, afterDisplay, media, visual});
     get('galleryPlayAudio').addEventListener('click', () => media.play());
     get('galleryStopAudio').addEventListener('click', () => media.pause());
     page.addEventListener('animationend', () => page.classList.remove('turning'));

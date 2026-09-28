@@ -14,7 +14,7 @@ from pymongo.read_concern import ReadConcern
 from pymongo.write_concern import WriteConcern
 
 from newsmuncher.config import (GENERATED_IMAGES_DIR, GENERATED_AUDIO_DIR,
-                               GENERATED_NARRATION_DIR, JINGLE_STATE_FILE)
+                               GENERATED_NARRATION_DIR, GENERATED_VIDEO_DIR, JINGLE_STATE_FILE)
 
 # Same conservative legacy interpretation as nomination_state; explicit false wins.
 NOMINATED = {'$or': [{'nominated': True},
@@ -29,10 +29,11 @@ def seen(entry):
 class PromotionGallery:
     def __init__(self, entries, receipts, images=GENERATED_IMAGES_DIR,
                  narration=GENERATED_NARRATION_DIR, audio=GENERATED_AUDIO_DIR,
-                 jingles=JINGLE_STATE_FILE, choose=random.choice):
+                 jingles=JINGLE_STATE_FILE, choose=random.choice, videos=GENERATED_VIDEO_DIR):
         self.entries, self.receipts = entries, receipts
         self.images, self.narration, self.audio = map(Path, (images, narration, audio))
         self.jingles, self.choose = Path(jingles), choose
+        self.videos = Path(videos)
 
     def entry(self, key, session=None):
         if not ObjectId.is_valid(key):
@@ -62,6 +63,17 @@ class PromotionGallery:
             if url != f'/generated-images/{image_id}.png':
                 return None
             path = self.images / f'{image_id}.png'
+        elif kind == 'video':
+            state = entry.get('video')
+            if not isinstance(state, dict) or state.get('status') != 'complete':
+                return None
+            try:
+                rewrite_id = str(UUID(entry.get('rewrite_id', '')))
+            except (ValueError, TypeError, AttributeError):
+                return None
+            if state.get('rewrite_id') != rewrite_id or state.get('storage_key') != f'{rewrite_id}.mp4':
+                return None
+            path = self.videos / f'{rewrite_id}.mp4'
         elif kind == 'narration':
             state = entry.get('narration')
             if not isinstance(state, dict) or state.get('entry_id') != key:
@@ -94,7 +106,7 @@ class PromotionGallery:
             'promoted': entry.get('promoted') is True,
             'seen_count': seen(entry),
             **{kind + '_url': f'/promotion-gallery/items/{key}/media/{kind}'
-               if self.media_path(entry, kind) else None for kind in ('image', 'narration', 'jingle')}}
+               if self.media_path(entry, kind) else None for kind in ('image', 'narration', 'jingle', 'video')}}
 
     def select(self, viewer, previous=None):
         # Only IDs/counts are scanned; content/assets are loaded for one item.
