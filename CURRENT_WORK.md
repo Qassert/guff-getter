@@ -1,6 +1,6 @@
-STATUS: REVIEW
+STATUS: ACTIVE
 OWNER: CODEX
-BRANCH: experiment/video-smoke-test
+BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: WaveSpeed ticket upload and secret-safe stage diagnostics
 LAST_COMPLETED_COMMIT: :/^Improve WaveSpeed upload flow and failure diagnostics
 LAST_OWNER: CODEX
@@ -13,10 +13,41 @@ HANDOVER: scripts/video_smoke_test.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: WaveSpeed staged diagnostics and ticket upload; mocked validation only
-APPROVAL: Standalone harness diagnostics only; no provider calls during implementation or tests.
-NEXT_STEP: Andy reviews diagnostics; --diagnose-wan checks local inputs/config only. Paid runs still require explicit --confirm-spend.
-VALIDATION: 29 targeted mocked tests passed; no provider calls. Ticket/PUT flow, five failure stages, safe errors and unchanged no-retry spend guard.
+CURRENT_TASK: Optional manual WaveSpeed animation for existing rewrites and nominations.
+APPROVAL: Implement/test offline, milestone commits/pushes. No live provider calls or deployment.
+NEXT_STEP: M3 durable API and one-execution claim. M2 validation: 31 targeted mocked tests passed; no live calls.
+
+## Video animation milestones — 2026-09-28
+
+Branch deliberately starts at experiment/video-smoke-test 7fbb648, reusing its proven
+client; main and experiment branch remain unchanged. No unrelated dirty files.
+- [x] M1 inspect + design
+- [x] M2 shared WaveSpeed service, deterministic prompt, mocked tests
+- [ ] M3 rewrite state, explicit authenticated API, background task, duplicate guard
+- [ ] M4 compact Creation Page controls and status polling
+- [ ] M5 gallery still-to-video playback, cleanup and reduced motion
+- [ ] M6 regression, review and final handover
+
+Design: existing RewriteStore SQLite transaction serializes one permanent video claim
+per rewrite (including drafts). Store metadata on that row; mirror to the existing
+Mongo nomination on completion/banking/status, never create a duplicate nomination.
+Draft tombstones retain the claim. A claimed worker token permits one execution only;
+no expiration authorizes re-generation. BackgroundTasks runs synchronous provider work
+after the response; crash/timeout stays uncertain, with no worker or user retry.
+Generation requires a validated existing login session and same-origin custom header.
+Read-only status/playback never schedules work. Key read from environment only.
+Source is the existing UUID PNG, no copied image. Output: ignored data/generated_video/
+<rewrite UUID>.mp4; authenticated routes only. Persist prompt, seed, model, duration,
+source hash, timestamps, job ID and sanitized stages; normal users see safe status only.
+Prompt: fixed preservation constraints plus at most two deterministic actions matched
+from rewritten text, no extra paid text call. Reuse ticket -> PUT -> submit -> poll ->
+download from the experiment via a shared module, keeping CLI safeguards/tests.
+Creation Page enables ANIMATE IMAGE for available images, never on view/restore.
+Gallery starts from the still, delays muted inline looping video, fades only once it
+plays, and cancels old timers/media on NEXT/pagehide. Reduced motion keeps the still.
+Existing gallery audio sequence remains independent and unchanged.
+Durability limitation: SQLite/media must remain on shared durable storage across app
+workers; interrupted background jobs need operator review, not automatic resubmission.
 
 ## Promotion Gallery milestone plan — 2026-09-22
 
