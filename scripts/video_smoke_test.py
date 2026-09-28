@@ -11,11 +11,9 @@ import html
 import json
 import os
 from pathlib import Path
-import re
 import secrets
 import sys
 import time
-from urllib.parse import urlsplit
 from uuid import uuid4
 
 import requests
@@ -35,8 +33,6 @@ DEFAULT_PROMPT = (
     'Do not radically redesign the image. Do not introduce unrelated characters or objects. '
     'Do not add text. Do not significantly change faces.'
 )
-MAX_IMAGE_BYTES = 10 * 1024 * 1024
-MAX_VIDEO_BYTES = 100 * 1024 * 1024
 POLL_SECONDS = 5
 POLL_TIMEOUT = 900
 
@@ -87,21 +83,18 @@ def generate(session, name, key, image, mime, parameters, record, checkpoint, di
     checkpoint()
     diagnostics.start('model_submission')
     submitted = request_json(session, 'POST', endpoint, diagnostics, headers=headers, json=payload)
-    identifier = job_id(submitted['data']['id'] if name == 'wan' else submitted['request_id'])
+    identifier = job_id(submitted['request_id'])
     record.update(request_id=identifier, state='submitted')
     checkpoint()
-    result_url = (WAN_BASE + f'/predictions/{identifier}/result' if name == 'wan'
-                  else FAL_BASE + f'/requests/{identifier}')
+    result_url = FAL_BASE + f'/requests/{identifier}'
     diagnostics.start('prediction_polling')
     deadline = time.monotonic() + POLL_TIMEOUT
     while time.monotonic() < deadline:
         time.sleep(POLL_SECONDS)
-        response = request_json(session, 'GET', result_url if name == 'wan' else result_url + '/status', diagnostics, headers=headers)
-        state = response['data'] if name == 'wan' else response
+        response = request_json(session, 'GET', result_url + '/status', diagnostics, headers=headers)
+        state = response
         status = state['status']
-        if status == ('completed' if name == 'wan' else 'COMPLETED'):
-            if name == 'wan':
-                return https_url(state['outputs'][0])
+        if status == 'COMPLETED':
             result = request_json(session, 'GET', result_url, diagnostics, headers=headers)
             if type(result.get('seed')) is int:
                 record['returned_seed'] = result['seed']

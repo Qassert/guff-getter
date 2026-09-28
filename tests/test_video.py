@@ -222,3 +222,68 @@ def test_routes_gets_only_read_post_schedules_once_and_media_ranges(setup):
         partial = client.get(data['video_url'], headers={'Range': 'bytes=0-3'})
         assert partial.status_code == 206 and partial.content == MP4[:4]
     assert len(calls) == 1
+
+
+@pytest.mark.parametrize('failure,expected', [(None, None), ('submit', 'model_submission'),
+                                              ('poll', 'prediction_polling'), ('download', 'output_download')])
+def test_app_uses_shared_transport_and_persists_safe_stage_diagnostics(setup, monkeypatch, failure, expected):
+    from test_video_smoke_test import FakeSession
+    service, collection, key, calls = setup
+    service.provider = wavespeed.create_video
+    fake = FakeSession(failure)
+    monkeypatch.setattr(wavespeed.time, 'sleep', lambda _: None)
+    with patch.object(wavespeed.requests, 'Session', return_value=fake):
+        service.claim(collection, key, 'pet')
+        service.run(collection, key, 'pet')
+        service.run(collection, key, 'pet')
+    video = state(service, key)['video']
+    assert video['status'] == ('complete' if failure is None else 'failed_or_uncertain')
+    if expected:
+        assert video['error']['stage'] == expected
+    assert len([c for c in fake.calls if c[0] == 'POST' and not c[1].endswith('/media/uploads')]) == 1
+    assert not service.claim(collection, key, 'pet')[1]
+    assert fake.trust_env is False
+    encoded = json.dumps(video)
+    for secret in ('mock-secret', 'secret=signed', 'secret=upload', 'secret=download', 'Authorization'):
+        assert secret not in encoded
+
+
+def test_metadata_failure_recovers_stored_file_without_generation(setup):
+    service, collection, key, calls = setup
+    nominate(service, collection, key)
+    service.claim(collection, key, 'pet')
+    with patch.object(collection, 'update_one', side_effect=RuntimeError('offline')):
+        service.run(collection, key, 'pet')
+    assert 'video' not in collection.entry
+    assert service.status(collection, key, 'pet')['video_status'] == 'complete'
+    assert collection.entry['video']['status'] == 'complete'
+    assert not service.claim(collection, key, 'pet')[1]
+    assert len(calls) == 1
+
+
+def test_untracked_and_symlink_media_fail_closed(setup):
+    service, collection, key, calls = setup
+    service.directory.mkdir()
+    outside = service.directory.parent / 'untracked.mp4'; outside.write_bytes(MP4)
+    service.path(key).symlink_to(outside)
+    assert not service.status(collection, key, 'pet')['can_generate']
+    assert not service.claim(collection, key, 'pet')[1]
+    assert not calls
+
+
+def test_discard_during_generation_cannot_attach_or_expose_output(setup):
+    service, collection, key, calls = setup
+    def late(source, target, prompt, seed, record, checkpoint, api_key):
+        calls.append('paid')
+        with patch('newsmuncher.services.image_generation.GENERATED_IMAGES_DIR', service.images):
+            with service.store.transaction() as db:
+                service.store.discard(db, key, service.store.read(db, key, 'pet'))
+        target.write_bytes(MP4)
+    service.provider = late
+    service.claim(collection, key, 'pet')
+    service.run(collection, key, 'pet')
+    assert not service.path(key).exists()
+    assert 'video' in state(service, key)
+    with pytest.raises(VideoError): service.status(collection, key, 'pet')
+    with pytest.raises(VideoError): service.claim(collection, key, 'pet')
+    assert len(calls) == 1

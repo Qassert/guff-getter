@@ -1,10 +1,10 @@
-STATUS: ACTIVE
+STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: WaveSpeed ticket upload and secret-safe stage diagnostics
-LAST_COMPLETED_COMMIT: :/^Improve WaveSpeed upload flow and failure diagnostics
+LAST_COMPLETED_FEATURE: Optional manual video animation and gallery still-to-video playback
+LAST_COMPLETED_COMMIT: :/^Complete video animation regression and handover
 LAST_OWNER: CODEX
-HANDOVER: scripts/video_smoke_test.md
+HANDOVER: VIDEO_ANIMATION_STATUS.md
 
 ## Status Values
 
@@ -15,9 +15,10 @@ HANDOVER: scripts/video_smoke_test.md
 
 CURRENT_TASK: Optional manual WaveSpeed animation for existing rewrites and nominations.
 APPROVAL: Implement/test offline, milestone commits/pushes. No live provider calls or deployment.
-NEXT_STEP: M6 complete regression/diff review and handover. M4 commit cd1e7e0; M5 validation: 14 Python + 23 Node gallery tests passed. M3 commit b5e2baf; M4 validation: 9 Node tests/suites passed with fake HTTP/media. M2 commit 02b36ed; M3 backend/image/client validation: 60 tests + 6 subtests passed offline.
-M3: SQLite claim + worker_started guard; authenticated POST schedules BackgroundTasks once, GET/status/media never generate.
-Media recovery and metadata-only nomination sync; draft tombstones keep claims. Interrupted work becomes uncertain after 30 minutes; no retry.
+NEXT_STEP: Andy reviews VIDEO_ANIMATION_STATUS.md; live one-item test requires explicit approval (~$0.05).
+VALIDATION: 175 Python tests + 6 subtests; 34 Node tests; all HTTP/providers mocked; diff check clean.
+MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; final M6 uses LAST_COMPLETED_COMMIT.
+LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
 
 ## Video animation milestones — 2026-09-28
 
@@ -28,12 +29,12 @@ client; main and experiment branch remain unchanged. No unrelated dirty files.
 - [x] M3 rewrite state, explicit authenticated API, background task, duplicate guard
 - [x] M4 compact Creation Page controls and status polling
 - [x] M5 gallery still-to-video playback, cleanup and reduced motion
-- [ ] M6 regression, review and final handover
+- [x] M6 regression, review and final handover
 
 Design: existing RewriteStore SQLite transaction serializes one permanent video claim
 per rewrite (including drafts). Store metadata on that row; mirror to the existing
 Mongo nomination on completion/banking/status, never create a duplicate nomination.
-Draft tombstones retain the claim. A claimed worker token permits one execution only;
+Draft tombstones retain the claim. A durable worker_started flag permits one execution only;
 no expiration authorizes re-generation. BackgroundTasks runs synchronous provider work
 after the response; crash/timeout stays uncertain, with no worker or user retry.
 Generation requires a validated existing login session and same-origin custom header.
