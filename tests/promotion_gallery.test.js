@@ -282,3 +282,44 @@ test('gallery navigation and leave stop visuals before retrieval, independent of
     gallery.leave(); assert.deepEqual(calls.slice(-2),['audio-stop','video-stop']);
     wait.resolve(response({item:null})); await next;
 });
+
+
+for (const operation of ['stop', 'schedule']) {
+    test(`default browser timers support GalleryVideo ${operation} without an illegal receiver`, async () => {
+        const fs = require('node:fs'), vm = require('node:vm');
+        const context = vm.createContext({module: {exports: {}}, timers: [], cancellations: []});
+        // Browser-style globals reject a GalleryVideo instance as their receiver.
+        vm.runInContext(`
+            function setTimeout(fn, delay) {
+                if (this !== globalThis) throw new TypeError('Illegal invocation');
+                timers.push({fn, delay});
+                return 42;
+            }
+            function clearTimeout(timer) {
+                if (this !== globalThis) throw new TypeError('Illegal invocation');
+                cancellations.push(timer);
+            }
+        `, context);
+        vm.runInContext(fs.readFileSync('newsmuncher/static/promotion-gallery.js', 'utf8'), context);
+        const BrowserGalleryVideo = context.module.exports.GalleryVideo;
+        if (operation === 'stop') {
+            const visual = new BrowserGalleryVideo();
+            assert.doesNotThrow(() => visual.stop());
+            visual.timer = 42;
+            assert.doesNotThrow(() => visual.stop());
+            assert.deepEqual(Array.from(context.cancellations), [undefined, 42]);
+        } else {
+            // Isolate scheduling so the old cancel bug cannot mask the schedule bug.
+            const visual = new BrowserGalleryVideo({cancel: () => {}});
+            const played = [];
+            visual.play = (url, generation) => played.push({url, generation});
+            visual.activate(animated);
+            await new Promise(setImmediate);
+            assert.equal(context.timers.length, 1);
+            assert.equal(context.timers[0].delay, 1500);
+            assert.equal(visual.timer, 42);
+            context.timers[0].fn();
+            assert.deepEqual(played, [{url: animated.video_url, generation: visual.generation}]);
+        }
+    });
+}

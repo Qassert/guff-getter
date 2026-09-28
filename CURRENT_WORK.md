@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Optional manual video animation and gallery still-to-video playback
-LAST_COMPLETED_COMMIT: :/^Complete video animation regression and handover
+LAST_COMPLETED_FEATURE: GalleryVideo browser timer receiver fix
+LAST_COMPLETED_COMMIT: :/^Fix GalleryVideo native timer invocation
 LAST_OWNER: CODEX
 HANDOVER: VIDEO_ANIMATION_STATUS.md
 
@@ -13,12 +13,19 @@ HANDOVER: VIDEO_ANIMATION_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Optional manual WaveSpeed animation for existing rewrites and nominations.
+CURRENT_TASK: Frontend-only GalleryVideo native timer receiver fix.
 APPROVAL: Implement/test offline, milestone commits/pushes. No live provider calls or deployment.
-NEXT_STEP: Andy reviews VIDEO_ANIMATION_STATUS.md; live one-item test requires explicit approval (~$0.05).
-VALIDATION: 175 Python tests + 6 subtests; 34 Node tests; all HTTP/providers mocked; diff check clean.
-MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; final M6 uses LAST_COMPLETED_COMMIT.
+NEXT_STEP: Andy reviews the frontend timer fix; no live generation is needed to verify gallery loading.
+VALIDATION: node --test tests/promotion_gallery.test.js — 25 passed. Both new receiver regressions failed before the wrapper fix; no provider calls.
+MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## GalleryVideo native timer fix
+
+Both timer defaults now use wrappers, preserving the browser receiver for scheduling
+and cancellation. Only gallery JS, targeted frontend regression tests and this status
+file changed. Browser-style mocks independently reproduce both original failures.
+No backend, generation, selection, promotion, audio-sequence or styling changes.
 
 ## Video animation milestones — 2026-09-28
 

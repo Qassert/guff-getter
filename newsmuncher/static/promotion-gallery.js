@@ -76,7 +76,8 @@
     class GalleryVideo {
         constructor({makeVideo = () => document.createElement('video'), mount = () => {}, reveal = () => {},
                      reduced = () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
-                     schedule = setTimeout, cancel = clearTimeout} = {}) {
+                     schedule = (fn, delay) => setTimeout(fn, delay),
+                     cancel = (timer) => clearTimeout(timer)} = {}) {
             Object.assign(this, {makeVideo, mount, reveal, reduced, schedule, cancel});
             this.generation = 0;
         }
