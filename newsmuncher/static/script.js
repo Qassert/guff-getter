@@ -12,6 +12,7 @@ function workingSession() {
     return draftSession;
 }
 function setNominationState(data) {
+    if (typeof videoUI !== "undefined") videoUI.show(data);
     if (typeof narrationUI !== "undefined") narrationUI.show(data);
     if (typeof jingleUI !== "undefined") jingleUI.show(data);
     const button = document.getElementById('bankButton');
@@ -196,6 +197,7 @@ function bankThisBeauty() {
 }
 
 function resetImagePanel() {
+    if (typeof videoUI !== "undefined") videoUI.show(null);
     const panel = document.getElementById('imagePanel');
     panel.replaceChildren();
     panel.classList.add('hidden');
@@ -225,6 +227,7 @@ async function loadRewriteImage(id, sequence) {
 
 function displayRewriteImage(url, current) {
     if (!current()) return;
+    if (typeof videoUI !== "undefined") videoUI.show({rewrite_id: displayedRewriteId});
     const panel = document.getElementById('imagePanel');
     const img = new Image();
     img.alt = 'Editorial illustration of the rewritten scene.';

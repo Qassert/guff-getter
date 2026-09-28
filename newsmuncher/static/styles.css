@@ -456,3 +456,9 @@ body { isolation: isolate; }
 
 /* A separate route to review nominated creations. */
 .profile-page .promotion-link { position: relative; z-index: 5; text-align: center; margin: 0 0 48px; }
+
+/* Optional animation stays alongside the existing media controls. */
+.animation-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.animation-controls[hidden], .animation-controls [hidden] { display: none; }
+.animation-controls > span { font-size: .85rem; color: var(--muted); }
+.animation-controls video { width: min(100%, 480px); max-height: 55vh; object-fit: contain; flex-basis: 100%; }
