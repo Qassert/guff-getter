@@ -310,6 +310,10 @@ def bank_image_rewrite(request, rewrite_id, payload=None):
                 raise HTTPException(status_code=502, detail='Could not bank rewrite.') from exc
     if state['result'].get('image_url'):
         sync_image_metadata(rewrite_id, owner)
+    if state.get('video'):
+        from newsmuncher.api.entries import collection
+        from newsmuncher.services.video import service as videos
+        videos.sync(collection, rewrite_id, owner)
     # Only clear the matching shared preview, never a newer rewrite.
     if os.path.exists(TEMP_SHIZZ_FILE):
         with open(TEMP_SHIZZ_FILE) as f:

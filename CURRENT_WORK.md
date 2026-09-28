@@ -15,7 +15,9 @@ HANDOVER: scripts/video_smoke_test.md
 
 CURRENT_TASK: Optional manual WaveSpeed animation for existing rewrites and nominations.
 APPROVAL: Implement/test offline, milestone commits/pushes. No live provider calls or deployment.
-NEXT_STEP: M3 durable API and one-execution claim. M2 validation: 31 targeted mocked tests passed; no live calls.
+NEXT_STEP: M4 Creation Page UI. M2 commit 02b36ed; M3 backend/image/client validation: 60 tests + 6 subtests passed offline.
+M3: SQLite claim + worker_started guard; authenticated POST schedules BackgroundTasks once, GET/status/media never generate.
+Media recovery and metadata-only nomination sync; draft tombstones keep claims. Interrupted work becomes uncertain after 30 minutes; no retry.
 
 ## Video animation milestones — 2026-09-28
 
@@ -23,7 +25,7 @@ Branch deliberately starts at experiment/video-smoke-test 7fbb648, reusing its p
 client; main and experiment branch remain unchanged. No unrelated dirty files.
 - [x] M1 inspect + design
 - [x] M2 shared WaveSpeed service, deterministic prompt, mocked tests
-- [ ] M3 rewrite state, explicit authenticated API, background task, duplicate guard
+- [x] M3 rewrite state, explicit authenticated API, background task, duplicate guard
 - [ ] M4 compact Creation Page controls and status polling
 - [ ] M5 gallery still-to-video playback, cleanup and reduced motion
 - [ ] M6 regression, review and final handover

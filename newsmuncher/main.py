@@ -12,7 +12,10 @@ from newsmuncher.api.narrations import router as narration_router
 
 from newsmuncher.api.promotion_gallery import router as promotion_gallery_router
 
+from newsmuncher.api.videos import router as video_router
+
 app = FastAPI()
+app.include_router(video_router)
 app.include_router(promotion_gallery_router)
 
 # ✅ Serve avatars

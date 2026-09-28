@@ -64,3 +64,6 @@ dist/
 
 # Standalone video experiment inputs, outputs and attempt metadata
 /tmp/video-smoke-test/
+
+# Manual WaveSpeed animations and partial downloads
+/data/generated_video/

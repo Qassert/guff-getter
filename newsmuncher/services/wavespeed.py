@@ -184,6 +184,8 @@ def download(session, url, target, diagnostics):
                     if size > MAX_VIDEO_BYTES:
                         raise SmokeError('Video exceeds the 100 MiB download limit.')
                     out.write(chunk)
+                out.flush()
+                os.fsync(out.fileno())
         with part.open('rb') as downloaded:
             header = downloaded.read(12)
         if len(header) < 12 or header[4:8] != b'ftyp':

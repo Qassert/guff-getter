@@ -154,7 +154,8 @@ class RewriteStore:
         image_path(rewrite_id).unlink(missing_ok=True)
         # Retain only a tombstone: late workers cannot resurrect the draft or pay again.
         self.save(db, rewrite_id, dict(owner=state['owner'], entry_id=None, discarded=True,
-                                      result={'rewrite_id': rewrite_id}))
+                                      result={'rewrite_id': rewrite_id},
+                                      **({'video': state['video']} if 'video' in state else {})))
 
     def begin_draft(self, source, owner, session):
         rewrite_id = str(uuid4())

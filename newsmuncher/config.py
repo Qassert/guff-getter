@@ -22,3 +22,5 @@ GENERATED_AUDIO_DIR = DATA_DIR / "generated_audio"
 JINGLE_STATE_FILE = PREVIEWS_DIR / "jingles.sqlite3"
 
 GENERATED_NARRATION_DIR = DATA_DIR / "generated_narration"
+
+GENERATED_VIDEO_DIR = DATA_DIR / "generated_video"
