@@ -88,7 +88,7 @@ def test_views_never_generate_and_explicit_job_is_reused_after_restart(setup):
     reopened.run(collection, key, 'pet')
     assert len(calls) == 1
     video = state(service, key)['video']
-    assert video['duration'] == 5 and video['resolution'] == '480p'
+    assert video['duration'] == 8 and video['resolution'] == '480p'
     assert 'mock-secret' not in json.dumps(video)
     assert list(service.directory.iterdir()) == [service.path(key)]
 

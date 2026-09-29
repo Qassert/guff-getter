@@ -204,7 +204,7 @@ def create_video(source, target, prompt, seed, record, checkpoint, key):
         with requests.Session() as session:
             session.trust_env = False
             url = generate_wan(session, key, image, mime,
-                {'prompt': prompt, 'duration': 5, 'seed': seed}, record, checkpoint, diagnostics)
+                {'prompt': prompt, 'duration': 8, 'seed': seed}, record, checkpoint, diagnostics)
             download(session, url, target, diagnostics)
         diagnostics.current['state'] = 'complete'
         checkpoint()

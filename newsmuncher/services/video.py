@@ -147,7 +147,7 @@ class Videos:
                 raise VideoError(422, 'Stored image is invalid.') from None
             self.directory.mkdir(parents=True, exist_ok=True)
             state['video'] = {'rewrite_id': key, 'status': 'queued', 'provider': 'wavespeed',
-                'model': MODEL, 'duration': 5, 'resolution': '480p',
+                'model': MODEL, 'duration': 8, 'resolution': '480p',
                 'prompt': build_motion_prompt(state['result']), 'seed': secrets.randbelow(2**31),
                 'source_sha256': hashlib.sha256(image).hexdigest(), 'requested_at': now(),
                 'requested_epoch': time.time(), 'storage_key': f'{key}.mp4'}
