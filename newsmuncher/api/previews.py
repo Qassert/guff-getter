@@ -307,6 +307,28 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
         raise HTTPException(502, 'Replacement unavailable; old image retained. No automatic paid retry.') from exc
 
 
+@router.get('/loading_images')
+def loading_images(active_pet: str = Cookie(None)):
+    """Owner-scoped current images only; no generation or metadata mutation."""
+    if not active_pet:
+        raise HTTPException(401, 'No active pet selected.')
+    import random
+    urls = set()
+    with store.transaction() as db:
+        for (encoded,) in db.execute('SELECT state FROM rewrites'):
+            state = json.loads(encoded)
+            if state.get('owner') != active_pet or state.get('discarded'):
+                continue
+            url = state.get('result', {}).get('image_url', '')
+            try:
+                path = image_path(url.removeprefix('/generated-images/').removesuffix('.png'))
+                if url == f'/generated-images/{path.name}' and not path.is_symlink() and path.is_file():
+                    urls.add(url)
+            except (ValueError, TypeError, AttributeError):
+                continue
+    return {'images': random.sample(sorted(urls), min(5, len(urls)))}
+
+
 @router.get('/image_result/{rewrite_id}')
 def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
     # Read-only restoration: refreshing never calls a paid provider.

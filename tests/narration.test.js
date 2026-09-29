@@ -5,7 +5,7 @@ function fixture() {
     function get(id) {
         if (!nodes.has(id)) nodes.set(id, {hidden: true, disabled: false, textContent: '', value: '',
             style: {}, children: [], classList: {add(){}, remove(){}},
-            pause(){}, load(){}, play: async () => {}, removeAttribute(name){ delete this[name]; },
+            paused:true, plays:0, pause(){this.paused=true;}, load(){}, async play(){this.plays++;this.paused=false;}, removeAttribute(name){ delete this[name]; },
             getAttribute(name){ return this[name]; },
             replaceChildren(){ this.children = []; }, appendChild(node){ this.children.push(node); }});
         return nodes.get(id);
@@ -55,8 +55,10 @@ function fixture() {
     const posts=f.requests.filter(r=>r.options.method==='POST');
     assert.equal(posts.length,1);
     assert.deepEqual(JSON.parse(posts[0].options.body),{title:'Edited title',body:'Edited body'});
-    assert.equal(f.get('narrationButton').hidden,true);
-    assert.equal(f.get('narrationAudio').hidden,false);
+    assert.equal(f.get('narrationButton').hidden,false);
+    assert.equal(f.get('narrationButton').textContent,'▶ PLAY NARRATION');
+    assert.equal(f.get('narrationAudio').hidden,true);
+    assert.equal(f.get('narrationAudio').plays,0);
     await ui.act(); await ui.act();
     assert.equal(f.requests.filter(r=>r.options.method==='POST').length,1);
     assert(f.get('narrationAudio').src.endsWith('/audio'));
@@ -78,8 +80,13 @@ function fixture() {
     Object.assign(fresh.response,{narration_url:'/saved.mp3',title:'Saved',voice_name:'Cedar'});
     await fresh.context.ui.show({nominated:true,rewrite_id:'saved-rewrite'});
     assert.equal(fresh.get('narrationAudio').src,'/saved.mp3');
-    assert.equal(fresh.get('narrationAudio').hidden,false);
-    assert.equal(fresh.get('narrationButton').hidden,true);
+    assert.equal(fresh.get('narrationAudio').hidden,true);
+    assert.equal(fresh.get('narrationButton').hidden,false);
+    await fresh.context.ui.ensure();
+    assert.equal(fresh.get('narrationAudio').plays,0);
+    await fresh.context.ui.act();
+    assert.equal(fresh.get('narrationAudio').plays,1);
+    assert(!/id="narrationAudio"[^>]*controls/.test(fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8')));
     assert(fresh.get('narrationMessage').textContent.includes('Voice: Cedar'));
     assert.equal(fresh.requests.filter(r=>r.options.method==='POST').length,0);
     assert.equal(fresh.get('crazyTitleBox').textContent,'...Visible title...');

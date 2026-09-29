@@ -101,7 +101,8 @@
             this.nominated = data.nominated === true;
             this.key = data.rewrite_id;
             this.render({message: 'Checking saved animation…'});
-            await this.refresh(this.revision);
+            this.lookup = this.refresh(this.revision);
+            await this.lookup;
         }
         async refresh(token, polls = 0) {
             const key = this.key;
@@ -117,6 +118,13 @@
             } catch (error) {
                 if (token === this.revision) this.render({message: error.message});
             }
+        }
+        snapshot() { return {...this.state, pending: this.pending}; }
+        async ensure() {
+            const token = this.revision;
+            await this.lookup;
+            if (token !== this.revision || this.state?.video_url || this.pending || ['queued', 'started'].includes(this.state?.video_status)) return;
+            await this.act();
         }
         async act() {
             if (!this.nominated || !this.key || this.pending || !this.state?.can_generate) return;

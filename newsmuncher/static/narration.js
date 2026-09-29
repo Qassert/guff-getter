@@ -1,6 +1,6 @@
 /* Only READ ALOUD posts. Status, discovery and playback never synthesize. */
 const narrationUI = (() => {
-    let revision = 0, entry = null, state = null, pending = false, timer = null;
+    let revision = 0, entry = null, state = null, pending = false, timer = null, lookup = Promise.resolve();
     const get = id => document.getElementById(id);
     function message(text) { get('narrationMessage').textContent = text; }
     function stop() {
@@ -14,12 +14,12 @@ const narrationUI = (() => {
         state = data;
         const button = get('narrationButton'), audio = get('narrationAudio');
         const hasAudio = Boolean(data.narration_url);
-        button.hidden = hasAudio;
+        button.hidden = false;
         button.disabled = pending || !(data.narration_url || data.can_generate);
-        button.textContent = pending || data.narration_status === 'started' ? 'GENERATING NARRATION…' : 'READ ALOUD';
+        button.textContent = hasAudio ? '▶ PLAY NARRATION' : pending || data.narration_status === 'started' ? 'GENERATING NARRATION…' : 'READ ALOUD';
         if (hasAudio) {
             if (audio.getAttribute('src') !== data.narration_url) audio.src = data.narration_url;
-            audio.hidden = false;
+            audio.hidden = true;
         }
         message((data.voice_name ? `Voice: ${data.voice_name}. ` : '') +
             (data.text_changed ? 'Narration uses the earlier text; it will not regenerate.' : (data.message || '')));
@@ -70,7 +70,14 @@ const narrationUI = (() => {
     }
     async function act() {
         if (!entry || !state || pending) return;
-        if (state.narration_url) return;
+        if (state.narration_url) {
+            const audio = get('narrationAudio');
+            if (!audio.paused) { audio.pause(); return; }
+            if (typeof jingleUI !== 'undefined') jingleUI.stop();
+            const token = revision;
+            try { await audio.play(); if (token !== revision) audio.pause(); } catch (_) { if (token === revision) message('Playback blocked. Try PLAY NARRATION again.'); }
+            return;
+        }
         if (!state.can_generate) return;
         const token = revision, id = entry;
         pending = true; render(state);
@@ -92,5 +99,15 @@ const narrationUI = (() => {
             refresh(token);
         }
     }
-    return {show, act};
+    return {
+        show(data) { lookup = show(data); return lookup; }, act,
+        pause() { get('narrationAudio').pause(); },
+        snapshot: () => ({...state, pending}),
+        async ensure() {
+            const token = revision;
+            await lookup;
+            if (token !== revision || state?.narration_url || pending || state?.narration_status === 'started') return;
+            await act();
+        }
+    };
 })();

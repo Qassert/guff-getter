@@ -17,6 +17,8 @@ async function redoImage() {
     if (creationNominated || !currentImageUrl || imageRedoPending || nominationPending) return;
     const id = displayedRewriteId, sequence = rewriteSequence, previous = currentImageUrl;
     const current = () => id === displayedRewriteId && sequence === rewriteSequence;
+    if (typeof imageLoading !== 'undefined') imageLoading.start();
+    if (typeof videoUI !== 'undefined') videoUI.stop();
     imageRedoPending = true;
     renderRedoImage();
     const message = document.getElementById('imageRedoMessage');
@@ -29,6 +31,7 @@ async function redoImage() {
         if (!response.ok) throw new Error('Replacement unavailable');
         const data = await response.json();
         if (!current()) return;
+        if (typeof imageLoading !== 'undefined') imageLoading.stop(true);
         imageRedoPending = false;
         currentImageUrl = data.image_url;
         displayRewriteImage(data.image_url, current, data.image_style);
@@ -36,6 +39,7 @@ async function redoImage() {
         renderRedoImage();
     } catch (_) {
         if (!current()) return;
+        if (typeof imageLoading !== 'undefined') imageLoading.stop();
         // Keep the durable attempt blocked. Restore uses GET and may recover a saved file.
         if (message) message.textContent = 'Replacement uncertain; old image retained. Reload to check saved status. No paid retry.';
     }
@@ -51,6 +55,7 @@ function workingSession() {
     return draftSession;
 }
 function setNominationState(data) {
+    if (typeof embellishUI !== 'undefined') embellishUI.show(data);
     creationNominated = data.nominated === true;
     currentImageUrl = data.image_url || null;
     imageRedoPending = !!data.image_redo_pending;
@@ -231,6 +236,7 @@ function bankThisBeauty() {
             if (data.nominated !== true) throw new Error('Nomination was not confirmed.');
             if (nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence) {
                 if (typeof narrationUI !== 'undefined') narrationUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
+                if (typeof embellishUI !== 'undefined') embellishUI.show({nominated:true,rewrite_id:data.rewrite_id || nominatingId});
                 creationNominated = data.nominated === true;
                 renderRedoImage();
                 if (typeof videoUI !== 'undefined') videoUI.show({nominated: creationNominated, rewrite_id: data.rewrite_id || nominatingId});
@@ -239,7 +245,6 @@ function bankThisBeauty() {
                 if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
             }
             if (typeof jingleUI !== 'undefined') jingleUI.discover();
-            alert("Result nominated (saved for possible promotion).");
             hideLoader();
         })
         .catch(error => {
@@ -257,6 +262,8 @@ function setImageStyle(style) {
 }
 
 function resetImagePanel() {
+    if (typeof imageLoading !== 'undefined') imageLoading.stop();
+    if (typeof embellishUI !== 'undefined') embellishUI.show(null);
     imageDisplaySequence++;
     setImageStyle(null);
     currentImageUrl = null; imageRedoPending = false;
@@ -274,7 +281,8 @@ async function loadRewriteImage(id, sequence) {
     const current = () => sequence === rewriteSequence && id === displayedRewriteId;
     if (!current()) return;
     panel.classList.remove('hidden');
-    panel.textContent = 'Putting paint on paper…';
+    panel.textContent = '';
+    if (typeof imageLoading !== 'undefined') imageLoading.start();
     try {
         const response = await fetch('/temp/generate_image', {
             method: 'POST', credentials: 'include',
@@ -284,10 +292,14 @@ async function loadRewriteImage(id, sequence) {
         if (!response.ok) throw new Error('Image generation failed');
         const data = await response.json();
         if (!current()) return;
+        if (typeof imageLoading !== 'undefined') imageLoading.stop(true);
         displayRewriteImage(data.image_url, current, data.image_style);
 
     } catch (error) {
-        if (current()) panel.textContent = 'Image unavailable. Your rewrite is ready above.';
+        if (current()) {
+            if (typeof imageLoading !== 'undefined') imageLoading.stop();
+            panel.textContent = 'Image unavailable. Your rewrite is ready above.';
+        }
     }
 }
 
@@ -303,6 +315,7 @@ function displayRewriteImage(url, current, style = null) {
     img.className = 'generated-image';
     img.onload = () => {
         if (!current()) return;
+        if (typeof imageLoading !== 'undefined') imageLoading.stop();
         panel.classList.remove('hidden');
         panel.replaceChildren(img);
         setImageStyle(style);
@@ -320,7 +333,10 @@ function displayRewriteImage(url, current, style = null) {
         }));
     };
     img.onerror = () => {
-        if (current()) panel.textContent = 'Image unavailable. Your rewrite is ready above.';
+        if (current()) {
+            if (typeof imageLoading !== 'undefined') imageLoading.stop();
+            panel.textContent = 'Image unavailable. Your rewrite is ready above.';
+        }
     };
     img.src = url;
 }

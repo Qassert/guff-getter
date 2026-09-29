@@ -82,8 +82,6 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
 .result-heading { font-family: var(--display-font); font-style: italic; font-size: clamp(2rem, 4.5vw, 3rem); text-transform: uppercase; margin: 0 0 24px; line-height: 1.18; overflow-wrap: anywhere; text-wrap: pretty; max-width: 100%; }
 .result-heading:empty { display: none; }
 #crazyExtractBox { border: 0; border-radius: 0; padding: 16px; }
-.spinner { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin: -20px; border: 5px solid var(--paper); border-top-color: var(--purple); border-radius: 50%; animation: spin 1s linear infinite; z-index: 2; }
-@keyframes spin { to { transform: rotate(360deg); } }
 .hidden { display: none; }
 .confirmation-message { display: none; }
 .speech-bubble { display: none; position: absolute; top: 35%; left: 10px; width: calc(100% - 20px); background: var(--surface); border: var(--border); padding: 12px; z-index: 10; box-shadow: var(--shadow); }
@@ -477,4 +475,38 @@ body { isolation: isolate; }
     font-size: 0.7rem;
     letter-spacing: 0.08em;
     opacity: 0.7;
+}
+
+/* One shared loading indicator for page actions and the image pane. */
+.loader {
+  width: fit-content; font-size: 40px; line-height: 1.5;
+  font-family: system-ui, sans-serif; font-weight: bold; text-transform: uppercase;
+  color: #0000; -webkit-text-stroke: 1px #000;
+  background:
+    radial-gradient(1.13em at 50% 1.6em,#000 99%,#0000 101%) calc(50% - 1.6em) 0/3.2em 100% text,
+    radial-gradient(1.13em at 50% -0.8em,#0000 99%,#000 101%) 50% .8em/3.2em 100% repeat-x text;
+  animation: l9 2s linear infinite;
+}
+.loader:before { content: "Loading"; }
+@keyframes l9 { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }
+.page-loader, .image-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 4; }
+.image-loader { filter: drop-shadow(0 0 3px white) drop-shadow(0 0 8px white); }
+.profile-page #redoImageButton { display: block; margin: 12px auto; }
+.profile-page #redoImageButton[hidden], #embellishButton[hidden], #embellishStatus[hidden] { display: none; }
+#embellishButton { display: block; margin: 18px auto; }
+#embellishStatus { font-size: .8rem; text-align: center; }
+.image-loading { position: absolute; inset: 0; overflow: hidden; z-index: 3; background: var(--paper); }
+.shuffle-card { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.shuffle-in { animation: card-in .48s ease-out both; }
+.shuffle-out { animation: card-out .48s ease-in both; }
+@keyframes card-in {
+  0% { transform: translateX(-110%) rotate(-14deg); }
+  65% { transform: translateX(5%) rotate(4deg); }
+  85% { transform: translateX(-2%) rotate(-2deg); }
+  100% { transform: translateX(0) rotate(0); }
+}
+@keyframes card-out { to { transform: translateX(125%) translateY(-12%) rotate(25deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .loader { animation: none; color: #000; background: none; }
+  .shuffle-card { animation: none; }
 }

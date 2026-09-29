@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Creation media UX and guarded pre-nomination image replacement
-LAST_COMPLETED_COMMIT: :/^Refine creation media controls and add guarded image redo
+LAST_COMPLETED_FEATURE: Embellish orchestration, narration buttons and image loading shuffle
+LAST_COMPLETED_COMMIT: :/^Add embellish orchestration and playful image loading
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,43 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Longer derived titles, saved jingle genre/autoplay, nomination-gated controls and guarded Redo Image.
+CURRENT_TASK: Explicit EMBELLISH orchestration, hidden narration audio, centered Redo Image and owner-scoped image shuffle/shared loader.
 APPROVAL: Implement, test offline, commit and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews Creation Page media UX; ambiguous image replacements require operator review if read-only restore cannot recover a PNG.
-VALIDATION: Targeted Python 119 passed + 6 subtests; full Python 279 passed + 105 subtests; Node 44 passed. Providers mocked; full suites network blocked. Diff check clean.
+NEXT_STEP: Andy reviews Creation Page presentation and EMBELLISH behavior.
+VALIDATION: Targeted Python 73 passed + 6 subtests; targeted Node 13 passed. Full Python 280 passed + 105 subtests; Node 54 passed. Providers mocked; full suites network blocked; diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Embellish and loading UX — 2026-09-29
+
+EMBELLISH appears only for persisted nominations and runs only on explicit press.
+New coordinator calls existing controllers' ensure adapters with allSettled isolation;
+adapters await restore then reuse ready media, attach to in-progress state or invoke
+the existing guarded action. Rapid duplicate presses are ignored; individual controls
+remain. Component statuses are independent, aggregate state polls read-only controller
+snapshots and cancels on rewrite/page changes. No new generation API or paid claims.
+Nomination success alert removed; normal state/controls update remains.
+
+Narration has PLAY NARRATION on the existing styled button, voice label and hidden
+audio without controls/timeline. Playback never generates and narration never autoplays.
+Playing either narration or jingle pauses the other; jingle ready autoplay/fallback
+remains. Redo Image is centered below the image with style nearby.
+
+Audited generic spinners: only pet_profile.html's page spinner/styles.css spinner
+existed. Replaced it with shared loader class/l9 CSS and reused that indicator in the
+image pane. Informational status text and legitimate media controls remain intact.
+
+ImageShuffle uses GET /temp/loading_images: up to five unique valid local UUID PNGs
+from current, non-discarded rewrite records owned by active_pet. No Mongo/provider
+calls, arbitrary paths, symlinks, metadata writes or cross-owner images. Empty history
+uses loader alone. 500ms Fisher-Yates bags loop without consecutive repeats; clipped
+absolute card transitions knock/swivel images without changing pane size. Reduced
+motion shows one static image and stops animated loader CSS. Timers stop as soon as
+the generation response arrives; frozen loading visuals bridge real-image preload,
+then are removed on load. Failure/rewrite/pagehide removes visuals and cancels timers.
+Initial image generation and Redo share this path; temporary URLs never enter saved
+metadata. Existing paid idempotency, ambiguous-attempt protection and model settings
+unchanged. README updated; no live calls, deployment or main changes.
 
 ## Creation media UX and guarded Redo Image — 2026-09-29
 

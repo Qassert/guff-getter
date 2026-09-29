@@ -175,10 +175,18 @@ Existing saved titles and generated media are not modified or regenerated.
 
 ### Creation Page media controls
 
-Narration and animation controls appear only after successful persisted nomination,
+EMBELLISH, narration and animation controls appear only after successful persisted nomination,
 including restore. Nomination never starts paid media generation. Video stops and
 unloads automatically on creation/page changes; there are no visible Stop Animation
 buttons. Existing saved video may still play before nomination.
+
+EMBELLISH is an explicit user action that coordinates the existing narration, video
+and jingle controls independently. Saved media is reused; in-progress work is polled;
+missing media uses the same guarded generation APIs once. Individual controls remain
+available, with component-specific statuses if any enhancement fails. Nomination has
+no success popup and never starts these paid requests. Narration uses a PLAY NARRATION
+button plus voice label and a hidden audio element, without a native timeline. It
+never autoplays; narration/jingle playback pauses the other audio to avoid overlap.
 
 Jingles display `GENRE` from their persisted genre profile (unknown legacy genres
 stay hidden). Loading/requesting a jingle attempts playback once when ready. Browser
@@ -186,7 +194,7 @@ blocking leaves PLAY JINGLE available and never retries generation. No automatic
 
 REDO IMAGE is an explicit paid action available only for an existing, un-nominated
 image. It preserves the rewrite ID, body, title and word claims, chooses a different
-random style, and stores a new UUID PNG. The old image stays visible until the new
+random style, and stores a new UUID PNG. While waiting, temporary images shuffle in the same pane until the new
 one loads. Superseded files are retained for later audited cleanup. Any historical
 animation is detached, retaining its paid claim/file without showing it on the new
 image; no automatic video generation or new claim is allowed for that old animation.
@@ -196,6 +204,14 @@ and stale clicks. Nomination and replacement are serialized; unresolved replacem
 attempts block nomination and further paid retries. Reload can recover a completed
 PNG without generating again. If no completed file exists, operator review is needed.
 The current image and style are nominated together; the gallery uses that saved URL.
+
+During initial image generation and Redo Image, a read-only endpoint samples up to
+five distinct current saved images belonging to the active pet from the existing
+rewrite store. Temporary images are never attached to the new creation. A shuffled
+500ms card animation loops in the clipped image pane under the shared LOADING
+indicator. No available images falls back to the loader; reduced motion uses one
+static image and a static loader. Completion, failure, rewrite changes and page exit
+cancel timers. The former generic page spinner uses the same shared loader CSS.
 
 ### Random image styles
 

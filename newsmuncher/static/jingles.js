@@ -1,7 +1,7 @@
 /* Only MAKE sends POST. Status restoration and PLAY never request generation. */
 const jingleUI = (() => {
     let revision = 0, rewrite = null, state = null, pending = false, audio = null, timer = null;
-    let saved = [], discovery = 0, nominated = null, autoplay = false;
+    let saved = [], discovery = 0, nominated = null, autoplay = false, lookup = Promise.resolve();
     const get = id => document.getElementById(id);
 
     function stop() {
@@ -62,7 +62,7 @@ const jingleUI = (() => {
         if (!rewrite) return;
         autoplay = true;
         render({message: 'Checking saved jingle…', can_generate: false});
-        refresh(token, rewrite);
+        lookup = refresh(token, rewrite);
     }
 
     async function act() {
@@ -81,6 +81,7 @@ const jingleUI = (() => {
             }
             const token = revision, playing = audio;
             try {
+                if (typeof narrationUI !== 'undefined') narrationUI.pause();
                 await playing.play();
                 if (token !== revision) { playing.pause(); return; }
                 const stopBtn = get('jingleStop');
@@ -155,5 +156,12 @@ const jingleUI = (() => {
         } catch (_) {} // No generation or change to the current rewrite on failure.
     }
 
-    return {show, act, stop, discover, selectSaved: () => {}, playSaved: act, stopSaved: stop};
+    return {show, act, stop, discover,
+        snapshot: () => ({...state, pending}),
+        async ensure() {
+            const token = revision;
+            await lookup;
+            if (token !== revision || state?.jingle_url || pending || ['started', 'submitted'].includes(state?.jingle_status)) return;
+            await act();
+        }, selectSaved: () => {}, playSaved: act, stopSaved: stop};
 })();

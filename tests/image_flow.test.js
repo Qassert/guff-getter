@@ -15,10 +15,11 @@ function setup(options = {}) {
     return {style:{setProperty(k,v){this[k]=v;}},classList:{add:(...xs)=>xs.forEach(x=>classes.add(x)),remove:(...xs)=>xs.forEach(x=>classes.delete(x)),contains:x=>classes.has(x)}};
   });
   const calls=[], frames=[], timers=[], images=[];
-  let samples=0;
+  let samples=0, alerts=0;
+  const loading=[], embellishing=[];
   const storage = new Map(options.restore ? [["newsmuncher.imageRewrite", "saved"]] : []);
   let rewriteSuccess=true, imageResolve, redoResolve;
-  const context = {alert(){},generatedBackground:{preload(){}},console, setTimeout:(fn,delay)=>{if(delay===0) fn();else timers.push([fn,delay]);}, requestAnimationFrame:fn=>frames.push(fn),
+  const context = {alert(){alerts++;},imageLoading:{start(){loading.push('start');},stop(keep){loading.push(keep?'freeze':'stop');}},embellishUI:{show(data){embellishing.push(data);}},generatedBackground:{preload(){}},console, setTimeout:(fn,delay)=>{if(delay===0) fn();else timers.push([fn,delay]);}, requestAnimationFrame:fn=>frames.push(fn),
     document:{getElementById:id=>elements[id], createElement(){
       samples++;
       if(options.sampleFails) throw new Error('canvas unavailable');
@@ -41,7 +42,7 @@ function setup(options = {}) {
       return {ok:true,json:async()=>({})};
     }};
   vm.createContext(context);vm.runInContext(fs.readFileSync('newsmuncher/static/image-colors.js','utf8'),context);vm.runInContext(fs.readFileSync('newsmuncher/static/script.js','utf8'),context);
-  return {context,elements,calls,images,timers, resolveRedo(ok=true){redoResolve({ok,json:async()=>({image_url:'/replacement.png',image_style:'Futuristic'})});},get samples(){return samples;},finishFade(){while(timers.length)timers.shift()[0]();},paint(){while(frames.length) frames.shift()();}, resolveImage(ok, style){imageResolve({ok,json:async()=>({image_url:'/static/image-stub.svg',image_style:style})});}, failRewrite(){rewriteSuccess=false;}};
+  return {context,elements,calls,images,timers,loading,embellishing,get alerts(){return alerts;}, resolveRedo(ok=true){redoResolve({ok,json:async()=>({image_url:'/replacement.png',image_style:'Futuristic'})});},get samples(){return samples;},finishFade(){while(timers.length)timers.shift()[0]();},paint(){while(frames.length) frames.shift()();}, resolveImage(ok, style){imageResolve({ok,json:async()=>({image_url:'/static/image-stub.svg',image_style:style})});}, failRewrite(){rewriteSuccess=false;}};
 }
 (async()=>{
   assert(!/id="generateImages"[^>]*\bchecked/.test(fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8')));
@@ -54,7 +55,7 @@ function setup(options = {}) {
   t=setup();t.elements.generateImages.checked=true;t.context.confirmData();await flush();
   assert.equal(t.calls.length,1);assert.equal(t.elements.crazyTitleBox.textContent,'...REWRITTEN...');
   t.paint();await flush();assert.equal(t.calls.length,2);
-  t.resolveImage(false);await flush();assert.match(t.elements.imagePanel.textContent,/unavailable/);assert.equal(t.elements.crazyTitleBox.textContent,'...REWRITTEN...');
+  assert(t.loading.includes('start'));t.resolveImage(false);await flush();assert.equal(t.loading.at(-1),'stop');assert.match(t.elements.imagePanel.textContent,/unavailable/);assert.equal(t.elements.crazyTitleBox.textContent,'...REWRITTEN...');
   t=setup();t.elements.generateImages.checked=true;t.context.confirmData();await flush();t.paint();await flush();
   t.elements.generateImages.checked=false;t.context.confirmData();await flush();t.resolveImage(true);await flush();
   assert(t.elements.imagePanel.classList.contains('hidden'));assert.equal(t.elements.imagePanel.children.length,0);
@@ -80,6 +81,7 @@ function setup(options = {}) {
   assert.equal(t.elements.bankButton.textContent,'NOMINATE');
   t.context.bankThisBeauty();t.context.bankThisBeauty();await flush();
   assert.equal(t.elements.bankButton.textContent,'NOMINATED');
+  assert.equal(t.alerts,0);assert(t.embellishing.at(-1).nominated);
   assert.equal(t.calls.filter(([url])=>url.startsWith('/temp/confirm_data')).length,1);
   t.context.bankThisBeauty();await flush();
   assert.equal(t.calls.filter(([url])=>url.startsWith('/temp/confirm_data')).length,1);
@@ -106,7 +108,9 @@ function setup(options = {}) {
   t.context.redoImage();t.context.redoImage();
   assert.equal(t.calls.filter(([url])=>url==='/temp/redo_image').length,1);
   assert(t.elements.redoImageButton.disabled);assert.equal(t.elements.imagePanel.children[0],oldImage);
+  assert.equal(t.loading.at(-1),'start');
   t.resolveRedo();await flush();
+  assert(t.loading.includes('freeze'));assert.equal(t.loading.at(-1),'stop');
   assert.equal(t.elements.imagePanel.children[0].url,'/replacement.png');
   assert.equal(t.elements.imageStyle.textContent,'STYLE: FUTURISTIC');
   assert(!t.elements.redoImageButton.disabled);
