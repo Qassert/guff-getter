@@ -70,7 +70,7 @@ test('real DOM binding presents animation states with no generation button for s
     assert.equal(elements.animationButton.textContent,'ANIMATING…'); assert(elements.animationButton.disabled);
     context.videoUI.render({video_status:'complete',video_url:'/stored',can_generate:false});
     assert(elements.animationButton.hidden); assert.equal(elements.animationStop, undefined);
-    assert.equal(elements.animationMessage.textContent,'ANIMATION READY');
+    assert.equal(elements.animationMessage.textContent,'');
     context.videoUI.render({video_status:'failed_or_uncertain',can_generate:false});
     assert(elements.animationButton.hidden); assert.match(elements.animationMessage.textContent,/ANIMATION FAILED/);
     const template=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');

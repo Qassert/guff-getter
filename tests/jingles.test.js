@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict'), fs=require('node:fs'), vm=require('node:vm');
 const flush = () => new Promise(resolve=>setImmediate(resolve));
 function setup(blocked = false) {
- const ids=['jingleControls','jingleButton','jingleStop','jingleGenre','jingleMessage','crazyTitleBox','crazyExtractBox'];
+ const ids=['jingleControls','jingleButton','jingleStop','jingleGenre','jingleMessage','creationMeta','crazyTitleBox','crazyExtractBox'];
  const nodes=Object.fromEntries(ids.map(id=>[id,{hidden:true,textContent:'',value:'',disabled:false,children:[],replaceChildren(){this.children=[];},appendChild(child){this.children.push(child);}}]));
  const calls=[], audios=[], timers=[];
  let savedAnswer=null;
@@ -17,7 +17,8 @@ function setup(blocked = false) {
   }
  };
  vm.createContext(context);
- vm.runInContext(fs.readFileSync('newsmuncher/static/jingles.js','utf8')+'\nglobalThis.ui=jingleUI;',context);
+ vm.runInContext(fs.readFileSync('newsmuncher/static/creation-meta.js','utf8')+
+   fs.readFileSync('newsmuncher/static/jingles.js','utf8')+'\nglobalThis.ui=jingleUI;',context);
  return {ui:context.ui,nodes,calls,audios,timers,setAnswer:v=>answer=v,setSaved:v=>savedAnswer=v,
   complete:(data,ok=true)=>resolvePost({ok,json:async()=>data})};
 }
@@ -35,7 +36,8 @@ function setup(blocked = false) {
  t.setSaved({jingles:[{entry_id:'one',title:'New jingle',jingle_genre:'Funk',jingle_url:'/generated-audio/one.mp3'}]});
  t.complete({jingle_status:'complete',jingle_url:'/generated-audio/one.mp3',can_generate:false,jingle_genre:'Funk'});await flush();
  assert.equal(t.audios[0].plays,1);
- assert.equal(t.nodes.jingleGenre.textContent,'GENRE: FUNK');
+ assert.equal(t.nodes.jingleGenre.hidden,true);
+ assert.equal(t.nodes.creationMeta.textContent,'MUSIC GENRE: FUNK');
  assert.equal(t.nodes.jingleButton.textContent,'▶ PLAY JINGLE');
  assert.equal(t.nodes.savedJingleSelect, undefined);
  assert.equal(t.nodes.savedJingles, undefined);
@@ -49,13 +51,15 @@ function setup(blocked = false) {
  assert.equal(t.audios[0].plays,1);assert(!t.nodes.jingleButton.disabled);
  await t.ui.act();assert.equal(t.audios[0].plays,2);
  assert.equal(t.calls.filter(c=>c.options.method==='POST').length,1);
- assert.equal(t.nodes.jingleGenre.textContent,'GENRE: HEAVY METAL');
+ assert.equal(t.nodes.jingleGenre.hidden,true);
+ assert.equal(t.nodes.creationMeta.textContent,'MUSIC GENRE: HEAVY METAL');
  // Restore a stored jingle without POST.
  t=setup();t.setAnswer({jingle_status:'complete',jingle_url:'/generated-audio/stored.mp3',jingle_genre:'Funk'});
  t.ui.show({nominated:true,rewrite_id:'saved'});await flush();
  assert.equal(t.nodes.jingleButton.textContent,'▶ PLAY JINGLE');
  assert(!t.calls.some(c=>c.options.method==='POST'));
- assert.equal(t.nodes.jingleGenre.textContent,'GENRE: FUNK');
+ assert.equal(t.nodes.jingleGenre.hidden,true);
+ assert.equal(t.nodes.creationMeta.textContent,'MUSIC GENRE: FUNK');
  assert.equal(t.audios[0].plays,1);
  // Late old response cannot attach to a new rewrite.
  t=setup();t.ui.show({nominated:true,rewrite_id:'old'});await flush();

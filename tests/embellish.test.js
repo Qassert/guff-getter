@@ -19,7 +19,8 @@ test('failure isolated; queued components keep independent statuses until comple
  t.media.Video.ensure=async()=>{t.media.Video.state={video_status:'queued'};};
  t.ui.show({nominated:true,rewrite_id:'a'});await t.ui.act();
  assert.equal(t.states.at(-1).label,'EMBELLISHING…');
- assert.match(t.states.at(-1).message,/Narration: unavailable/);assert.match(t.states.at(-1).message,/Jingle: ready/);
+ assert.match(t.states.at(-1).message,/Narration: unavailable/);
+ assert.doesNotMatch(t.states.at(-1).message,/Jingle: ready/);
  t.media.Video.state={video_url:'/saved'};t.timers.at(-1)();
  assert.equal(t.states.at(-1).label,'EMBELLISH — CHECK STATUS');
 });

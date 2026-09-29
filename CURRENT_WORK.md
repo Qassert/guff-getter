@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Saved-jingle audio collage for image loading
-LAST_COMPLETED_COMMIT: :/^Reuse saved jingles during image loading shuffle
+LAST_COMPLETED_FEATURE: Creation Page consolidated metadata and shared action row
+LAST_COMPLETED_COMMIT: :/^Consolidate Creation Page media controls
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,34 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Optional saved-jingle collage during image loading; independent temporary audio lifecycle.
-APPROVAL: Implement, test offline, commit and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews the 2-second-start loading audio collage.
-VALIDATION: Targeted Python 30 passed; targeted Node 10 passed. Full Python 281 passed + 105 subtests; Node 59 passed. Providers mocked; full suites network blocked; diff check clean.
+CURRENT_TASK: Finish inherited Creation Page UI cleanup without changing completed 8-second video generation.
+APPROVAL: Preserve and complete intentional WIP, test frontend, commit separately and push. No live provider calls, deployment or main changes.
+NEXT_STEP: Andy reviews the consolidated metadata line and centred dynamic action row.
+VALIDATION: Focused frontend 23 passed; full Node frontend suite 62 passed. Template-backed narration/jingle/image tests 39 passed + 6 subtests. No provider calls; diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Creation Page consolidated media UI — 2026-09-29
+
+Completed the intentional inherited WIP after commit 750d36e; provider/backend video
+generation and its completed 8-second action work were not changed. creation-meta.js
+loads before video/narration/jingle controllers and owns the single dynamic line under
+the image: IMAGE STYLE, MUSIC GENRE and VOICE. Missing values and separators disappear;
+rewrite changes reset all three. Hidden duplicate style/genre elements were removed.
+
+REDO IMAGE, NOMINATE/NOMINATED, EMBELLISH/EMBELLISHED, jingle, narration and animation
+actions now live in one centred flex-wrap row. Direct-button visibility mirrors the
+existing nomination/media controller state even though legacy lifecycle wrappers are
+empty and hidden. Hidden actions consume no space. A scoped CSS override removes the
+old absolute NOMINATE placement inside this row while retaining its existing state,
+event and parchment styling.
+
+Normal completed-state prose is suppressed: no ANIMATION READY, aggregate media-ready
+list, duplicated STYLE/GENRE/VOICE, or saved-media status copy. Operational progress,
+text-change warnings and genuine errors remain. EMBELLISH reports component failures
+only; its button conveys working/completed state. Focused layout/controller tests cover
+dynamic metadata/separators, script ordering, row membership, centring/wrapping, hidden
+gaps, nomination gating, restore and media state. No live calls or deployment.
 
 ## Loading-shuffle audio collage — 2026-09-29
 

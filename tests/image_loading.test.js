@@ -31,7 +31,8 @@ test('completion freezes visuals until real image loads; late retrieval ignored 
 test('shared loader, centered redo/overlay, stable clipped pane and reduced motion styles',()=>{
  const css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
  assert.match(css,/\.loader \{/);assert(!css.includes('.spinner'));
- assert.match(css,/#redoImageButton \{ display: block; margin: 12px auto/);
+ assert.match(css,/\.creation-actions\s*\{[^}]*justify-content:\s*center/);
+ assert.match(css,/\.creation-actions\s*\{[^}]*flex-wrap:\s*wrap/);
  assert.match(css,/\.page-loader, \.image-loader.*top: 50%; left: 50%/);
  assert.match(css,/\.image-loading.*position: absolute; inset: 0; overflow: hidden/);
  assert.match(css,/\.image-panel.*aspect-ratio: 1/);

@@ -172,10 +172,10 @@
             button.hidden = ready || failed || (!busy && !data.can_generate);
             button.disabled = busy || !data.can_generate;
             button.textContent = busy ? 'ANIMATING…' : 'ANIMATE IMAGE';
-            get('animationMessage').textContent = ready ? 'ANIMATION READY' : failed
+            get('animationMessage').textContent = ready ? '' : failed
                 ? 'ANIMATION FAILED — operator review needed; no regeneration.'
                 : data.message || (busy ? 'Animating your image. You can leave this page.'
-                    : 'Optional: one 5-second animation, approximately $0.05. Uses the saved rewritten scene.');
+                    : 'Optional: one 8-second animation, approximately $0.05. Uses the saved rewritten scene.');
             if (ready) visual.show(data.video_url);
         }
     }});

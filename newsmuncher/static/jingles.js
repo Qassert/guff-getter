@@ -12,11 +12,10 @@ const jingleUI = (() => {
 
     function render(data) {
         state = data;
+        // Genre is now shown in #creationMeta; keep jingleGenre hidden always.
         const genre = get('jingleGenre');
-        if (genre) {
-            genre.textContent = data.jingle_genre ? `GENRE: ${data.jingle_genre.toUpperCase()}` : '';
-            genre.hidden = !data.jingle_genre;
-        }
+        if (genre) { genre.hidden = true; }
+        if (typeof creationMeta !== 'undefined') creationMeta.setGenre(data.jingle_genre || '');
         const button = get('jingleButton');
         if (button) {
             button.disabled = pending || !(data.jingle_url || data.can_generate);
@@ -30,7 +29,8 @@ const jingleUI = (() => {
         const msg = get('jingleMessage');
         if (msg) {
             msg.textContent = data.text_changed ?
-                'This jingle belongs to the earlier nominated text; it will not regenerate automatically.' : (data.message || '');
+                'This jingle belongs to the earlier nominated text; it will not regenerate automatically.' :
+                data.jingle_url ? '' : (data.message || '');
         }
     }
 
@@ -59,7 +59,15 @@ const jingleUI = (() => {
         rewrite = nominated ? data.rewrite_id : null;
         const controls = get('jingleControls');
         if (controls) controls.hidden = !rewrite;
-        if (!rewrite) return;
+        // jingleButton and jingleStop now live in #creationActions; mirror visibility.
+        const btn = get('jingleButton');
+        if (btn) btn.hidden = !rewrite;
+        if (!rewrite) {
+            if (typeof creationMeta !== 'undefined') creationMeta.setGenre('');
+            const msg = get('jingleMessage');
+            if (msg) msg.textContent = '';
+            return;
+        }
         autoplay = true;
         render({message: 'Checking saved jingle…', can_generate: false});
         lookup = refresh(token, rewrite);
@@ -141,6 +149,8 @@ const jingleUI = (() => {
         state = item;
         const controls = get('jingleControls');
         if (controls) controls.hidden = false;
+        const button = get('jingleButton');
+        if (button) button.hidden = false;
         render(item);
     }
 

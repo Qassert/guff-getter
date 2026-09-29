@@ -256,14 +256,17 @@ function bankThisBeauty() {
 
 function setImageStyle(style) {
     const label = document.getElementById('imageStyle');
-    if (!label) return;
-    label.textContent = style ? `STYLE: ${style.toUpperCase()}` : '';
-    label.hidden = !style;
+    if (label) {
+        label.textContent = style ? `IMAGE STYLE: ${style.toUpperCase()}` : '';
+        label.hidden = !style;
+    }
+    if (typeof creationMeta !== 'undefined') creationMeta.setStyle(style || '');
 }
 
 function resetImagePanel() {
     if (typeof imageLoading !== 'undefined') imageLoading.stop();
     if (typeof embellishUI !== 'undefined') embellishUI.show(null);
+    if (typeof creationMeta !== 'undefined') creationMeta.reset();
     imageDisplaySequence++;
     setImageStyle(null);
     currentImageUrl = null; imageRedoPending = false;

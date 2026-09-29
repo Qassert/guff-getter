@@ -93,14 +93,14 @@ function setup(options = {}) {
   const rewriteCalls=t.calls.filter(([url])=>url==='/temp/shizzalise_data');
   assert.equal(JSON.parse(rewriteCalls[0][1].body).draft_session,JSON.parse(rewriteCalls[1][1].body).draft_session);
   t=setup({restore:true,style:'Cyberpunk'});t.context.window.onload();await flush();
-  assert.equal(t.elements.imageStyle.textContent,'STYLE: CYBERPUNK');
+  assert.equal(t.elements.imageStyle.textContent,'IMAGE STYLE: CYBERPUNK');
   assert.equal(t.elements.imageStyle.hidden,false);
   t.context.resetImagePanel();assert.equal(t.elements.imageStyle.hidden,true);
   t=setup({restore:true});t.context.window.onload();await flush();
   assert.equal(t.elements.imageStyle.hidden,true);
   t=setup();t.elements.generateImages.checked=true;t.context.confirmData();await flush();t.paint();await flush();
   t.resolveImage(true,'Pixel art');await flush();
-  assert.equal(t.elements.imageStyle.textContent,'STYLE: PIXEL ART');
+  assert.equal(t.elements.imageStyle.textContent,'IMAGE STYLE: PIXEL ART');
   // Redo restores eligibility, keeps the old image while pending, and submits once.
   t=setup({restore:true});t.context.window.onload();await flush();
   assert.equal(t.elements.redoImageButton.hidden,false);
@@ -112,7 +112,7 @@ function setup(options = {}) {
   t.resolveRedo();await flush();
   assert(t.loading.includes('freeze'));assert.equal(t.loading.at(-1),'stop');
   assert.equal(t.elements.imagePanel.children[0].url,'/replacement.png');
-  assert.equal(t.elements.imageStyle.textContent,'STYLE: FUTURISTIC');
+  assert.equal(t.elements.imageStyle.textContent,'IMAGE STYLE: FUTURISTIC');
   assert(!t.elements.redoImageButton.disabled);
   t.context.bankThisBeauty();await flush();assert(t.elements.redoImageButton.hidden);
   const redoCount=t.calls.length;await t.context.redoImage();assert.equal(t.calls.length,redoCount);

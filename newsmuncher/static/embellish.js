@@ -15,18 +15,18 @@
         update(token, polls=0) {
             if (token !== this.revision) return;
             let working = this.waiting, complete = true;
-            const messages = Object.entries(this.media()).map(([name, ui]) => {
+            const messages = Object.entries(this.media()).flatMap(([name, ui]) => {
                 const state = ui.snapshot(), kind = name.toLowerCase();
                 const ready = !!state[kind + '_url'];
                 const busy = state.pending || ['queued','started','submitted'].includes(state[kind + '_status']);
                 working ||= busy;
                 complete &&= ready;
-                return `${name}: ${ready ? 'ready' : busy ? 'working' : this.errors[name] ? 'unavailable' : 'check individual control'}`;
+                return this.errors[name] ? [`${name}: unavailable — use its individual control for details.`] : [];
             });
             if (polls >= 720) working = false;
             this.render({available:this.available, disabled:true,
                 label: working ? 'EMBELLISHING…' : complete ? 'EMBELLISHED' : 'EMBELLISH — CHECK STATUS',
-                message:messages.join(' · ')});
+                message:messages.join(' ')});
             this.cancel(this.timer);
             if (working) this.timer = this.schedule(()=>this.update(token, polls+1), 1000);
         }

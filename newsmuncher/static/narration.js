@@ -1,6 +1,6 @@
 /* Only READ ALOUD posts. Status, discovery and playback never synthesize. */
 const narrationUI = (() => {
-    let revision = 0, entry = null, state = null, pending = false, timer = null, lookup = Promise.resolve();
+    let revision = 0, entry = null, state = null, pending = false, timer = null, lookup = Promise.resolve(), available = false;
     const get = id => document.getElementById(id);
     function message(text) { get('narrationMessage').textContent = text; }
     function stop() {
@@ -14,15 +14,17 @@ const narrationUI = (() => {
         state = data;
         const button = get('narrationButton'), audio = get('narrationAudio');
         const hasAudio = Boolean(data.narration_url);
-        button.hidden = false;
+        button.hidden = !available;
         button.disabled = pending || !(data.narration_url || data.can_generate);
         button.textContent = hasAudio ? '▶ PLAY NARRATION' : pending || data.narration_status === 'started' ? 'GENERATING NARRATION…' : 'READ ALOUD';
         if (hasAudio) {
             if (audio.getAttribute('src') !== data.narration_url) audio.src = data.narration_url;
             audio.hidden = true;
         }
-        message((data.voice_name ? `Voice: ${data.voice_name}. ` : '') +
-            (data.text_changed ? 'Narration uses the earlier text; it will not regenerate.' : (data.message || '')));
+        // Voice name goes to the shared meta line; narrationMessage carries only status text.
+        if (typeof creationMeta !== 'undefined') creationMeta.setVoice(data.voice_name || '');
+        message(data.text_changed ? 'Narration uses the earlier text; it will not regenerate.' :
+            data.narration_url ? '' : (data.message || ''));
     }
     async function refresh(token, polls = 0) {
         if (!entry) return;
@@ -43,9 +45,10 @@ const narrationUI = (() => {
         const token = ++revision;
         clearTimeout(timer);
         stop(); entry = null; state = null; pending = false;
-        get('narrationControls').hidden = !(data?.nominated && data?.rewrite_id);
-        if (!data || !data.nominated || !data.rewrite_id) {
-            render({message: 'Nominate this rewrite before using READ ALOUD.'});
+        available = !!(data?.nominated && data?.rewrite_id);
+        get('narrationControls').hidden = !available;
+        if (!available) {
+            render({});
             return;
         }
         render({message: 'Checking saved narration…'});

@@ -24,7 +24,8 @@ function fixture() {
             return {ok:true, json:async()=>data};
         }};
     vm.createContext(context);
-    vm.runInContext(fs.readFileSync('newsmuncher/static/narration.js','utf8') + '\nthis.ui=narrationUI;',context);
+    vm.runInContext(fs.readFileSync('newsmuncher/static/creation-meta.js','utf8') +
+        fs.readFileSync('newsmuncher/static/narration.js','utf8') + '\nthis.ui=narrationUI;',context);
     return {context, get, requests, response};
 }
 (async()=>{
@@ -32,7 +33,7 @@ function fixture() {
     await ui.show({nominated:false});
     assert.equal(f.requests.length,0);
     assert(f.get("narrationControls").hidden);
-    assert.match(fs.readFileSync("newsmuncher/static/styles.css", "utf8"), /\.narration-controls\[hidden\]/);
+    assert.match(fs.readFileSync("newsmuncher/static/styles.css", "utf8"), /\.narration-controls-hidden\[hidden\]/);
     await ui.show({nominated:true,rewrite_id:'rewrite'});
     assert(!f.get('narrationControls').hidden);
     assert.equal(f.requests.filter(r=>r.options.method==='POST').length,0);
@@ -62,7 +63,8 @@ function fixture() {
     await ui.act(); await ui.act();
     assert.equal(f.requests.filter(r=>r.options.method==='POST').length,1);
     assert(f.get('narrationAudio').src.endsWith('/audio'));
-    assert(f.get('narrationMessage').textContent.includes('Voice: Coral'));
+    assert.equal(f.get('narrationMessage').textContent,'');
+    assert.equal(f.get('creationMeta').textContent,'VOICE: CORAL');
     assert.equal(f.get('crazyTitleBox').textContent,'...Visible title...');
 
     const late=fixture();
@@ -87,7 +89,8 @@ function fixture() {
     await fresh.context.ui.act();
     assert.equal(fresh.get('narrationAudio').plays,1);
     assert(!/id="narrationAudio"[^>]*controls/.test(fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8')));
-    assert(fresh.get('narrationMessage').textContent.includes('Voice: Cedar'));
+    assert.equal(fresh.get('narrationMessage').textContent,'');
+    assert.equal(fresh.get('creationMeta').textContent,'VOICE: CEDAR');
     assert.equal(fresh.requests.filter(r=>r.options.method==='POST').length,0);
     assert.equal(fresh.get('crazyTitleBox').textContent,'...Visible title...');
 

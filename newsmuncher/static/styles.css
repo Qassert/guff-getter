@@ -434,35 +434,61 @@ body { isolation: isolate; }
   .profile-page .edit-tab { padding-left: 18px; }
 }
 
-/* Optional nominated-entry audio; existing paper/button surfaces are reused. */
-.profile-page .jingle-controls { margin: 20px 0 12px; }
-.profile-page .jingle-controls[hidden],
-.profile-page #jingleStop[hidden] { display: none; }
-.profile-page .jingle-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-.profile-page #jingleMessage { font-family: var(--print-body-font); font-size: .9rem; overflow-wrap: anywhere; }
-.profile-page .narration-controls {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-  gap: 8px 14px; margin: 20px 0 12px;
-}
-.profile-page .narration-controls audio { width: min(100%, 420px); }
-.profile-page .narration-controls[hidden],
-.profile-page #redoImageButton[hidden],
-.profile-page .image-style[hidden],
-.profile-page .narration-controls audio[hidden],
-.profile-page .narration-controls #narrationButton[hidden] { display: none; }
-.profile-page #narrationMessage {
-  flex-basis: 100%; margin: 0; text-align: center;
-  font-family: var(--print-body-font); font-size: .9rem; overflow-wrap: anywhere;
-}
+/* Hidden source elements for the meta line and empty control wrappers. */
+.profile-page .creation-meta-source[hidden],
+.profile-page .jingle-controls-hidden[hidden],
+.profile-page .narration-controls-hidden[hidden] { display: none; }
 
-/* A separate route to review nominated creations. */
-.profile-page .promotion-link { position: relative; z-index: 5; text-align: center; margin: 0 0 48px; }
+/* ONE centred metadata line beneath the generated image. */
+.creation-meta {
+  margin: 12px 0 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  opacity: 0.75;
+  overflow-wrap: anywhere;
+}
+.creation-meta[hidden] { display: none; }
 
-/* Optional animation stays alongside the existing media controls. */
-.animation-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
-.animation-controls[hidden], .animation-controls [hidden] { display: none; }
-.animation-controls > span { font-size: .85rem; color: var(--muted); }
-/* The still sets the dimensions while its animation preloads invisibly above it. */
+/* Operational error/status messages below the button row. */
+.creation-status-message {
+  margin: 6px 0 0;
+  font-family: var(--print-body-font, Georgia, serif);
+  font-size: .85rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.creation-status-message[hidden] { display: none; }
+.creation-status-message:empty { display: none; }
+
+/* ONE centred button row – all Creation Page action buttons. */
+.creation-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 8px;
+}
+/* Hidden buttons inside the flex row take no space. */
+.creation-actions > [hidden],
+.creation-actions > .animation-controls-inline[hidden] { display: none; }
+/* Inline animation wrapper passes through flex sizing. */
+.animation-controls-inline { display: contents; }
+.animation-controls-inline[hidden] { display: none; }
+/* Undo the older parchment-edge NOMINATE positioning inside this shared row. */
+.profile-page .creation-actions #bankButton,
+.profile-page .creation-actions #bankButton:hover,
+.profile-page .creation-actions #bankButton:active {
+  position: relative; inset: auto; transform: none; margin: 0;
+  width: auto; min-width: 0; z-index: auto;
+}
+.profile-page .creation-actions .shizzle-button { margin: 0; width: auto; min-width: 0; }
+
+/* Keep the still image as the positioning parent for the animation overlay. */
 .image-panel { position: relative; }
 .image-panel .creation-animation { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .6s ease; pointer-events: none; }
 .image-panel.animation-playing .creation-animation { opacity: 1; }
@@ -470,12 +496,8 @@ body { isolation: isolate; }
   .image-panel .creation-animation { display: none; transition: none; }
 }
 
-.image-style {
-    margin: 0.4rem 0;
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    opacity: 0.7;
-}
+/* Keep the image-style helper hidden always (content goes to #creationMeta). */
+.profile-page .image-style[hidden] { display: none; }
 
 /* One shared loading indicator for page actions and the image pane. */
 .loader {
@@ -491,10 +513,6 @@ body { isolation: isolate; }
 @keyframes l9 { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }
 .page-loader, .image-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 4; }
 .image-loader { filter: drop-shadow(0 0 3px white) drop-shadow(0 0 8px white); }
-.profile-page #redoImageButton { display: block; margin: 12px auto; }
-.profile-page #redoImageButton[hidden], #embellishButton[hidden], #embellishStatus[hidden] { display: none; }
-#embellishButton { display: block; margin: 18px auto; }
-#embellishStatus { font-size: .8rem; text-align: center; }
 .image-loading { position: absolute; inset: 0; overflow: hidden; z-index: 3; background: var(--paper); }
 .shuffle-card { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .shuffle-in { animation: card-in .48s ease-out both; }

@@ -61,32 +61,40 @@
         <button type="button" class="funky-button" onclick="profileEditing.cancel('response')">CANCEL</button>
       </div>
     </div>
-    <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
-    <button type="button" id="redoImageButton" class="funky-button" onclick="redoImage()" hidden>REDO IMAGE</button>
-    <p id="imageRedoMessage" role="status" hidden></p>
-    <p id="imageStyle" class="image-style" hidden></p>
-    <button type="button" id="embellishButton" class="funky-button shizzle-button" onclick="embellishUI.act()" hidden>EMBELLISH</button>
-    <p id="embellishStatus" role="status" hidden></p>
-    <div id="animationControls" class="animation-controls" hidden>
-      <button type="button" id="animationButton" class="funky-button" disabled>ANIMATE IMAGE</button>
-      <span id="animationMessage" role="status" aria-live="polite"></span>
-    </div>
-    <div id="jingleControls" class="jingle-controls" hidden>
-      <div class="jingle-buttons">
-        <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled>MAKE JINGLE</button>
-        <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
-      </div>
-      <p id="jingleGenre" class="image-style" hidden></p>
-      <p id="jingleMessage" role="status" aria-live="polite"></p>
-    </div>
-  <div id="narrationControls" class="narration-controls" hidden>
-    <button type="button" id="narrationButton" class="funky-button" onclick="narrationUI.act()" disabled>READ ALOUD</button>
-    <audio id="narrationAudio" preload="none" hidden></audio>
-    <p id="narrationMessage" role="status" aria-live="polite">Nominate a rewrite to use READ ALOUD.</p>
-  </div>
-  <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
-  </div>
 
+    <!-- Generated image -->
+    <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
+
+    <!-- ONE centred metadata line: IMAGE STYLE - MUSIC GENRE - VOICE -->
+    <p id="creationMeta" class="creation-meta" hidden></p>
+
+    <!-- Error / status messages for individual operations (kept visible when set) -->
+    <p id="imageRedoMessage" role="status" class="creation-status-message" hidden></p>
+    <p id="embellishStatus" role="status" class="creation-status-message" hidden></p>
+
+    <!-- ONE shared centred button row — all action buttons live here -->
+    <div id="creationActions" class="creation-actions">
+      <button type="button" id="redoImageButton" class="funky-button" onclick="redoImage()" hidden>REDO IMAGE</button>
+      <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
+      <button type="button" id="embellishButton" class="funky-button shizzle-button" onclick="embellishUI.act()" hidden>EMBELLISH</button>
+      <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled hidden>MAKE JINGLE</button>
+      <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
+      <button type="button" id="narrationButton" class="funky-button" onclick="narrationUI.act()" disabled hidden>READ ALOUD</button>
+      <div id="animationControls" class="animation-controls-inline" hidden>
+        <button type="button" id="animationButton" class="funky-button" disabled>ANIMATE IMAGE</button>
+      </div>
+    </div>
+
+    <!-- Operational status messages shown beneath the button row when non-empty -->
+    <p id="animationMessage" role="status" aria-live="polite" class="creation-status-message"></p>
+    <p id="jingleMessage" role="status" aria-live="polite" class="creation-status-message"></p>
+    <audio id="narrationAudio" preload="none" hidden></audio>
+    <p id="narrationMessage" role="status" aria-live="polite" class="creation-status-message"></p>
+
+    <!-- Empty compatibility wrappers retain controller lifecycle state, never layout. -->
+    <div id="narrationControls" class="narration-controls-hidden" hidden></div>
+    <div id="jingleControls" class="jingle-controls-hidden" hidden></div>
+  </div>
 
 
 
@@ -94,4 +102,4 @@
 </div>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
