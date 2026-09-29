@@ -76,3 +76,53 @@ test('real DOM binding presents animation states with no generation button for s
     const template=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');
     assert.match(template,/<video id="animationPreview" controls muted loop playsinline preload="none" hidden/);
 });
+
+
+for (const operation of ['show/stop', 'poll scheduling']) {
+    test(`browser timer defaults support AnimationUI ${operation}`, async () => {
+        const fs = require('node:fs'), vm = require('node:vm');
+        const context = vm.createContext({module: {exports: {}}, timers: [], cancelled: []});
+        vm.runInContext(`
+            function setTimeout(fn, delay) {
+                if (this !== globalThis) throw new TypeError('Illegal invocation');
+                timers.push({fn, delay});
+                return timers.length;
+            }
+            function clearTimeout(timer) {
+                if (this !== globalThis) throw new TypeError('Illegal invocation');
+                cancelled.push(timer);
+            }
+        `, context);
+        vm.runInContext(fs.readFileSync('newsmuncher/static/video.js', 'utf8'), context);
+        const calls = [], states = [];
+        const ui = new context.module.exports.AnimationUI({
+            view: {stop() {}, render(data) { states.push(data); }},
+            fetcher: async (url, options) => {
+                calls.push(options.method);
+                return response({video_status: operation === 'show/stop' ? 'none' : 'started',
+                                 can_generate: operation === 'show/stop'});
+            },
+            // Isolate the scheduling regression from cancellation's independent failure.
+            ...(operation === 'poll scheduling' ? {cancel() {}} : {})
+        });
+        await ui.show({rewrite_id: 'fixture'});
+        if (operation === 'show/stop') {
+            assert.equal(states.at(-1).can_generate, true);
+            ui.timer = 42;
+            assert.doesNotThrow(() => ui.stop());
+            assert.deepEqual(Array.from(context.cancelled), [undefined, 42]);
+            assert.equal(ui.key, null);
+        } else {
+            assert.equal(context.timers.length, 1);
+            assert.equal(context.timers[0].delay, 5000);
+            assert.equal(ui.timer, 1);
+            await context.timers[0].fn();
+            assert.equal(context.timers.length, 2);
+            assert.deepEqual(calls, ['GET', 'GET']);
+            ui.stop();
+            await context.timers[1].fn();
+            assert.equal(calls.length, 2);
+        }
+        assert(calls.every(method => method === 'GET'));
+    });
+}

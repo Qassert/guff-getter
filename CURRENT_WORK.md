@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: GalleryVideo browser timer receiver fix
-LAST_COMPLETED_COMMIT: :/^Fix GalleryVideo native timer invocation
+LAST_COMPLETED_FEATURE: AnimationUI browser timer receiver fix
+LAST_COMPLETED_COMMIT: :/^Fix AnimationUI native timer invocation
 LAST_OWNER: CODEX
 HANDOVER: VIDEO_ANIMATION_STATUS.md
 
@@ -13,12 +13,20 @@ HANDOVER: VIDEO_ANIMATION_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Frontend-only GalleryVideo native timer receiver fix.
+CURRENT_TASK: Frontend-only AnimationUI native timer receiver fix.
 APPROVAL: Implement/test offline, milestone commits/pushes. No live provider calls or deployment.
-NEXT_STEP: Andy reviews the frontend timer fix; no live generation is needed to verify gallery loading.
-VALIDATION: node --test tests/promotion_gallery.test.js — 25 passed. Both new receiver regressions failed before the wrapper fix; no provider calls.
+NEXT_STEP: Andy reviews Creation Page control loading; no live generation is needed.
+VALIDATION: node --test tests/video.test.js — 8 passed. Both new receiver regressions failed before the wrapper fix; no provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## AnimationUI native timer fix — 2026-09-29
+
+Creation Page video.js uses wrapper defaults for both setTimeout and clearTimeout.
+Browser-style receiver mocks cover show/stop, repeated status-poll scheduling and
+cancellation of stale polling after stop. Only video.js, its targeted tests and this
+status file changed; eligibility, backend, providers, storage, gallery, styling and
+narration/jingle behavior are unchanged. REVIEW/CODEX; commit/push authorized.
 
 ## GalleryVideo native timer fix
 

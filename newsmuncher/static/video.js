@@ -3,7 +3,8 @@
     'use strict';
     class AnimationUI {
         constructor({view, fetcher = (url, options) => fetch(url, options),
-                     schedule = setTimeout, cancel = clearTimeout}) {
+                     schedule = (fn, delay) => setTimeout(fn, delay),
+                     cancel = (timer) => clearTimeout(timer)}) {
             Object.assign(this, {view, fetcher, schedule, cancel});
             this.revision = 0;
             this.key = null;
