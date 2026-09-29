@@ -159,6 +159,20 @@ are intentionally retained. Existing stored text that was lowercased by older
 fetchers cannot recover its original capitalization; newly fetched text preserves it.
 Overlap logging is diagnostic only and does not reject or regenerate output.
 
+### Canonical rewrite flow
+
+Source → rewritten body → copy-edited final body and short derived title. The
+existing second text call finishes the body before summarising it into a 3–8 word
+title. A local 60-character/8-word cap and body-vocabulary check reject unrelated
+wording; invalid titles or failed copy-editing use a short excerpt of the accepted
+body. This check is conservative, not a semantic entailment guarantee. No extra
+text call is added. Word claims use the accepted final title/body as before.
+
+Images use only the rewritten body plus the persisted visual style and composition
+guidance. Jingle lyrics use only the saved title (bounded to 200 characters for
+legacy titles), with the existing genre profile. Narration remains body-only.
+Existing saved titles and generated media are not modified or regenerated.
+
 ### Random image styles
 
 Each new image gets one uniformly random visual style from the 20-style pool in

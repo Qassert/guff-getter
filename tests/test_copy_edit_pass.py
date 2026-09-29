@@ -15,7 +15,6 @@ class CopyEditPassTests(unittest.TestCase):
             'crazyReplacement1Extract': 'A cat paints the moon.  They doesnt know why.',
         }
         self.expected_pass2_input = {
-            'title': 'Moon soup',
             'extract': 'A cat paints the moon.  They doesnt know why.',
         }
 
@@ -137,9 +136,34 @@ class CopyEditPassTests(unittest.TestCase):
                 routes.copy_edit_pass.return_value = polished
                 result = routes.shizzalise_data(routes.ShizzRequest(title='ORIGINAL',description='',extract='SECRET'), 'alice','alice')
                 routes.copy_edit_pass.assert_called_with(first)
-                routes.claim_used_words.assert_called_with(contenders, polished or first)
+                accepted = dict(polished or first)
+                accepted['crazyReplacement1Title'] = 'A cat paints the moon'
+                routes.claim_used_words.assert_called_with(contenders, accepted)
                 self.assertNotIn('ORIGINAL', str(routes.copy_edit_pass.call_args))
-                self.assertEqual(result['crazyReplacement1Title'], (polished or first)['crazyReplacement1Title'])
+                self.assertEqual(result['crazyReplacement1Title'], 'A cat paints the moon')
+        finally:
+            fixture.tearDown()
+            fixture.doCleanups()
+
+    def test_final_title_uses_accepted_polished_body(self):
+        import test_image_generation as fixtures
+        fixture = fixtures.ImageTests()
+        fixture.setUp()
+        try:
+            routes = fixture.previews()
+            routes.prepare_prompt.return_value = {'full_prompt': 'masked', 'preprocessing': None, 'contenders': {}}
+            routes.send_prompt.return_value = {'title': 'Alien invasion', 'extract': 'First body'}
+            routes.format_shizzalise_result.return_value = dict(fixture.result)
+            routes.copy_edit_pass.return_value = {
+                'crazyReplacement1Title': 'Badgers sell lunar waffles',
+                'crazyReplacement1Extract': 'Badgers sell lunar waffles outside Parliament.',
+            }
+            result = routes.shizzalise_data(routes.ShizzRequest(title='SOURCE', description='', extract='SECRET'), 'alice', 'alice')
+            self.assertEqual(result['crazyReplacement1Title'], 'Badgers sell lunar waffles')
+            self.assertNotIn('Moon', result['crazyReplacement1Title'])
+            claimed = routes.claim_used_words.call_args.args[1]
+            self.assertEqual(claimed['crazyReplacement1Extract'], result['crazyReplacement1Extract'])
+            self.assertEqual(claimed['crazyReplacement1Title'], result['crazyReplacement1Title'])
         finally:
             fixture.tearDown()
             fixture.doCleanups()

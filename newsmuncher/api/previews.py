@@ -11,6 +11,7 @@ from uuid import uuid4
 from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result, copy_edit_pass, claim_used_words
 from newsmuncher.utils.file_handler import load_prompt
 from newsmuncher.services.word_shuffle import WordClaimConflict
+from newsmuncher.services.rewrite_title import final_title
 
 
 from newsmuncher.services.image_generation import store, choose_image_style, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path
@@ -116,6 +117,12 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     polished = copy_edit_pass(result)
     if polished:
         result = polished
+
+    result = dict(result)
+    result['crazyReplacement1Title'] = final_title(
+        result['crazyReplacement1Extract'],
+        result['crazyReplacement1Title'] if polished else None,
+    )
 
     full_result = {
         **source,

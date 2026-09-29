@@ -55,8 +55,7 @@ def choose_image_style():
 
 
 def build_image_prompt(result, image_style=None):
-    prompt = (f'{STYLE}\nScene title: {result["crazyReplacement1Title"][:200]}\n'
-              f'Scene: {result["crazyReplacement1Extract"][:1200]}')
+    prompt = f'{STYLE}\nScene: {result["crazyReplacement1Extract"][:1200]}'
     return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 
 

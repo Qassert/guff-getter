@@ -37,7 +37,9 @@ class ImageTests(unittest.TestCase):
     def test_prompt_and_stub(self):
         prompt = build_image_prompt(self.result)
         self.assertNotIn('SECRET SOURCE', prompt)
-        self.assertIn('Moon soup', prompt)
+        self.assertNotIn('Moon soup', prompt)
+        self.assertNotIn('Scene title:', prompt)
+        self.assertIn('A cat paints the moon.', prompt)
         image = LocalStubProvider().generate_image(prompt)
         self.assertEqual(image['image_provider'], 'local-stub')
         self.assertTrue(Path('newsmuncher' + image['image_url']).exists())
@@ -164,7 +166,7 @@ class ImageTests(unittest.TestCase):
             self.assertIn('rewrite_id', result)
             self.assertFalse(result['nominated'])
             self.assertNotIn('generate_images', result)
-            self.assertEqual(result['crazyReplacement1Title'], 'Moon soup')
+            self.assertEqual(result['crazyReplacement1Title'], 'A cat paints the moon')
 
     def test_legacy_and_image_document_storage(self):
         client = MagicMock()

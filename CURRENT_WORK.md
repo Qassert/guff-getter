@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Persisted random image visual styles
-LAST_COMPLETED_COMMIT: :/^Persist one random visual style per generated image
+LAST_COMPLETED_FEATURE: Canonical body, derived title and coherent media seeds
+LAST_COMPLETED_COMMIT: :/^Make rewritten body canonical for titles and media
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,35 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: One persisted random visual style per new generated image; Creation Page label and gallery metadata.
+CURRENT_TASK: Final body is canonical; derived concise title, body-only image and title-only jingle.
 APPROVAL: Implement, test offline, commit and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews random styles and the subtle Creation Page label.
-VALIDATION: Full Python suite 266 passed + 105 subtests; full Node suite 43 passed. Providers mocked; network blocked. Diff check clean.
+NEXT_STEP: Andy reviews the canonical content flow.
+VALIDATION: Full Python 270 passed + 105 subtests; Node 43 passed. Targeted rewrite/image/jingle/narration/claim tests passed. Providers mocked; full suites network blocked; diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Canonical body and media seeds — 2026-09-29
+
+Existing two calls retained: rewrite body, then copy-edit body and derive a summary
+from that exact final body (extract precedes title in strict schema). Copy-edit input
+excludes the preliminary title. Local final_title enforces 60 characters, at most
+8 words and body vocabulary; invalid summaries or failed pass 2 use an ordered
+excerpt of the accepted body. Short bodies may yield fewer than 3 words. Vocabulary
+validation cannot prove semantic entailment; summarisation follows the prompt.
+No additional text call. Claims run only after final title selection, unchanged
+transaction/conflict semantics and no duplicate title/body counting.
+
+Image prompt removes Scene title entirely, retaining body (existing 1200-character
+bound), persisted style, palette and composition. Model/quality/size/claims unchanged.
+Jingle brief now receives only saved title (200-character legacy bound); existing
+lyric/genre/profile constraints and disabled narration reference remain. Narration
+still speaks only body. No saved record migration or retroactive generation; gallery
+and restoration continue to display saved content unchanged.
+
+Tests cover accepted and fallback title flows, bounds/unrelated vocabulary rejection,
+claims on actual final content, body-only styled images, title-only jingle payload,
+existing genre/reference/narration/cache/restoration behavior. README updated.
+No live API/provider calls, deployment or main changes.
 
 ## Persisted random image styles — 2026-09-29
 

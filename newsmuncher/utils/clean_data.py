@@ -20,8 +20,8 @@ JSON_FORMAT = {
     "schema": {
         "type": "object",
         "properties": {
-            "title": {"type": "string"},
             "extract": {"type": "string"},
+            "title": {"type": "string"},
         },
         "required": ["title", "extract"],
         "additionalProperties": False,
@@ -374,7 +374,7 @@ def format_shizzalise_result(response_data):
 def copy_edit_pass(pass1_result):
     """Second AI pass: copy-edit pass-1 output only.
 
-    Receives ONLY the title and extract produced by pass 1.  The original
+    Receives ONLY the extract produced by pass 1.  The original
     source text is never included.  The purpose is to fix grammar, broken
     sentence structure, subject-verb agreement, and flow while preserving
     all absurdity, bizarre events, rude/slang words, strange names, surreal
@@ -411,11 +411,15 @@ def copy_edit_pass(pass1_result):
         "Preserve: absurdity, bizarre events, rude or slang words, strange names, "
         "surreal imagery, invented relationships and details, and overall ridiculousness. "
         "Fix only: grammar, broken sentence structure, agreement, flow and readability. "
-        "Return the result as JSON with 'title' and 'extract' keys. "
+        "First finish the extract. It is the canonical content. Then derive the title "
+        "ONLY from that final extract, never using the preliminary title. "
+        "Write a funny, concise 3–8 word summary, at most 60 characters. "
+        "Use only words present in the final extract; introduce no new subjects, "
+        "objects, events or ideas. Return JSON with extract first, then title. "
         "Do not add commentary, markdown or code fences."
     )
 
-    user_content = json.dumps({'title': title, 'extract': extract}, ensure_ascii=False)
+    user_content = json.dumps({'extract': extract}, ensure_ascii=False)
 
     try:
         with OpenAI(max_retries=0, timeout=30.0) as client:
