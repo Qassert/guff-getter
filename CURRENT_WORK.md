@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Embellish orchestration, narration buttons and image loading shuffle
-LAST_COMPLETED_COMMIT: :/^Add embellish orchestration and playful image loading
+LAST_COMPLETED_FEATURE: Saved-jingle audio collage for image loading
+LAST_COMPLETED_COMMIT: :/^Reuse saved jingles during image loading shuffle
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,40 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Explicit EMBELLISH orchestration, hidden narration audio, centered Redo Image and owner-scoped image shuffle/shared loader.
+CURRENT_TASK: Optional saved-jingle collage during image loading; independent temporary audio lifecycle.
 APPROVAL: Implement, test offline, commit and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews Creation Page presentation and EMBELLISH behavior.
-VALIDATION: Targeted Python 73 passed + 6 subtests; targeted Node 13 passed. Full Python 280 passed + 105 subtests; Node 54 passed. Providers mocked; full suites network blocked; diff check clean.
+NEXT_STEP: Andy reviews the 2-second-start loading audio collage.
+VALIDATION: Targeted Python 30 passed; targeted Node 10 passed. Full Python 281 passed + 105 subtests; Node 59 passed. Providers mocked; full suites network blocked; diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Loading-shuffle audio collage — 2026-09-29
+
+loading_images now returns image_url plus optional jingle_url for each sampled image.
+Owner-scoped rewrite state supplies the nomination entry_id; Jingles.saved_url reads
+that ID in the existing jingle SQLite DB using mode=ro and validates the saved MP3.
+Missing, incomplete, retired or unavailable jingles produce null. No Mongo sync,
+provider call, generation, new metadata store or mutation during retrieval.
+
+Independent LoadingAudio owns ephemeral Audio instances; it never alters normal
+jingle, narration, EMBELLISH or gallery player state. Each musical selection seeks
+LOADING_JINGLE_OFFSET_SECONDS=2 after metadata/canplay; duration <=2 starts at zero.
+A failed early seek can wait for canplay, with one play attempt per selection. Four
+25ms volume steps give a 100ms fade-out/fade-in; retired players unload promptly.
+Musicless selections retain already-playing music but cancel pending old starts.
+Repeated same-track selections restart at offset without duplicate event playback.
+Revision guards reject stale events/promises, and stop clears every ramp/player.
+
+Both full stop and frozen-visual completion immediately stop audio. Existing initial
+image/Redo success/failure, rewrite changes and pagehide paths reuse that cleanup.
+Any play rejection silences the remainder of the session; another explicit loading
+session resets this flag. Reduced motion disables temporary audio, including when
+the preference changes during loading. Visual loading never depends on playback.
+
+Tests cover saved nomination association, ownership, null/retired media and read-only
+lookup; seek/short tracks, no-music continuation, switching/repeats, fades, stale
+loads/promises, cleanup, blocked autoplay and reduced motion. Full offline suites pass.
+README updated. No live APIs/providers, media generation, deployment or main changes.
 
 ## Embellish and loading UX — 2026-09-29
 

@@ -213,6 +213,15 @@ indicator. No available images falls back to the loader; reduced motion uses one
 static image and a static loader. Completion, failure, rewrite changes and page exit
 cancel timers. The former generic page spinner uses the same shared loader CSS.
 
+Loading-image records also carry an optional saved jingle URL, resolved through the
+owner's rewrite → nomination ID → existing local jingle record. Only completed,
+valid saved MP3s are reused; missing/retired music is normal. An independent temporary
+player seeks to 2 seconds (0 for tracks no longer than 2 seconds), with 100ms volume
+ramps on switches. Images without music leave the audible previous track running.
+Late loads cannot start old selections; completion/failure/teardown unload all audio.
+Autoplay rejection silences that loading session. Reduced motion disables temporary
+audio entirely. No jingle generation, provider calls or visible-player state changes.
+
 ### Random image styles
 
 Each new image gets one uniformly random visual style from the 20-style pool in

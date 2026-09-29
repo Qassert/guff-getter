@@ -313,7 +313,7 @@ def loading_images(active_pet: str = Cookie(None)):
     if not active_pet:
         raise HTTPException(401, 'No active pet selected.')
     import random
-    urls = set()
+    urls = {}
     with store.transaction() as db:
         for (encoded,) in db.execute('SELECT state FROM rewrites'):
             state = json.loads(encoded)
@@ -323,10 +323,12 @@ def loading_images(active_pet: str = Cookie(None)):
             try:
                 path = image_path(url.removeprefix('/generated-images/').removesuffix('.png'))
                 if url == f'/generated-images/{path.name}' and not path.is_symlink() and path.is_file():
-                    urls.add(url)
+                    urls[url] = state.get('entry_id')
             except (ValueError, TypeError, AttributeError):
                 continue
-    return {'images': random.sample(sorted(urls), min(5, len(urls)))}
+    from newsmuncher.services.jingles import service as jingles
+    return {'images': [{'image_url': url, 'jingle_url': jingles.saved_url(urls[url])}
+                       for url in random.sample(sorted(urls), min(5, len(urls)))]}
 
 
 @router.get('/image_result/{rewrite_id}')

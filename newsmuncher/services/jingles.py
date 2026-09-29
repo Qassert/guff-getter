@@ -144,6 +144,21 @@ class Jingles:
             raise JingleError(403, "Only your nominated entry may generate a jingle.")
         return entry
 
+    def saved_url(self, key):
+        """Read-only local lookup for an already owner-checked nomination identity."""
+        if not isinstance(key, str) or not re.fullmatch(r"[a-f0-9]{24}", key):
+            return None
+        if not self.database.is_file():
+            return None
+        try:
+            with closing(sqlite3.connect(self.database.resolve().as_uri() + '?mode=ro', uri=True)) as db:
+                state = self.read(db, key)
+            if state and state.get('status') == 'complete' and self.audio.exists(key):
+                return self.audio.url(key)
+        except (sqlite3.Error, ValueError, OSError):
+            pass
+        return None
+
     def remaining(self, db):
         day = self.now().date().isoformat()
         used = db.execute("SELECT COUNT(*) FROM jingle_claims WHERE day=?", (day,)).fetchone()[0]
