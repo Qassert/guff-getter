@@ -6,11 +6,10 @@ application's adoption and login interface.
 
 ## Current status
 
-The recovered project has completed three phases of folder cleanup. A local Git
-repository exists. Syntax and static path/import checks have been performed;
-application startup, dependency compatibility, and external service connections
-have not been verified. No packages were installed or services contacted during
-this cleanup.
+Repository storage was audited and cleaned on 2026-09-29 on
+`feature/video-animation`. Persistent media, user data and SQLite state were preserved.
+See `CURRENT_WORK.md` for validation and current handover status. No live providers,
+database services or deployment were used for this cleanup.
 
 ## Project structure
 
@@ -26,9 +25,42 @@ this cleanup.
 - `newsmuncher/resources/words/`: CSV word banks.
 - `data/seeds/`: historical funnies and lonely-hearts JSON source data.
 - `data/avatars/`: existing and uploaded pet images, served at `/avatars`.
-- `data/previews/`: generated preview JSON, excluded from Git.
-- `scripts/`: local password recovery and database connectivity commands.
-- `examples/index.html`: standalone example; not an application homepage.
+- `data/previews/`: live preview JSON and durable rewrite/jingle SQLite state, excluded from Git.
+- `scripts/`: administrative, diagnostic and explicitly opt-in comparison tools.
+
+## Repository storage and cleanup boundaries
+
+| Area | Purpose and retention |
+| --- | --- |
+| `newsmuncher/` | Production Python, APIs, templates and static JS/CSS/artwork. Keep the shared WaveSpeed client in `services/wavespeed.py`. |
+| `newsmuncher/resources/`, `data/seeds/` | Tracked prompts, word banks and reusable source JSON. These are source data, not generated artifacts. |
+| `jingle_service/` | Production Modal/ACE-Step source and contracts; also supports tested, opt-in reference experiments. |
+| `data/avatars/` | Real pet/user images. Preserve, including existing tracked images. |
+| `data/previews/` | Live preview JSON **and persistent SQLite claims/associations** (`image_rewrites.sqlite3`, `jingles.sqlite3`, including journals/WAL/SHM). Preserve and back up; never clear as a cache. |
+| `data/generated_images/`, `data/generated_audio/`, `data/generated_narration/`, `data/generated_video/` | Reusable application media. Preserve these paths and files, including empty directory scaffolds. Ignoring them only prevents accidental commits. |
+| `tmp/` | Local throwaway experiments, including `video-smoke-test/`. Media/comparison pages may be removed after review; retained `results.json` records are paid-attempt diagnostics, not new-run authorization. |
+| `data/tts-comparison/` | Standalone TTS comparison samples, recreated by the tool as needed; old samples removed. Not used by production. |
+| `data/jingle-reference-comparison/` | A/B recovery audio, manifests, locks and submitted-state markers. Retained together: removing them can erase evidence of paid work or defeat duplicate-spend guards. |
+| `scripts/` | Keep password/claim reset, database checks, word-bank maintenance, benchmark, TTS/reference comparison and video diagnostics. Tools are documented and/or tested; do not run live/reset commands as cleanup. |
+| `tests/` | Python and Node regression tests; fixtures are inline or generated in temporary directories. They do not depend on old comparison output. |
+| `.venv/`, `.venv-modal/` | Installed development environments, retained. Project `__pycache__`, `.pytest_cache` and `.DS_Store` are disposable. |
+
+2026-09-29 audit: removed four smoke-test input copies, four comparison HTML pages,
+one smoke-test Wan MP4, four TTS samples, project caches/OS metadata, empty legacy
+`code/` and root `words/`, and the unused `examples/index.html` calling obsolete
+`/main/get_all`. No application code or useful scripts were deleted. No separate
+image-comparison output or additional provider/model-cache folders were found.
+
+Deliberately retained ambiguous/historical evidence: four smoke-test `results.json`
+files (three failed/uncertain attempts), all narration-reference A/B files, and jingle
+benchmark markers/diagnostics plus the documented `data/generated_audio/l4-approved/`
+proof. Do not infer that old-looking media is orphaned without checking its runtime
+association. This audit did not contact MongoDB or inspect remote Modal storage.
+
+Offline validation runs the full Python suite with socket/DNS connections blocked,
+all `tests/*.test.js` with Node network entry points blocked, and an app import with
+Mongo constructors mocked and `.env` loading disabled. Importing admin/reset scripts
+is **not** a safe startup check (`check_database.py` contacts Mongo on import).
 
 ## Local settings and dependencies
 
@@ -45,9 +77,10 @@ Passlib/bcrypt constraints preserve a conservative legacy pairing. Dependency
 installation and runtime verification remain separate work.
 
 `.gitignore` excludes local environment files, virtual environments, Python and
-tool caches, logs, build output, and preview JSON. Seed JSON and packaged resources
-remain eligible for version control. Avatar images remain eligible too; review
-uploaded images before staging. Ignore rules do not untrack existing files.
+tool caches, logs, build output, runtime SQLite/JSON, uploaded avatars, generated media
+and local experiment output. Seed JSON and packaged resources remain eligible for
+version control. Existing tracked avatars remain tracked; new uploads stay ignored.
+Ignore rules do not untrack existing files or make application data disposable.
 
 ## Running locally
 
@@ -97,8 +130,6 @@ Neither maintenance command was executed during cleanup.
 
 - Runtime startup and dependency compatibility require verification.
 - `error.html` is referenced by the pet API but is missing.
-- `examples/index.html` still calls the old `/main/get_all` endpoint and is not
-  wired into the application.
 - Preview JSON is shared across users; generated `shizz_data.json` is created by
   the rewrite workflow. Keep the `data/previews/` directory available and writable.
 - Authentication and unrestricted mutation endpoints need review before public

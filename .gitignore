@@ -1,69 +1,52 @@
-# Secrets
+# Local credentials and provider configuration
 .env
-
-# Python virtual environments
-venv/
-.venv/
-
-# Python cache
-__pycache__/
-*.py[cod]
-
-# macOS
-.DS_Store
-
-# VS Code
-.vscode/
-
-# Environment variants
 .env.*
 !.env.example
+.modal.toml
 
-# Generated previews (keep data/seeds and application resources eligible for Git)
-/data/previews/*.json
+# Local environments, editor metadata and operating-system files
+venv/
+.venv/
+.venv-modal/
+.vscode/
+.DS_Store
 
-# Local logs, test/tool caches, and packaging output
-*.log
+# Re-creatable Python/tool caches, logs and build output
+__pycache__/
+*.py[cod]
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.cache/
 .coverage
 .coverage.*
 htmlcov/
+*.log
+*.bak
 build/
 dist/
 *.egg-info/
-*.bak
 
-# Optional local image/rewrite associations
-/data/previews/image_rewrites.sqlite3*
-
-# Paid image output (keep directory scaffold)
+# Persistent application data: ignored does NOT mean disposable.
+# Seed JSON and packaged resources/word banks remain tracked.
+# Existing tracked avatars remain tracked; new uploads stay local.
+/data/avatars/*
+!/data/avatars/.gitkeep
+/data/previews/*.json
+/data/previews/*.sqlite3*
 /data/generated_images/*
 !/data/generated_images/.gitkeep
-
-# Isolated jingle development and generated assets
-.venv-modal/
-.modal.toml
-.modal/
 /data/generated_audio/*
 !/data/generated_audio/.gitkeep
-/data/previews/jingles.sqlite3*
+/data/generated_narration/
+/data/generated_video/
+
+# Local experiments: inspect paid-attempt markers/recovery state before cleanup.
+/data/tts-comparison/
+/data/jingle-reference-comparison/
+/tmp/
+
+# Local Modal/ACE-Step downloads and model/runtime caches
+.modal/
 /checkpoints/
 /model_weights/
-.cache/
-
-# Temporary standalone TTS comparison output
-/data/tts-comparison/
-
-# Saved-item narration MP3s and incomplete local writes
-/data/generated_narration/
-
-# Isolated narration-reference A/B experiment outputs and attempt records
-/data/jingle-reference-comparison/
-
-# Standalone video experiment inputs, outputs and attempt metadata
-/tmp/video-smoke-test/
-
-# Manual WaveSpeed animations and partial downloads
-/data/generated_video/

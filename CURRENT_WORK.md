@@ -1,10 +1,10 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Creation Page in-place image animation
-LAST_COMPLETED_COMMIT: :/^Animate Creation Page images in place
+LAST_COMPLETED_FEATURE: Audited repository storage cleanup
+LAST_COMPLETED_COMMIT: :/^Clean obsolete artifacts and document repository storage
 LAST_OWNER: CODEX
-HANDOVER: VIDEO_ANIMATION_STATUS.md
+HANDOVER: README.md
 
 ## Status Values
 
@@ -13,12 +13,50 @@ HANDOVER: VIDEO_ANIMATION_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Creation Page in-place still-to-video transition; frontend only.
-APPROVAL: Implement/test offline, milestone commits/pushes. No live provider calls or deployment.
-NEXT_STEP: Andy reviews in-place playback using a stored animation; no live generation is needed.
-VALIDATION: 41 targeted Node frontend tests passed (video, image flow, gallery, narration, jingles); diff check clean; no provider calls.
+CURRENT_TASK: Reference-based repository storage cleanup; preserve runtime data and paid-attempt evidence.
+APPROVAL: Audited cleanup and one coherent commit/push. No provider/API calls, resets, deployment or main changes.
+NEXT_STEP: Andy reviews storage boundaries in README.md; retain ambiguous paid-attempt/recovery evidence.
+VALIDATION: Full Python suite 263 passed + 105 subtests; full Node suite 43 passed. Network blocked. 72 Python files parsed; mocked FastAPI import/OpenAPI passed. 180 protected file hashes unchanged; diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Repository hygiene — 2026-09-29
+
+Audited source/config, Python/JS/template references, all tests/scripts, ignore rules
+and image/narration/jingle/video handovers before deleting. Initial tree was clean on
+feature/video-animation at 9f379f9. No app architecture or production path changes.
+
+Removed 109 local files / 12,622,251 bytes: four smoke-test input PNG copies, four
+comparison HTML pages, one experimental Wan MP4, four standalone TTS comparison MP3s,
+85 project bytecode files, five pytest-cache files, five .DS_Store files, and the
+unused tracked examples/index.html (obsolete /main/get_all; no app/test consumers).
+Removed empty code/api, code/utils, code, root words, examples, data/tts-comparison,
+nine project __pycache__ directories and the .pytest_cache tree. Ignored artifact
+removals are local disk cleanup; the Git commit records the example deletion/docs/rules.
+
+Retained production source incl. shared WaveSpeed client and Modal ACE-Step service;
+resources, seeds, static assets, tests/inline fixtures, avatars, generated images,
+jingles, narration and video; preview JSON and both durable SQLite databases; all
+runtime directories/scaffolds and installed .venv/.venv-modal environments.
+SHA-256 checks before/after cleanup and validation confirm 180 protected files unchanged.
+No local model-weight/provider-cache/image-comparison directories were found.
+
+Ambiguous/protective leftovers deliberately retained: all four video smoke-test
+results.json records (three failed/uncertain); entire jingle-reference-comparison
+A/B folder incl. MP3s/manifests/state/lock; benchmark attempt/auth diagnostics and
+documented l4-approved proof. These preserve evidence/recovery and duplicate-spend
+protection. All useful admin/reset/maintenance/diagnostic scripts remain; none run.
+
+.gitignore consolidated by purpose; now ignores new avatar uploads, preview SQLite
+files plus journals/WAL/SHM, and all root tmp output. Existing tracked avatar images,
+seed JSON, source word banks and directory scaffolds remain tracked. README documents
+production/runtime/test/experiment/cache/legacy classifications and retention rules.
+
+Full tests use mocked providers and blocked socket/DNS/Node network entry points;
+.env loading disabled. No-cache/no-bytecode flags prevent recreating removed caches.
+Startup validation imports the real FastAPI app with Mongo constructors mocked and
+builds OpenAPI without serving requests; admin scripts are parsed only, never imported.
+Only existing dependency/datetime warnings. REVIEW/CODEX; commit/push authorized.
 
 ## Creation Page in-place animation — 2026-09-29
 
