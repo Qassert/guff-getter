@@ -277,6 +277,8 @@ def test_gallery_page_and_navigation(routes):
     assert response.status_code == 200
     assert 'NEXT CREATION' in response.text and 'galleryPage' in response.text
     assert '/pets/pet_profile/pet' in response.text
+    assert 'aria-current="page">VIEWING' in response.text
+    assert '>CREATOR</a>' in response.text
     assert 'promotion-gallery.js' in response.text
     assert 'script.js' not in response.text and 'MAKE JINGLE' not in response.text
     assert '/promotion-gallery/' in Path('newsmuncher/templates/pet_profile.html').read_text()
@@ -291,6 +293,24 @@ def test_polish_accessibility_and_scoped_styles():
     assert '.promotion-gallery [hidden] { display: none !important; }' in css
     assert 'aria-live="polite"' in template and 'aria-label="Review and page navigation"' in template
     assert 'tabindex="-1"' not in template  # Native buttons/links, no focus trap.
+
+
+def test_creator_and_viewing_share_compact_mode_navigation():
+    creator = Path('newsmuncher/templates/pet_profile.html').read_text()
+    gallery = Path('newsmuncher/templates/promotion_gallery.html').read_text()
+    shared_css = Path('newsmuncher/static/styles.css').read_text()
+    gallery_css = Path('newsmuncher/static/promotion-gallery.css').read_text()
+
+    assert 'aria-current="page">CREATOR' in creator
+    assert 'VIEWING<span class="mode-nav-action"> — VIEW GALLERY</span>' in creator
+    assert 'href="/promotion-gallery/"' in creator
+    assert 'href="{{ creation_url }}">CREATOR</a>' in gallery
+    assert 'aria-current="page">VIEWING' in gallery
+    for obsolete in ('BACK TO NEWSMUNCHER', 'THE NOMINATED COLLECTION', '<h1', 'gallery-intro'):
+        assert obsolete not in gallery
+    assert 'justify-content: center' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
+    assert 'flex-wrap: wrap' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
+    assert 'var(--accent)' not in gallery_css
 
 
 def test_cycle_boundary_avoids_previous_and_int64_counts(setup):

@@ -1,16 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Promotion Gallery · NewsMuncher{% endblock %}
+{% block title %}Viewing · NewsMuncher{% endblock %}
 {% block styles %}<link rel="stylesheet" href="{{ url_for('static', path='promotion-gallery.css') }}">{% endblock %}
 {% block body_attributes %} class="promotion-gallery-page"{% endblock %}
+{% block header %}{% endblock %}
 {% block content %}
-<section class="promotion-gallery" aria-labelledby="gallery-heading">
-  <nav class="gallery-nav" aria-label="NewsMuncher navigation">
-    <a class="funky-button" href="{{ creation_url }}">BACK TO NEWSMUNCHER</a>
-    <span>THE NOMINATED COLLECTION</span>
+<section class="promotion-gallery" aria-label="Nominated creations">
+  <nav class="mode-nav" aria-label="NewsMuncher mode">
+    <a class="mode-nav-link" href="{{ creation_url }}">CREATOR</a>
+    <span class="funky-button mode-nav-active" aria-current="page">VIEWING</span>
   </nav>
-  <h1 id="gallery-heading">Promotion Gallery</h1>
   {% if signed_in %}
-  <p class="gallery-intro">A page of nonsense at a time. Keep the ones you love in the spotlight.</p>
   <div id="galleryStatus" class="gallery-status" role="status" aria-live="polite">Opening the collection…</div>
   <article id="galleryPage" class="gallery-page" aria-labelledby="galleryTitle" hidden>
     <figure id="galleryIllustration" hidden><img id="galleryImage" alt="" decoding="async"></figure>
@@ -39,4 +38,5 @@
   {% endif %}
 </section>
 {% endblock %}
+{% block footer %}{% endblock %}
 {% block scripts %}{% if signed_in %}<script src="{{ url_for('static', path='promotion-gallery.js') }}" defer></script>{% endif %}{% endblock %}

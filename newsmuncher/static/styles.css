@@ -60,6 +60,13 @@ button, .funky-button { display: inline-block; background: var(--button-backgrou
 button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
 button:active { transform: translate(2px, 2px); box-shadow: none; }
 :focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
+.mode-nav { display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 10px 20px; margin: 0 auto 18px; text-align: center; }
+.mode-nav .funky-button { min-height: 44px; padding: 9px 18px; }
+.mode-nav-active { cursor: default; }
+.mode-nav-link { color: var(--ink); font-weight: 800; letter-spacing: .04em;
+  text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.mode-nav-action { font-size: .8em; letter-spacing: .02em; }
 .form-container button { width: 100%; margin-top: 8px; }
 .error-message { background: #fff0ee; border-left: 4px solid var(--error); color: var(--error); font-weight: 700; padding: var(--space-2); margin-bottom: var(--space-3); }
 .workshop { max-width: 960px; }
@@ -169,9 +176,9 @@ body { isolation: isolate; }
 }
 
 /* Keep the artwork lead-in above the controls, not between tabs and paper. */
-.profile-page .workshop { padding-top: calc(50vh - 24px); }
+.profile-page .workshop { padding-top: calc(25vh - 24px); }
 @supports (height: 100dvh) {
-  .profile-page .workshop { padding-top: calc(50dvh - 24px); }
+  .profile-page .workshop { padding-top: calc(25dvh - 24px); }
 }
 .profile-page .nonsense-container { min-height: 0; margin-bottom: 0;
   justify-content: center; align-items: center; padding-bottom: 8px; }
@@ -193,9 +200,9 @@ body { isolation: isolate; }
 .profile-page .image-toggle:hover .funky-button { transform: translate(-1px, -1px); }
 .profile-page .image-toggle:active .funky-button { transform: translate(2px, 2px); box-shadow: none; }
 @media (max-width: 620px), (max-height: 500px) {
-  .profile-page .workshop { padding-top: max(0px, calc(42vh - 24px)); }
+  .profile-page .workshop { padding-top: max(0px, calc(21vh - 24px)); }
   @supports (height: 100dvh) {
-    .profile-page .workshop { padding-top: max(0px, calc(42dvh - 24px)); }
+    .profile-page .workshop { padding-top: max(0px, calc(21dvh - 24px)); }
   }
 }
 @media (max-width: 620px) {

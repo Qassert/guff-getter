@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Creation Page consolidated metadata and shared action row
-LAST_COMPLETED_COMMIT: :/^Consolidate Creation Page media controls
+LAST_COMPLETED_FEATURE: Unified Creator and Viewing mode navigation/presentation
+LAST_COMPLETED_COMMIT: :/^Unify Creator and Viewing presentation
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,29 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Finish inherited Creation Page UI cleanup without changing completed 8-second video generation.
-APPROVAL: Preserve and complete intentional WIP, test frontend, commit separately and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews the consolidated metadata line and centred dynamic action row.
-VALIDATION: Focused frontend 23 passed; full Node frontend suite 62 passed. Template-backed narration/jingle/image tests 39 passed + 6 subtests. No provider calls; diff check clean.
+CURRENT_TASK: Unify Creator and Viewing navigation and gallery presentation without changing gallery/media behaviour. Complete.
+APPROVAL: Refine templates and styling, test frontend, commit separately and push. No live provider calls, deployment or main changes.
+NEXT_STEP: Andy reviews the compact mode switch and simplified Viewing page.
+VALIDATION: Gallery template/API tests 15 passed; full Node frontend suite 62 passed. No provider calls; diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Unified Creator and Viewing presentation — 2026-09-29
+
+Creator now leads with a centred, wrapping CREATOR / VIEWING mode control above the
+centred source row; its navigation action says VIEW GALLERY. The artwork lead-in was
+halved on desktop and narrow/short screens without changing the parchment/image cards.
+
+Viewing uses the same compact mode control and the existing session-derived Creator
+URL, preserving the active pet. Removed the separate masthead/footer, back button,
+collection label, large Promotion Gallery heading, tagline and their whitespace.
+The nominated creation now follows the mode control directly in a 960px parchment
+layout with Creator typography and parchment buttons, without lime styling.
+
+All gallery IDs, selection/promotion controls, page-turn logic and media JS are
+unchanged. Focused tests cover labels, active modes, URLs, obsolete chrome removal,
+centering/wrapping and gallery behavior; full frontend suite passes. No live calls,
+deployment, backend logic or completed video work changed. REVIEW/CODEX.
 
 ## Creation Page consolidated media UI — 2026-09-29
 

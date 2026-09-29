@@ -1,15 +1,33 @@
 .promotion-gallery { width: min(1080px, 100%); margin: 0 auto; }
-.gallery-nav, .gallery-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-.gallery-nav > span { font-size: .75rem; letter-spacing: .15em; }
-.promotion-gallery h1 { margin: 32px 0 8px; }
-.gallery-intro { margin: 0 0 24px; }
-.gallery-status { min-height: 1.5em; margin-bottom: 12px; }
-.gallery-page { padding: clamp(24px, 5vw, 64px); background: #eee5cf; color: #29251f; box-shadow: 5px 8px 0 #29251f20; border: 1px solid #a89b80; }
+.promotion-gallery-page {
+  --print-ink: #30291f;
+  --print-headline-font: Rockwell, 'Rockwell Nova', 'Roboto Slab', Georgia, 'Times New Roman', serif;
+  --print-body-font: Georgia, 'Times New Roman', serif;
+}
+.promotion-gallery-page .funky-button {
+  position: relative; isolation: isolate; display: inline-flex; align-items: center;
+  justify-content: center; min-height: 52px; padding: 14px 22px;
+  background: transparent; border: 0; border-radius: 0; box-shadow: none;
+  color: var(--print-ink); font-family: var(--print-headline-font); font-weight: 800;
+}
+.promotion-gallery-page .funky-button::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  border: solid transparent; border-width: 15px 12px 12px;
+  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  background: #eee5cf; background-clip: padding-box;
+  filter: drop-shadow(1px 2px 1px #594b3540);
+}
+.promotion-gallery-page .funky-button:hover { transform: translateY(-1px); box-shadow: none; }
+.promotion-gallery-page .funky-button:active { transform: translateY(1px); box-shadow: none; }
+.gallery-controls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 16px; }
+.gallery-status { min-height: 1.5em; margin: 0 0 8px; text-align: center; }
+.gallery-page { padding: clamp(24px, 5vw, 64px); background: var(--surface); color: var(--ink); box-shadow: var(--shadow); border: var(--border); }
 .gallery-page[hidden], .gallery-page [hidden] { display: none; }
 .gallery-page figure { margin: 0 0 32px; }
 .gallery-page img { display: block; width: 100%; max-height: 65vh; object-fit: contain; }
 .gallery-page h2 { font-size: clamp(1.6rem, 4vw, 3rem); line-height: 1.15; margin: 0 0 24px; overflow-wrap: anywhere; }
-.gallery-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; font-size: clamp(1.05rem, 2vw, 1.25rem); }
+.gallery-page h2 { font-family: var(--print-headline-font); }
+.gallery-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; font-size: clamp(1.05rem, 2vw, 1.25rem); font-family: var(--print-body-font); }
 .gallery-stamp { font-weight: 800; letter-spacing: .1em; color: #4c632d; }
 .gallery-controls { justify-content: center; margin: 24px 0; }
 .gallery-signin { margin-top: 32px; }
@@ -18,9 +36,9 @@
 .gallery-audio[hidden], .gallery-audio [hidden] { display: none; }
 .gallery-audio .funky-button { font-size: .8rem; }
 
-/* A shallow book fold, built from the existing parchment artwork. */
-.promotion-gallery-page .site-main { padding-top: 28px; }
-.promotion-gallery h1 { font-size: clamp(2.4rem, 5vw, 4.2rem); }
+/* The shared mode control leads directly into the existing parchment creation card. */
+.promotion-gallery-page .site-main { width: min(960px, calc(100% - 64px)); padding-top: 24px; }
+.promotion-gallery-page .mode-nav { margin-bottom: 14px; }
 .gallery-page {
   position: relative; isolation: isolate; transform-origin: left center;
   border: 24px solid transparent; border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
@@ -39,7 +57,6 @@
 .gallery-page[aria-busy="true"] { opacity: .6; }
 .gallery-status { color: var(--muted); }
 .gallery-stamp { display: inline-block; border: 2px solid currentColor; padding: 4px 10px; transform: rotate(-3deg); }
-.gallery-nav a { text-decoration: none; }
 .gallery-controls button { min-height: 48px; }
 @media (min-width: 850px) {
   .gallery-page.has-image { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
@@ -47,9 +64,6 @@
 }
 @media (max-width: 620px) {
   .promotion-gallery-page .site-main { width: calc(100% - 24px); padding-top: 20px; }
-  .gallery-nav > span { display: none; }
-  .gallery-nav a { font-size: .8rem; }
-  .promotion-gallery h1 { margin-top: 24px; }
   .gallery-page { border-width: 14px; padding: 14px 10px; }
   .gallery-page figure { margin-bottom: 24px; }
   .gallery-page img { max-height: 48vh; }
