@@ -162,8 +162,8 @@ Overlap logging is diagnostic only and does not reject or regenerate output.
 ### Canonical rewrite flow
 
 Source → rewritten body → copy-edited final body and short derived title. The
-existing second text call finishes the body before summarising it into a 3–8 word
-title. A local 60-character/8-word cap and body-vocabulary check reject unrelated
+existing second text call finishes the body before summarising it into a headline of up to 20 words.
+A local 140-character/20-word cap and body-vocabulary check reject unrelated
 wording; invalid titles or failed copy-editing use a short excerpt of the accepted
 body. This check is conservative, not a semantic entailment guarantee. No extra
 text call is added. Word claims use the accepted final title/body as before.
@@ -172,6 +172,30 @@ Images use only the rewritten body plus the persisted visual style and compositi
 guidance. Jingle lyrics use only the saved title (bounded to 200 characters for
 legacy titles), with the existing genre profile. Narration remains body-only.
 Existing saved titles and generated media are not modified or regenerated.
+
+### Creation Page media controls
+
+Narration and animation controls appear only after successful persisted nomination,
+including restore. Nomination never starts paid media generation. Video stops and
+unloads automatically on creation/page changes; there are no visible Stop Animation
+buttons. Existing saved video may still play before nomination.
+
+Jingles display `GENRE` from their persisted genre profile (unknown legacy genres
+stay hidden). Loading/requesting a jingle attempts playback once when ready. Browser
+blocking leaves PLAY JINGLE available and never retries generation. No automatic loop.
+
+REDO IMAGE is an explicit paid action available only for an existing, un-nominated
+image. It preserves the rewrite ID, body, title and word claims, chooses a different
+random style, and stores a new UUID PNG. The old image stays visible until the new
+one loads. Superseded files are retained for later audited cleanup. Any historical
+animation is detached, retaining its paid claim/file without showing it on the new
+image; no automatic video generation or new claim is allowed for that old animation.
+
+A durable SQLite attempt keyed to the prior image URL prevents duplicate submissions
+and stale clicks. Nomination and replacement are serialized; unresolved replacement
+attempts block nomination and further paid retries. Reload can recover a completed
+PNG without generating again. If no completed file exists, operator review is needed.
+The current image and style are nominated together; the gallery uses that saved URL.
 
 ### Random image styles
 

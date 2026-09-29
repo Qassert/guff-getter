@@ -50,8 +50,8 @@ STYLE = ('Prioritize the rewritten scene, its recognisable subjects and objects,
          'No text, captions, logos or lettering in the image.')
 
 
-def choose_image_style():
-    return random.choice(IMAGE_STYLES)
+def choose_image_style(exclude=None):
+    return random.choice(tuple(style for style in IMAGE_STYLES if style != exclude))
 
 
 def build_image_prompt(result, image_style=None):

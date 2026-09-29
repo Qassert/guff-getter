@@ -43,6 +43,7 @@ const narrationUI = (() => {
         const token = ++revision;
         clearTimeout(timer);
         stop(); entry = null; state = null; pending = false;
+        get('narrationControls').hidden = !(data?.nominated && data?.rewrite_id);
         if (!data || !data.nominated || !data.rewrite_id) {
             render({message: 'Nominate this rewrite before using READ ALOUD.'});
             return;

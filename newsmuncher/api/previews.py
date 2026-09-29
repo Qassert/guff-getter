@@ -254,11 +254,72 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
     return metadata
 
 
+class RedoImageRequest(ImageRequest):
+    previous_image_url: str = Field(min_length=1, max_length=300)
+
+
+def finish_image_redo(db, rewrite_id, state, metadata):
+    state['result'].update(metadata)
+    state['image_redo']['status'] = 'complete'
+    # Keep historical claims/files as evidence, but never pair old video with new image.
+    if state.get('video'):
+        state['video_detached'] = True
+    store.save(db, rewrite_id, state)
+
+
+@router.post('/redo_image')
+def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
+    with store.transaction() as db:
+        state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+        if state.get('entry_id') or state.get('nomination_pending') or state['result'].get('nominated'):
+            raise HTTPException(409, 'Nominated images cannot be replaced.')
+        previous = state.get('image_redo')
+        if previous and previous['previous_image_url'] == payload.previous_image_url:
+            if previous['status'] == 'complete':
+                return {key: state['result'].get(key) for key in IMAGE_FIELDS}
+            raise HTTPException(409, 'Replacement attempt already started; no paid retry.')
+        if previous and previous['status'] != 'complete':
+            raise HTTPException(409, 'Replacement needs operator review; no paid retry.')
+        if (state.get('generating') or not state['result'].get('image_url') or
+                state['result']['image_url'] != payload.previous_image_url):
+            raise HTTPException(409, 'Current saved image required.')
+        style = choose_image_style(exclude=state['result'].get('image_style'))
+        attempt = dict(image_id=str(uuid4()), previous_image_url=payload.previous_image_url,
+                       image_style=style, prompt=build_image_prompt(state['result'], style),
+                       model=IMAGE_MODEL, quality=IMAGE_QUALITY, size=IMAGE_SIZE, status='started')
+        if previous:
+            state.setdefault('image_redo_history', []).append(previous)
+        state['image_redo'] = attempt
+        store.save(db, payload.rewrite_id, state)  # Permanent claim before the paid call.
+    try:
+        metadata = get_provider().generate_image(attempt['prompt'], attempt['image_id'])
+        metadata['image_style'] = attempt['image_style']
+        with store.transaction() as db:
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+            # A GET can recover this file before the worker returns. Never overwrite
+            # a newer replacement (or a nomination) after such recovery.
+            if state['image_redo']['image_id'] != attempt['image_id'] or state['image_redo']['status'] == 'complete':
+                return {key: state['result'].get(key) for key in IMAGE_FIELDS}
+            finish_image_redo(db, payload.rewrite_id, state, metadata)
+        return metadata
+    except Exception as exc:
+        # Preserve the old image and permanent attempt, including uncertain outcomes.
+        raise HTTPException(502, 'Replacement unavailable; old image retained. No automatic paid retry.') from exc
+
+
 @router.get('/image_result/{rewrite_id}')
 def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
     # Read-only restoration: refreshing never calls a paid provider.
     with store.transaction() as db:
         state = read_image_rewrite(db, rewrite_id, active_pet)
+        redo = state.get('image_redo')
+        if redo and redo['status'] != 'complete' and not state.get('entry_id'):
+            try:
+                recovered = recover_image(redo['image_id'], redo)
+            except ValueError:
+                recovered = None
+            if recovered:
+                finish_image_redo(db, rewrite_id, state, recovered)
         if not state['result'].get('image_url') or not all(k in state['result'] for k in IMAGE_FIELDS if k != 'image_style'):
             attempt = {**dict(prompt=build_image_prompt(state['result']), model=IMAGE_MODEL),
                        **(state.get('image_attempt') or {})}
@@ -276,6 +337,8 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
                 state['result'].setdefault(key, value)
             store.save(db, rewrite_id, state)
         result = state['result'].copy()
+        result['nominated'] = bool(state.get('entry_id') or result.get('nominated'))
+        result['image_redo_pending'] = bool(state.get('image_redo') and state['image_redo']['status'] != 'complete')
     if result.get('image_url'):
         sync_image_metadata(rewrite_id, active_pet)
     return result
@@ -288,6 +351,8 @@ def bank_image_rewrite(request, rewrite_id, payload=None):
         state = read_image_rewrite(db, rewrite_id, owner)
         if state.get('generating'):
             raise HTTPException(status_code=409, detail='Rewrite is not ready.')
+        if state.get('image_redo') and state['image_redo']['status'] != 'complete':
+            raise HTTPException(409, 'Image replacement unresolved; restore status before nomination.')
         if not state['entry_id']:
             state['nomination_pending'] = True
             store.save(db, rewrite_id, state)

@@ -413,7 +413,7 @@ def copy_edit_pass(pass1_result):
         "Fix only: grammar, broken sentence structure, agreement, flow and readability. "
         "First finish the extract. It is the canonical content. Then derive the title "
         "ONLY from that final extract, never using the preliminary title. "
-        "Write a funny, concise 3–8 word summary, at most 60 characters. "
+        "Write a funny, concise headline-like summary of up to 20 words, at most 140 characters. "
         "Use only words present in the final extract; introduce no new subjects, "
         "objects, events or ideas. Return JSON with extract first, then title. "
         "Do not add commentary, markdown or code fences."

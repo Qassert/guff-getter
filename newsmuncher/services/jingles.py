@@ -262,6 +262,7 @@ class Jingles:
                 pending = True  # Local audio remains usable, later GET retries only the sync.
             return {"jingle_status": "complete", "jingle_url": metadata["jingle_url"],
                     "metadata_pending": pending, "can_generate": False,
+                    "jingle_genre": (state["brief"].get("genre_profile") or {}).get("label"),
                     "text_changed": state["snapshot"] != self.snapshot(entry)}
         if not state and self.audio.exists(key) and not entry.get("jingle_url"):
             return {"jingle_status": "unavailable", "can_generate": False,
@@ -270,6 +271,7 @@ class Jingles:
         if entry.get("jingle_url"):
             return {"jingle_status": "complete" if self.audio.exists(key) else "unavailable",
                     "jingle_url": self.audio.url(key) if self.audio.exists(key) else None,
+                    "jingle_genre": ((entry.get("jingle_prompt") or {}).get("genre_profile") or {}).get("label"),
                     "can_generate": False,
                     "text_changed": bool(entry.get("jingle_text_snapshot")) and
                         entry["jingle_text_snapshot"] != self.snapshot(entry),

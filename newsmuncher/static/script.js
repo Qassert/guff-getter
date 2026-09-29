@@ -1,7 +1,46 @@
 let rewriteSequence = 0;
+let imageDisplaySequence = 0;
 let displayedRewriteId = null;
 let nominatedSnapshot = null;
 let draftSession = null;
+let creationNominated = false, currentImageUrl = null, imageRedoPending = false;
+function renderRedoImage() {
+    const button = document.getElementById('redoImageButton');
+    if (!button) return;
+    button.hidden = creationNominated || !currentImageUrl;
+    button.disabled = imageRedoPending || nominationPending;
+    const bank = document.getElementById('bankButton');
+    if (bank) bank.disabled = imageRedoPending || nominationPending;
+    button.textContent = imageRedoPending ? 'REPLACING IMAGE…' : 'REDO IMAGE';
+}
+async function redoImage() {
+    if (creationNominated || !currentImageUrl || imageRedoPending || nominationPending) return;
+    const id = displayedRewriteId, sequence = rewriteSequence, previous = currentImageUrl;
+    const current = () => id === displayedRewriteId && sequence === rewriteSequence;
+    imageRedoPending = true;
+    renderRedoImage();
+    const message = document.getElementById('imageRedoMessage');
+    if (message) { message.hidden = false; message.textContent = 'Generating a replacement image (paid action)…'; }
+    try {
+        const response = await fetch('/temp/redo_image', {
+            method: 'POST', credentials: 'include', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({rewrite_id: id, previous_image_url: previous})
+        });
+        if (!response.ok) throw new Error('Replacement unavailable');
+        const data = await response.json();
+        if (!current()) return;
+        imageRedoPending = false;
+        currentImageUrl = data.image_url;
+        displayRewriteImage(data.image_url, current, data.image_style);
+        if (message) message.hidden = true;
+        renderRedoImage();
+    } catch (_) {
+        if (!current()) return;
+        // Keep the durable attempt blocked. Restore uses GET and may recover a saved file.
+        if (message) message.textContent = 'Replacement uncertain; old image retained. Reload to check saved status. No paid retry.';
+    }
+}
+
 function workingSession() {
     if (draftSession) return draftSession;
     try { draftSession = sessionStorage.getItem('newsmuncher.draftSession'); } catch (_) {}
@@ -12,12 +51,21 @@ function workingSession() {
     return draftSession;
 }
 function setNominationState(data) {
+    creationNominated = data.nominated === true;
+    currentImageUrl = data.image_url || null;
+    imageRedoPending = !!data.image_redo_pending;
+    const redoMessage = document.getElementById('imageRedoMessage');
+    if (redoMessage && imageRedoPending) {
+        redoMessage.hidden = false;
+        redoMessage.textContent = 'Image replacement unresolved. Reload to check saved status; operator review may be needed. No paid retry.';
+    }
+    renderRedoImage();
     if (typeof videoUI !== "undefined") videoUI.show(data);
     if (typeof narrationUI !== "undefined") narrationUI.show(data);
     if (typeof jingleUI !== "undefined") jingleUI.show(data);
     const button = document.getElementById('bankButton');
     button.textContent = data.nominated ? 'NOMINATED' : 'NOMINATE';
-    button.disabled = false;
+    button.disabled = imageRedoPending;
     nominatedSnapshot = data.nominated ? JSON.stringify({
         crazyReplacement1Title: data.crazyReplacement1Title || '',
         crazyReplacement1Extract: data.crazyReplacement1Extract || ''
@@ -151,7 +199,7 @@ function confirmData() {
 
 let nominationPending = false;
 function bankThisBeauty() {
-    if (nominationPending) return;
+    if (nominationPending || imageRedoPending) return;
     const title = document.getElementById('crazyTitleBox').textContent;
     const editor = document.getElementById('responseEditor');
     const response = {
@@ -165,6 +213,7 @@ function bankThisBeauty() {
     const snapshot = JSON.stringify(response);
     if (snapshot === nominatedSnapshot) return;
     nominationPending = true;
+    renderRedoImage();
     const nominatingId = displayedRewriteId;
     const nominatingSequence = rewriteSequence;
     showLoader();
@@ -179,8 +228,12 @@ function bankThisBeauty() {
             return response.json();
         })
         .then(data => {
+            if (data.nominated !== true) throw new Error('Nomination was not confirmed.');
             if (nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence) {
                 if (typeof narrationUI !== 'undefined') narrationUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
+                creationNominated = data.nominated === true;
+                renderRedoImage();
+                if (typeof videoUI !== 'undefined') videoUI.show({nominated: creationNominated, rewrite_id: data.rewrite_id || nominatingId});
                 nominatedSnapshot = snapshot;
                 document.getElementById('bankButton').textContent = 'NOMINATED';
                 if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
@@ -193,7 +246,7 @@ function bankThisBeauty() {
             console.error("Error banking the beauty:", error);
             hideLoader();
         })
-        .finally(() => { nominationPending = false; });
+        .finally(() => { nominationPending = false; renderRedoImage(); });
 }
 
 function setImageStyle(style) {
@@ -204,7 +257,12 @@ function setImageStyle(style) {
 }
 
 function resetImagePanel() {
+    imageDisplaySequence++;
     setImageStyle(null);
+    currentImageUrl = null; imageRedoPending = false;
+    renderRedoImage();
+    const message = document.getElementById('imageRedoMessage');
+    if (message) message.hidden = true;
     if (typeof videoUI !== "undefined") videoUI.show(null);
     const panel = document.getElementById('imagePanel');
     panel.replaceChildren();
@@ -235,9 +293,11 @@ async function loadRewriteImage(id, sequence) {
 
 function displayRewriteImage(url, current, style = null) {
     if (!current()) return;
-    if (typeof videoUI !== "undefined") videoUI.show({rewrite_id: displayedRewriteId});
+    const rewriteCurrent = current, imageToken = ++imageDisplaySequence;
+    current = () => rewriteCurrent() && imageToken === imageDisplaySequence;
+    if (typeof videoUI !== "undefined") videoUI.show({rewrite_id: displayedRewriteId, nominated: creationNominated});
     const panel = document.getElementById('imagePanel');
-    setImageStyle(null);
+    if (!currentImageUrl) setImageStyle(null);
     const img = new Image();
     img.alt = 'Editorial illustration of the rewritten scene.';
     img.className = 'generated-image';
@@ -246,6 +306,8 @@ function displayRewriteImage(url, current, style = null) {
         panel.classList.remove('hidden');
         panel.replaceChildren(img);
         setImageStyle(style);
+        currentImageUrl = url;
+        renderRedoImage();
         generatedBackground.preload(url, current);
         requestAnimationFrame(() => requestAnimationFrame(() => {
             if (!current()) return;

@@ -36,9 +36,19 @@ class JingleTests(unittest.TestCase):
     def generate(self):
         return self.service.generate(self.collection, "rewrite-1", "pet")
 
+    def test_saved_genre_survives_status_and_legacy_is_unknown(self):
+        from jingle_service.genres import GENRE_PROFILES
+        self.brief.return_value = (MusicBrief(music_prompt='Funk', lyrics='Sing it',
+            genre_profile=GENRE_PROFILES['Funk']), {})
+        result = self.generate()
+        self.assertEqual(result['jingle_genre'], 'Funk')
+        self.assertEqual(self.service.status(self.collection, 'rewrite-1', 'pet')['jingle_genre'], 'Funk')
+        self.brief.assert_called_once()
+
     def test_success_storage_and_nomination_snapshot(self):
         result = self.generate()
         self.assertEqual(result["jingle_status"], "complete")
+        self.assertIsNone(result["jingle_genre"])
         self.assertEqual(self.service.audio.path("a"*24).read_bytes(), MP3)
         metadata = self.collection.update_one.call_args.args[1]["$set"]
         self.assertEqual(metadata["jingle_text_snapshot"]["title"], "Teapot mayor")

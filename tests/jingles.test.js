@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict'), fs=require('node:fs'), vm=require('node:vm');
 const flush = () => new Promise(resolve=>setImmediate(resolve));
-function setup() {
- const ids=['jingleControls','jingleButton','jingleStop','jingleMessage','crazyTitleBox','crazyExtractBox'];
+function setup(blocked = false) {
+ const ids=['jingleControls','jingleButton','jingleStop','jingleGenre','jingleMessage','crazyTitleBox','crazyExtractBox'];
  const nodes=Object.fromEntries(ids.map(id=>[id,{hidden:true,textContent:'',value:'',disabled:false,children:[],replaceChildren(){this.children=[];},appendChild(child){this.children.push(child);}}]));
  const calls=[], audios=[], timers=[];
  let savedAnswer=null;
@@ -9,7 +9,7 @@ function setup() {
  const context={
   document:{getElementById:id=>nodes[id],createElement:()=>({})},
   setTimeout:fn=>{timers.push(fn);return 1;},clearTimeout(){},
-  Audio:class {constructor(url){this.url=url;this.paused=true;audios.push(this);}play(){this.played=true;this.paused=false;return Promise.resolve();}pause(){this.paused=true;}},
+  Audio:class {constructor(url){this.url=url;this.paused=true;audios.push(this);}play(){this.played=true;this.plays=(this.plays||0)+1;if(blocked)return Promise.reject(new Error("NotAllowedError"));this.paused=false;return Promise.resolve();}pause(){this.paused=true;}},
   fetch(url, options) {
    calls.push({url,options});
    if(options.method==='POST')return new Promise(resolve=>{resolvePost=resolve;});
@@ -32,8 +32,10 @@ function setup() {
  assert.equal(t.calls.filter(c=>c.options.method==='POST').length,1);
  assert.equal(t.nodes.jingleButton.textContent,'MAKING JINGLE…');
  assert(t.nodes.jingleButton.disabled);
- t.setSaved({jingles:[{entry_id:'one',title:'New jingle',jingle_url:'/generated-audio/one.mp3'}]});
- t.complete({jingle_status:'complete',jingle_url:'/generated-audio/one.mp3',can_generate:false});await flush();
+ t.setSaved({jingles:[{entry_id:'one',title:'New jingle',jingle_genre:'Funk',jingle_url:'/generated-audio/one.mp3'}]});
+ t.complete({jingle_status:'complete',jingle_url:'/generated-audio/one.mp3',can_generate:false,jingle_genre:'Funk'});await flush();
+ assert.equal(t.audios[0].plays,1);
+ assert.equal(t.nodes.jingleGenre.textContent,'GENRE: FUNK');
  assert.equal(t.nodes.jingleButton.textContent,'▶ PLAY JINGLE');
  assert.equal(t.nodes.savedJingleSelect, undefined);
  assert.equal(t.nodes.savedJingles, undefined);
@@ -41,11 +43,20 @@ function setup() {
  await t.ui.act();await t.ui.act();
  assert.equal(t.calls.length,before);assert.equal(t.audios.length,1);
  assert(t.audios[0].played);t.ui.stop();assert(t.audios[0].paused);
+ // Blocked autoplay retains PLAY and never submits again.
+ t=setup(true);t.ui.show({nominated:true,rewrite_id:'blocked'});await flush();
+ t.ui.act();t.complete({jingle_status:'complete',jingle_url:'/blocked.mp3',jingle_genre:'Heavy Metal'});await flush();
+ assert.equal(t.audios[0].plays,1);assert(!t.nodes.jingleButton.disabled);
+ await t.ui.act();assert.equal(t.audios[0].plays,2);
+ assert.equal(t.calls.filter(c=>c.options.method==='POST').length,1);
+ assert.equal(t.nodes.jingleGenre.textContent,'GENRE: HEAVY METAL');
  // Restore a stored jingle without POST.
- t=setup();t.setAnswer({jingle_status:'complete',jingle_url:'/generated-audio/stored.mp3'});
+ t=setup();t.setAnswer({jingle_status:'complete',jingle_url:'/generated-audio/stored.mp3',jingle_genre:'Funk'});
  t.ui.show({nominated:true,rewrite_id:'saved'});await flush();
  assert.equal(t.nodes.jingleButton.textContent,'▶ PLAY JINGLE');
  assert(!t.calls.some(c=>c.options.method==='POST'));
+ assert.equal(t.nodes.jingleGenre.textContent,'GENRE: FUNK');
+ assert.equal(t.audios[0].plays,1);
  // Late old response cannot attach to a new rewrite.
  t=setup();t.ui.show({nominated:true,rewrite_id:'old'});await flush();
  t.ui.act();t.ui.show({nominated:false,rewrite_id:'new'});

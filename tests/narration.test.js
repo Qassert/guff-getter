@@ -31,7 +31,10 @@ function fixture() {
     const f=fixture(), {ui}=f.context;
     await ui.show({nominated:false});
     assert.equal(f.requests.length,0);
+    assert(f.get("narrationControls").hidden);
+    assert.match(fs.readFileSync("newsmuncher/static/styles.css", "utf8"), /\.narration-controls\[hidden\]/);
     await ui.show({nominated:true,rewrite_id:'rewrite'});
+    assert(!f.get('narrationControls').hidden);
     assert.equal(f.requests.filter(r=>r.options.method==='POST').length,0);
     f.get('responseEditor').hidden=false;
     f.get('responseTitleDraft').value='Edited title';

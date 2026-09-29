@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Canonical body, derived title and coherent media seeds
-LAST_COMPLETED_COMMIT: :/^Make rewritten body canonical for titles and media
+LAST_COMPLETED_FEATURE: Creation media UX and guarded pre-nomination image replacement
+LAST_COMPLETED_COMMIT: :/^Refine creation media controls and add guarded image redo
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,49 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Final body is canonical; derived concise title, body-only image and title-only jingle.
+CURRENT_TASK: Longer derived titles, saved jingle genre/autoplay, nomination-gated controls and guarded Redo Image.
 APPROVAL: Implement, test offline, commit and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews the canonical content flow.
-VALIDATION: Full Python 270 passed + 105 subtests; Node 43 passed. Targeted rewrite/image/jingle/narration/claim tests passed. Providers mocked; full suites network blocked; diff check clean.
+NEXT_STEP: Andy reviews Creation Page media UX; ambiguous image replacements require operator review if read-only restore cannot recover a PNG.
+VALIDATION: Targeted Python 119 passed + 6 subtests; full Python 279 passed + 105 subtests; Node 44 passed. Providers mocked; full suites network blocked. Diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Creation media UX and guarded Redo Image — 2026-09-29
+
+Titles now allow 20 words / 140 characters, with body-vocabulary validation and
+extractive fallback; existing second-call flow unchanged. Genre label reads saved
+jingle_prompt.genre_profile.label (SQLite brief or Mongo fallback); missing legacy
+profiles remain unknown/hidden. Active jingle load/request attempts playback once
+when ready; rejected autoplay leaves PLAY available, with no generation retry/loop.
+
+Removed Creation/Gallery STOP ANIMATION buttons and their bindings/CSS; automatic
+pause/unload/reduced-motion cleanup remains. Narration and video controls are hidden
+before persisted nomination, restored from saved state, and revealed on successful
+nomination only. Nominating never generates audio/video. Existing saved animation
+can play without exposing pre-nomination controls. CSS explicitly honors hidden.
+
+REDO IMAGE posts rewrite ID plus expected current image URL. Under the existing
+SQLite transaction, enforce un-nominated/current image/no unresolved attempt, choose
+a different random style and persist a unique image UUID + prompt/settings before
+one provider call. Same body/title/identity/word claims remain. On success, atomically
+publish new image metadata. Old PNGs and historical attempt evidence are retained.
+The UI keeps the old still while loading, updates style on load and rejects stale
+rewrite/image callbacks. Duplicate clicks/replayed URLs cannot resubmit payment.
+
+Nomination cannot race a pending replacement; nomination_pending blocks replacement
+in the opposite direction. An ambiguous failure retains old metadata and its claim;
+GET restore recovers only an already-published PNG. Otherwise nomination/redo stay
+blocked for operator review, never automatic paid retry. A late worker cannot
+supersede a newer replacement recovered by GET. Gallery receives nominated final URL.
+Video source lookup accepts the saved UUID image URL; historical video is detached
+when an image changes, retaining its original paid claim/file and suppressing sync
+and playback. No new animation is scheduled or paid claim reopened.
+
+Tests cover limits, genre restore/legacy, playback rejection, nomination visibility,
+internal stop lifecycle, double-click/concurrent paid claims, pending nomination,
+metadata/file recovery, stale worker completion, video detachment and frontend swap.
+Full offline suites pass with existing warnings only. README documents behavior.
+No provider/API calls, deployment, media deletion or main changes.
 
 ## Canonical body and media seeds — 2026-09-29
 

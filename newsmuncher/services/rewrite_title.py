@@ -11,15 +11,15 @@ def final_title(body, candidate):
     words = lambda text: re.findall(r"[\w]+(?:['’_-][\w]+)*", text.casefold())
     candidate = ' '.join((candidate or '').split()).strip('"“”')
     vocabulary = set(words(body))
-    if (candidate and len(candidate) <= 60 and 3 <= len(candidate.split()) <= 8
+    if (candidate and len(candidate) <= 140 and 3 <= len(candidate.split()) <= 20
             and set(words(candidate)) <= vocabulary):
         return candidate
     # Keep original word order and stop at a sentence boundary or the hard cap.
     heading = []
     for word in body.split():
-        if len(heading) == 8 or len(' '.join(heading + [word])) > 60:
+        if len(heading) == 20 or len(' '.join(heading + [word])) > 140:
             break
         heading.append(word)
         if word.endswith(('.', '!', '?')):
             break
-    return ' '.join(heading).rstrip('.!?;,:') or body[:60].strip()
+    return ' '.join(heading).rstrip('.!?;,:') or body[:140].strip()

@@ -62,20 +62,22 @@
       </div>
     </div>
     <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
+    <button type="button" id="redoImageButton" class="funky-button" onclick="redoImage()" hidden>REDO IMAGE</button>
+    <p id="imageRedoMessage" role="status" hidden></p>
     <p id="imageStyle" class="image-style" hidden></p>
     <div id="animationControls" class="animation-controls" hidden>
       <button type="button" id="animationButton" class="funky-button" disabled>ANIMATE IMAGE</button>
       <span id="animationMessage" role="status" aria-live="polite"></span>
-      <button type="button" id="animationStop" class="funky-button" hidden>STOP ANIMATION</button>
     </div>
     <div id="jingleControls" class="jingle-controls" hidden>
       <div class="jingle-buttons">
         <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled>MAKE JINGLE</button>
         <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
       </div>
+      <p id="jingleGenre" class="image-style" hidden></p>
       <p id="jingleMessage" role="status" aria-live="polite"></p>
     </div>
-  <div id="narrationControls" class="narration-controls">
+  <div id="narrationControls" class="narration-controls" hidden>
     <button type="button" id="narrationButton" class="funky-button" onclick="narrationUI.act()" disabled>READ ALOUD</button>
     <audio id="narrationAudio" controls preload="none" hidden></audio>
     <p id="narrationMessage" role="status" aria-live="polite">Nominate a rewrite to use READ ALOUD.</p>

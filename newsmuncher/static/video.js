@@ -84,12 +84,13 @@
         }
         render(state) {
             this.state = state;
-            this.view.render(state, this.pending);
+            this.view.render({...state, nominated: this.nominated}, this.pending);
         }
         stop() {
             this.revision++;
             this.cancel(this.timer);
             this.key = null;
+            this.nominated = false;
             this.pending = false;
             this.state = null;
             this.view.stop();
@@ -97,6 +98,7 @@
         async show(data) {
             this.stop();
             if (!data?.rewrite_id) { this.render({}); return; }
+            this.nominated = data.nominated === true;
             this.key = data.rewrite_id;
             this.render({message: 'Checking saved animation…'});
             await this.refresh(this.revision);
@@ -117,7 +119,7 @@
             }
         }
         async act() {
-            if (!this.key || this.pending || !this.state?.can_generate) return;
+            if (!this.nominated || !this.key || this.pending || !this.state?.can_generate) return;
             const key = this.key, token = this.revision;
             this.pending = true;
             this.render(this.state);
@@ -145,7 +147,6 @@
         mount(player) { player.className = 'creation-animation'; get('imagePanel').appendChild(player); },
         reveal(playing) {
             get('imagePanel').classList.toggle('animation-playing', playing);
-            get('animationStop').hidden = !playing;
         },
         reduced: () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
         status(message) { get('animationMessage').textContent = message; }
@@ -159,7 +160,7 @@
             const ready = !!data.video_url;
             const failed = data.video_status === 'failed_or_uncertain';
             const button = get('animationButton');
-            get('animationControls').hidden = !(data.can_generate || busy || ready || failed || data.message);
+            get('animationControls').hidden = !data.nominated || !(data.can_generate || busy || ready || failed || data.message);
             button.hidden = ready || failed || (!busy && !data.can_generate);
             button.disabled = busy || !data.can_generate;
             button.textContent = busy ? 'ANIMATING…' : 'ANIMATE IMAGE';
@@ -174,7 +175,6 @@
     root.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
         if (event.matches) visual.clearPlayer();
     });
-    get('animationStop').addEventListener('click', () => visual.clearPlayer());
     get('animationButton').addEventListener('click', () => root.videoUI.act());
     root.addEventListener('pagehide', () => root.videoUI.stop());
 })(typeof globalThis !== 'undefined' ? globalThis : this);

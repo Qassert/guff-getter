@@ -274,12 +274,10 @@
         mount(player) { get('galleryIllustration').appendChild(player); },
         reveal(playing) {
             get('galleryIllustration').classList.toggle('animation-playing', playing);
-            get('galleryStopVideo').hidden = !playing;
         }
     });
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
     motionPreference.addEventListener('change', event => { if (event.matches) visual.stop(); });
-    get('galleryStopVideo').addEventListener('click', () => visual.stop());
     const gallery = new PromotionGallery({view, afterDisplay, media, visual});
     get('galleryPlayAudio').addEventListener('click', () => media.play());
     get('galleryStopAudio').addEventListener('click', () => media.pause());

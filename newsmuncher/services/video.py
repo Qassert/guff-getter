@@ -51,8 +51,13 @@ class Videos:
         return state
 
     def source(self, key, state):
-        path = self.images / f'{key}.png'
-        if state['result'].get('image_url') != f'/generated-images/{key}.png' or path.is_symlink() or not path.is_file():
+        url = state['result'].get('image_url', '')
+        try:
+            image_id = str(UUID(url.removeprefix('/generated-images/').removesuffix('.png')))
+        except (ValueError, AttributeError):
+            raise VideoError(409, 'Generate an image for this rewrite first.') from None
+        path = self.images / f'{image_id}.png'
+        if url != f'/generated-images/{image_id}.png' or path.is_symlink() or not path.is_file():
             raise VideoError(409, 'Generate an image for this rewrite first.')
         return path
 
@@ -68,6 +73,8 @@ class Videos:
             return False
 
     def public(self, key, state):
+        if state.get('video_detached'):
+            return {'rewrite_id': key, 'video_status': 'superseded', 'can_generate': False}
         video = state.get('video')
         if video is None and 'video' not in state:
             try:
@@ -103,7 +110,7 @@ class Videos:
         with self.store.transaction() as db:
             state = self.read(db, key, owner)
             video, entry_id = state.get('video'), state.get('entry_id')
-            if not isinstance(video, dict) or not entry_id or not ObjectId.is_valid(entry_id):
+            if state.get('video_detached') or not isinstance(video, dict) or not entry_id or not ObjectId.is_valid(entry_id):
                 return
             metadata = {k: v for k, v in video.items() if k not in ('worker_started', 'requested_epoch')}
             try:

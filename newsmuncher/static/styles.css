@@ -447,6 +447,9 @@ body { isolation: isolate; }
   gap: 8px 14px; margin: 20px 0 12px;
 }
 .profile-page .narration-controls audio { width: min(100%, 420px); }
+.profile-page .narration-controls[hidden],
+.profile-page #redoImageButton[hidden],
+.profile-page .image-style[hidden],
 .profile-page .narration-controls audio[hidden],
 .profile-page .narration-controls #narrationButton[hidden] { display: none; }
 .profile-page #narrationMessage {

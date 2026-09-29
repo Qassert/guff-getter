@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function setup(options = {}) {
   const elements = {};
-  for (const id of ['imageStyle','loader','generateImages','imagePanel','titleDescBox','sourceTitleHeading','nonsenseBox','crazyTitleBox','crazyExtractBox','outputContainer','bankButton','imageAmbient']) {
+  for (const id of ['redoImageButton','imageRedoMessage','imageStyle','loader','generateImages','imagePanel','titleDescBox','sourceTitleHeading','nonsenseBox','crazyTitleBox','crazyExtractBox','outputContainer','bankButton','imageAmbient']) {
     const classes = new Set(['hidden']);
     elements[id] = {value:'source', checked:false, style:{setProperty(k,v){this[k]=v;}}, scrollHeight:20, textContent:'',
       classList:{add:(...xs)=>xs.forEach(x=>classes.add(x)),remove:(...xs)=>xs.forEach(x=>classes.delete(x)),contains:x=>classes.has(x)},
@@ -17,7 +17,7 @@ function setup(options = {}) {
   const calls=[], frames=[], timers=[], images=[];
   let samples=0;
   const storage = new Map(options.restore ? [["newsmuncher.imageRewrite", "saved"]] : []);
-  let rewriteSuccess=true, imageResolve;
+  let rewriteSuccess=true, imageResolve, redoResolve;
   const context = {alert(){},generatedBackground:{preload(){}},console, setTimeout:(fn,delay)=>{if(delay===0) fn();else timers.push([fn,delay]);}, requestAnimationFrame:fn=>frames.push(fn),
     document:{getElementById:id=>elements[id], createElement(){
       samples++;
@@ -28,6 +28,8 @@ function setup(options = {}) {
     Image:class { constructor(){this.classList={add(){}};images.push(this);} getBoundingClientRect(){return {left:100,top:200,width:400,height:400};} set src(value){this.url=value;if(!options.deferLoad)this.onload();}},
     fetch: async (url,requestOptions) => {
       calls.push([url,requestOptions]);
+      if(url==='/temp/redo_image') return new Promise(resolve=>redoResolve=resolve);
+      if(url.startsWith('/temp/confirm_data')) return {ok:true,json:async()=>({nominated:true,rewrite_id:'saved'})};
       if(url==='/temp/temp_data') return {ok:true,json:async()=>({title:'Ham Shanker',description:'Bum Seeking intellectual connection',extract:'Source text'})};
       if(url==='/temp/shizzalise_data') return {ok:rewriteSuccess,json:async()=>({crazyReplacement1Title:'REWRITTEN',crazyReplacement1Extract:'TEXT',rewrite_id:'id-'+calls.length})};
       if(url==='/temp/generate_image') {
@@ -35,11 +37,11 @@ function setup(options = {}) {
         assert.equal(elements.outputContainer.style.display,'block');
         return new Promise(resolve=>imageResolve=resolve);
       }
-      if(url==='/temp/image_result/saved') return {ok:true,json:async()=>({rewrite_id:'saved',crazyReplacement1Title:'SAVED',crazyReplacement1Extract:'TEXT',image_url:'/generated-images/saved.png',image_style:options.style})};
+      if(url==='/temp/image_result/saved') return {ok:true,json:async()=>({rewrite_id:'saved',crazyReplacement1Title:'SAVED',crazyReplacement1Extract:'TEXT',image_url:'/generated-images/saved.png',image_style:options.style,nominated:!!options.nominated,image_redo_pending:!!options.pending})};
       return {ok:true,json:async()=>({})};
     }};
   vm.createContext(context);vm.runInContext(fs.readFileSync('newsmuncher/static/image-colors.js','utf8'),context);vm.runInContext(fs.readFileSync('newsmuncher/static/script.js','utf8'),context);
-  return {context,elements,calls,images,timers,get samples(){return samples;},finishFade(){while(timers.length)timers.shift()[0]();},paint(){while(frames.length) frames.shift()();}, resolveImage(ok, style){imageResolve({ok,json:async()=>({image_url:'/static/image-stub.svg',image_style:style})});}, failRewrite(){rewriteSuccess=false;}};
+  return {context,elements,calls,images,timers, resolveRedo(ok=true){redoResolve({ok,json:async()=>({image_url:'/replacement.png',image_style:'Futuristic'})});},get samples(){return samples;},finishFade(){while(timers.length)timers.shift()[0]();},paint(){while(frames.length) frames.shift()();}, resolveImage(ok, style){imageResolve({ok,json:async()=>({image_url:'/static/image-stub.svg',image_style:style})});}, failRewrite(){rewriteSuccess=false;}};
 }
 (async()=>{
   assert(!/id="generateImages"[^>]*\bchecked/.test(fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8')));
@@ -97,6 +99,28 @@ function setup(options = {}) {
   t=setup();t.elements.generateImages.checked=true;t.context.confirmData();await flush();t.paint();await flush();
   t.resolveImage(true,'Pixel art');await flush();
   assert.equal(t.elements.imageStyle.textContent,'STYLE: PIXEL ART');
+  // Redo restores eligibility, keeps the old image while pending, and submits once.
+  t=setup({restore:true});t.context.window.onload();await flush();
+  assert.equal(t.elements.redoImageButton.hidden,false);
+  const oldImage=t.elements.imagePanel.children[0];
+  t.context.redoImage();t.context.redoImage();
+  assert.equal(t.calls.filter(([url])=>url==='/temp/redo_image').length,1);
+  assert(t.elements.redoImageButton.disabled);assert.equal(t.elements.imagePanel.children[0],oldImage);
+  t.resolveRedo();await flush();
+  assert.equal(t.elements.imagePanel.children[0].url,'/replacement.png');
+  assert.equal(t.elements.imageStyle.textContent,'STYLE: FUTURISTIC');
+  assert(!t.elements.redoImageButton.disabled);
+  t.context.bankThisBeauty();await flush();assert(t.elements.redoImageButton.hidden);
+  const redoCount=t.calls.length;await t.context.redoImage();assert.equal(t.calls.length,redoCount);
+  t=setup({restore:true,nominated:true});t.context.window.onload();await flush();assert(t.elements.redoImageButton.hidden);
+  t=setup({restore:true,pending:true});t.context.window.onload();await flush();assert(t.elements.redoImageButton.disabled);
+  t=setup({restore:true});t.context.window.onload();await flush();t.context.redoImage();t.resolveRedo(false);await flush();
+  assert(t.elements.redoImageButton.disabled);await t.context.redoImage();
+  assert.equal(t.calls.filter(([url])=>url==='/temp/redo_image').length,1);
+  // An old replacement cannot overwrite a newer rewrite.
+  t=setup({restore:true});t.context.window.onload();await flush();t.context.redoImage();
+  t.context.confirmData();await flush();t.resolveRedo();await flush();
+  assert(t.elements.imagePanel.classList.contains('hidden'));
   const colors=t.context.representativeColors(new Uint8ClampedArray([255,255,255,255,0,0,0,255,200,40,50,0,180,40,60,255,30,110,170,255]));
   assert.equal(JSON.stringify(colors),'[[180,40,60],[30,110,170]]');
   assert.equal(t.context.representativeColors(new Uint8ClampedArray([255,255,255,255])),null);

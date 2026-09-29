@@ -1,7 +1,7 @@
 /* Only MAKE sends POST. Status restoration and PLAY never request generation. */
 const jingleUI = (() => {
     let revision = 0, rewrite = null, state = null, pending = false, audio = null, timer = null;
-    let saved = [], discovery = 0, nominated = null;
+    let saved = [], discovery = 0, nominated = null, autoplay = false;
     const get = id => document.getElementById(id);
 
     function stop() {
@@ -12,11 +12,20 @@ const jingleUI = (() => {
 
     function render(data) {
         state = data;
+        const genre = get('jingleGenre');
+        if (genre) {
+            genre.textContent = data.jingle_genre ? `GENRE: ${data.jingle_genre.toUpperCase()}` : '';
+            genre.hidden = !data.jingle_genre;
+        }
         const button = get('jingleButton');
         if (button) {
             button.disabled = pending || !(data.jingle_url || data.can_generate);
             button.textContent = data.jingle_url ? '▶ PLAY JINGLE' :
                 pending || ['started', 'submitted'].includes(data.jingle_status) ? 'MAKING JINGLE…' : 'MAKE JINGLE';
+        }
+        if (autoplay && data.jingle_url) {
+            autoplay = false;
+            act(); // Playback failure is caught in act; never re-submits generation.
         }
         const msg = get('jingleMessage');
         if (msg) {
@@ -45,12 +54,13 @@ const jingleUI = (() => {
         const token = ++revision;
         if (timer) clearTimeout(timer);
         stop();
-        audio = null; state = null; pending = false;
+        audio = null; state = null; pending = false; autoplay = false;
         nominated = Boolean(data && data.nominated);
         rewrite = nominated ? data.rewrite_id : null;
         const controls = get('jingleControls');
         if (controls) controls.hidden = !rewrite;
         if (!rewrite) return;
+        autoplay = true;
         render({message: 'Checking saved jingle…', can_generate: false});
         refresh(token, rewrite);
     }
@@ -85,7 +95,7 @@ const jingleUI = (() => {
         }
         if (!state.can_generate) return;
         const token = revision, id = rewrite;
-        pending = true; render(state);
+        pending = true; autoplay = true; render(state);
         try {
             const response = await fetch('/jingles/' + encodeURIComponent(id), {
                 method: 'POST', credentials: 'include',
