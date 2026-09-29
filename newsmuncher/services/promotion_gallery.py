@@ -105,6 +105,7 @@ class PromotionGallery:
             'body': entry.get('crazyReplacement1Extract') or '',
             'promoted': entry.get('promoted') is True,
             'seen_count': seen(entry),
+            'image_style': entry.get('image_style'),
             **{kind + '_url': f'/promotion-gallery/items/{key}/media/{kind}'
                if self.media_path(entry, kind) else None for kind in ('image', 'narration', 'jingle', 'video')}}
 

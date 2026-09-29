@@ -43,6 +43,54 @@ class ImageTests(unittest.TestCase):
         self.assertTrue(Path('newsmuncher' + image['image_url']).exists())
         self.assertFalse(image['image_url'].startswith('data:'))
 
+    def test_style_selected_once_persisted_and_restored(self):
+        routes = self.previews()
+        rid = self.store.create(self.result, 'alice')['rewrite_id']
+        with patch.object(routes, 'choose_image_style', return_value='Cyberpunk') as choose:
+            metadata = routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
+            routes.store = RewriteStore(self.store.path)
+            for _ in range(2):
+                self.assertEqual(routes.get_image_result(rid, 'alice')['image_style'], 'Cyberpunk')
+                self.assertEqual(routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice'), metadata)
+            choose.assert_called_once_with()
+        self.assertEqual(metadata['image_style'], 'Cyberpunk')
+        self.assertIn('Visual style: Cyberpunk.', self.api.call_args.kwargs['prompt'])
+        self.assertIn('A cat paints the moon.', self.api.call_args.kwargs['prompt'])
+        self.assertEqual(self.api.call_count, 1)
+        routes.send_prompt.assert_not_called()
+        with self.store.transaction() as db:
+            state = self.store.read(db, rid, 'alice')
+            self.assertEqual(state['image_attempt']['image_style'], 'Cyberpunk')
+            self.assertEqual(state['result']['image_style'], 'Cyberpunk')
+
+    def test_failure_retains_style_and_existing_metadata_without_retry(self):
+        routes = self.previews()
+        result = self.store.create({**self.result, 'image_prompt': 'previous metadata'}, 'alice')
+        rid = result['rewrite_id']
+        self.api.side_effect = TimeoutError('uncertain')
+        with patch.object(routes, 'choose_image_style', return_value='Pixel art') as choose:
+            for _ in range(2):
+                with self.assertRaises(routes.HTTPException):
+                    routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
+            choose.assert_called_once_with()
+        with self.store.transaction() as db:
+            state = self.store.read(db, rid, 'alice')
+            self.assertEqual(state['result'], result)
+            self.assertEqual(state['image_attempt']['image_style'], 'Pixel art')
+        self.assertEqual(self.api.call_count, 1)
+
+    def test_legacy_style_unknown_without_metadata_replacement(self):
+        routes = self.previews()
+        old = LocalStubProvider().generate_image('original prompt')
+        rid = self.store.create({**self.result, **old}, 'alice')['rewrite_id']
+        with patch.object(routes, 'choose_image_style') as choose:
+            restored = routes.get_image_result(rid, 'alice')
+            cached = routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
+            choose.assert_not_called()
+        self.assertIsNone(restored['image_style'])
+        self.assertEqual(cached, {**old, 'image_style': None})
+        self.api.assert_not_called()
+
     def test_durable_identity_and_owner(self):
         a = self.store.create(self.result, 'alice')
         b = self.store.create(self.result, 'alice')
@@ -128,11 +176,13 @@ class ImageTests(unittest.TestCase):
         request = types.SimpleNamespace(cookies={'active_pet':'alice'})
         for image in (False, True):
             payload = dict(title='title', description='', extract='text')
-            if image: payload.update(rewrite_id='rewrite', **LocalStubProvider().generate_image('prompt'))
+            if image: payload.update(rewrite_id='rewrite', image_style='Cyberpunk', **LocalStubProvider().generate_image('prompt'))
             routes.create_entry(routes.Post(**payload), request)
             saved = ({**routes.collection.update_one.call_args.args[1]['$setOnInsert'], **routes.collection.update_one.call_args.args[1]['$set']} if image else routes.collection.insert_one.call_args.args[0])
             self.assertEqual('image_url' in saved, image)
-            if image: self.assertEqual(saved['image_owner'], 'alice')
+            if image:
+                self.assertEqual(saved['image_owner'], 'alice')
+                self.assertEqual(saved['image_style'], 'Cyberpunk')
 
     def test_image_endpoint_is_separate_and_owner_checked(self):
         from fastapi import FastAPI
@@ -163,7 +213,7 @@ class ImageTests(unittest.TestCase):
         self.assertEqual(self.api.call_count, 1)
         self.openai.assert_called_once_with(max_retries=0, timeout=180.0)
         self.assertEqual(self.api.call_args.kwargs, dict(model='gpt-image-1.5', quality='low',
-            size='1024x1024', n=1, output_format='png', prompt=build_image_prompt(self.result)))
+            size='1024x1024', n=1, output_format='png', prompt=build_image_prompt(self.result, metadata['image_style'])))
         self.assertNotIn('SECRET SOURCE', metadata['image_prompt'])
         self.assertEqual(list(self.images.glob('*.tmp')), [])
 
@@ -256,6 +306,7 @@ class ImageTests(unittest.TestCase):
             with self.assertRaises(routes.HTTPException): routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
         restored = routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
         self.assertEqual(restored['image_provider'], 'openai')
+        self.assertIn('Visual style: ' + restored['image_style'], restored['image_prompt'])
         self.assertEqual(self.api.call_count, 1)
 
     def test_nomination_current_response_both_paths(self):

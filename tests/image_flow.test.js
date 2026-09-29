@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 function setup(options = {}) {
   const elements = {};
-  for (const id of ['loader','generateImages','imagePanel','titleDescBox','sourceTitleHeading','nonsenseBox','crazyTitleBox','crazyExtractBox','outputContainer','bankButton','imageAmbient']) {
+  for (const id of ['imageStyle','loader','generateImages','imagePanel','titleDescBox','sourceTitleHeading','nonsenseBox','crazyTitleBox','crazyExtractBox','outputContainer','bankButton','imageAmbient']) {
     const classes = new Set(['hidden']);
     elements[id] = {value:'source', checked:false, style:{setProperty(k,v){this[k]=v;}}, scrollHeight:20, textContent:'',
       classList:{add:(...xs)=>xs.forEach(x=>classes.add(x)),remove:(...xs)=>xs.forEach(x=>classes.delete(x)),contains:x=>classes.has(x)},
@@ -26,8 +26,8 @@ function setup(options = {}) {
     }}, window:{addEventListener(){},innerWidth:1200,innerHeight:900,matchMedia:()=>({matches:!!options.reduced})},
     sessionStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},
     Image:class { constructor(){this.classList={add(){}};images.push(this);} getBoundingClientRect(){return {left:100,top:200,width:400,height:400};} set src(value){this.url=value;if(!options.deferLoad)this.onload();}},
-    fetch: async (url,options) => {
-      calls.push([url,options]);
+    fetch: async (url,requestOptions) => {
+      calls.push([url,requestOptions]);
       if(url==='/temp/temp_data') return {ok:true,json:async()=>({title:'Ham Shanker',description:'Bum Seeking intellectual connection',extract:'Source text'})};
       if(url==='/temp/shizzalise_data') return {ok:rewriteSuccess,json:async()=>({crazyReplacement1Title:'REWRITTEN',crazyReplacement1Extract:'TEXT',rewrite_id:'id-'+calls.length})};
       if(url==='/temp/generate_image') {
@@ -35,11 +35,11 @@ function setup(options = {}) {
         assert.equal(elements.outputContainer.style.display,'block');
         return new Promise(resolve=>imageResolve=resolve);
       }
-      if(url==='/temp/image_result/saved') return {ok:true,json:async()=>({rewrite_id:'saved',crazyReplacement1Title:'SAVED',crazyReplacement1Extract:'TEXT',image_url:'/generated-images/saved.png'})};
+      if(url==='/temp/image_result/saved') return {ok:true,json:async()=>({rewrite_id:'saved',crazyReplacement1Title:'SAVED',crazyReplacement1Extract:'TEXT',image_url:'/generated-images/saved.png',image_style:options.style})};
       return {ok:true,json:async()=>({})};
     }};
   vm.createContext(context);vm.runInContext(fs.readFileSync('newsmuncher/static/image-colors.js','utf8'),context);vm.runInContext(fs.readFileSync('newsmuncher/static/script.js','utf8'),context);
-  return {context,elements,calls,images,timers,get samples(){return samples;},finishFade(){while(timers.length)timers.shift()[0]();},paint(){while(frames.length) frames.shift()();}, resolveImage(ok){imageResolve({ok,json:async()=>({image_url:'/static/image-stub.svg'})});}, failRewrite(){rewriteSuccess=false;}};
+  return {context,elements,calls,images,timers,get samples(){return samples;},finishFade(){while(timers.length)timers.shift()[0]();},paint(){while(frames.length) frames.shift()();}, resolveImage(ok, style){imageResolve({ok,json:async()=>({image_url:'/static/image-stub.svg',image_style:style})});}, failRewrite(){rewriteSuccess=false;}};
 }
 (async()=>{
   assert(!/id="generateImages"[^>]*\bchecked/.test(fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8')));
@@ -88,6 +88,15 @@ function setup(options = {}) {
   t.context.confirmData();await flush();assert.equal(t.elements.bankButton.textContent,'NOMINATE');
   const rewriteCalls=t.calls.filter(([url])=>url==='/temp/shizzalise_data');
   assert.equal(JSON.parse(rewriteCalls[0][1].body).draft_session,JSON.parse(rewriteCalls[1][1].body).draft_session);
+  t=setup({restore:true,style:'Cyberpunk'});t.context.window.onload();await flush();
+  assert.equal(t.elements.imageStyle.textContent,'STYLE: CYBERPUNK');
+  assert.equal(t.elements.imageStyle.hidden,false);
+  t.context.resetImagePanel();assert.equal(t.elements.imageStyle.hidden,true);
+  t=setup({restore:true});t.context.window.onload();await flush();
+  assert.equal(t.elements.imageStyle.hidden,true);
+  t=setup();t.elements.generateImages.checked=true;t.context.confirmData();await flush();t.paint();await flush();
+  t.resolveImage(true,'Pixel art');await flush();
+  assert.equal(t.elements.imageStyle.textContent,'STYLE: PIXEL ART');
   const colors=t.context.representativeColors(new Uint8ClampedArray([255,255,255,255,0,0,0,255,200,40,50,0,180,40,60,255,30,110,170,255]));
   assert.equal(JSON.stringify(colors),'[[180,40,60],[30,110,170]]');
   assert.equal(t.context.representativeColors(new Uint8ClampedArray([255,255,255,255])),null);

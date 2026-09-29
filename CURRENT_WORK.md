@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Audited repository storage cleanup
-LAST_COMPLETED_COMMIT: :/^Clean obsolete artifacts and document repository storage
+LAST_COMPLETED_FEATURE: Persisted random image visual styles
+LAST_COMPLETED_COMMIT: :/^Persist one random visual style per generated image
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,34 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Reference-based repository storage cleanup; preserve runtime data and paid-attempt evidence.
-APPROVAL: Audited cleanup and one coherent commit/push. No provider/API calls, resets, deployment or main changes.
-NEXT_STEP: Andy reviews storage boundaries in README.md; retain ambiguous paid-attempt/recovery evidence.
-VALIDATION: Full Python suite 263 passed + 105 subtests; full Node suite 43 passed. Network blocked. 72 Python files parsed; mocked FastAPI import/OpenAPI passed. 180 protected file hashes unchanged; diff check clean.
+CURRENT_TASK: One persisted random visual style per new generated image; Creation Page label and gallery metadata.
+APPROVAL: Implement, test offline, commit and push. No live provider calls, deployment or main changes.
+NEXT_STEP: Andy reviews random styles and the subtle Creation Page label.
+VALIDATION: Full Python suite 266 passed + 105 subtests; full Node suite 43 passed. Providers mocked; network blocked. Diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Persisted random image styles — 2026-09-29
+
+IMAGE_STYLES in services/image_generation.py contains the exact 20-style pool.
+Choose once inside the existing SQLite image claim transaction; save style and
+prompt before the provider call. Successful image metadata carries image_style into
+the rewrite, Mongo nomination and gallery payload. Recovery uses the saved attempt;
+failed/uncertain attempts never reroll or retry. Existing images remain unchanged;
+legacy missing styles are null, with no inferred style or regeneration.
+
+Prompt remains scene-led with recognisable subjects, coherent composition and a
+4–6 colour palette, followed by "Visual style: Cyberpunk." (example). Removed hard
+photorealism-only restrictions that contradicted the requested styles. No additional
+model request; generation settings and cost unchanged. Creation Page shows a subtle
+style label after image load and on restore, clearing it when the rewrite changes.
+Word claims, video prompts/generation, audio and gallery playback remain unchanged.
+
+Mocked tests cover single selection, prompt, persistence/reopen, repeated viewing,
+legacy metadata preservation, failed attempt retention, file recovery, nomination
+storage, gallery serialization and frontend labels. Full offline Python and Node
+suites passed; only existing deprecation warnings. README documents persistence.
+No live API/provider calls, generated content, deployment or main changes.
 
 ## Repository hygiene — 2026-09-29
 

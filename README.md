@@ -159,6 +159,15 @@ are intentionally retained. Existing stored text that was lowercased by older
 fetchers cannot recover its original capitalization; newly fetched text preserves it.
 Overlap logging is diagnostic only and does not reject or regenerate output.
 
+### Random image styles
+
+Each new image gets one uniformly random visual style from the 20-style pool in
+`newsmuncher/services/image_generation.py`. The prompt remains scene-led. The style
+is recorded before the image request, then stored as `image_style` with the image
+metadata and nomination, exposed to the gallery and shown near the Creation Page
+image. Restore/reload reuses it without another selection or model call. Older
+images keep an unknown/null style; they are never restyled or regenerated.
+
 ### Drafts, nomination, and future moderation
 
 Each browser working session has one current draft slot in

@@ -196,7 +196,15 @@ function bankThisBeauty() {
         .finally(() => { nominationPending = false; });
 }
 
+function setImageStyle(style) {
+    const label = document.getElementById('imageStyle');
+    if (!label) return;
+    label.textContent = style ? `STYLE: ${style.toUpperCase()}` : '';
+    label.hidden = !style;
+}
+
 function resetImagePanel() {
+    setImageStyle(null);
     if (typeof videoUI !== "undefined") videoUI.show(null);
     const panel = document.getElementById('imagePanel');
     panel.replaceChildren();
@@ -218,17 +226,18 @@ async function loadRewriteImage(id, sequence) {
         if (!response.ok) throw new Error('Image generation failed');
         const data = await response.json();
         if (!current()) return;
-        displayRewriteImage(data.image_url, current);
+        displayRewriteImage(data.image_url, current, data.image_style);
 
     } catch (error) {
         if (current()) panel.textContent = 'Image unavailable. Your rewrite is ready above.';
     }
 }
 
-function displayRewriteImage(url, current) {
+function displayRewriteImage(url, current, style = null) {
     if (!current()) return;
     if (typeof videoUI !== "undefined") videoUI.show({rewrite_id: displayedRewriteId});
     const panel = document.getElementById('imagePanel');
+    setImageStyle(null);
     const img = new Image();
     img.alt = 'Editorial illustration of the rewritten scene.';
     img.className = 'generated-image';
@@ -236,6 +245,7 @@ function displayRewriteImage(url, current) {
         if (!current()) return;
         panel.classList.remove('hidden');
         panel.replaceChildren(img);
+        setImageStyle(style);
         generatedBackground.preload(url, current);
         requestAnimationFrame(() => requestAnimationFrame(() => {
             if (!current()) return;
@@ -273,7 +283,7 @@ async function restoreImageRewrite() {
         document.getElementById('outputContainer').style.display = 'block';
         document.getElementById('bankButton').classList.remove('hidden');
         autoResize(extract);
-        if (data.image_url) displayRewriteImage(data.image_url, () => sequence === rewriteSequence && displayedRewriteId === id);
+        if (data.image_url) displayRewriteImage(data.image_url, () => sequence === rewriteSequence && displayedRewriteId === id, data.image_style);
     } catch (_) {} // Restoration is optional and never initiates paid generation.
 }
 

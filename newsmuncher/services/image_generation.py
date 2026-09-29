@@ -1,6 +1,7 @@
 """Image providers and durable rewrite association; no paid-call retries."""
 from contextlib import contextmanager, closing
 from datetime import datetime, timezone
+import random
 import base64
 import os
 import tempfile
@@ -21,7 +22,7 @@ IMAGE_QUALITY = "low"
 IMAGE_SIZE = "1024x1024"
 IMAGE_TIMEOUT = 180.0
 
-IMAGE_FIELDS = ('image_url', 'image_prompt', 'image_model', 'image_provider', 'image_generated_at')
+IMAGE_FIELDS = ('image_url', 'image_prompt', 'image_model', 'image_provider', 'image_generated_at', 'image_style')
 # Previous style retained for reference only; not included in generated prompts.
 ORIGINAL_IMAGE_STYLE = ('Absurd editorial illustration, underground zine artwork, graffiti and stencil '
          'influences, screen-print texture, bold composition, strange surreal humour, '
@@ -35,23 +36,28 @@ PREVIOUS_IMAGE_STYLE = ('Create a flat graphic editorial illustration using bold
          'French-cartoon / European editorial and gallery-poster feel. Avoid comic-book '
          'panel styling, photorealism, hyper-detailed realism, cyberpunk aesthetics and '
          'floating disconnected objects. No text, captions, logos or lettering in the image.')
-STYLE = ('Create ultra-photorealistic editorial surrealism: render the absurd humour and '
-         'surreal events as if they exist in the real world. Use believable human figures, '
-         'faces, clothing and environments, with realistic anatomy and natural expressions. '
-         'Build a cohesive scene within an expansive, connected environment, using bold, '
-         'memorable cinematic composition and lighting. Use a restrained but strong palette '
-         'of 4 to 6 dominant colours, realistic textured materials and grounded atmospheric '
-         'detail. Subtle stylisation is welcome, but the overall image should feel like '
-         'a real photographed scene rather than an illustration. Preserve the strange '
-         'specificity and absurdity of the described scene. Avoid flat illustration, '
-         'comic-book or graphic novel panels, zine or graffiti styling, cel shading, '
-         'cartoon rendering, doodles, exaggerated caricature and disconnected floating '
-         'objects. No text, captions, logos or lettering in the image.')
+IMAGE_STYLES = (
+    'Minimalism', 'Maximalism', 'Vector art', 'Glass Morphism', 'Hand written',
+    'Aurora', 'Swiss design', 'Y2K design', 'Pixel art', 'Clay style', 'Cyberpunk',
+    'Pop art', 'Retro', 'Collage art', 'Surreal art', 'Futuristic', 'Bohemian',
+    'Graffiti', 'Editorial', 'Victorian style',
+)
+STYLE = ('Prioritize the rewritten scene, its recognisable subjects and objects, and '
+         'coherent composition. Depict believable real-world surrealism with an editorial '
+         'sensibility rather than generic cartoon caricature. Use a strong palette of '
+         '4 to 6 dominant colours. Apply the selected visual style to the rendering '
+         'without replacing the scene or its specific absurd events. '
+         'No text, captions, logos or lettering in the image.')
 
 
-def build_image_prompt(result):
-    return (f'{STYLE}\nScene title: {result["crazyReplacement1Title"][:200]}\n'
-            f'Scene: {result["crazyReplacement1Extract"][:1200]}')
+def choose_image_style():
+    return random.choice(IMAGE_STYLES)
+
+
+def build_image_prompt(result, image_style=None):
+    prompt = (f'{STYLE}\nScene title: {result["crazyReplacement1Title"][:200]}\n'
+              f'Scene: {result["crazyReplacement1Extract"][:1200]}')
+    return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 
 
 class ImageProvider(Protocol):
@@ -83,8 +89,9 @@ def recover_image(rewrite_id, attempt):
     with path.open('rb') as file:
         if file.read(8) != b'\x89PNG\r\n\x1a\n':
             raise ValueError('Existing generated image is invalid; refusing to regenerate.')
-    return image_metadata(rewrite_id, attempt['prompt'], attempt['model'],
-                          datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat())
+    return {**image_metadata(rewrite_id, attempt['prompt'], attempt['model'],
+                            datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat()),
+            'image_style': attempt.get('image_style')}
 
 
 class OpenAIImageProvider:

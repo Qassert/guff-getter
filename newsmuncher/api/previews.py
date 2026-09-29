@@ -13,7 +13,7 @@ from newsmuncher.utils.file_handler import load_prompt
 from newsmuncher.services.word_shuffle import WordClaimConflict
 
 
-from newsmuncher.services.image_generation import store, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path
+from newsmuncher.services.image_generation import store, choose_image_style, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path
 
 router = APIRouter()
 
@@ -178,7 +178,7 @@ def sync_image_metadata(rewrite_id, owner):
         state = read_image_rewrite(db, rewrite_id, owner)
         if state['entry_id'] and not state.get('image_synced'):
             try:
-                persist_banked_image(state, {key: state['result'][key] for key in IMAGE_FIELDS})
+                persist_banked_image(state, {key: state['result'].get(key) for key in IMAGE_FIELDS})
                 state['image_synced'] = True
                 store.save(db, rewrite_id, state)
             except requests.RequestException:
@@ -196,7 +196,7 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
         if state['result'].get('image_url'):
             # Even partial legacy metadata must not trigger another paid image.
             defaults = dict(image_prompt=build_image_prompt(state['result']), image_model='unknown',
-                            image_provider='unknown', image_generated_at=None)
+                            image_provider='unknown', image_generated_at=None, image_style=None)
             cached = {key: state['result'].get(key, defaults.get(key)) for key in IMAGE_FIELDS}
             state['result'].update(cached)
             store.save(db, payload.rewrite_id, state)
@@ -216,6 +216,9 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                 raise HTTPException(status_code=409, detail='Image attempt already started; no automatic paid retry.')
             else:
                 # Commit before contacting OpenAI. Never clear this marker on failure.
+                image_style = choose_image_style()
+                prompt = build_image_prompt(state['result'], image_style)
+                attempt.update(prompt=prompt, image_style=image_style)
                 state['image_attempt'] = {**attempt, 'status': 'started'}
                 store.save(db, payload.rewrite_id, state)
     if cached:
@@ -223,6 +226,7 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
         return cached
     try:
         metadata = get_provider().generate_image(prompt, payload.rewrite_id)
+        metadata['image_style'] = attempt['image_style']
         with store.transaction() as db:
             state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
             if state.get('discarded'):
@@ -248,7 +252,7 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
     # Read-only restoration: refreshing never calls a paid provider.
     with store.transaction() as db:
         state = read_image_rewrite(db, rewrite_id, active_pet)
-        if not state['result'].get('image_url') or not all(k in state['result'] for k in IMAGE_FIELDS):
+        if not state['result'].get('image_url') or not all(k in state['result'] for k in IMAGE_FIELDS if k != 'image_style'):
             attempt = {**dict(prompt=build_image_prompt(state['result']), model=IMAGE_MODEL),
                        **(state.get('image_attempt') or {})}
             try:
@@ -260,7 +264,7 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
                 store.save(db, rewrite_id, state)
         if state['result'].get('image_url'):
             defaults = dict(image_prompt=build_image_prompt(state['result']), image_model='unknown',
-                            image_provider='unknown', image_generated_at=None)
+                            image_provider='unknown', image_generated_at=None, image_style=None)
             for key, value in defaults.items():
                 state['result'].setdefault(key, value)
             store.save(db, rewrite_id, state)

@@ -468,3 +468,10 @@ body { isolation: isolate; }
 @media (prefers-reduced-motion: reduce) {
   .image-panel .creation-animation { display: none; transition: none; }
 }
+
+.image-style {
+    margin: 0.4rem 0;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+}

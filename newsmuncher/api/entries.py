@@ -25,6 +25,7 @@ from newsmuncher.services.moderation import nomination_state
 
 
 class ImageMetadata(BaseModel):
+    image_style: str | None = None
     image_url: str | None = None
     image_prompt: str | None = None
     image_model: str | None = None
