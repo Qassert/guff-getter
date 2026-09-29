@@ -240,6 +240,7 @@ function displayRewriteImage(url, current) {
         requestAnimationFrame(() => requestAnimationFrame(() => {
             if (!current()) return;
             img.classList.add('loaded');
+            if (typeof videoUI !== 'undefined') videoUI.imageReady();
             const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             setTimeout(() => {
                 if (current()) applyImageColors(img, current);

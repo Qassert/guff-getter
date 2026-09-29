@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: AnimationUI browser timer receiver fix
-LAST_COMPLETED_COMMIT: :/^Fix AnimationUI native timer invocation
+LAST_COMPLETED_FEATURE: Creation Page in-place image animation
+LAST_COMPLETED_COMMIT: :/^Animate Creation Page images in place
 LAST_OWNER: CODEX
 HANDOVER: VIDEO_ANIMATION_STATUS.md
 
@@ -13,12 +13,23 @@ HANDOVER: VIDEO_ANIMATION_STATUS.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Frontend-only AnimationUI native timer receiver fix.
+CURRENT_TASK: Creation Page in-place still-to-video transition; frontend only.
 APPROVAL: Implement/test offline, milestone commits/pushes. No live provider calls or deployment.
-NEXT_STEP: Andy reviews Creation Page control loading; no live generation is needed.
-VALIDATION: node --test tests/video.test.js — 8 passed. Both new receiver regressions failed before the wrapper fix; no provider calls.
+NEXT_STEP: Andy reviews in-place playback using a stored animation; no live generation is needed.
+VALIDATION: 41 targeted Node frontend tests passed (video, image flow, gallery, narration, jingles); diff check clean; no provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Creation Page in-place animation — 2026-09-29
+
+Removed separate native player. Existing still sets layout while an absolute overlay
+preloads at opacity zero; canplay attempts muted/inline/loop playback, and playing
+starts the 600ms opacity fade. No extra Play click. Existing image-load callback
+notifies the controller so restored video cannot mount before the still is ready.
+Gallery-style generation guards stop/unload media and reject stale readiness/play
+callbacks. Reduced motion, blocked autoplay and decode errors retain the still;
+STOP ANIMATION returns to the still without regeneration. Generation/status logic,
+backend, gallery, audio and nomination logic unchanged. Frontend-only tests run.
 
 ## AnimationUI native timer fix — 2026-09-29
 

@@ -461,4 +461,10 @@ body { isolation: isolate; }
 .animation-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
 .animation-controls[hidden], .animation-controls [hidden] { display: none; }
 .animation-controls > span { font-size: .85rem; color: var(--muted); }
-.animation-controls video { width: min(100%, 480px); max-height: 55vh; object-fit: contain; flex-basis: 100%; }
+/* The still sets the dimensions while its animation preloads invisibly above it. */
+.image-panel { position: relative; }
+.image-panel .creation-animation { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+.image-panel.animation-playing .creation-animation { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .image-panel .creation-animation { display: none; transition: none; }
+}

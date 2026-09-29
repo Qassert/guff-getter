@@ -89,9 +89,17 @@ A valid atomically published file can be recovered as ready without provider cal
 ## Gallery and UI
 
 The Creation Page has a small control next to existing media controls: ANIMATE IMAGE,
-ANIMATING…, ANIMATION READY with native muted preview, or ANIMATION FAILED. Status
-polls use GET only. Stale responses/timers cannot change another rewrite; leaving
-unloads its preview. No new large panel or source-button layout changes.
+ANIMATING…, ANIMATION READY, or ANIMATION FAILED. Ready animations now preload
+invisibly over the existing still in the same image panel. `canplay` starts muted,
+inline looping playback and `playing` triggers a 600 ms opacity fade. The still
+sets dimensions throughout; no separate player or Play click. Autoplay/media errors
+and reduced motion preserve the still; STOP ANIMATION returns to it. Gallery-style
+lifecycle guards invalidate stale media events/promises and unload on rewrite/page
+changes. Status polls use GET only. No source-button layout changes.
+
+Creation Page follow-up validation: 41 targeted Node tests passed (video, image flow,
+gallery, narration and jingles). No backend or provider calls, deployment or main
+changes. Commit: `git log -1 --format=%H --grep='Animate Creation Page images in place'`.
 
 The gallery serves only an existing completed video associated with the exact rewrite.
 It waits for the still image to load, shows it for 1.5 seconds, then plays muted,

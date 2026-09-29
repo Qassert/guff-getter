@@ -1,6 +1,68 @@
 /* Only ANIMATE IMAGE posts. Restore, polling and preview are retrieval-only. */
 (function (root) {
     'use strict';
+    // Same lifecycle as GalleryVideo: keep the still until playing, invalidate late
+    // events/promises on stop, and unload old media. No generation/network API here.
+    class CreationVideo {
+        constructor({makeVideo, hasImage, mount, reveal, reduced, status = () => {}}) {
+            Object.assign(this, {makeVideo, hasImage, mount, reveal, reduced, status});
+            this.generation = 0;
+        }
+        clearPlayer() {
+            this.generation++;
+            if (this.player) {
+                this.player.pause(); this.player.removeAttribute('src'); this.player.load(); this.player.remove();
+                this.player = null;
+            }
+            this.reveal(false);
+        }
+        stop() {
+            this.clearPlayer();
+            this.url = null;
+            this.attempted = false;
+        }
+        show(url) {
+            if (!url || url === this.url) return;
+            this.stop();
+            this.url = url;
+            this.ready();
+        }
+        ready() {
+            if (!this.url || this.attempted || this.reduced() || !this.hasImage()) return;
+            this.attempted = true;
+            const generation = this.generation, player = this.makeVideo();
+            this.player = player;
+            player.muted = true; player.defaultMuted = true; player.playsInline = true;
+            player.loop = true; player.controls = false; player.preload = 'auto';
+            player.setAttribute('aria-hidden', 'true');
+            const fail = () => {
+                if (generation !== this.generation) return;
+                this.clearPlayer(); // Keep attempted/url: another status read cannot retry playback.
+                this.status('Animation saved; showing the still image.');
+            };
+            let starting = false;
+            const play = async () => {
+                if (generation !== this.generation || starting) return;
+                if (this.reduced()) { this.clearPlayer(); return; }
+                starting = true;
+                try {
+                    await player.play();
+                    if (generation !== this.generation) player.pause();
+                } catch (_) { fail(); }
+            };
+            player.addEventListener('canplay', play);
+            player.addEventListener('playing', () => {
+                if (generation !== this.generation) { player.pause(); return; }
+                if (this.reduced()) { this.clearPlayer(); return; }
+                this.reveal(true);
+            });
+            player.addEventListener('error', fail);
+            this.mount(player);
+            player.src = this.url;
+            player.load();
+            if (player.readyState >= 3) play();
+        }
+    }
     class AnimationUI {
         constructor({view, fetcher = (url, options) => fetch(url, options),
                      schedule = (fn, delay) => setTimeout(fn, delay),
@@ -74,13 +136,23 @@
             }
         }
     }
-    if (typeof module !== 'undefined') module.exports = {AnimationUI};
+    if (typeof module !== 'undefined') module.exports = {AnimationUI, CreationVideo};
     if (typeof document === 'undefined' || !document.getElementById('animationControls')) return;
     const get = id => document.getElementById(id);
+    const visual = new CreationVideo({
+        makeVideo: () => document.createElement('video'),
+        hasImage: () => !!get('imagePanel').querySelector('.generated-image.loaded'),
+        mount(player) { player.className = 'creation-animation'; get('imagePanel').appendChild(player); },
+        reveal(playing) {
+            get('imagePanel').classList.toggle('animation-playing', playing);
+            get('animationStop').hidden = !playing;
+        },
+        reduced: () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+        status(message) { get('animationMessage').textContent = message; }
+    });
     root.videoUI = new AnimationUI({view: {
         stop() {
-            const video = get('animationPreview');
-            video.pause(); video.removeAttribute('src'); video.load(); video.hidden = true;
+            visual.stop();
         },
         render(data, pending) {
             const busy = pending || ['queued', 'started'].includes(data.video_status);
@@ -95,11 +167,14 @@
                 ? 'ANIMATION FAILED — operator review needed; no regeneration.'
                 : data.message || (busy ? 'Animating your image. You can leave this page.'
                     : 'Optional: one 5-second animation, approximately $0.05. Uses the saved rewritten scene.');
-            const video = get('animationPreview');
-            if (ready && video.getAttribute('src') !== data.video_url) video.src = data.video_url;
-            video.hidden = !ready;
+            if (ready) visual.show(data.video_url);
         }
     }});
+    root.videoUI.imageReady = () => visual.ready();
+    root.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
+        if (event.matches) visual.clearPlayer();
+    });
+    get('animationStop').addEventListener('click', () => visual.clearPlayer());
     get('animationButton').addEventListener('click', () => root.videoUI.act());
     root.addEventListener('pagehide', () => root.videoUI.stop());
 })(typeof globalThis !== 'undefined' ? globalThis : this);
