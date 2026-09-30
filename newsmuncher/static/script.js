@@ -3,18 +3,18 @@ let imageDisplaySequence = 0;
 let displayedRewriteId = null;
 let nominatedSnapshot = null;
 let draftSession = null;
-let creationNominated = false, currentImageUrl = null, imageRedoPending = false;
+let creationNominated = false, currentImageUrl = null, imageRedoPending = false, imageGenerationFailed = false;
 function renderRedoImage() {
     const button = document.getElementById('redoImageButton');
     if (!button) return;
-    button.hidden = creationNominated || !currentImageUrl;
+    button.hidden = creationNominated || (!currentImageUrl && !imageGenerationFailed);
     button.disabled = imageRedoPending || nominationPending;
     const bank = document.getElementById('bankButton');
     if (bank) bank.disabled = imageRedoPending || nominationPending;
     button.textContent = imageRedoPending ? 'REPLACING IMAGE…' : 'REDO IMAGE';
 }
 async function redoImage() {
-    if (creationNominated || !currentImageUrl || imageRedoPending || nominationPending) return;
+    if (creationNominated || (!currentImageUrl && !imageGenerationFailed) || imageRedoPending || nominationPending) return;
     const id = displayedRewriteId, sequence = rewriteSequence, previous = currentImageUrl;
     const current = () => id === displayedRewriteId && sequence === rewriteSequence;
     if (typeof imageLoading !== 'undefined') imageLoading.start();
@@ -26,13 +26,14 @@ async function redoImage() {
     try {
         const response = await fetch('/temp/redo_image', {
             method: 'POST', credentials: 'include', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({rewrite_id: id, previous_image_url: previous})
+            body: JSON.stringify({rewrite_id: id, previous_image_url: previous || null})
         });
         if (!response.ok) throw new Error('Replacement unavailable');
         const data = await response.json();
         if (!current()) return;
         if (typeof imageLoading !== 'undefined') imageLoading.stop(true);
         imageRedoPending = false;
+        imageGenerationFailed = false;
         currentImageUrl = data.image_url;
         displayRewriteImage(data.image_url, current, data.image_style);
         if (message) message.hidden = true;
@@ -58,6 +59,7 @@ function setNominationState(data) {
     if (typeof embellishUI !== 'undefined') embellishUI.show(data);
     creationNominated = data.nominated === true;
     currentImageUrl = data.image_url || null;
+    imageGenerationFailed = !currentImageUrl && data.image_generation_failed === true;
     imageRedoPending = !!data.image_redo_pending;
     const redoMessage = document.getElementById('imageRedoMessage');
     if (redoMessage && imageRedoPending) {
@@ -269,7 +271,7 @@ function resetImagePanel() {
     if (typeof creationMeta !== 'undefined') creationMeta.reset();
     imageDisplaySequence++;
     setImageStyle(null);
-    currentImageUrl = null; imageRedoPending = false;
+    currentImageUrl = null; imageRedoPending = false; imageGenerationFailed = false;
     renderRedoImage();
     const message = document.getElementById('imageRedoMessage');
     if (message) message.hidden = true;
@@ -301,7 +303,9 @@ async function loadRewriteImage(id, sequence) {
     } catch (error) {
         if (current()) {
             if (typeof imageLoading !== 'undefined') imageLoading.stop();
-            panel.textContent = 'Image unavailable. Your rewrite is ready above.';
+            imageGenerationFailed = true;
+            renderRedoImage();
+            panel.textContent = 'Image unavailable. Use REDO IMAGE if you want to make another paid attempt.';
         }
     }
 }
@@ -338,7 +342,9 @@ function displayRewriteImage(url, current, style = null) {
     img.onerror = () => {
         if (current()) {
             if (typeof imageLoading !== 'undefined') imageLoading.stop();
-            panel.textContent = 'Image unavailable. Your rewrite is ready above.';
+            imageGenerationFailed = true;
+            renderRedoImage();
+            panel.textContent = 'Image unavailable. Use REDO IMAGE if you want to make another paid attempt.';
         }
     };
     img.src = url;

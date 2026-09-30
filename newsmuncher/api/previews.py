@@ -14,7 +14,7 @@ from newsmuncher.services.word_shuffle import WordClaimConflict
 from newsmuncher.services.rewrite_title import final_title
 
 
-from newsmuncher.services.image_generation import store, choose_image_style, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path
+from newsmuncher.services.image_generation import store, choose_image_style, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path, DefinitiveImageFailure
 
 router = APIRouter()
 
@@ -209,10 +209,10 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
             store.save(db, payload.rewrite_id, state)
         else:
             prompt = build_image_prompt(state['result'])
-            attempt = {**dict(prompt=prompt, model=IMAGE_MODEL, quality=IMAGE_QUALITY, size=IMAGE_SIZE),
+            attempt = {**dict(image_id=payload.rewrite_id, prompt=prompt, model=IMAGE_MODEL, quality=IMAGE_QUALITY, size=IMAGE_SIZE),
                        **(state.get('image_attempt') or {})}
             try:
-                cached = recover_image(payload.rewrite_id, attempt)
+                cached = recover_image(attempt.get('image_id', payload.rewrite_id), attempt)
             except ValueError as exc:
                 raise HTTPException(status_code=409, detail=str(exc)) from exc
             if cached:
@@ -231,31 +231,52 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
     if cached:
         sync_image_metadata(payload.rewrite_id, active_pet)
         return cached
-    try:
-        metadata = get_provider().generate_image(prompt, payload.rewrite_id)
-        metadata['image_style'] = attempt['image_style']
-        with store.transaction() as db:
-            state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
-            if state.get('discarded'):
-                image_path(payload.rewrite_id).unlink(missing_ok=True)
-                raise HTTPException(status_code=410, detail='Draft discarded; generated file removed.')
-            state['result'].update(metadata)
-            state['image_attempt']['status'] = 'complete'
-            store.save(db, payload.rewrite_id, state)
-    except Exception as exc:
-        with store.transaction() as db:
-            state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
-            if state.get('discarded'):
-                image_path(payload.rewrite_id).unlink(missing_ok=True)
-        if isinstance(exc, HTTPException):
-            raise
-        raise HTTPException(status_code=502, detail='Image unavailable; your rewrite is unchanged. No automatic paid retry.') from exc
+    while True:
+        try:
+            metadata = get_provider().generate_image(attempt['prompt'], attempt['image_id'])
+            metadata['image_style'] = attempt['image_style']
+            with store.transaction() as db:
+                state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
+                if state.get('discarded'):
+                    image_path(attempt['image_id']).unlink(missing_ok=True)
+                    raise HTTPException(status_code=410, detail='Draft discarded; generated file removed.')
+                state['result'].update(metadata)
+                state['image_attempt']['status'] = 'complete'
+                store.save(db, payload.rewrite_id, state)
+            break
+        except DefinitiveImageFailure as exc:
+            terminal = False
+            with store.transaction() as db:
+                state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
+                current = state.get('image_attempt') or {}
+                if current.get('image_id', payload.rewrite_id) != attempt['image_id']:
+                    raise HTTPException(409, 'Image attempt changed; no automatic paid retry.') from exc
+                current['status'] = 'definitive_failed'
+                if current.get('retry_count', 0) >= 1:
+                    state['image_attempt'] = current
+                    store.save(db, payload.rewrite_id, state)
+                    terminal = True
+                else:
+                    state.setdefault('image_attempt_history', []).append(current)
+                    attempt = {**current, 'image_id': str(uuid4()), 'status': 'started', 'retry_count': 1}
+                    state['image_attempt'] = attempt
+                    store.save(db, payload.rewrite_id, state)  # Retry claim precedes the second paid call.
+            if terminal:
+                raise HTTPException(422, 'Image generation failed twice. Use REDO IMAGE to try again.') from exc
+        except Exception as exc:
+            with store.transaction() as db:
+                state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
+                if state.get('discarded'):
+                    image_path(attempt['image_id']).unlink(missing_ok=True)
+            if isinstance(exc, HTTPException):
+                raise
+            raise HTTPException(status_code=502, detail='Image outcome uncertain. Use REDO IMAGE only if you choose to make another paid attempt.') from exc
     sync_image_metadata(payload.rewrite_id, active_pet)
     return metadata
 
 
 class RedoImageRequest(ImageRequest):
-    previous_image_url: str = Field(min_length=1, max_length=300)
+    previous_image_url: str | None = Field(default=None, max_length=300)
 
 
 def finish_image_redo(db, rewrite_id, state, metadata):
@@ -280,9 +301,11 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
             raise HTTPException(409, 'Replacement attempt already started; no paid retry.')
         if previous and previous['status'] != 'complete':
             raise HTTPException(409, 'Replacement needs operator review; no paid retry.')
-        if (state.get('generating') or not state['result'].get('image_url') or
-                state['result']['image_url'] != payload.previous_image_url):
+        current_url = state['result'].get('image_url')
+        if state.get('generating') or (current_url and current_url != payload.previous_image_url):
             raise HTTPException(409, 'Current saved image required.')
+        if not current_url and (payload.previous_image_url is not None or not state.get('image_attempt')):
+            raise HTTPException(409, 'A terminal image attempt is required.')
         style = choose_image_style(exclude=state['result'].get('image_style'))
         attempt = dict(image_id=str(uuid4()), previous_image_url=payload.previous_image_url,
                        image_style=style, prompt=build_image_prompt(state['result'], style),
@@ -348,7 +371,7 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
             attempt = {**dict(prompt=build_image_prompt(state['result']), model=IMAGE_MODEL),
                        **(state.get('image_attempt') or {})}
             try:
-                recovered = recover_image(rewrite_id, attempt)
+                recovered = recover_image(attempt.get('image_id', rewrite_id), attempt)
             except ValueError:
                 recovered = None
             if recovered:
@@ -363,6 +386,7 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
         result = state['result'].copy()
         result['nominated'] = bool(state.get('entry_id') or result.get('nominated'))
         result['image_redo_pending'] = bool(state.get('image_redo') and state['image_redo']['status'] != 'complete')
+        result['image_generation_failed'] = bool(not result.get('image_url') and state.get('image_attempt'))
     if result.get('image_url'):
         sync_image_metadata(rewrite_id, active_pet)
     return result

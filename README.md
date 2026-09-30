@@ -162,8 +162,8 @@ Overlap logging is diagnostic only and does not reject or regenerate output.
 ### Canonical rewrite flow
 
 Source → rewritten body → copy-edited final body and short derived title. The
-existing second text call finishes the body before summarising it into a headline of up to 20 words.
-A local 140-character/20-word cap and body-vocabulary check reject unrelated
+existing second text call finishes the body before summarising it into a headline of up to six words.
+A local 140-character/six-word cap and body-vocabulary check reject unrelated
 wording; invalid titles or failed copy-editing use a short excerpt of the accepted
 body. This check is conservative, not a semantic entailment guarantee. No extra
 text call is added. Word claims use the accepted final title/body as before.
@@ -186,14 +186,16 @@ missing media uses the same guarded generation APIs once. Individual controls re
 available, with component-specific statuses if any enhancement fails. Nomination has
 no success popup and never starts these paid requests. Narration uses a PLAY NARRATION
 button plus voice label and a hidden audio element, without a native timeline. It
-never autoplays; narration/jingle playback pauses the other audio to avoid overlap.
+never autoplays on restore. EMBELLISH records explicit playback intent: narration
+plays first and its natural end starts the jingle; either available track still works
+when the other is unavailable. Manual narration/jingle playback remains exclusive.
 
 Jingles display `GENRE` from their persisted genre profile (unknown legacy genres
-stay hidden). Loading/requesting a jingle attempts playback once when ready. Browser
-blocking leaves PLAY JINGLE available and never retries generation. No automatic loop.
+stay hidden). Loading, discovery and generation completion remain silent unless they
+belong to the current explicit EMBELLISH sequence. PLAY JINGLE remains available.
 
-REDO IMAGE is an explicit paid action available only for an existing, un-nominated
-image. It preserves the rewrite ID, body, title and word claims, chooses a different
+REDO IMAGE is an explicit paid action available for an un-nominated image or after a
+terminal initial-image failure. It preserves the rewrite ID, body, title and word claims, chooses a different
 random style, and stores a new UUID PNG. While waiting, temporary images shuffle in the same pane until the new
 one loads. Superseded files are retained for later audited cleanup. Any historical
 animation is detached, retaining its paid claim/file without showing it on the new
@@ -204,6 +206,12 @@ and stale clicks. Nomination and replacement are serialized; unresolved replacem
 attempts block nomination and further paid retries. Reload can recover a completed
 PNG without generating again. If no completed file exists, operator review is needed.
 The current image and style are nominated together; the gallery uses that saved URL.
+
+Initial generation automatically retries once only when the provider positively
+returns without a usable image. The second paid claim is persisted before submission.
+Timeouts, network ambiguity, local write failures and all other uncertain outcomes
+never retry automatically. The saved-image shuffle remains active across the single
+safe retry. A second definite failure exposes REDO IMAGE and never loops.
 
 During initial image generation and Redo Image, a read-only endpoint samples up to
 five distinct current saved images belonging to the active pet from the existing

@@ -29,3 +29,34 @@ test('rewrite switch cancels aggregate timers and late completions',async()=>{
  t.ui.show({nominated:true,rewrite_id:'a'});const action=t.ui.act();
  t.ui.show(null);release();await action;t.timers[0]();assert(!t.states.at(-1).available);
 });
+test('explicit embellish plays narration to natural end before jingle',async()=>{
+ const order=[];let endNarration;
+ const narration={state:{narration_url:'/voice'},snapshot(){return this.state;},async ensure(){},
+  playForEmbellish(){order.push('narration');return new Promise(resolve=>endNarration=resolve);}};
+ const jingle={state:{jingle_url:'/music'},snapshot(){return this.state;},async ensure(){},
+  playForEmbellish(){order.push('jingle');return true;}};
+ const video={state:{video_url:'/video'},snapshot(){return this.state;},async ensure(){}};
+ const ui=new Embellish({media:()=>({Narration:narration,Video:video,Jingle:jingle}),render(){},schedule:setTimeout,cancel:clearTimeout});
+ ui.show({nominated:true,rewrite_id:'a'});await ui.act();await Promise.resolve();
+ assert.deepEqual(order,['narration']);endNarration(true);await Promise.resolve();await Promise.resolve();
+ assert.deepEqual(order,['narration','jingle']);
+});
+test('embellish plays jingle when narration is unavailable',async()=>{
+ const order=[];
+ const base=state=>({state,snapshot(){return this.state;},async ensure(){}});
+ const narration=base({}); narration.playForEmbellish=()=>order.push('narration');
+ const jingle=base({jingle_url:'/music'}); jingle.playForEmbellish=()=>order.push('jingle');
+ const ui=new Embellish({media:()=>({Narration:narration,Video:base({}),Jingle:jingle}),render(){},schedule:setTimeout,cancel:clearTimeout});
+ ui.show({nominated:true,rewrite_id:'a'});await ui.act();await Promise.resolve();await Promise.resolve();
+ assert.deepEqual(order,['jingle']);
+});
+test('jingle unavailable still narrates and stale narration end cannot start old audio',async()=>{
+ const order=[];let endNarration;
+ const narration={state:{narration_url:'/voice'},snapshot(){return this.state;},async ensure(){},
+  playForEmbellish(){order.push('narration');return new Promise(resolve=>endNarration=resolve);}};
+ const empty={state:{},snapshot(){return this.state;},async ensure(){}};
+ const ui=new Embellish({media:()=>({Narration:narration,Video:empty,Jingle:empty}),render(){},schedule:setTimeout,cancel:clearTimeout});
+ ui.show({nominated:true,rewrite_id:'old'});await ui.act();await Promise.resolve();
+ assert.deepEqual(order,['narration']);ui.show({nominated:true,rewrite_id:'new'});endNarration(true);
+ await Promise.resolve();await Promise.resolve();assert.deepEqual(order,['narration']);
+});

@@ -111,6 +111,30 @@ const narrationUI = (() => {
             await lookup;
             if (token !== revision || state?.narration_url || pending || state?.narration_status === 'started') return;
             await act();
+        },
+        async playForEmbellish() {
+            const token = revision;
+            await lookup;
+            if (token !== revision || !state?.narration_url) return false;
+            const audio = get('narrationAudio');
+            if (typeof jingleUI !== 'undefined') jingleUI.stop();
+            return new Promise(resolve => {
+                let settled = false;
+                const finish = played => {
+                    if (settled) return;
+                    settled = true;
+                    audio.removeEventListener?.('ended', ended);
+                    audio.removeEventListener?.('error', failed);
+                    resolve(played);
+                };
+                const ended = () => finish(token === revision);
+                const failed = () => finish(false);
+                audio.addEventListener?.('ended', ended, {once:true});
+                audio.addEventListener?.('error', failed, {once:true});
+                Promise.resolve(audio.play()).then(() => {
+                    if (token !== revision) { audio.pause(); finish(false); }
+                }).catch(() => finish(false));
+            });
         }
     };
 })();

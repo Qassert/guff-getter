@@ -12,7 +12,7 @@ def test_caps_and_fallback_use_only_body():
     for candidate in (None, 'x' * 141, body, 'A completely unrelated title'):
         title = final_title(body, candidate)
         assert len(title) <= 140
-        assert len(title.split()) <= 20
+        assert len(title.split()) <= 6
         assert title in body
 
 
@@ -21,11 +21,11 @@ def test_short_and_single_long_word_bodies():
     assert len(final_title('x' * 180, None)) == 140
 
 
-def test_twenty_word_title_accepted_but_twenty_one_falls_back():
-    title = ' '.join('word' + str(i) for i in range(20))
+def test_six_word_title_accepted_but_seven_falls_back():
+    title = ' '.join('word' + str(i) for i in range(6))
     body = title + ' extra sentence.'
     assert final_title(body, title) == title
     rejected = final_title(body, title + ' extra')
-    assert len(rejected.split()) <= 20
+    assert len(rejected.split()) <= 6
     assert len(rejected) <= 140
     assert rejected != title + ' extra'

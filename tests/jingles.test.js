@@ -35,7 +35,7 @@ function setup(blocked = false) {
  assert(t.nodes.jingleButton.disabled);
  t.setSaved({jingles:[{entry_id:'one',title:'New jingle',jingle_genre:'Funk',jingle_url:'/generated-audio/one.mp3'}]});
  t.complete({jingle_status:'complete',jingle_url:'/generated-audio/one.mp3',can_generate:false,jingle_genre:'Funk'});await flush();
- assert.equal(t.audios[0].plays,1);
+ assert.equal(t.audios.length,0);
  assert.equal(t.nodes.jingleGenre.hidden,true);
  assert.equal(t.nodes.creationMeta.textContent,'MUSIC GENRE: FUNK');
  assert.equal(t.nodes.jingleButton.textContent,'▶ PLAY JINGLE');
@@ -45,11 +45,11 @@ function setup(blocked = false) {
  await t.ui.act();await t.ui.act();
  assert.equal(t.calls.length,before);assert.equal(t.audios.length,1);
  assert(t.audios[0].played);t.ui.stop();assert(t.audios[0].paused);
- // Blocked autoplay retains PLAY and never submits again.
+ // Blocked explicit playback retains PLAY and never submits again.
  t=setup(true);t.ui.show({nominated:true,rewrite_id:'blocked'});await flush();
  t.ui.act();t.complete({jingle_status:'complete',jingle_url:'/blocked.mp3',jingle_genre:'Heavy Metal'});await flush();
- assert.equal(t.audios[0].plays,1);assert(!t.nodes.jingleButton.disabled);
- await t.ui.act();assert.equal(t.audios[0].plays,2);
+ assert.equal(t.audios.length,0);assert(!t.nodes.jingleButton.disabled);
+ await t.ui.act();assert.equal(t.audios[0].plays,1);
  assert.equal(t.calls.filter(c=>c.options.method==='POST').length,1);
  assert.equal(t.nodes.jingleGenre.hidden,true);
  assert.equal(t.nodes.creationMeta.textContent,'MUSIC GENRE: HEAVY METAL');
@@ -60,7 +60,7 @@ function setup(blocked = false) {
  assert(!t.calls.some(c=>c.options.method==='POST'));
  assert.equal(t.nodes.jingleGenre.hidden,true);
  assert.equal(t.nodes.creationMeta.textContent,'MUSIC GENRE: FUNK');
- assert.equal(t.audios[0].plays,1);
+ assert.equal(t.audios.length,0);
  // Late old response cannot attach to a new rewrite.
  t=setup();t.ui.show({nominated:true,rewrite_id:'old'});await flush();
  t.ui.act();t.ui.show({nominated:false,rewrite_id:'new'});

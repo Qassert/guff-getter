@@ -8,9 +8,32 @@
         show(data) {
             this.revision++;
             this.cancel(this.timer);
+            this.cancel(this.audioTimer);
             this.available = data?.nominated === true && !!data?.rewrite_id;
             this.started = false; this.waiting = false; this.errors = {};
             this.render({available:this.available, label:'EMBELLISH', disabled:false, message:''});
+        }
+        sequenceAudio(token, polls=0) {
+            if (token !== this.revision) return;
+            const media = this.media(), narration = media.Narration.snapshot();
+            const narrationBusy = narration.pending || narration.narration_status === 'started';
+            if (narrationBusy && polls < 720) {
+                this.audioTimer = this.schedule(()=>this.sequenceAudio(token, polls+1), 1000);
+                return;
+            }
+            Promise.resolve(narration.narration_url && media.Narration.playForEmbellish?.()).then(() => {
+                if (token === this.revision) this.playJingle(token);
+            });
+        }
+        playJingle(token, polls=0) {
+            if (token !== this.revision) return;
+            const jingle = this.media().Jingle, state = jingle.snapshot();
+            const busy = state.pending || ['started','submitted'].includes(state.jingle_status);
+            if (busy && polls < 720) {
+                this.audioTimer = this.schedule(()=>this.playJingle(token, polls+1), 1000);
+                return;
+            }
+            if (state.jingle_url) jingle.playForEmbellish?.();
         }
         update(token, polls=0) {
             if (token !== this.revision) return;
@@ -42,6 +65,7 @@
             if (token !== this.revision) return;
             this.waiting = false;
             this.update(token);
+            this.sequenceAudio(token);
         }
     }
     if (typeof module !== 'undefined') module.exports = {Embellish};

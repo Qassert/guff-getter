@@ -1,7 +1,7 @@
 /* Only MAKE sends POST. Status restoration and PLAY never request generation. */
 const jingleUI = (() => {
     let revision = 0, rewrite = null, state = null, pending = false, audio = null, timer = null;
-    let saved = [], discovery = 0, nominated = null, autoplay = false, lookup = Promise.resolve();
+    let saved = [], discovery = 0, nominated = null, lookup = Promise.resolve();
     const get = id => document.getElementById(id);
 
     function stop() {
@@ -21,10 +21,6 @@ const jingleUI = (() => {
             button.disabled = pending || !(data.jingle_url || data.can_generate);
             button.textContent = data.jingle_url ? '▶ PLAY JINGLE' :
                 pending || ['started', 'submitted'].includes(data.jingle_status) ? 'MAKING JINGLE…' : 'MAKE JINGLE';
-        }
-        if (autoplay && data.jingle_url) {
-            autoplay = false;
-            act(); // Playback failure is caught in act; never re-submits generation.
         }
         const msg = get('jingleMessage');
         if (msg) {
@@ -54,7 +50,7 @@ const jingleUI = (() => {
         const token = ++revision;
         if (timer) clearTimeout(timer);
         stop();
-        audio = null; state = null; pending = false; autoplay = false;
+        audio = null; state = null; pending = false;
         nominated = Boolean(data && data.nominated);
         rewrite = nominated ? data.rewrite_id : null;
         const controls = get('jingleControls');
@@ -68,9 +64,34 @@ const jingleUI = (() => {
             if (msg) msg.textContent = '';
             return;
         }
-        autoplay = true;
         render({message: 'Checking saved jingle…', can_generate: false});
         lookup = refresh(token, rewrite);
+    }
+
+    async function playCurrent() {
+        if (!state?.jingle_url) return false;
+        if (!audio) {
+            audio = new Audio(state.jingle_url);
+            audio.onended = () => {
+                const stopBtn = get('jingleStop');
+                if (stopBtn) stopBtn.hidden = true;
+            };
+        }
+        const token = revision, playing = audio;
+        try {
+            if (typeof narrationUI !== 'undefined') narrationUI.pause();
+            await playing.play();
+            if (token !== revision) { playing.pause(); return false; }
+            const stopBtn = get('jingleStop');
+            if (stopBtn) stopBtn.hidden = false;
+            return true;
+        } catch (_) {
+            if (token === revision) {
+                const msg = get('jingleMessage');
+                if (msg) msg.textContent = 'Audio could not play. Try PLAY again.';
+            }
+            return false;
+        }
     }
 
     async function act() {
@@ -80,31 +101,12 @@ const jingleUI = (() => {
                 stop();
                 return;
             }
-            if (!audio) {
-                audio = new Audio(state.jingle_url);
-                audio.onended = () => {
-                    const stopBtn = get('jingleStop');
-                    if (stopBtn) stopBtn.hidden = true;
-                };
-            }
-            const token = revision, playing = audio;
-            try {
-                if (typeof narrationUI !== 'undefined') narrationUI.pause();
-                await playing.play();
-                if (token !== revision) { playing.pause(); return; }
-                const stopBtn = get('jingleStop');
-                if (stopBtn) stopBtn.hidden = false;
-            } catch (_) {
-                if (token === revision) {
-                    const msg = get('jingleMessage');
-                    if (msg) msg.textContent = 'Audio could not play. Try PLAY again.';
-                }
-            }
+            await playCurrent();
             return;
         }
         if (!state.can_generate) return;
         const token = revision, id = rewrite;
-        pending = true; autoplay = true; render(state);
+        pending = true; render(state);
         try {
             const response = await fetch('/jingles/' + encodeURIComponent(id), {
                 method: 'POST', credentials: 'include',
@@ -173,5 +175,12 @@ const jingleUI = (() => {
             await lookup;
             if (token !== revision || state?.jingle_url || pending || ['started', 'submitted'].includes(state?.jingle_status)) return;
             await act();
-        }, selectSaved: () => {}, playSaved: act, stopSaved: stop};
+        },
+        async playForEmbellish() {
+            const token = revision;
+            await lookup;
+            if (token !== revision) return false;
+            return playCurrent();
+        },
+        selectSaved: () => {}, playSaved: act, stopSaved: stop};
 })();

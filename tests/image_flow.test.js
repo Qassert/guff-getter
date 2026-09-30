@@ -38,7 +38,7 @@ function setup(options = {}) {
         assert.equal(elements.outputContainer.style.display,'block');
         return new Promise(resolve=>imageResolve=resolve);
       }
-      if(url==='/temp/image_result/saved') return {ok:true,json:async()=>({rewrite_id:'saved',crazyReplacement1Title:'SAVED',crazyReplacement1Extract:'TEXT',image_url:'/generated-images/saved.png',image_style:options.style,nominated:!!options.nominated,image_redo_pending:!!options.pending})};
+      if(url==='/temp/image_result/saved') return {ok:true,json:async()=>({rewrite_id:'saved',crazyReplacement1Title:'SAVED',crazyReplacement1Extract:'TEXT',image_url:options.failed?null:'/generated-images/saved.png',image_style:options.style,nominated:!!options.nominated,image_redo_pending:!!options.pending,image_generation_failed:!!options.failed})};
       return {ok:true,json:async()=>({})};
     }};
   vm.createContext(context);vm.runInContext(fs.readFileSync('newsmuncher/static/image-colors.js','utf8'),context);vm.runInContext(fs.readFileSync('newsmuncher/static/script.js','utf8'),context);
@@ -56,6 +56,10 @@ function setup(options = {}) {
   assert.equal(t.calls.length,1);assert.equal(t.elements.crazyTitleBox.textContent,'...REWRITTEN...');
   t.paint();await flush();assert.equal(t.calls.length,2);
   assert(t.loading.includes('start'));t.resolveImage(false);await flush();assert.equal(t.loading.at(-1),'stop');assert.match(t.elements.imagePanel.textContent,/unavailable/);assert.equal(t.elements.crazyTitleBox.textContent,'...REWRITTEN...');
+  assert.equal(t.loading.filter(value=>value==='start').length,1); // Backend retry stays inside one loading/shuffle session.
+  assert.equal(t.elements.redoImageButton.hidden,false);
+  t.context.redoImage();assert.equal(t.calls.filter(([url])=>url==='/temp/redo_image').length,1);
+  assert.equal(JSON.parse(t.calls.at(-1)[1].body).previous_image_url,null);
   t=setup();t.elements.generateImages.checked=true;t.context.confirmData();await flush();t.paint();await flush();
   t.elements.generateImages.checked=false;t.context.confirmData();await flush();t.resolveImage(true);await flush();
   assert(t.elements.imagePanel.classList.contains('hidden'));assert.equal(t.elements.imagePanel.children.length,0);
@@ -118,6 +122,7 @@ function setup(options = {}) {
   const redoCount=t.calls.length;await t.context.redoImage();assert.equal(t.calls.length,redoCount);
   t=setup({restore:true,nominated:true});t.context.window.onload();await flush();assert(t.elements.redoImageButton.hidden);
   t=setup({restore:true,pending:true});t.context.window.onload();await flush();assert(t.elements.redoImageButton.disabled);
+  t=setup({restore:true,failed:true});t.context.window.onload();await flush();assert.equal(t.elements.redoImageButton.hidden,false);
   t=setup({restore:true});t.context.window.onload();await flush();t.context.redoImage();t.resolveRedo(false);await flush();
   assert(t.elements.redoImageButton.disabled);await t.context.redoImage();
   assert.equal(t.calls.filter(([url])=>url==='/temp/redo_image').length,1);

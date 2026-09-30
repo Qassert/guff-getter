@@ -63,6 +63,10 @@ class ImageProvider(Protocol):
     def generate_image(self, prompt: str, rewrite_id: str) -> dict: ...
 
 
+class DefinitiveImageFailure(RuntimeError):
+    """Provider positively returned without a usable image; no request is in flight."""
+
+
 class LocalStubProvider:
     """Retained for offline tests and legacy demonstrations only."""
     def generate_image(self, prompt: str, rewrite_id: str | None = None) -> dict:
@@ -105,7 +109,7 @@ class OpenAIImageProvider:
             response = client.images.generate(model=IMAGE_MODEL, quality=IMAGE_QUALITY,
                 size=IMAGE_SIZE, n=1, output_format='png', prompt=prompt)
         if not response.data or len(response.data) != 1 or not response.data[0].b64_json:
-            raise ValueError('Expected one generated image.')
+            raise DefinitiveImageFailure('Provider returned no usable image.')
         image = base64.b64decode(response.data[0].b64_json, validate=True)
         if not image.startswith(b'\x89PNG\r\n\x1a\n'):
             raise ValueError('Expected PNG image data.')

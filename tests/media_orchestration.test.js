@@ -4,6 +4,7 @@ const {AnimationUI}=require('../newsmuncher/static/video.js');
 function setup(mode='missing') {
  const nodes={},calls=[],audios=[];
  const get=id=>nodes[id] ||= {hidden:true,paused:true,value:'body',textContent:'...title...',
+   events:{},addEventListener(name,fn){this.events[name]=fn;},removeEventListener(name,fn){if(this.events[name]===fn)delete this.events[name];},
    pause(){this.paused=true;},plays:0,async play(){this.plays++;this.paused=false;},load(){},removeAttribute(k){delete this[k];},getAttribute(k){return this[k];}};
  const fetcher=async(url,opts={})=>{
    calls.push([url,opts.method||'GET']);
@@ -29,8 +30,12 @@ for(const mode of ['missing','saved','working']) test(`real controllers reuse ex
  const posts=t.calls.filter(x=>x[1]==='POST');
  assert.equal(posts.length,mode==='missing'?3:0);
  if(mode!=='working') {
+   await new Promise(setImmediate);
    assert.equal(t.states.at(-1).label,'EMBELLISHED');
-   assert.equal(t.nodes.narrationAudio.plays,0);assert(t.nodes.narrationAudio.hidden);
+   assert.equal(t.nodes.narrationAudio.plays,1);assert(t.nodes.narrationAudio.hidden);
+   assert.equal(t.audios.length,0);
+   t.nodes.narrationAudio.events.ended();await new Promise(setImmediate);
+   assert.equal(t.audios.length,1);assert(t.audios[0].played);
  }
  await t.ui.act();assert.equal(t.calls.filter(x=>x[1]==='POST').length,posts.length);
 });

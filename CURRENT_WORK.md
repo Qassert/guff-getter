@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Shared Creator/Viewing shell with entry-specific gallery backdrop and editing
-LAST_COMPLETED_COMMIT: :/^Add entry backdrops to shared gallery shell
+LAST_COMPLETED_FEATURE: Safe image recovery, six-word titles and explicit Creator audio sequencing
+LAST_COMPLETED_COMMIT: :/^Refine creation recovery titles and audio intent
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,39 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Refine shared Creator/Viewing shell, gallery entry backdrops and edit navigation. Complete.
-APPROVAL: Frontend/template refinement, tests, separate commit and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews the entry backdrop, EDIT return flow and compact shared shell.
-VALIDATION: Gallery template/API tests 15 passed; focused frontend 43 passed; full Node frontend suite 66 passed. No provider calls; diff check clean.
+CURRENT_TASK: Add safe one-time image recovery, six-word titles and explicit EMBELLISH narration-to-jingle playback. Complete.
+APPROVAL: Preserve completed shell/gallery work; use mocked providers, test, commit separately and push. No live provider calls, deployment or main changes.
+NEXT_STEP: Andy reviews safe image recovery, shorter titles and narration-first EMBELLISH playback.
+VALIDATION: Full Node frontend suite 69 passed. Full Python suite 285 passed + 105 subtests; existing warnings only. No provider calls; diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Safe image recovery, six-word titles and explicit audio intent — 2026-09-30
+
+Initial images may make one automatic recovery submission only after the provider
+positively returns without a usable image. The first failed attempt and second claim
+are durable before retry. The retry uses a new image UUID and retains the chosen style,
+prompt and rewrite association. Timeouts, network/provider ambiguity, invalid local
+files and write/metadata failures never auto-retry. A second definite failure stops;
+REDO IMAGE is then available, including after restore and when no image was published.
+Its press is the user's explicit paid decision. The existing loading/photo shuffle
+spans the server-side retry and never exposes an empty panel while the request runs.
+
+The copy-edit prompt and local grounded validation now enforce at most six title words.
+Extractive fallback also stops at six; historical stored titles and the two-call text
+flow are untouched, and no model call was added.
+
+Creator jingle discovery, restore and generation completion are silent. EMBELLISH is
+the explicit intent that generates/reuses media, waits for readiness, plays narration
+first, then starts the jingle only after narration ends naturally. Missing narration
+falls through to jingle; missing jingle leaves narration intact. Revision guards and
+timer cancellation prevent old completion callbacks starting audio after a rewrite.
+Manual PLAY controls remain and still enforce exclusive audio. Gallery sequencing is
+unchanged. The shell/backdrop/EDIT/top-spacing work from ec9ebcd remains intact.
+
+Full mocked/offline suites pass. No live provider/API call, deployment, main change,
+historical migration or generation-cost/prompt-setting change beyond the requested
+six-word title instruction and one strictly classified image recovery was made.
 
 ## Gallery entry backdrops and exact edit return — 2026-09-30
 

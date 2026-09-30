@@ -153,6 +153,54 @@ class ImageTests(unittest.TestCase):
         with self.store.transaction() as db:
             self.assertEqual(self.store.read(db, result['rewrite_id'], 'alice')['result'], result)
 
+    def test_definite_failure_gets_one_claimed_automatic_retry(self):
+        routes = self.previews()
+        rid = self.store.create(self.result, 'alice')['rewrite_id']
+        success = LocalStubProvider().generate_image('retry prompt')
+        provider = MagicMock()
+        provider.generate_image.side_effect = [routes.DefinitiveImageFailure('empty'), success]
+        with patch.object(routes, 'get_provider', return_value=provider):
+            result = routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
+        self.assertEqual(result['image_url'], success['image_url'])
+        self.assertEqual(provider.generate_image.call_count, 2)
+        with self.store.transaction() as db:
+            state = self.store.read(db, rid, 'alice')
+        self.assertEqual(state['image_attempt']['retry_count'], 1)
+        self.assertEqual(state['image_attempt']['status'], 'complete')
+        self.assertEqual(state['image_attempt_history'][0]['status'], 'definitive_failed')
+
+    def test_two_definite_failures_stop_and_allow_explicit_redo(self):
+        routes = self.previews()
+        rid = self.store.create(self.result, 'alice')['rewrite_id']
+        provider = MagicMock()
+        provider.generate_image.side_effect = [routes.DefinitiveImageFailure('empty'),
+            routes.DefinitiveImageFailure('empty again')]
+        with patch.object(routes, 'get_provider', return_value=provider):
+            with self.assertRaises(routes.HTTPException) as error:
+                routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
+        self.assertEqual(error.exception.status_code, 422)
+        self.assertEqual(provider.generate_image.call_count, 2)
+        with self.store.transaction() as db:
+            state = self.store.read(db, rid, 'alice')
+        self.assertEqual(state['image_attempt']['status'], 'definitive_failed')
+        self.assertTrue(routes.get_image_result(rid, 'alice')['image_generation_failed'])
+        replacement = LocalStubProvider().generate_image('user-approved redo')
+        with patch.object(routes, 'get_provider', return_value=types.SimpleNamespace(generate_image=lambda *_: replacement)):
+            result = routes.redo_image(routes.RedoImageRequest(rewrite_id=rid), 'alice')
+        self.assertEqual(result['image_url'], replacement['image_url'])
+
+    def test_ambiguous_failure_never_retries_automatically(self):
+        routes = self.previews()
+        rid = self.store.create(self.result, 'alice')['rewrite_id']
+        provider = MagicMock(); provider.generate_image.side_effect = TimeoutError('uncertain')
+        with patch.object(routes, 'get_provider', return_value=provider):
+            with self.assertRaises(routes.HTTPException) as error:
+                routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
+            self.assertEqual(error.exception.status_code, 502)
+            with self.assertRaises(routes.HTTPException):
+                routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
+        self.assertEqual(provider.generate_image.call_count, 1)
+
     def test_rewrite_off_payload_and_on_identity(self):
         routes = self.previews()
         routes.load_prompt = MagicMock(return_value='prompt')
