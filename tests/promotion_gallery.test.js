@@ -1,6 +1,6 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
-const {PromotionGallery} = require('../newsmuncher/static/promotion-gallery.js');
+const {PromotionGallery,creatorEditUrl} = require('../newsmuncher/static/promotion-gallery.js');
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a; reject=b;}); return {promise,resolve,reject}; };
 const response = data => ({ok:true, json:async () => data});
 const item = id => ({id,title:'Title '+id,body:'Body '+id,promoted:false});
@@ -55,6 +55,11 @@ test('late promotion does not change another page; leaving cancels retrieval', a
     promotion.resolve(response({promoted:true})); await p;
     assert.equal(gallery.current.promoted,false);
     gallery.leave(); assert(gallery.abort.signal.aborted);
+});
+test('EDIT targets the current rewrite within the authenticated Creator route',()=>{
+    assert.equal(creatorEditUrl('/pets/pet_profile/current-pet','rewrite/id'),
+        '/pets/pet_profile/current-pet?rewrite_id=rewrite%2Fid');
+    assert.equal(creatorEditUrl('/pets/pet_profile/current-pet',null),'/pets/pet_profile/current-pet');
 });
 
 const {GalleryMedia} = require('../newsmuncher/static/promotion-gallery.js');
@@ -225,7 +230,7 @@ test('page turn cancels narration whose play promise is still pending', async()=
     assert.deepEqual(players.filter(p=>p.playing).map(p=>p.src),['/new']);
 });
 
-const {GalleryVideo} = require('../newsmuncher/static/promotion-gallery.js');
+const {GalleryVideo,GalleryBackdrop} = require('../newsmuncher/static/promotion-gallery.js');
 function videoSetup(start=()=>Promise.resolve()) {
     const players=[], timers=[], revealed=[], cancelled=[]; let reduce=false;
     const visual=new GalleryVideo({makeVideo(){
@@ -281,6 +286,36 @@ test('gallery navigation and leave stop visuals before retrieval, independent of
     const next=gallery.next(); assert.deepEqual(calls,['audio-stop','video-stop','loading']);
     gallery.leave(); assert.deepEqual(calls.slice(-2),['audio-stop','video-stop']);
     wait.resolve(response({item:null})); await next;
+});
+
+function backdropSetup(start=()=>Promise.resolve(), reduced=false) {
+    const players=[], images=[], revealed=[];
+    const backdrop=new GalleryBackdrop({makeVideo(){
+        const player=new FakeAudio(start); player.setAttribute=()=>{};
+        player.remove=()=>{player.removed=true;}; players.push(player); return player;
+    },mount(){},showImage:url=>images.push(url),reveal:value=>revealed.push(value),reduced:()=>reduced});
+    return {backdrop,players,images,revealed};
+}
+test('gallery backdrop uses saved video over its still and replaces the old player',async()=>{
+    const {backdrop,players,images,revealed}=backdropSetup();
+    backdrop.activate({image_url:'/still-a',video_url:'/video-a'}); await new Promise(setImmediate);
+    players[0].events.playing();
+    assert.equal(images.at(-1),'/still-a'); assert.equal(revealed.at(-1),true);
+    assert(players[0].muted && players[0].playsInline && players[0].loop);
+    backdrop.activate({image_url:'/still-b',video_url:'/video-b'}); await new Promise(setImmediate);
+    assert(!players[0].playing && players[0].removed && players[0].src==='');
+    assert.equal(players.length,2); assert.equal(images.at(-1),'/still-b');
+});
+test('image-only, reduced-motion and blocked backdrop playback retain the still',async()=>{
+    const imageOnly=backdropSetup(); imageOnly.backdrop.activate({image_url:'/still'});
+    assert.deepEqual(imageOnly.images,[null,'/still']); assert.equal(imageOnly.players.length,0);
+    const reduced=backdropSetup(()=>Promise.resolve(),true);
+    reduced.backdrop.activate({image_url:'/reduced',video_url:'/moving'});
+    assert.equal(reduced.images.at(-1),'/reduced'); assert.equal(reduced.players.length,0);
+    const blocked=backdropSetup(()=>Promise.reject(Error('blocked')));
+    blocked.backdrop.activate({image_url:'/fallback',video_url:'/blocked'}); await new Promise(setImmediate);
+    assert(blocked.players[0].removed); assert.equal(blocked.images.at(-1),'/fallback');
+    assert.equal(blocked.revealed.at(-1),false);
 });
 
 

@@ -4,6 +4,14 @@
   --print-headline-font: Rockwell, 'Rockwell Nova', 'Roboto Slab', Georgia, 'Times New Roman', serif;
   --print-body-font: Georgia, 'Times New Roman', serif;
 }
+.gallery-backdrop { position: fixed; inset: 0; z-index: -3; overflow: hidden; background: var(--paper); }
+.gallery-backdrop img, .gallery-backdrop video { position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center; }
+.gallery-backdrop img { opacity: .72; }
+.gallery-backdrop video { opacity: 0; transition: opacity 600ms ease; }
+.gallery-backdrop.animation-playing video { opacity: .72; }
+.promotion-gallery-page::after { content: ''; position: fixed; inset: 0; z-index: -2;
+  background: rgba(242, 240, 231, .14); pointer-events: none; }
 .promotion-gallery-page .funky-button {
   position: relative; isolation: isolate; display: inline-flex; align-items: center;
   justify-content: center; min-height: 52px; padding: 14px 22px;
@@ -73,6 +81,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .gallery-page.turning { animation: none; }
+  .gallery-backdrop video { display: none; transition: none; }
 }
 /* Hidden states must win over the desktop image/text grid. */
 .promotion-gallery [hidden] { display: none !important; }

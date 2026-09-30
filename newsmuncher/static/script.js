@@ -346,7 +346,11 @@ function displayRewriteImage(url, current, style = null) {
 
 async function restoreImageRewrite() {
     let id;
-    try { id = sessionStorage.getItem('newsmuncher.imageRewrite'); } catch (_) { return; }
+    try { id = new URLSearchParams(window.location.search).get('rewrite_id'); } catch (_) {}
+    try {
+        id = id || sessionStorage.getItem('newsmuncher.imageRewrite');
+        if (id) sessionStorage.setItem('newsmuncher.imageRewrite', id);
+    } catch (_) { if (!id) return; }
     if (!id) return;
     const sequence = rewriteSequence;
     try {

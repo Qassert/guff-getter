@@ -103,6 +103,7 @@ class PromotionGallery:
         key = str(entry['_id'])
         return {'id': key, 'title': entry.get('crazyReplacement1Title') or '',
             'body': entry.get('crazyReplacement1Extract') or '',
+            'rewrite_id': entry.get('rewrite_id'),
             'promoted': entry.get('promoted') is True,
             'seen_count': seen(entry),
             'image_style': entry.get('image_style'),

@@ -279,6 +279,8 @@ def test_gallery_page_and_navigation(routes):
     assert '/pets/pet_profile/pet' in response.text
     assert 'aria-current="page">VIEWING' in response.text
     assert '>CREATOR</a>' in response.text
+    assert 'id="galleryEdit"' in response.text
+    assert 'id="galleryBackdrop"' in response.text
     assert 'promotion-gallery.js' in response.text
     assert 'script.js' not in response.text and 'MAKE JINGLE' not in response.text
     assert '/promotion-gallery/' in Path('newsmuncher/templates/pet_profile.html').read_text()
@@ -310,7 +312,12 @@ def test_creator_and_viewing_share_compact_mode_navigation():
         assert obsolete not in gallery
     assert 'justify-content: center' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
     assert 'flex-wrap: wrap' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
+    assert '.workshop { max-width: 960px; margin-inline: auto; }' in shared_css
+    assert '.profile-page .workshop { padding-top: 0; }' in shared_css
+    assert 'width: min(960px' in gallery_css
     assert 'var(--accent)' not in gallery_css
+    assert 'data-creation-url="{{ creation_url }}"' in gallery
+    assert 'object-fit: cover' in gallery_css
 
 
 def test_cycle_boundary_avoids_previous_and_int64_counts(setup):
@@ -402,6 +409,7 @@ def test_gallery_video_only_serves_completed_local_association(routes, setup, tm
     assert response.status_code == 206 and response.headers['content-type'] == 'video/mp4'
     result = service.serialize(entry)
     assert result['video_url'] == url
+    assert result['rewrite_id'] == rewrite
     assert 'not-for-gallery-ui' not in json.dumps(result)
     entry['video']['status'] = 'started'
     assert client.get(url).status_code == 404

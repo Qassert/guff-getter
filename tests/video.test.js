@@ -86,6 +86,12 @@ test('real DOM binding presents animation states with no generation button for s
     assert.match(css,/\.image-panel\.animation-playing \.creation-animation \{ opacity: 1/);
 });
 
+test('Creator restore accepts an exact gallery rewrite selector without generating media',()=>{
+    const fs=require('node:fs'); const script=fs.readFileSync('newsmuncher/static/script.js','utf8');
+    assert.match(script,/new URLSearchParams\(window\.location\.search\)\.get\('rewrite_id'\)/);
+    assert.match(script,/fetch\(`\/temp\/image_result\/\$\{encodeURIComponent\(id\)\}`/);
+});
+
 
 for (const operation of ['show/stop', 'poll scheduling']) {
     test(`browser timer defaults support AnimationUI ${operation}`, async () => {

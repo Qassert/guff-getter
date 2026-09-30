@@ -1,6 +1,8 @@
 /* Stored nominations only; never calls a generation endpoint. */
 (function (root) {
     'use strict';
+    const creatorEditUrl = (base, rewriteId) => rewriteId
+        ? base + '?rewrite_id=' + encodeURIComponent(rewriteId) : base;
     class GalleryMedia {
         constructor({makeAudio = () => new Audio(), status = () => {}} = {}) {
             this.makeAudio = makeAudio;
@@ -122,11 +124,57 @@
             }
         }
     }
+    class GalleryBackdrop {
+        constructor({makeVideo = () => document.createElement('video'), mount = () => {},
+                     showImage = () => {}, reveal = () => {},
+                     reduced = () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches} = {}) {
+            Object.assign(this, {makeVideo, mount, showImage, reveal, reduced});
+            this.generation = 0;
+        }
+        clearVideo() {
+            this.generation++;
+            if (this.player) {
+                this.player.pause(); this.player.removeAttribute('src'); this.player.load(); this.player.remove();
+                this.player = null;
+            }
+            this.reveal(false);
+        }
+        stop() {
+            this.clearVideo();
+            this.showImage(null);
+        }
+        activate(item) {
+            this.stop();
+            this.showImage(item.image_url || null);
+            if (!item.video_url || this.reduced()) return;
+            const generation = this.generation, player = this.makeVideo();
+            this.player = player;
+            player.muted = true; player.defaultMuted = true; player.playsInline = true;
+            player.loop = true; player.controls = false; player.preload = 'auto';
+            player.setAttribute('aria-hidden', 'true');
+            const fail = () => { if (generation === this.generation) this.clearVideo(); };
+            player.addEventListener('playing', () => {
+                if (generation !== this.generation) { player.pause(); return; }
+                if (this.reduced()) { this.clearVideo(); return; }
+                this.reveal(true);
+            });
+            player.addEventListener('error', fail);
+            this.mount(player);
+            player.src = item.video_url;
+            player.load();
+            try {
+                Promise.resolve(player.play()).then(() => {
+                    if (generation !== this.generation) player.pause();
+                }).catch(fail);
+            } catch (_) { fail(); }
+        }
+    }
     class PromotionGallery {
-        constructor({view, fetcher = (url, options) => fetch(url, options), afterDisplay = () => Promise.resolve(), media = new GalleryMedia(), visual = new GalleryVideo()}) {
+        constructor({view, fetcher = (url, options) => fetch(url, options), afterDisplay = () => Promise.resolve(), media = new GalleryMedia(), visual = new GalleryVideo(), backdrop = new GalleryBackdrop()}) {
             this.view = view;
             this.media = media;
             this.visual = visual;
+            this.backdrop = backdrop;
             this.fetcher = fetcher;
             this.afterDisplay = afterDisplay;
             this.sequence = 0;
@@ -167,6 +215,7 @@
             const sequence = ++this.sequence;
             this.media.stop();
             this.visual.stop();
+            this.backdrop.stop();
             if (this.abort) this.abort.abort();
             this.abort = new AbortController();
             this.view.loading();
@@ -180,6 +229,7 @@
                 this.current = data.item;
                 if (!data.item) { this.view.empty(); return; }
                 this.view.show(data.item);
+                this.backdrop.activate(data.item);
                 await this.afterDisplay();
                 if (sequence !== this.sequence) return;
                 this.media.activate(data.item);
@@ -212,14 +262,16 @@
             this.sequence++;
             this.media.stop();
             this.visual.stop();
+            this.backdrop.stop();
             if (this.abort) this.abort.abort();
         }
     }
     root.PromotionGallery = PromotionGallery;
-    if (typeof module !== 'undefined') module.exports = {PromotionGallery, GalleryMedia, GalleryVideo};
+    if (typeof module !== 'undefined') module.exports = {PromotionGallery, GalleryMedia, GalleryVideo, GalleryBackdrop, creatorEditUrl};
     if (typeof document === 'undefined' || !document.getElementById('galleryPage')) return;
     const get = id => document.getElementById(id);
     const page = get('galleryPage'), status = get('galleryStatus'), promote = get('galleryPromote');
+    const edit = get('galleryEdit'), creationUrl = document.querySelector('.promotion-gallery').dataset.creationUrl;
     const view = {
         loading() { status.textContent = 'Turning the page…'; promote.disabled = true; page.setAttribute('aria-busy', 'true'); },
         empty() { page.hidden = true; page.setAttribute('aria-busy', 'false'); status.textContent = 'The collection is waiting for its first nomination. Head back to NewsMuncher to nominate a creation.'; },
@@ -229,6 +281,8 @@
             get('galleryPromoted').hidden = !item.promoted;
             promote.textContent = item.promoted ? 'PROMOTED' : 'PROMOTE';
             promote.disabled = item.promoted;
+            edit.hidden = !item.rewrite_id;
+            edit.href = creatorEditUrl(creationUrl, item.rewrite_id);
             // A fresh image prevents a late error from an old URL hiding the new page.
             const image = document.createElement('img');
             image.id = 'galleryImage'; image.alt = ''; image.decoding = 'async';
@@ -276,9 +330,21 @@
             get('galleryIllustration').classList.toggle('animation-playing', playing);
         }
     });
+    const backdropElement = get('galleryBackdrop'), backdropImage = get('galleryBackdropImage');
+    const backdrop = new GalleryBackdrop({
+        mount(player) { backdropElement.appendChild(player); },
+        showImage(url) {
+            backdropImage.hidden = !url;
+            if (url) backdropImage.src = url;
+            else backdropImage.removeAttribute('src');
+        },
+        reveal(playing) { backdropElement.classList.toggle('animation-playing', playing); }
+    });
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
-    motionPreference.addEventListener('change', event => { if (event.matches) visual.stop(); });
-    const gallery = new PromotionGallery({view, afterDisplay, media, visual});
+    motionPreference.addEventListener('change', event => {
+        if (event.matches) { visual.stop(); backdrop.clearVideo(); }
+    });
+    const gallery = new PromotionGallery({view, afterDisplay, media, visual, backdrop});
     get('galleryPlayAudio').addEventListener('click', () => media.play());
     get('galleryStopAudio').addEventListener('click', () => media.pause());
     page.addEventListener('animationend', () => page.classList.remove('turning'));

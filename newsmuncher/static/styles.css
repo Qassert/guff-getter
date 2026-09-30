@@ -69,7 +69,7 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
 .mode-nav-action { font-size: .8em; letter-spacing: .02em; }
 .form-container button { width: 100%; margin-top: 8px; }
 .error-message { background: #fff0ee; border-left: 4px solid var(--error); color: var(--error); font-weight: 700; padding: var(--space-2); margin-bottom: var(--space-3); }
-.workshop { max-width: 960px; }
+.workshop { max-width: 960px; margin-inline: auto; }
 .container { padding: var(--space-3); margin-bottom: var(--space-3); }
 .nonsense-container { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: transparent; border: 0; box-shadow: none; padding: 0 0 12px; }
 .nonsense-container button { background: var(--surface); }
@@ -175,11 +175,8 @@ body { isolation: isolate; }
   .profile-page #outputContainer { padding: 20px; }
 }
 
-/* Keep the artwork lead-in above the controls, not between tabs and paper. */
-.profile-page .workshop { padding-top: calc(25vh - 24px); }
-@supports (height: 100dvh) {
-  .profile-page .workshop { padding-top: calc(25dvh - 24px); }
-}
+/* Creator and Viewing begin at the same shell inset. */
+.profile-page .workshop { padding-top: 0; }
 .profile-page .nonsense-container { min-height: 0; margin-bottom: 0;
   justify-content: center; align-items: center; padding-bottom: 8px; }
 .profile-page .generation-controls { display: flex; flex-wrap: wrap; align-items: stretch;
@@ -199,12 +196,6 @@ body { isolation: isolate; }
 }
 .profile-page .image-toggle:hover .funky-button { transform: translate(-1px, -1px); }
 .profile-page .image-toggle:active .funky-button { transform: translate(2px, 2px); box-shadow: none; }
-@media (max-width: 620px), (max-height: 500px) {
-  .profile-page .workshop { padding-top: max(0px, calc(21vh - 24px)); }
-  @supports (height: 100dvh) {
-    .profile-page .workshop { padding-top: max(0px, calc(21dvh - 24px)); }
-  }
-}
 @media (max-width: 620px) {
   .profile-page .generation-controls { flex-direction: column; }
   .profile-page .image-toggle, .profile-page .image-toggle .funky-button { width: 100%; }

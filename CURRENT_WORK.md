@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Unified Creator and Viewing mode navigation/presentation
-LAST_COMPLETED_COMMIT: :/^Unify Creator and Viewing presentation
+LAST_COMPLETED_FEATURE: Shared Creator/Viewing shell with entry-specific gallery backdrop and editing
+LAST_COMPLETED_COMMIT: :/^Add entry backdrops to shared gallery shell
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,33 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Unify Creator and Viewing navigation and gallery presentation without changing gallery/media behaviour. Complete.
-APPROVAL: Refine templates and styling, test frontend, commit separately and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews the compact mode switch and simplified Viewing page.
-VALIDATION: Gallery template/API tests 15 passed; full Node frontend suite 62 passed. No provider calls; diff check clean.
+CURRENT_TASK: Refine shared Creator/Viewing shell, gallery entry backdrops and edit navigation. Complete.
+APPROVAL: Frontend/template refinement, tests, separate commit and push. No live provider calls, deployment or main changes.
+NEXT_STEP: Andy reviews the entry backdrop, EDIT return flow and compact shared shell.
+VALIDATION: Gallery template/API tests 15 passed; focused frontend 43 passed; full Node frontend suite 66 passed. No provider calls; diff check clean.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Gallery entry backdrops and exact edit return — 2026-09-30
+
+Creator and Viewing now share a centered 960px shell and normal top page inset; the
+old viewport-height Creator lead-in was removed at its parent rather than offsetting
+individual controls. Existing animation rendering already hid ANIMATE IMAGE for both
+newly ready and restored videos; that paid/idempotent state remains unchanged and is
+covered explicitly.
+
+Viewing receives the selected nomination's persisted rewrite ID. EDIT combines that
+ID with the existing session-derived Creator URL; Creator reads the query selector
+and restores through the existing owner-checked GET endpoint, with session restore as
+fallback. This performs no generation or media mutation.
+
+GalleryBackdrop is independent from foreground video/audio. Each entry first installs
+its still as a full-viewport cover image, then mounts at most one existing saved video
+as muted/inline/looping atmosphere. It reveals only after playback starts. Page turns,
+exit and replacement pause, unload and remove the prior player; generation guards
+reject stale callbacks. Autoplay/load failure and reduced motion retain the still.
+Parchment content remains above a light paper wash. Gallery selection, counts,
+promotion, foreground media sequencing and providers are unchanged. REVIEW/CODEX.
 
 ## Unified Creator and Viewing presentation — 2026-09-29
 
