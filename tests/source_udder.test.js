@@ -58,7 +58,10 @@ test('template keeps five native accessible actions and page-level unclipped eff
  assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*z-index:\s*2[^}]*pointer-events:\s*none/s);
  assert.match(css,/\.udder-teat\s*\{[^}]*z-index:\s*3/s);assert(!css.includes('mask-image: linear-gradient'));
  assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*top:\s*0/s);assert.match(css,/top:\s*min\(132px, 14\.8vw\)/);
- assert.match(css,/\.profile-page \.nonsense-container\s*\{[^}]*top:\s*calc\(-1\.25 \* var\(--paper-edge\) - 60px\)/s);
+ assert.match(css,/\.profile-page \.workshop\s*\{[^}]*position:\s*relative/s);
+ assert.match(css,/\.profile-page \.mode-nav\s*\{[^}]*position:\s*absolute[^}]*margin-bottom:\s*0/s);
+ assert.match(css,/\.profile-page \.nonsense-container\s*\{[^}]*top:\s*calc\(-1\.25 \* var\(--paper-edge\)\)/s);
+ assert(!css.includes('var(--paper-edge) - 60px'));
  for(const socket of ['18.1%','33.3%','50.9%','68.5%','84.7%'])assert(html.includes(`'${socket}'`));
  assert(html.includes('aria-label="{{ label }}"'));assert.match(css,/\.udder-liquid-layer[^}]*position:\s*fixed[^}]*overflow:\s*visible[^}]*pointer-events:\s*none/);
  assert.match(css,/udder-blot-drain\s+4s/);assert.match(css,/opacity:1/);assert.match(css,/prefers-reduced-motion/);

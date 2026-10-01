@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Complete cow/udder wrapper lifted 60px to remove the page-top gap; awaiting review.
+CURRENT_TASK: Removed the in-flow 62px mode-navigation row above the cow and retired the temporary wrapper lift; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review the page-top alignment in-browser; no deployment performed.
-VALIDATION: Frontend 72/72; source-page Python checks 6/6; JavaScript syntax passed. Internal assembly and interaction code unchanged. No provider calls.
+NEXT_STEP: Verify scrollY=0 and top-return alignment in-browser; no deployment performed.
+VALIDATION: Frontend 72/72; source-page Python checks 6/6; JavaScript syntax passed. Udder internals and interaction code unchanged. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
 
