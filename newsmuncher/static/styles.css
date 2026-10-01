@@ -485,6 +485,92 @@ body { isolation: isolate; }
   animation: l9 2s linear infinite;
 }
 .loader:before { content: "Loading"; }
+
+/* One soft udder replaces the five source tabs; each teat remains a native button. */
+.profile-page .nonsense-container { overflow: visible; }
+.profile-page .source-udder {
+  position: relative; width: min(94vw, 900px); height: clamp(125px, 16vw, 165px);
+  overflow: visible; isolation: isolate;
+}
+.profile-page .udder-body {
+  position: absolute; inset: 0 0 auto; width: 100%; height: 72%; overflow: visible;
+  filter: drop-shadow(0 7px 5px #4a252d55); pointer-events: none;
+}
+.profile-page .udder-body path { fill: #d98d9d; stroke: #7e4556; stroke-width: 5; }
+.profile-page .udder-body ellipse { fill: #efaaba; opacity: .55; }
+.profile-page .nonsense-container .udder-teat {
+  position: absolute; z-index: 2; top: 42%;
+  left: calc((var(--teat-index) + .5) * 20%);
+  width: 18%; height: 62%; min-width: 0; min-height: 0; margin: 0; padding: 0;
+  border: 0; background: transparent; box-shadow: none; overflow: visible;
+  cursor: grab; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transform: translateX(-50%);
+}
+.profile-page .nonsense-container .udder-teat[aria-pressed] {
+  background: transparent; text-decoration: none; flex: none;
+}
+.profile-page .udder-teat::before { display: none; }
+.profile-page .udder-teat:active { cursor: grabbing; }
+.profile-page .udder-teat .teat-shape {
+  --bend: 0deg; --rotate: 0deg; --shift: 0px; --stretch: 1; --squash: 1;
+  display: block; width: clamp(48px, 7vw, 76px); height: 100%; margin: 0 auto;
+  transform-origin: 50% 8%; will-change: transform;
+  transform: translateX(var(--shift)) skewX(var(--bend)) rotate(var(--rotate))
+    scaleX(var(--squash)) scaleY(var(--stretch));
+}
+.profile-page .udder-teat .teat-shape svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.profile-page .udder-teat .teat-shape path { fill: #cc7488; stroke: #713b4c; stroke-width: 4; }
+.profile-page .udder-teat .teat-shape ellipse { fill: #a9546c; stroke: #713b4c; stroke-width: 3; }
+.profile-page .udder-teat[aria-pressed="true"] .teat-shape path { fill: #ef9caf; }
+.profile-page .udder-teat:focus-visible { outline: 3px solid var(--purple); outline-offset: 5px; border-radius: 45%; }
+.profile-page .udder-teat .teat-shape.squeezed { animation: teat-squeeze 240ms ease-out; }
+@keyframes teat-squeeze {
+  45% { transform: translateX(var(--shift)) skewX(var(--bend)) rotate(var(--rotate)) scaleX(1.28) scaleY(.72); }
+}
+
+.udder-liquid-layer { position: fixed; inset: 0; z-index: 40; overflow: visible; pointer-events: none; }
+.udder-spurt {
+  position: fixed; left: var(--start-x); top: var(--start-y); width: 9px; height: 28px;
+  border-radius: 70% 70% 55% 55%; background: var(--liquid);
+  box-shadow: 0 0 0 2px #ffffff44 inset; transform-origin: center top;
+  animation: udder-spurt 360ms cubic-bezier(.18,.7,.35,1) forwards;
+}
+@keyframes udder-spurt {
+  0% { transform: translate(-50%, 0) scaleY(.65); opacity: 1; }
+  75% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--travel-x)), var(--travel-y)) rotate(var(--travel-angle)) scaleY(1.45); opacity: .15; }
+}
+.udder-splash { position: fixed; left: var(--impact-x); top: var(--impact-y); width: 1px; height: 1px; }
+.udder-blot {
+  position: absolute; left: -42px; top: -22px; width: 84px; height: 48px;
+  border-radius: 48% 52% 43% 57% / 55% 42% 58% 45%; background: var(--liquid);
+  filter: saturate(.9); mix-blend-mode: multiply; opacity: .86;
+  animation: udder-blot-drain 3s ease-out forwards;
+}
+.udder-blot::after {
+  content: ''; position: absolute; top: 30px; left: 34px; width: 13px; height: 78px;
+  border-radius: 40% 40% 65% 65%; background: var(--liquid); transform-origin: top;
+  animation: udder-drip 3s ease-in forwards;
+}
+.udder-drop {
+  position: absolute; width: var(--size); height: var(--size); border-radius: 50%;
+  left: var(--drop-x); top: var(--drop-y); background: var(--liquid); mix-blend-mode: multiply;
+  animation: udder-drop-fade 3s ease-out forwards;
+}
+@keyframes udder-blot-drain { 0%,38% { opacity:.86; transform:scale(.25); } 16% { transform:scale(1.15); } 100% { opacity:0; transform:scale(.72); } }
+@keyframes udder-drip { 0%,20% { transform:scaleY(.05); opacity:.8; } 70% { transform:scaleY(1); opacity:.55; } 100% { transform:scaleY(1.18); opacity:0; } }
+@keyframes udder-drop-fade { 0% { opacity:.8; transform:scale(.25); } 18% { transform:scale(1); } 70% { opacity:.55; transform:translateY(18px); } 100% { opacity:0; transform:translateY(32px) scale(.55); } }
+
+@media (max-width: 620px) {
+  .profile-page .nonsense-container { width: calc(100% + var(--paper-edge)); }
+  .profile-page .source-udder { width: min(108vw, 620px); height: 126px; }
+  .profile-page .udder-teat { top: 39%; height: 66%; }
+  .profile-page .udder-teat .teat-shape { width: clamp(38px, 11vw, 54px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .profile-page .udder-teat .teat-shape { transform: none !important; animation: none !important; }
+  .udder-liquid-layer { display: none; }
+}
 @keyframes l9 { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }
 .page-loader, .image-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 4; }
 .image-loader { filter: drop-shadow(0 0 3px white) drop-shadow(0 0 8px white); }

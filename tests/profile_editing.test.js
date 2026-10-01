@@ -1,7 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');
 for(const id of ['sourceTitleDraft','sourceBodyDraft','responseTitleDraft','responseBodyDraft'])assert(html.includes(`id="${id}"`));
-for(const label of ['DATING','DRIVEL','WIKIPEDIA','POEM','PEOPLE','MUNGE IT','NOMINATE'])assert(html.includes('>'+label+'<'));
+for(const label of ['DATING','DRIVEL','WIKIPEDIA','POEM','PEOPLE'])assert(html.includes(`'${label}'`));
+assert(html.includes('aria-label="{{ label }}"'));
+for(const label of ['MUNGE IT','NOMINATE'])assert(html.includes('>'+label+'<'));
 for(const removed of ['>EDIT<','>SAVE<','>CANCEL<','IMAGE GENERATION MODE','SHIZZALISE'])assert(!html.includes(removed));
 assert(!html.includes("path='profile-editing.js'"));
 const css=fs.readFileSync('newsmuncher/static/styles.css','utf8');

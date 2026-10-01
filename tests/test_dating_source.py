@@ -90,7 +90,7 @@ def test_real_seed_and_button_layout(api):
     env.globals['url_for'] = lambda *args, **kwargs: '/static/' + kwargs.get('path', '')
     html = env.get_template('pet_profile.html').render(pet={})
     import re
-    labels = re.findall(r'class="funky-button source-choice"[^>]*>([^<]+)', html)
+    labels = re.findall(r'<button[^>]*class="source-choice udder-teat"[^>]*aria-label="([^"]+)"', html)
     assert labels == ['DATING', 'DRIVEL', 'WIKIPEDIA', 'POEM', 'PEOPLE']
     css = (ROOT / 'newsmuncher/static/styles.css').read_text()
     block = css.split('.profile-page .nonsense-container, .profile-page .generation-controls {')[1].split('}')[0]

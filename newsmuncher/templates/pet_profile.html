@@ -17,11 +17,28 @@
 
   <div class="container profile-container">
   <div class="container nonsense-container" role="group" aria-label="Source selection">
-    <button type="button" class="funky-button source-choice" data-source="fetch_dating_from_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_dating_from_api')">DATING</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_historicalFunny_from_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">DRIVEL</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_wikipedia_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">WIKIPEDIA</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_poem_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_poem_into_api')">POEM</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_people_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_people_into_api')">PEOPLE</button>
+    <div id="sourceUdder" class="source-udder">
+      <svg class="udder-body" viewBox="0 0 900 150" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M34 16 C105 -8 170 14 230 9 C310 3 370 17 450 8 C530 17 590 3 670 9 C730 14 795 -8 866 16 C890 43 884 95 844 116 C760 148 664 122 584 134 C500 146 400 146 316 134 C236 122 140 148 56 116 C16 95 10 43 34 16Z"/>
+        <ellipse cx="450" cy="60" rx="300" ry="47"/>
+      </svg>
+      {% set sources = [
+        ('DATING', 'fetch_dating_from_api', '#ea4f7a'),
+        ('DRIVEL', 'fetch_historicalFunny_from_api', '#9acd32'),
+        ('WIKIPEDIA', 'fetch_wikipedia_into_api', '#45a8e8'),
+        ('POEM', 'fetch_poem_into_api', '#a96ee8'),
+        ('PEOPLE', 'fetch_people_into_api', '#f1a33c')
+      ] %}
+      {% for label, action, colour in sources %}
+      <button type="button" class="source-choice udder-teat" style="--teat-index: {{ loop.index0 }}; --liquid: {{ colour }}"
+        data-source="{{ action }}" data-liquid="{{ colour }}" aria-label="{{ label }}" title="{{ label }}"
+        aria-pressed="false" onclick="fetchAndDisplay('{{ action }}')">
+        <span class="teat-shape" aria-hidden="true">
+          <svg viewBox="0 0 92 150"><path d="M22 4 C34 -3 58 -3 70 4 C82 19 79 40 73 57 C68 73 69 102 62 128 C57 147 35 147 30 128 C23 102 24 73 19 57 C13 40 10 19 22 4Z"/><ellipse cx="46" cy="132" rx="16" ry="10"/></svg>
+        </span>
+      </button>
+      {% endfor %}
+    </div>
   </div>
     <div id="loader" class="loader page-loader hidden" role="status" aria-label="Loading"></div>
     <div id="sourceEditor" class="section-editor">
@@ -81,4 +98,4 @@
 </div>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
