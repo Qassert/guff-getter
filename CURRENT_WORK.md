@@ -13,12 +13,27 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Add safe one-time image recovery, six-word titles and explicit EMBELLISH narration-to-jingle playback. Complete.
-APPROVAL: Preserve completed shell/gallery work; use mocked providers, test, commit separately and push. No live provider calls, deployment or main changes.
-NEXT_STEP: Andy reviews safe image recovery, shorter titles and narration-first EMBELLISH playback.
-VALIDATION: Full Node frontend suite 69 passed. Full Python suite 285 passed + 105 subtests; existing warnings only. No provider calls; diff check clean.
+CURRENT_TASK: Simplified Creator direct-edit/MUNGE/NOMINATE/RE-EMBELLISH flow complete; awaiting review.
+APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
+NEXT_STEP: Review the Creator flow in-browser; no deployment or live generation performed.
+VALIDATION: Frontend 66/66; Python 287 passed plus 105 subtests. All providers mocked/offline.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Simplified Creator flow — 2026-10-01
+
+Source and munged text are directly editable without EDIT/SAVE/CANCEL. MUNGE is
+text-only. NOMINATE persists the current edited result, starts image, narration and
+jingle generation, then starts animation only after the image succeeds. The shared
+loading presentation remains until video, narration and jingle are saved or terminal;
+the completed image/video is then revealed and narration precedes jingle playback.
+Manual animation, image-mode, REDO IMAGE and persistent NOMINATED controls are removed.
+
+RE-EMBELLISH keeps the nomination/rewrite identity and narration. It creates a
+durably claimed replacement image first, then retires the old video and jingle and
+creates fresh claims for their replacements. Existing image/video/jingle evidence is
+kept in state history where applicable, ambiguous attempts cannot auto-retry, and
+legacy jingle request identities remain compatible. REVIEW/CODEX.
 
 ## Safe image recovery, six-word titles and explicit audio intent — 2026-09-30
 

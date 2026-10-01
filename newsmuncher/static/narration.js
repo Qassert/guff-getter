@@ -9,6 +9,7 @@ const narrationUI = (() => {
         audio.removeAttribute('src');
         audio.load();
         audio.hidden = true;
+        const stopButton=get('narrationStop');if(stopButton)stopButton.hidden=true;
     }
     function render(data) {
         state = data;
@@ -66,10 +67,7 @@ const narrationUI = (() => {
         }
     }
     function displayed() {
-        const editing = !get('responseEditor').hidden;
-        const title = get('crazyTitleBox').textContent;
-        return {title: editing ? get('responseTitleDraft').value : (title ? title.slice(3, -3) : ''),
-            body: editing ? get('responseBodyDraft').value : get('crazyExtractBox').value};
+        return {title:get('responseTitleDraft').value,body:get('responseBodyDraft').value};
     }
     async function act() {
         if (!entry || !state || pending) return;
@@ -78,7 +76,7 @@ const narrationUI = (() => {
             if (!audio.paused) { audio.pause(); return; }
             if (typeof jingleUI !== 'undefined') jingleUI.stop();
             const token = revision;
-            try { await audio.play(); if (token !== revision) audio.pause(); } catch (_) { if (token === revision) message('Playback blocked. Try PLAY NARRATION again.'); }
+            try { await audio.play(); if (token !== revision) audio.pause(); else get('narrationStop').hidden=false; } catch (_) { if (token === revision) message('Playback blocked. Try PLAY NARRATION again.'); }
             return;
         }
         if (!state.can_generate) return;
@@ -104,7 +102,7 @@ const narrationUI = (() => {
     }
     return {
         show(data) { lookup = show(data); return lookup; }, act,
-        pause() { get('narrationAudio').pause(); },
+        pause() { get('narrationAudio').pause(); const button=get('narrationStop');if(button)button.hidden=true; },
         snapshot: () => ({...state, pending}),
         async ensure() {
             const token = revision;
@@ -125,6 +123,7 @@ const narrationUI = (() => {
                     settled = true;
                     audio.removeEventListener?.('ended', ended);
                     audio.removeEventListener?.('error', failed);
+                    const button=get('narrationStop');if(button)button.hidden=true;
                     resolve(played);
                 };
                 const ended = () => finish(token === revision);
@@ -133,6 +132,7 @@ const narrationUI = (() => {
                 audio.addEventListener?.('error', failed, {once:true});
                 Promise.resolve(audio.play()).then(() => {
                     if (token !== revision) { audio.pause(); finish(false); }
+                    else { const button=get('narrationStop');if(button)button.hidden=false; }
                 }).catch(() => finish(false));
             });
         }

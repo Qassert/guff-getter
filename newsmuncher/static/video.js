@@ -167,11 +167,7 @@
             const busy = pending || ['queued', 'started'].includes(data.video_status);
             const ready = !!data.video_url;
             const failed = data.video_status === 'failed_or_uncertain';
-            const button = get('animationButton');
-            get('animationControls').hidden = !data.nominated || !(data.can_generate || busy || ready || failed || data.message);
-            button.hidden = ready || failed || (!busy && !data.can_generate);
-            button.disabled = busy || !data.can_generate;
-            button.textContent = busy ? 'ANIMATING…' : 'ANIMATE IMAGE';
+            get('animationControls').hidden = true;
             get('animationMessage').textContent = ready ? '' : failed
                 ? 'ANIMATION FAILED — operator review needed; no regeneration.'
                 : data.message || (busy ? 'Animating your image. You can leave this page.'
@@ -183,6 +179,5 @@
     root.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
         if (event.matches) visual.clearPlayer();
     });
-    get('animationButton').addEventListener('click', () => root.videoUI.act());
     root.addEventListener('pagehide', () => root.videoUI.stop());
 })(typeof globalThis !== 'undefined' ? globalThis : this);

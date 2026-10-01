@@ -98,8 +98,7 @@ function fixture() {
     const normal=fixture();
     vm.runInContext(fs.readFileSync('newsmuncher/static/script.js','utf8'),normal.context);
     vm.runInContext('resetImagePanel=()=>{}; showLoader=()=>{}; hideLoader=()=>{};',normal.context);
-    normal.get('titleDescBox').value='Source title'; normal.get('nonsenseBox').value='Original source';
-    normal.get('generateImages').checked=false;
+    normal.get('sourceTitleDraft').value='Source title'; normal.get('sourceBodyDraft').value='Original source';
     normal.context.fetch=async(url,options={})=>{
         normal.requests.push({url,options});
         return {ok:true,json:async()=>({nominated:false,rewrite_id:'new',crazyReplacement1Title:'New title',crazyReplacement1Extract:'New body'})};
@@ -107,6 +106,6 @@ function fixture() {
     normal.context.confirmData();
     for(let i=0;i<10;i++) await Promise.resolve();
     assert.deepEqual(normal.requests.map(r=>r.url),['/temp/shizzalise_data']);
-    assert.equal(normal.get('crazyTitleBox').textContent,'...New title...');
-    console.log('Narration: explicit generation only, edited text, duplicate guard, automatic current-rewrite reuse, stale responses, SHIZZALISE unchanged.');
+    assert.equal(normal.get('responseTitleDraft').value,'New title');
+    console.log('Narration: explicit generation only, direct edited text, duplicate guard, reuse and stale responses.');
 })().catch(error=>{console.error(error);process.exit(1);});

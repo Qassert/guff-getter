@@ -24,26 +24,12 @@
     <button type="button" class="funky-button source-choice" data-source="fetch_people_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_people_into_api')">PEOPLE</button>
   </div>
     <div id="loader" class="loader page-loader hidden" role="status" aria-label="Loading"></div>
-    <input type="hidden" id="titleDescBox">
-    <button type="button" id="sourceEdit" class="funky-button edit-tab" aria-label="Edit source" aria-controls="sourceEditor" aria-expanded="false" onclick="profileEditing.edit('source')">EDIT</button>
-    <div id="sourceDisplay" class="section-display">
-      <h2 id="sourceTitleHeading" class="result-heading"></h2>
-      <textarea aria-label="Source body" id="nonsenseBox" readonly></textarea>
-    </div>
-    <div id="sourceEditor" class="section-editor" hidden>
+    <div id="sourceEditor" class="section-editor">
       <textarea id="sourceTitleDraft" class="headline-editor" rows="1" aria-label="Source title" oninput="autoResize(this)"></textarea>
       <textarea id="sourceBodyDraft" aria-label="Source body" oninput="autoResize(this)"></textarea>
-      <div class="edit-actions" role="group" aria-label="Source editing">
-        <button type="button" class="funky-button" onclick="profileEditing.save('source')">SAVE</button>
-        <button type="button" class="funky-button" onclick="profileEditing.cancel('source')">CANCEL</button>
-      </div>
     </div>
 <div class="generation-controls">
-    <label class="image-toggle">
-      <input type="checkbox" id="generateImages" autocomplete="off">
-      <span class="funky-button">IMAGE GENERATION MODE</span>
-    </label>
-    <button class="funky-button shizzle-button" onclick="confirmData()">SHIZZALISE</button>
+    <button class="funky-button shizzle-button" onclick="confirmData()">MUNGE</button>
   </div>
   </div>
 
@@ -51,18 +37,9 @@
 
 
   <div id="outputContainer" class="container hidden">
-    <button type="button" id="responseEdit" class="funky-button edit-tab" aria-label="Edit response" aria-controls="responseEditor" aria-expanded="false" onclick="profileEditing.edit('response')">EDIT</button>
-    <div id="responseDisplay" class="section-display">
-      <h2 id="crazyTitleBox" class="result-heading"></h2>
-      <textarea aria-label="Response body" id="crazyExtractBox" readonly></textarea>
-    </div>
-    <div id="responseEditor" class="section-editor" hidden>
+    <div id="responseEditor" class="section-editor">
       <textarea id="responseTitleDraft" class="headline-editor" rows="1" aria-label="Response title" oninput="autoResize(this)"></textarea>
       <textarea id="responseBodyDraft" aria-label="Response body" oninput="autoResize(this)"></textarea>
-      <div class="edit-actions" role="group" aria-label="Response editing">
-        <button type="button" class="funky-button" onclick="profileEditing.save('response')">SAVE</button>
-        <button type="button" class="funky-button" onclick="profileEditing.cancel('response')">CANCEL</button>
-      </div>
     </div>
 
     <!-- Generated image -->
@@ -77,14 +54,13 @@
 
     <!-- ONE shared centred button row — all action buttons live here -->
     <div id="creationActions" class="creation-actions">
-      <button type="button" id="redoImageButton" class="funky-button" onclick="redoImage()" hidden>REDO IMAGE</button>
       <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
-      <button type="button" id="embellishButton" class="funky-button shizzle-button" onclick="embellishUI.act()" hidden>EMBELLISH</button>
+      <button type="button" id="embellishButton" class="funky-button shizzle-button" onclick="embellishUI.reembellish()" hidden>RE-EMBELLISH</button>
       <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled hidden>MAKE JINGLE</button>
       <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
       <button type="button" id="narrationButton" class="funky-button" onclick="narrationUI.act()" disabled hidden>READ ALOUD</button>
+      <button type="button" id="narrationStop" class="funky-button" onclick="narrationUI.pause()" hidden>■ STOP</button>
       <div id="animationControls" class="animation-controls-inline" hidden>
-        <button type="button" id="animationButton" class="funky-button" disabled>ANIMATE IMAGE</button>
       </div>
     </div>
 
@@ -105,4 +81,4 @@
 </div>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}

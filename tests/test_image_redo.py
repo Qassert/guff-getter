@@ -124,6 +124,20 @@ def test_replacement_style_excludes_current():
         assert choose_image_style(exclude='Minimalism') != 'Minimalism'
 
 
+def test_explicit_nominated_replacement_keeps_identity_and_retires_video(setup):
+    f, routes, rid, old, _ = setup
+    with f.store.transaction() as db:
+        state=f.store.read(db,rid,'alice');state['entry_id']='a'*24;state['result']['nominated']=True
+        state['image_synced']=True;f.store.save(db,rid,state)
+    request=routes.RedoImageRequest(rewrite_id=rid,previous_image_url=old['image_url'],replace_nomination=True)
+    collection=MagicMock()
+    with patch.object(routes,'sync_image_metadata') as sync, patch.object(routes,'entries_collection',return_value=collection), patch('newsmuncher.services.video.service.replace') as replace:
+        new=routes.redo_image(request,'alice')
+    assert new['image_url'] != old['image_url']
+    sync.assert_called_once_with(rid,'alice')
+    replace.assert_called_once_with(collection,rid,'alice')
+
+
 def test_late_recovered_worker_cannot_overwrite_newer_replacement(setup):
     f, routes, rid, old, request = setup
     provider = routes.get_provider()

@@ -56,7 +56,7 @@ test('permission failures use safe sign-in message without exposing provider det
     assert.match(states.at(-1).message,/Sign in/); assert(!ui.state.can_generate);
 });
 
-test('real DOM binding presents animation states with no generation button for saved/failed video', async()=>{
+test('real DOM binding keeps animation automatic with no generation button', async()=>{
     const fs=require('node:fs'), vm=require('node:vm'); const elements={};
     for(const id of ['animationControls','animationButton','animationMessage','imagePanel']) {
         elements[id]={hidden:false,src:'',events:{},classList:{toggle(){}},querySelector(){return null;},addEventListener(name,fn){this.events[name]=fn;},
@@ -65,16 +65,17 @@ test('real DOM binding presents animation states with no generation button for s
     const context={document:{getElementById:id=>elements[id]},addEventListener(){},setTimeout,clearTimeout,fetch:async()=>response({can_generate:true})};
     vm.createContext(context); vm.runInContext(fs.readFileSync('newsmuncher/static/video.js','utf8'),context);
     await context.videoUI.show({nominated:true,rewrite_id:'a'});
-    assert.equal(elements.animationButton.textContent,'ANIMATE IMAGE'); assert(!elements.animationButton.disabled);
+    assert(elements.animationControls.hidden);
     context.videoUI.render({video_status:'started',can_generate:false});
-    assert.equal(elements.animationButton.textContent,'ANIMATING…'); assert(elements.animationButton.disabled);
+    assert(elements.animationControls.hidden);
     context.videoUI.render({video_status:'complete',video_url:'/stored',can_generate:false});
-    assert(elements.animationButton.hidden); assert.equal(elements.animationStop, undefined);
+    assert.equal(elements.animationStop, undefined);
     assert.equal(elements.animationMessage.textContent,'');
     context.videoUI.render({video_status:'failed_or_uncertain',can_generate:false});
-    assert(elements.animationButton.hidden); assert.match(elements.animationMessage.textContent,/ANIMATION FAILED/);
+    assert.match(elements.animationMessage.textContent,/ANIMATION FAILED/);
     const template=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');
     assert(!template.includes('STOP ANIMATION'));
+    assert(!template.includes('id="animationButton"'));
     assert(!fs.readFileSync('newsmuncher/templates/promotion_gallery.html','utf8').includes('STOP ANIMATION'));
     await context.videoUI.show({rewrite_id:'draft',nominated:false});
     assert(elements.animationControls.hidden);

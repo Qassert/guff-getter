@@ -1,82 +1,21 @@
-/* One explicit action coordinates existing controllers; this module never fetches. */
-(function(root) {
-    class Embellish {
-        constructor({media, render, schedule=(fn, ms)=>setTimeout(fn, ms), cancel=id=>clearTimeout(id)}) {
-            Object.assign(this, {media, render, schedule, cancel});
-            this.revision = 0;
-        }
-        show(data) {
-            this.revision++;
-            this.cancel(this.timer);
-            this.cancel(this.audioTimer);
-            this.available = data?.nominated === true && !!data?.rewrite_id;
-            this.started = false; this.waiting = false; this.errors = {};
-            this.render({available:this.available, label:'EMBELLISH', disabled:false, message:''});
-        }
-        sequenceAudio(token, polls=0) {
-            if (token !== this.revision) return;
-            const media = this.media(), narration = media.Narration.snapshot();
-            const narrationBusy = narration.pending || narration.narration_status === 'started';
-            if (narrationBusy && polls < 720) {
-                this.audioTimer = this.schedule(()=>this.sequenceAudio(token, polls+1), 1000);
-                return;
-            }
-            Promise.resolve(narration.narration_url && media.Narration.playForEmbellish?.()).then(() => {
-                if (token === this.revision) this.playJingle(token);
-            });
-        }
-        playJingle(token, polls=0) {
-            if (token !== this.revision) return;
-            const jingle = this.media().Jingle, state = jingle.snapshot();
-            const busy = state.pending || ['started','submitted'].includes(state.jingle_status);
-            if (busy && polls < 720) {
-                this.audioTimer = this.schedule(()=>this.playJingle(token, polls+1), 1000);
-                return;
-            }
-            if (state.jingle_url) jingle.playForEmbellish?.();
-        }
-        update(token, polls=0) {
-            if (token !== this.revision) return;
-            let working = this.waiting, complete = true;
-            const messages = Object.entries(this.media()).flatMap(([name, ui]) => {
-                const state = ui.snapshot(), kind = name.toLowerCase();
-                const ready = !!state[kind + '_url'];
-                const busy = state.pending || ['queued','started','submitted'].includes(state[kind + '_status']);
-                working ||= busy;
-                complete &&= ready;
-                return this.errors[name] ? [`${name}: unavailable — use its individual control for details.`] : [];
-            });
-            if (polls >= 720) working = false;
-            this.render({available:this.available, disabled:true,
-                label: working ? 'EMBELLISHING…' : complete ? 'EMBELLISHED' : 'EMBELLISH — CHECK STATUS',
-                message:messages.join(' ')});
-            this.cancel(this.timer);
-            if (working) this.timer = this.schedule(()=>this.update(token, polls+1), 1000);
-        }
-        async act() {
-            if (!this.available || this.started) return;
-            this.started = true; this.waiting = true;
-            const token = this.revision;
-            this.update(token);
-            await Promise.allSettled(Object.entries(this.media()).map(async ([name, ui]) => {
-                try { await ui.ensure(); }
-                catch (_) { if (token === this.revision) this.errors[name] = true; }
-            }));
-            if (token !== this.revision) return;
-            this.waiting = false;
-            this.update(token);
-            this.sequenceAudio(token);
-        }
-    }
-    if (typeof module !== 'undefined') module.exports = {Embellish};
-    if (typeof document === 'undefined') return;
-    root.embellishUI = new Embellish({
-        media:()=>({Narration:narrationUI, Video:root.videoUI, Jingle:jingleUI}),
-        render({available,label,disabled,message}) {
-            const button=document.getElementById('embellishButton'), status=document.getElementById('embellishStatus');
-            button.hidden=!available; button.disabled=disabled; button.textContent=label;
-            status.hidden=!available || !message; status.textContent=message;
-        }
-    });
-    root.addEventListener('pagehide', ()=>root.embellishUI.show(null));
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+(function(root){
+ class Embellish{
+  constructor({media,image,render,loading=()=>{},schedule=(f,n)=>setTimeout(f,n),cancel=t=>clearTimeout(t)}){Object.assign(this,{media,image,render,loading,schedule,cancel});this.revision=0;}
+  show(data){this.revision++;this.cancel(this.timer);this.data=data;this.running=false;this.render({available:!!(data?.nominated&&data?.image_url),message:''});}
+  terminal(s,k){return !!(s?.[k+'_url']||(!s?.pending&&!['queued','started','submitted'].includes(s?.[k+'_status'])&&(s?.can_generate===false||s?.message)));}
+  async run(replace=false){if(this.running||!this.data?.rewrite_id)return;this.running=true;this.errors='';const token=++this.revision,id=this.data.rewrite_id,sequence=(root.creationContext?.().sequence??this.data.sequence),m=this.media();this.loading(true);this.render({available:false,message:''});
+   if(replace)m.Narration.pause();
+   const audio=replace?null:Promise.allSettled([m.Narration.ensure(),m.Jingle.ensure()]);let prepared;
+   try{prepared=await this.image(id,sequence,replace);}catch(e){this.errors='Image unavailable. Existing media retained.';}
+   if(token!==this.revision)return;
+   if(prepared){if(replace)await Promise.allSettled([m.Jingle.replace()]);await m.Video.show({nominated:true,rewrite_id:id});await m.Video.ensure();}
+   if(audio)await Promise.allSettled([audio]);if(token!==this.revision)return;this.prepared=prepared;this.wait(token);
+  }
+  nominate(data){this.data={nominated:true,...data};return this.run(false);}
+  reembellish(){return this.run(true);}
+  wait(token,polls=0){if(token!==this.revision)return;const m=this.media(),done=this.terminal(m.Narration.snapshot(),'narration')&&this.terminal(m.Jingle.snapshot(),'jingle')&&this.terminal(m.Video.snapshot(),'video');if(done||polls>=720)return this.finish(token);this.timer=this.schedule(()=>this.wait(token,polls+1),1000);}
+  finish(token){if(token!==this.revision)return;this.running=false;this.prepared?.reveal();this.loading(false);this.render({available:true,message:this.errors||''});const m=this.media();Promise.resolve(m.Narration.snapshot()?.narration_url&&m.Narration.playForEmbellish?.()).then(()=>{if(token===this.revision&&m.Jingle.snapshot()?.jingle_url)m.Jingle.playForEmbellish?.();});}
+ }
+ if(typeof module!=='undefined')module.exports={Embellish};if(typeof document==='undefined')return;
+ root.embellishUI=new Embellish({media:()=>({Narration:narrationUI,Jingle:jingleUI,Video:root.videoUI}),image:(...a)=>root.generateCreationImage(...a),loading(on){if(on){showLoader();imageLoading.start();}else{hideLoader();imageLoading.stop();}},render({available,message}){const b=document.getElementById('embellishButton'),s=document.getElementById('embellishStatus');b.hidden=!available;b.textContent='RE-EMBELLISH';s.hidden=!message;s.textContent=message||'';}});
+})(typeof globalThis!=='undefined'?globalThis:this);

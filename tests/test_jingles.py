@@ -83,6 +83,18 @@ class JingleTests(unittest.TestCase):
         with self.service.transaction() as db:
             self.assertEqual(db.execute("SELECT COUNT(*) FROM jingle_claims").fetchone()[0], 1)
 
+    def test_explicit_replace_retires_old_audio_and_uses_new_claim(self):
+        first = self.generate()
+        first_request = self.provider.call_args.args[1]
+        self.entry.update(jingle_url=first['jingle_url'])
+        self.service.replace(self.collection, 'rewrite-1', 'pet')
+        self.entry.pop('jingle_url')
+        second = self.generate()
+        self.assertEqual(second['jingle_url'], first['jingle_url'])
+        self.assertNotEqual(self.provider.call_args.args[1], first_request)
+        self.assertEqual(self.provider.call_count, 2)
+        self.assertIn('$unset', self.collection.update_one.call_args_list[-2].args[1])
+
     def test_two_workers_share_claim(self):
         entered, release = threading.Event(), threading.Event()
         def slow(*args):

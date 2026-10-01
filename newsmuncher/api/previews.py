@@ -20,6 +20,10 @@ router = APIRouter()
 
 ENTRIES_API_BASE_URL = os.getenv("ENTRIES_API_BASE_URL", "http://127.0.0.1:8000")
 
+def entries_collection():
+    from newsmuncher.api.entries import collection
+    return collection
+
 
 # ✅ 1. TEMP GET
 @router.get("/temp_data")
@@ -277,11 +281,13 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
 
 class RedoImageRequest(ImageRequest):
     previous_image_url: str | None = Field(default=None, max_length=300)
+    replace_nomination: bool = False
 
 
 def finish_image_redo(db, rewrite_id, state, metadata):
     state['result'].update(metadata)
     state['image_redo']['status'] = 'complete'
+    state['image_synced'] = False
     # Keep historical claims/files as evidence, but never pair old video with new image.
     if state.get('video'):
         state['video_detached'] = True
@@ -292,7 +298,8 @@ def finish_image_redo(db, rewrite_id, state, metadata):
 def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
     with store.transaction() as db:
         state = read_image_rewrite(db, payload.rewrite_id, active_pet)
-        if state.get('entry_id') or state.get('nomination_pending') or state['result'].get('nominated'):
+        nominated = bool(state.get('entry_id') or state.get('nomination_pending') or state['result'].get('nominated'))
+        if nominated and not payload.replace_nomination:
             raise HTTPException(409, 'Nominated images cannot be replaced.')
         previous = state.get('image_redo')
         if previous and previous['previous_image_url'] == payload.previous_image_url:
@@ -324,6 +331,10 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
             if state['image_redo']['image_id'] != attempt['image_id'] or state['image_redo']['status'] == 'complete':
                 return {key: state['result'].get(key) for key in IMAGE_FIELDS}
             finish_image_redo(db, payload.rewrite_id, state, metadata)
+        if nominated:
+            sync_image_metadata(payload.rewrite_id, active_pet)
+            from newsmuncher.services.video import service as videos
+            videos.replace(entries_collection(), payload.rewrite_id, active_pet)
         return metadata
     except Exception as exc:
         # Preserve the old image and permanent attempt, including uncertain outcomes.

@@ -4,6 +4,7 @@ let displayedRewriteId = null;
 let nominatedSnapshot = null;
 let draftSession = null;
 let creationNominated = false, currentImageUrl = null, imageRedoPending = false, imageGenerationFailed = false;
+window.creationContext=()=>({rewrite_id:displayedRewriteId,sequence:rewriteSequence});
 function renderRedoImage() {
     const button = document.getElementById('redoImageButton');
     if (!button) return;
@@ -71,7 +72,8 @@ function setNominationState(data) {
     if (typeof narrationUI !== "undefined") narrationUI.show(data);
     if (typeof jingleUI !== "undefined") jingleUI.show(data);
     const button = document.getElementById('bankButton');
-    button.textContent = data.nominated ? 'NOMINATED' : 'NOMINATE';
+    button.textContent = 'NOMINATE';
+    button.hidden = data.nominated === true;
     button.disabled = imageRedoPending;
     nominatedSnapshot = data.nominated ? JSON.stringify({
         crazyReplacement1Title: data.crazyReplacement1Title || '',
@@ -104,16 +106,9 @@ function populateTempData() {
             return response.json();
         })
         .then(data => {
-            const nonsenseBox = document.getElementById("nonsenseBox");
-            const titleDescBox = document.getElementById("titleDescBox");
-
-            if (typeof profileEditing !== 'undefined') profileEditing.reset('source');
-            nonsenseBox.value = data.extract || "";
-            titleDescBox.value = `${data.title || ""} - ${data.description || ""}`.trim();
-
-            autoResize(nonsenseBox);
-            document.getElementById("sourceTitleHeading").textContent =
-                data.title || data.description ? `...${titleDescBox.value}...` : "";
+            const title=document.getElementById('sourceTitleDraft'),body=document.getElementById('sourceBodyDraft');
+            title.value=[data.title,data.description].filter(Boolean).join(' - ');body.value=data.extract||'';
+            autoResize(title);autoResize(body);
         })
         .catch(error => {
             console.error("Error populating temporary data:", error);
@@ -146,12 +141,10 @@ function confirmData() {
     if (typeof jingleUI !== "undefined") jingleUI.show({nominated: false});
     const sequence = ++rewriteSequence;
     document.getElementById('bankButton').disabled = true;
-    const imagesEnabled = document.getElementById("generateImages").checked;
     resetImagePanel();
     showLoader();
-    const title = document.getElementById("titleDescBox").value.split(" - ")[0];
-    const description = document.getElementById("titleDescBox").value.split(" - ")[1] || "";
-    const extract = document.getElementById("nonsenseBox").value;
+    const sourceTitle=document.getElementById('sourceTitleDraft').value,[title,...parts]=sourceTitle.split(' - ');
+    const description=parts.join(' - '),extract=document.getElementById('sourceBodyDraft').value;
 
     fetch("/temp/shizzalise_data", {
         method: "POST",
@@ -159,7 +152,7 @@ function confirmData() {
             'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({ title, description, extract, draft_session: workingSession(), ...(imagesEnabled ? {generate_images: true} : {}) })
+        body: JSON.stringify({title,description,extract,draft_session:workingSession()})
     })
         .then(response => {
             if (!response.ok) throw new Error("Error shizzalising data.");
@@ -173,12 +166,8 @@ function confirmData() {
                 if (displayedRewriteId) sessionStorage.setItem('newsmuncher.imageRewrite', displayedRewriteId);
                 else sessionStorage.removeItem('newsmuncher.imageRewrite');
             } catch (_) {}
-            const titleBox = document.getElementById("crazyTitleBox");
-            const extractBox = document.getElementById("crazyExtractBox");
-
-            if (typeof profileEditing !== 'undefined') profileEditing.reset('response');
-            titleBox.textContent = data.crazyReplacement1Title ? `...${data.crazyReplacement1Title}...` : "";
-            extractBox.value = data.crazyReplacement1Extract || "";
+            const titleBox=document.getElementById('responseTitleDraft'),extractBox=document.getElementById('responseBodyDraft');
+            titleBox.value=data.crazyReplacement1Title||'';extractBox.value=data.crazyReplacement1Extract||'';
 
             document.getElementById("outputContainer").style.display = 'block';
             document.getElementById("bankButton").classList.remove("hidden");
@@ -189,13 +178,6 @@ function confirmData() {
             }, 0);
 
             hideLoader();
-            if (imagesEnabled && displayedRewriteId) {
-                const id = displayedRewriteId;
-                // Yield a paint before starting the independent image request.
-                requestAnimationFrame(() => requestAnimationFrame(() => {
-                    if (sequence === rewriteSequence) loadRewriteImage(id, sequence);
-                }));
-            }
         })
         .catch(error => {
             if (sequence !== rewriteSequence) return;
@@ -207,15 +189,9 @@ function confirmData() {
 let nominationPending = false;
 function bankThisBeauty() {
     if (nominationPending || imageRedoPending) return;
-    const title = document.getElementById('crazyTitleBox').textContent;
-    const editor = document.getElementById('responseEditor');
     const response = {
-        crazyReplacement1Title: editor && !editor.hidden
-            ? document.getElementById('responseTitleDraft').value
-            : (title ? title.slice(3, -3) : ''),
-        crazyReplacement1Extract: editor && !editor.hidden
-            ? document.getElementById('responseBodyDraft').value
-            : document.getElementById('crazyExtractBox').value
+        crazyReplacement1Title:document.getElementById('responseTitleDraft').value,
+        crazyReplacement1Extract:document.getElementById('responseBodyDraft').value
     };
     const snapshot = JSON.stringify(response);
     if (snapshot === nominatedSnapshot) return;
@@ -243,11 +219,11 @@ function bankThisBeauty() {
                 renderRedoImage();
                 if (typeof videoUI !== 'undefined') videoUI.show({nominated: creationNominated, rewrite_id: data.rewrite_id || nominatingId});
                 nominatedSnapshot = snapshot;
-                document.getElementById('bankButton').textContent = 'NOMINATED';
+                document.getElementById('bankButton').hidden=true;
                 if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
+                if(typeof embellishUI!=='undefined')embellishUI.nominate({rewrite_id:data.rewrite_id||nominatingId,sequence:nominatingSequence});
             }
             if (typeof jingleUI !== 'undefined') jingleUI.discover();
-            hideLoader();
         })
         .catch(error => {
             console.error("Error banking the beauty:", error);
@@ -310,6 +286,15 @@ async function loadRewriteImage(id, sequence) {
     }
 }
 
+window.generateCreationImage=async(id,sequence,replace=false)=>{
+ const current=()=>sequence===rewriteSequence&&id===displayedRewriteId;
+ const url=replace?'/temp/redo_image':'/temp/generate_image';
+ const body=replace?{rewrite_id:id,previous_image_url:currentImageUrl,replace_nomination:true}:{rewrite_id:id};
+ const response=await fetch(url,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ if(!response.ok)throw Error('Image generation failed');const data=await response.json();if(!current())throw Error('Rewrite changed');
+ return{data,reveal(){currentImageUrl=data.image_url;displayRewriteImage(data.image_url,current,data.image_style);}};
+};
+
 function displayRewriteImage(url, current, style = null) {
     if (!current()) return;
     const rewriteCurrent = current, imageToken = ++imageDisplaySequence;
@@ -366,11 +351,8 @@ async function restoreImageRewrite() {
         if (sequence !== rewriteSequence || data.rewrite_id !== id) return;
         displayedRewriteId = id;
         setNominationState(data);
-        const title = document.getElementById('crazyTitleBox');
-        const extract = document.getElementById('crazyExtractBox');
-        if (typeof profileEditing !== 'undefined') profileEditing.reset('response');
-        title.textContent = data.crazyReplacement1Title ? `...${data.crazyReplacement1Title}...` : '';
-        extract.value = data.crazyReplacement1Extract || '';
+        const title=document.getElementById('responseTitleDraft'),extract=document.getElementById('responseBodyDraft');
+        title.value=data.crazyReplacement1Title||'';extract.value=data.crazyReplacement1Extract||'';
         document.getElementById('outputContainer').style.display = 'block';
         document.getElementById('bankButton').classList.remove('hidden');
         autoResize(extract);
@@ -379,11 +361,7 @@ async function restoreImageRewrite() {
 }
 
 window.onload = () => {
-    document.getElementById('generateImages').checked = false;
     populateTempData();
     restoreImageRewrite();
     if (typeof jingleUI !== "undefined") jingleUI.discover();
 };
-window.addEventListener('pageshow', () => {
-    document.getElementById('generateImages').checked = false;
-});

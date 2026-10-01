@@ -32,3 +32,11 @@ def jingle_status(rewrite_id: str, active_pet: str = Cookie(None)):
 @router.post("/{rewrite_id}")
 def make_jingle(rewrite_id: str, active_pet: str = Cookie(None)):
     return invoke(service.generate, rewrite_id, active_pet)
+
+@router.post('/{rewrite_id}/replace')
+def replace_jingle(rewrite_id: str, active_pet: str = Cookie(None)):
+    try:
+        service.replace(collection, rewrite_id, active_pet)
+    except JingleError as exc:
+        raise HTTPException(exc.status, detail=str(exc)) from exc
+    return invoke(service.generate, rewrite_id, active_pet)

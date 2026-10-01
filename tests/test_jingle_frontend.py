@@ -40,4 +40,6 @@ class JingleFrontendTests(unittest.TestCase):
         self.assertIn('jingleUI.discover();', script.split('window.onload =')[1])
         self.assertIn('jingleUI.discover();', script.split('function bankThisBeauty()')[1].split('async function loadRewriteImage')[0])
         self.assertIn('aria-live="polite"', html)
-        self.assertEqual(html.count(">EDIT</button>"), 2)
+        self.assertEqual(html.count(">EDIT</button>"), 0)
+        self.assertIn('id="sourceEditor" class="section-editor"', html)
+        self.assertIn('id="responseEditor" class="section-editor"', html)

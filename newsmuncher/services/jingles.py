@@ -144,6 +144,13 @@ class Jingles:
             raise JingleError(403, "Only your nominated entry may generate a jingle.")
         return entry
 
+    @staticmethod
+    def request_id(key, replacement=0):
+        name = 'newsmuncher-jingle:' + key
+        if replacement:
+            name += f':{replacement}'
+        return str(uuid5(NAMESPACE_URL, name))
+
     def saved_url(self, key):
         """Read-only local lookup for an already owner-checked nomination identity."""
         if not isinstance(key, str) or not re.fullmatch(r"[a-f0-9]{24}", key):
@@ -203,7 +210,8 @@ class Jingles:
             if collection.find_one({"_id": entry["_id"]}) is not None:
                 return
             state = self.read(db, key)
-            request_id = str(uuid5(NAMESPACE_URL, "newsmuncher-jingle:" + key))
+            replacement = int((state or {}).get('replacement', 0))
+            request_id = self.request_id(key, replacement)
             owned = (state and state.get("request_id") == request_id) or (
                 entry.get("jingle_provider") == "modal"
                 and entry.get("jingle_url") == self.audio.url(key))
@@ -327,9 +335,10 @@ class Jingles:
                     raise JingleError(503, "Jingle generation is disabled or unconfigured.")
                 if self.remaining(db) == 0:
                     raise JingleError(429, "Daily jingle limit reached; resets at UTC midnight.")
-                state = {"status": "started", "snapshot": snapshot,
+                replacement = int((existing or {}).get('replacement', 0))
+                state = {"status": "started", "snapshot": snapshot, "replacement": replacement,
                          "text_hash": hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest(),
-                         "request_id": str(uuid5(NAMESPACE_URL, "newsmuncher-jingle:" + key))}
+                         "request_id": self.request_id(key, replacement)}
                 db.execute("INSERT INTO jingle_claims(day,nomination) VALUES (?,?)",
                            (self.now().date().isoformat(), key))
                 self.save(db, key, state)
@@ -372,6 +381,24 @@ class Jingles:
             if exc.status == 404:
                 self.try_retire_deleted(collection, entry)
             raise
+
+    def replace(self, collection, rewrite_id, owner):
+        """Retire the saved jingle for one explicit in-place replacement."""
+        entry = self.nomination(collection, rewrite_id, owner)
+        key = str(entry['_id'])
+        with self.transaction() as db:
+            previous = self.read(db, key)
+            if previous and previous.get('status') in {'started', 'submitted', 'uncertain'}:
+                raise JingleError(409, 'Current jingle outcome is unresolved; replacement refused.')
+            self.save(db, key, {'status':'brief_failed',
+                                'replacement':int((previous or {}).get('replacement', 0)) + 1})
+        path = self.audio.path(key)
+        if path.is_file() and not path.is_symlink():
+            path.unlink()
+        collection.update_one({'_id':entry['_id'], 'nominated':True}, {'$unset':{
+            'jingle_status':'', 'jingle_url':'', 'jingle_generated_at':'', 'jingle_provider':'',
+            'jingle_model':'', 'jingle_prompt':'', 'jingle_text_snapshot':'',
+            'jingle_text_sha256':'', 'jingle_brief_usage':''}})
 
 
 service = Jingles()

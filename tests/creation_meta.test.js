@@ -24,11 +24,13 @@ test('template has one metadata line, one shared action row and correct script o
     const html = fs.readFileSync('newsmuncher/templates/pet_profile.html', 'utf8');
     assert.equal((html.match(/id="creationMeta"/g) || []).length, 1);
     assert.equal((html.match(/id="creationActions"/g) || []).length, 1);
-    for (const id of ['redoImageButton', 'bankButton', 'embellishButton',
-                      'jingleButton', 'narrationButton', 'animationButton']) {
+    for (const id of ['bankButton', 'embellishButton', 'jingleButton',
+                      'jingleStop', 'narrationButton', 'narrationStop']) {
         const row = html.slice(html.indexOf('id="creationActions"'), html.indexOf('</div>', html.indexOf('id="animationControls"')) + 6);
         assert(row.includes(`id="${id}"`), `${id} must be in shared action row`);
     }
+    assert(!html.includes('id="redoImageButton"'));
+    assert(!html.includes('id="animationButton"'));
     assert(!html.includes('id="imageStyle"'));
     assert(!html.includes('id="jingleGenre"'));
     assert(html.indexOf("path='creation-meta.js'") < html.indexOf("path='video.js'"));

@@ -154,6 +154,23 @@ class Videos:
             self.store.save(db, key, state)
             return self.public(key, state), True
 
+    def replace(self, collection, key, owner):
+        """Retire animation state after an explicit successful image replacement."""
+        with self.store.transaction() as db:
+            state = self.read(db, key, owner)
+            if isinstance(state.get('video'), dict):
+                state.setdefault('video_history', []).append(state['video'])
+            state.pop('video', None)
+            state.pop('video_detached', None)
+            self.store.save(db, key, state)
+            entry_id = state.get('entry_id')
+        if entry_id and ObjectId.is_valid(entry_id):
+            collection.update_one({'_id':ObjectId(entry_id),'rewrite_id':key,
+                                   'image_owner':owner,'nominated':True}, {'$unset':{'video':''}})
+        path = self.path(key)
+        if path.is_file() and not path.is_symlink():
+            path.unlink()
+
     def run(self, collection, key, owner):
         # A duplicate task delivery cannot execute the same durable claim twice.
         with self.store.transaction() as db:

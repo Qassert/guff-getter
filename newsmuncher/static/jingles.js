@@ -176,6 +176,13 @@ const jingleUI = (() => {
             if (token !== revision || state?.jingle_url || pending || ['started', 'submitted'].includes(state?.jingle_status)) return;
             await act();
         },
+        async replace() {
+            if (!rewrite || pending) return;
+            const token=revision,id=rewrite; pending=true;render(state||{});
+            const response=await fetch('/jingles/'+encodeURIComponent(id)+'/replace',{method:'POST',credentials:'include'});
+            const data=await response.json();if(token!==revision)return;pending=false;
+            if(!response.ok){render({can_generate:false,message:data.detail||'Jingle replacement unavailable.'});throw Error(data.detail||'Jingle replacement unavailable.');}render(data);
+        },
         async playForEmbellish() {
             const token = revision;
             await lookup;
