@@ -363,7 +363,7 @@ body { isolation: isolate; }
   display: flex; justify-content: center; align-items: center; gap: 8px;
 }
 .profile-page .nonsense-container {
-  top: calc(-1.25 * var(--paper-edge)); transform: translate(-50%, -32%);
+  top: calc(-1.25 * var(--paper-edge) - 60px); transform: translate(-50%, -32%);
 }
 .profile-page .generation-controls {
   bottom: calc(-1 * var(--paper-edge)); transform: translate(-50%, 32%);
