@@ -54,6 +54,9 @@ test('template keeps five native accessible actions and page-level unclipped eff
  assert(html.includes("fetchAndDisplay('{{ action }}')"));
  assert(html.includes("images/udder/udder-body.png"));for(let i=1;i<=5;i++)assert(html.includes(`teat-${i}.png`));
  assert(!html.includes('<svg class="udder-body"'));assert.match(css,/transform-origin:\s*50% 5%/);
+ assert(html.includes("images/udder/cow-body.png"));
+ assert.match(css,/\.profile-page \.cow-body\s*\{[^}]*z-index:\s*0[^}]*object-fit:\s*cover[^}]*pointer-events:\s*none/s);
+ assert.match(css,/\.profile-page \.udder-body\s*\{[^}]*z-index:\s*1/s);assert.match(css,/\.udder-teat\s*\{[^}]*z-index:\s*2/s);
  assert(html.includes('aria-label="{{ label }}"'));assert.match(css,/\.udder-liquid-layer[^}]*position:\s*fixed[^}]*overflow:\s*visible[^}]*pointer-events:\s*none/);
  assert.match(css,/udder-blot-drain\s+4s/);assert.match(css,/opacity:1/);assert.match(css,/prefers-reduced-motion/);
 });

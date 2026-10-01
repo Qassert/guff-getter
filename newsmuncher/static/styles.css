@@ -492,6 +492,12 @@ body { isolation: isolate; }
   position: relative; width: min(94vw, 900px); height: clamp(185px, 24vw, 235px);
   overflow: visible; isolation: isolate;
 }
+.profile-page .cow-body {
+  position: absolute; z-index: 0; left: 0; bottom: calc(100% - 120px);
+  display: block; width: 100%; height: clamp(190px, 24vh, 240px);
+  object-fit: cover; object-position: 50% 100%;
+  pointer-events: none; user-select: none;
+}
 .profile-page .udder-body {
   position: absolute; z-index: 1; inset: 0 0 auto; display: block; width: 100%; height: auto;
   filter: drop-shadow(0 9px 6px #35151c55); pointer-events: none; user-select: none;
@@ -567,6 +573,7 @@ body { isolation: isolate; }
 @media (max-width: 620px) {
   .profile-page .nonsense-container { width: calc(100% + var(--paper-edge)); }
   .profile-page .source-udder { width: min(108vw, 620px); height: clamp(145px, 31vw, 185px); }
+  .profile-page .cow-body { bottom: calc(100% - 90px); height: clamp(165px, 22vh, 210px); }
   .profile-page .udder-teat { top: 41%; height: 68%; }
   .profile-page .udder-teat .teat-shape { width: clamp(45px, 13vw, 68px); }
 }

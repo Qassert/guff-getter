@@ -18,6 +18,7 @@
   <div class="container profile-container">
   <div class="container nonsense-container" role="group" aria-label="Source selection">
     <div id="sourceUdder" class="source-udder">
+      <img class="cow-body" src="{{ url_for('static', path='images/udder/cow-body.png') }}" alt="">
       <img class="udder-body" src="{{ url_for('static', path='images/udder/udder-body.png') }}" alt="">
       {% set sources = [
         ('DATING', 'fetch_dating_from_api', '#ea4f7a', 'teat-1.png', '16.4%'),
