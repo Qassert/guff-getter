@@ -18,44 +18,20 @@
   <div class="container profile-container">
   <div class="container nonsense-container" role="group" aria-label="Source selection">
     <div id="sourceUdder" class="source-udder">
-      <svg class="udder-body" viewBox="0 0 900 170" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <radialGradient id="udderFlesh" cx="48%" cy="28%" r="76%">
-            <stop offset="0" stop-color="#ffd5cf"/><stop offset=".34" stop-color="#efa29f"/>
-            <stop offset=".72" stop-color="#c96972"/><stop offset="1" stop-color="#7d3548"/>
-          </radialGradient>
-          <linearGradient id="udderRim" x1="0" y1="0" x2="0" y2="1">
-            <stop stop-color="#5b3034"/><stop offset=".16" stop-color="#f4c5bb"/><stop offset="1" stop-color="#a84e60"/>
-          </linearGradient>
-          <filter id="udderTexture" x="-10%" y="-15%" width="120%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency=".025 .18" numOctaves="3" seed="7" result="grain"/>
-            <feDisplacementMap in="SourceGraphic" in2="grain" scale="7" xChannelSelector="R" yChannelSelector="G" result="soft"/>
-            <feGaussianBlur in="grain" stdDeviation=".45" result="pores"/>
-            <feBlend in="soft" in2="pores" mode="soft-light"/>
-          </filter>
-        </defs>
-        <path class="udder-rim" d="M26 24 C84 -8 153 4 211 17 C275 31 330 2 404 14 C475 26 534 0 601 17 C670 34 729 -1 807 13 C861 23 891 57 875 91 C859 125 805 137 747 132 C674 126 634 157 556 146 C487 136 420 164 345 145 C281 129 224 155 155 137 C95 121 39 129 20 91 C7 66 8 42 26 24Z"/>
-        <path class="udder-flesh" d="M38 31 C98 5 153 17 215 28 C282 41 339 13 405 25 C473 37 535 12 599 29 C669 47 728 13 800 25 C845 33 868 57 856 84 C841 113 792 120 739 116 C665 111 627 140 554 130 C482 120 420 149 350 130 C282 112 231 139 163 122 C107 108 55 115 36 84 C24 64 23 44 38 31Z"/>
-        <path class="udder-highlight" d="M105 42 C199 19 276 58 365 38 C449 19 539 44 616 39 C687 35 738 34 793 48 C720 55 680 73 616 69 C535 64 468 87 382 68 C291 49 213 75 105 42Z"/>
-      </svg>
+      <img class="udder-body" src="{{ url_for('static', path='images/udder/udder-body.png') }}" alt="">
       {% set sources = [
-        ('DATING', 'fetch_dating_from_api', '#ea4f7a'),
-        ('DRIVEL', 'fetch_historicalFunny_from_api', '#9acd32'),
-        ('WIKIPEDIA', 'fetch_wikipedia_into_api', '#45a8e8'),
-        ('POEM', 'fetch_poem_into_api', '#a96ee8'),
-        ('PEOPLE', 'fetch_people_into_api', '#f1a33c')
+        ('DATING', 'fetch_dating_from_api', '#ea4f7a', 'teat-1.png', '16.4%'),
+        ('DRIVEL', 'fetch_historicalFunny_from_api', '#9acd32', 'teat-2.png', '31.3%'),
+        ('WIKIPEDIA', 'fetch_wikipedia_into_api', '#45a8e8', 'teat-3.png', '50%'),
+        ('POEM', 'fetch_poem_into_api', '#a96ee8', 'teat-4.png', '67.8%'),
+        ('PEOPLE', 'fetch_people_into_api', '#f1a33c', 'teat-5.png', '84.6%')
       ] %}
-      {% for label, action, colour in sources %}
-      <button type="button" class="source-choice udder-teat" style="--teat-index: {{ loop.index0 }}; --liquid: {{ colour }}"
+      {% for label, action, colour, image, position in sources %}
+      <button type="button" class="source-choice udder-teat" style="--teat-x: {{ position }}; --liquid: {{ colour }}"
         data-source="{{ action }}" data-liquid="{{ colour }}" aria-label="{{ label }}" title="{{ label }}"
         aria-pressed="false" onclick="fetchAndDisplay('{{ action }}')">
         <span class="teat-shape" aria-hidden="true">
-          <svg viewBox="0 0 92 150">
-            <defs><radialGradient id="teatFlesh{{ loop.index }}" cx="34%" cy="22%" r="82%"><stop offset="0" stop-color="#ffd9d1"/><stop offset=".38" stop-color="#ee9a99"/><stop offset=".78" stop-color="#bd5868"/><stop offset="1" stop-color="#733044"/></radialGradient></defs>
-            <path class="teat-flesh" fill="url(#teatFlesh{{ loop.index }})" d="M18 2 C31 -5 60 -3 73 8 C83 20 79 38 73 55 C68 72 71 97 64 125 C61 140 54 148 44 147 C32 146 26 137 25 124 C23 101 25 77 18 59 C10 39 8 16 18 2Z"/>
-            <path class="teat-highlight" d="M27 12 C36 4 48 5 52 10 C42 29 39 62 42 105 C35 91 32 67 26 50 C20 33 20 20 27 12Z"/>
-            <ellipse class="teat-tip" cx="45" cy="135" rx="16" ry="10"/>
-          </svg>
+          <img src="{{ url_for('static', path='images/udder/' ~ image) }}" alt="">
         </span>
       </button>
       {% endfor %}

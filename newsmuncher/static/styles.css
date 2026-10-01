@@ -489,20 +489,16 @@ body { isolation: isolate; }
 /* One soft udder replaces the five source tabs; each teat remains a native button. */
 .profile-page .nonsense-container { overflow: visible; }
 .profile-page .source-udder {
-  position: relative; width: min(94vw, 900px); height: clamp(125px, 16vw, 165px);
+  position: relative; width: min(94vw, 900px); height: clamp(185px, 24vw, 235px);
   overflow: visible; isolation: isolate;
 }
 .profile-page .udder-body {
-  position: absolute; inset: -6px 0 auto; width: 100%; height: 82%; overflow: visible;
-  filter: drop-shadow(0 10px 7px #35151c66); pointer-events: none;
+  position: absolute; z-index: 1; inset: 0 0 auto; display: block; width: 100%; height: auto;
+  filter: drop-shadow(0 9px 6px #35151c55); pointer-events: none; user-select: none;
 }
-.profile-page .udder-body .udder-rim { fill: url(#udderRim); filter: url(#udderTexture); }
-.profile-page .udder-body .udder-flesh { fill: url(#udderFlesh); filter: url(#udderTexture); }
-.profile-page .udder-body .udder-highlight { fill: #ffe8df; opacity: .34; filter: blur(4px); }
 .profile-page .nonsense-container .udder-teat {
-  position: absolute; z-index: 2; top: 42%;
-  left: calc((var(--teat-index) + .5) * 20%);
-  width: 18%; height: 62%; min-width: 0; min-height: 0; margin: 0; padding: 0;
+  position: absolute; z-index: 2; top: 43%; left: var(--teat-x);
+  width: 18%; height: 66%; min-width: 0; min-height: 0; margin: 0; padding: 0;
   border: 0; background: transparent; box-shadow: none; overflow: visible;
   cursor: grab; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   transform: translateX(-50%);
@@ -513,21 +509,19 @@ body { isolation: isolate; }
 .profile-page .udder-teat::before { display: none; }
 .profile-page .udder-teat:active { cursor: grabbing; }
 .profile-page .udder-teat .teat-shape {
-  --bend: 0deg; --rotate: 0deg; --shift: 0px; --stretch: 1; --squash: 1;
-  display: block; width: clamp(48px, 7vw, 76px); height: 100%; margin: 0 auto;
-  transform-origin: 50% 8%; will-change: transform;
-  transform: translateX(var(--shift)) skewX(var(--bend)) rotate(var(--rotate))
-    scaleX(var(--squash)) scaleY(var(--stretch));
+  --bend: 0deg; --shift: 0px; --stretch: 1; --squash: 1;
+  display: block; width: clamp(62px, 10vw, 108px); height: 100%; margin: 0 auto;
+  transform-origin: 50% 5%; will-change: transform;
+  transform: translateX(var(--shift)) rotate(var(--bend)) scaleX(var(--squash)) scaleY(var(--stretch));
 }
-.profile-page .udder-teat .teat-shape svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.profile-page .udder-teat .teat-flesh { stroke: #743245; stroke-width: 2.3; filter: drop-shadow(3px 5px 3px #5d263955); }
-.profile-page .udder-teat .teat-highlight { fill: #fff0e9; opacity: .48; filter: blur(1.8px); }
-.profile-page .udder-teat .teat-tip { fill: #9f455a; stroke: #6d2c40; stroke-width: 2; }
-.profile-page .udder-teat[aria-pressed="true"] .teat-highlight { opacity: .7; }
+.profile-page .udder-teat .teat-shape img {
+  display: block; width: 100%; height: 100%; object-fit: contain; object-position: 50% 0;
+  filter: drop-shadow(3px 6px 3px #5d263955); pointer-events: none; user-select: none;
+}
 .profile-page .udder-teat:focus-visible { outline: 3px solid var(--purple); outline-offset: 5px; border-radius: 45%; }
 .profile-page .udder-teat .teat-shape.squeezed { animation: teat-squeeze 240ms ease-out; }
 @keyframes teat-squeeze {
-  45% { transform: translateX(var(--shift)) skewX(var(--bend)) rotate(var(--rotate)) scaleX(1.28) scaleY(.72); }
+  45% { transform: translateX(var(--shift)) rotate(var(--bend)) scaleX(1.25) scaleY(.72); }
 }
 
 .udder-liquid-layer { position: fixed; inset: 0; z-index: 40; overflow: visible; pointer-events: none; }
@@ -572,9 +566,9 @@ body { isolation: isolate; }
 
 @media (max-width: 620px) {
   .profile-page .nonsense-container { width: calc(100% + var(--paper-edge)); }
-  .profile-page .source-udder { width: min(108vw, 620px); height: 126px; }
-  .profile-page .udder-teat { top: 39%; height: 66%; }
-  .profile-page .udder-teat .teat-shape { width: clamp(38px, 11vw, 54px); }
+  .profile-page .source-udder { width: min(108vw, 620px); height: clamp(145px, 31vw, 185px); }
+  .profile-page .udder-teat { top: 41%; height: 68%; }
+  .profile-page .udder-teat .teat-shape { width: clamp(45px, 13vw, 68px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .profile-page .udder-teat .teat-shape { transform: none !important; animation: none !important; }

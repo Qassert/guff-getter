@@ -63,7 +63,6 @@
         render(index) {
             const shape=this.buttons[index].querySelector('.teat-shape'), bend=this.states[index].position;
             shape.style.setProperty('--bend', `${bend.toFixed(2)}deg`);
-            shape.style.setProperty('--rotate', `${(bend*.32).toFixed(2)}deg`);
             shape.style.setProperty('--shift', `${(bend*.42).toFixed(2)}px`);
             shape.style.setProperty('--stretch', String(1+Math.min(.12,Math.abs(bend)/190)));
             shape.style.setProperty('--squash', String(1-Math.min(.06,Math.abs(bend)/380)));
@@ -72,10 +71,10 @@
             const button=this.buttons[index], shape=button.querySelector('.teat-shape');
             shape.classList.remove('squeezed'); void shape.offsetWidth; shape.classList.add('squeezed');
             this.schedule(()=>shape.classList.remove('squeezed'), 260);
-            if (!this.reduced()) this.splash(button, button.dataset.liquid);
+            if (!this.reduced()) this.splash(shape, button.dataset.liquid);
         }
-        splash(button, colour) {
-            const tip=button.getBoundingClientRect(), parchment=document.querySelector('.profile-container').getBoundingClientRect();
+        splash(teat, colour) {
+            const tip=teat.getBoundingClientRect(), parchment=document.querySelector('.profile-container').getBoundingClientRect();
             const startX=tip.left+tip.width/2, startY=tip.bottom-5;
             const impactX=Math.max(parchment.left+55,Math.min(parchment.right-55,startX+(Math.random()-.5)*90));
             const impactY=Math.max(startY+85,Math.min(parchment.bottom-70,parchment.top+parchment.height*.48));

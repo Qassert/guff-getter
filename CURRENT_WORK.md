@@ -13,12 +13,12 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Organic udder artwork and large independent four-second parchment spills complete; awaiting review.
+CURRENT_TASK: Supplied PNG udder assembled with five independently animated teat assets; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review the organic SVG shading and large overlapping spill effects in-browser; no deployment performed.
-VALIDATION: Frontend 72/72; source-page Python checks 6/6; JavaScript syntax check passed. No provider calls.
+NEXT_STEP: Review the seamless body/teat overlap and transformed-tip liquid origin in-browser; no deployment performed.
+VALIDATION: Frontend 72/72; source-page Python checks 6/6; JavaScript syntax and six PNG alpha checks passed. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
-LIMITATIONS: Browser visual review unavailable: local startup requires Mongo DNS and no browser surface was available. Offline render, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
 
 ## Progressive Creator follow-up — 2026-10-01
 
