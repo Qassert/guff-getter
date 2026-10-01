@@ -55,8 +55,8 @@ test('template keeps five native accessible actions and page-level unclipped eff
  assert(html.includes("images/udder/udder-master-body.png"));for(let i=1;i<=5;i++)assert(html.includes(`udder-teat-${i}.png`));
  assert(!html.includes('<svg class="udder-body"'));assert.match(css,/transform-origin:\s*50% 5%/);
  assert(html.includes('--teat-width: {{ width }}'));assert.match(css,/width:\s*var\(--teat-width\)/);
- assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*z-index:\s*3[^}]*pointer-events:\s*none/s);
- assert.match(css,/\.udder-teat\s*\{[^}]*z-index:\s*2/s);assert.match(css,/mask-image:\s*linear-gradient/);
+ assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*z-index:\s*2[^}]*pointer-events:\s*none/s);
+ assert.match(css,/\.udder-teat\s*\{[^}]*z-index:\s*3/s);assert(!css.includes('mask-image: linear-gradient'));
  assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*top:\s*0/s);assert.match(css,/top:\s*min\(132px, 14\.8vw\)/);
  for(const socket of ['18.1%','33.3%','50.9%','68.5%','84.7%'])assert(html.includes(`'${socket}'`));
  assert(html.includes('aria-label="{{ label }}"'));assert.match(css,/\.udder-liquid-layer[^}]*position:\s*fixed[^}]*overflow:\s*visible[^}]*pointer-events:\s*none/);

@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Complete master body is visible and all five existing teats are attached beneath measured sockets; awaiting review.
+CURRENT_TASK: Complete feathered teat roots now render in front of the unchanged master body; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review the corrected full-body placement and seamless teat joins in-browser; no deployment performed.
-VALIDATION: Desktop composite verified full body and zero join gaps; frontend 72/72; source-page Python checks 6/6; JavaScript syntax passed. No provider calls.
+NEXT_STEP: Review the corrected front-layer teat joins in-browser; no deployment performed.
+VALIDATION: Desktop composite matches master_udder.png layering; frontend 72/72; source-page Python checks 6/6; JavaScript syntax passed. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
 
