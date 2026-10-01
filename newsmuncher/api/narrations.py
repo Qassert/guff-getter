@@ -41,6 +41,15 @@ def create_narration(entry_id: str, text: NarrationText, active_pet: str = Cooki
     return invoke(service.generate, entry_id, active_pet, text.model_dump())
 
 
+@router.post('/{entry_id}/replace')
+def replace_narration(entry_id: str, text: NarrationText, active_pet: str = Cookie(None)):
+    try:
+        service.replace(collection, entry_id, active_pet)
+    except NarrationError as exc:
+        raise HTTPException(exc.status, str(exc)) from exc
+    return invoke(service.generate, entry_id, active_pet, text.model_dump())
+
+
 @router.get('/{entry_id}/audio')
 def narration_audio(entry_id: str, active_pet: str = Cookie(None)):
     try:

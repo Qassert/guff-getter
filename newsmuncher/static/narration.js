@@ -102,6 +102,7 @@ const narrationUI = (() => {
     }
     return {
         show(data) { lookup = show(data); return lookup; }, act,
+        isPlaying() { return !get('narrationAudio').paused; },
         pause() { get('narrationAudio').pause(); const button=get('narrationStop');if(button)button.hidden=true; },
         snapshot: () => ({...state, pending}),
         async ensure() {
@@ -109,6 +110,30 @@ const narrationUI = (() => {
             await lookup;
             if (token !== revision || state?.narration_url || pending || state?.narration_status === 'started') return;
             await act();
+        },
+        async replaceIfChanged() {
+            const token = revision;
+            await lookup;
+            if (token !== revision || !state?.text_changed) return false;
+            const id = entry;
+            pending = true; render(state);
+            try {
+                const response = await fetch('/narrations/' + encodeURIComponent(id) + '/replace', {
+                    method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify(displayed())
+                });
+                const data = await response.json();
+                if (token !== revision) return false;
+                pending = false;
+                if (!response.ok) throw new Error(data.detail || 'Narration replacement unavailable.');
+                render(data);
+                return true;
+            } catch (error) {
+                if (token !== revision) return false;
+                pending = false;
+                render({can_generate:false, message:error.message});
+                return false;
+            }
         },
         async playForEmbellish() {
             const token = revision;

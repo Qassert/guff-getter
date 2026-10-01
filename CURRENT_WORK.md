@@ -13,12 +13,33 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Simplified Creator direct-edit/MUNGE/NOMINATE/RE-EMBELLISH flow complete; awaiting review.
+CURRENT_TASK: Creator follow-up refinement complete; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review the Creator flow in-browser; no deployment or live generation performed.
-VALIDATION: Frontend 66/66; Python 287 passed plus 105 subtests. All providers mocked/offline.
+NEXT_STEP: Review the progressive Creator flow in-browser; no deployment or live generation performed.
+VALIDATION: Frontend 68/68; Python 288 passed plus 105 subtests. All providers mocked/offline.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review unverified (local bind blocked, browser in active use). No deployment or live provider/Mongo calls.
+
+## Progressive Creator follow-up — 2026-10-01
+
+Removed the retired EDIT-tab parchment pseudo-elements and renamed MUNGE to MUNGE IT.
+Every source choice now immediately invalidates the old rewrite callbacks, stops its
+media/loading controllers, clears the stored rewrite selector and hides/empties the
+complete lower result. A successful MUNGE IT reveals only the new editable result.
+NOMINATE remains hidden permanently after its successful action.
+
+RE-EMBELLISH first persists the current title/body through the existing in-place
+nomination update. Narration status compares its durable generation snapshot with that
+persisted Mongo entry. Unchanged text reuses narration; changed text explicitly
+archives the old narration claim and file and creates one new guarded claim. Image,
+video and jingle replacement behavior and nomination identity remain unchanged.
+
+The flipping loader now ends as soon as the generated still has preloaded and the
+still is revealed. Video generation continues from that image and replaces it through
+the existing in-place player when ready. Narration and jingle expose their own status
+and controls independently. Whichever audio becomes ready first may autoplay; one
+shared arbitration flag prevents the later asset overlapping it. Manual PLAY/STOP
+remains unchanged. Full offline suites pass; no provider calls or deployment.
 
 ## Simplified Creator flow — 2026-10-01
 

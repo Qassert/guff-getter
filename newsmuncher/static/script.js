@@ -116,6 +116,7 @@ function populateTempData() {
 }
 
 function fetchAndDisplay(scriptName) {
+    const sourceSequence = beginNewCreation();
     document.querySelectorAll('.source-choice').forEach(button => {
         button.setAttribute('aria-pressed', String(button.dataset.source === scriptName));
     });
@@ -126,14 +127,35 @@ function fetchAndDisplay(scriptName) {
         .then(response => response.json())
         .then(() => {
             setTimeout(() => {
+                if (sourceSequence !== rewriteSequence) return;
                 populateTempData();
                 hideLoader();
             }, 2000);
         })
         .catch(error => {
             console.error("Error fetching from source:", error);
-            hideLoader();
+            if (sourceSequence === rewriteSequence) hideLoader();
         });
+}
+
+function beginNewCreation() {
+    rewriteSequence++;
+    displayedRewriteId = null;
+    nominatedSnapshot = null;
+    creationNominated = false;
+    nominationPending = false;
+    resetImagePanel();
+    if (typeof narrationUI !== 'undefined') narrationUI.show({nominated:false});
+    if (typeof jingleUI !== 'undefined') jingleUI.show({nominated:false});
+    if (typeof embellishUI !== 'undefined') embellishUI.show(null);
+    document.getElementById('responseTitleDraft').value = '';
+    document.getElementById('responseBodyDraft').value = '';
+    const output = document.getElementById('outputContainer');
+    output.style.display = 'none';
+    output.classList.add('hidden');
+    document.getElementById('bankButton').hidden = true;
+    try { sessionStorage.removeItem('newsmuncher.imageRewrite'); } catch (_) {}
+    return rewriteSequence;
 }
 
 function confirmData() {
@@ -187,12 +209,28 @@ function confirmData() {
 }
 
 let nominationPending = false;
+function currentResultText() {
+    return {
+        crazyReplacement1Title: document.getElementById('responseTitleDraft').value,
+        crazyReplacement1Extract: document.getElementById('responseBodyDraft').value
+    };
+}
+
+window.persistCreationText = async () => {
+    if (!displayedRewriteId || !creationNominated) throw new Error('Nomination unavailable.');
+    const text = currentResultText();
+    const response = await fetch(`/temp/confirm_data?rewrite_id=${encodeURIComponent(displayedRewriteId)}`, {
+        method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(text)
+    });
+    if (!response.ok) throw new Error('Could not update nominated response.');
+    nominatedSnapshot = JSON.stringify(text);
+    return {rewrite_id:displayedRewriteId, text};
+};
+
 function bankThisBeauty() {
     if (nominationPending || imageRedoPending) return;
-    const response = {
-        crazyReplacement1Title:document.getElementById('responseTitleDraft').value,
-        crazyReplacement1Extract:document.getElementById('responseBodyDraft').value
-    };
+    const response = currentResultText();
     const snapshot = JSON.stringify(response);
     if (snapshot === nominatedSnapshot) return;
     nominationPending = true;
@@ -292,11 +330,12 @@ window.generateCreationImage=async(id,sequence,replace=false)=>{
  const body=replace?{rewrite_id:id,previous_image_url:currentImageUrl,replace_nomination:true}:{rewrite_id:id};
  const response=await fetch(url,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
  if(!response.ok)throw Error('Image generation failed');const data=await response.json();if(!current())throw Error('Rewrite changed');
- return{data,reveal(){currentImageUrl=data.image_url;displayRewriteImage(data.image_url,current,data.image_style);}};
+ return{data,reveal(){currentImageUrl=data.image_url;return displayRewriteImage(data.image_url,current,data.image_style);}};
 };
 
 function displayRewriteImage(url, current, style = null) {
-    if (!current()) return;
+    if (!current()) return Promise.resolve(false);
+    return new Promise(resolve => {
     const rewriteCurrent = current, imageToken = ++imageDisplaySequence;
     current = () => rewriteCurrent() && imageToken === imageDisplaySequence;
     if (typeof videoUI !== "undefined") videoUI.show({rewrite_id: displayedRewriteId, nominated: creationNominated});
@@ -322,6 +361,7 @@ function displayRewriteImage(url, current, style = null) {
             setTimeout(() => {
                 if (current()) applyImageColors(img, current);
             }, reduced ? 0 : 650);
+            resolve(true);
         }));
     };
     img.onerror = () => {
@@ -330,9 +370,11 @@ function displayRewriteImage(url, current, style = null) {
             imageGenerationFailed = true;
             renderRedoImage();
             panel.textContent = 'Image unavailable. Use REDO IMAGE if you want to make another paid attempt.';
+            resolve(false);
         }
     };
     img.src = url;
+    });
 }
 
 async function restoreImageRewrite() {

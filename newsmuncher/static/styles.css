@@ -392,8 +392,7 @@ body { isolation: isolate; }
   .profile-page .generation-controls { gap: 0; }
 }
 
-/* Separate paper surfaces from controls so the sheet covers the EDIT tab artwork.
-   The existing border dimensions and nine-slice asset stay unchanged. */
+/* Keep the paper artwork on its own surface without the retired EDIT tabs. */
 .profile-page :is(.profile-container, #outputContainer) {
   isolation: isolate; background: transparent; border-image-source: none;
 }
@@ -406,30 +405,8 @@ body { isolation: isolate; }
   border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
   background: #eee5cf; background-clip: padding-box;
 }
-/* A sibling surface avoids the button transform trapping its paper above the sheet. */
-.profile-page :is(.profile-container, #outputContainer)::after {
-  content: ''; position: absolute; pointer-events: none; z-index: -2;
-  top: 0; left: calc(-1 * var(--paper-edge)); transform: translateX(-50%);
-  width: 190px; height: 90px; box-sizing: border-box;
-  border: solid transparent; border-width: 15px 12px 12px;
-  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
-  background: #eee5cf; background-clip: padding-box;
-  filter: sepia(.25) saturate(1.15) brightness(.86) drop-shadow(1px 3px 2px #49382266);
-}
-.profile-page :is(.profile-container, #outputContainer):has(.edit-tab[aria-expanded="true"])::after { display: none; }
-.profile-page .edit-tab { justify-content: flex-start; text-align: left; padding-left: 24px; }
-.profile-page .edit-tab::before { display: none; }
 .profile-page .funky-button::before {
   filter: var(--tab-tint) drop-shadow(1px 3px 2px #49382266);
-}
-@media (max-width: 1200px) {
-  .profile-page :is(.profile-container, #outputContainer)::after { left: calc(95px - var(--paper-edge)); }
-}
-@media (max-width: 620px) {
-  .profile-page :is(.profile-container, #outputContainer)::after {
-    left: calc(-1 * var(--paper-edge)); transform: none; width: 110px; height: 60px;
-  }
-  .profile-page .edit-tab { padding-left: 18px; }
 }
 
 /* Hidden source elements for the meta line and empty control wrappers. */

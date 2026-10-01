@@ -169,6 +169,7 @@ const jingleUI = (() => {
     }
 
     return {show, act, stop, discover,
+        isPlaying: () => !!(audio && !audio.paused),
         snapshot: () => ({...state, pending}),
         async ensure() {
             const token = revision;

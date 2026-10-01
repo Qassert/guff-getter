@@ -77,12 +77,16 @@ class Collection:
                 raise RuntimeError('mongo unavailable')
             for doc in self.docs:
                 if matches(doc, query):
-                    for key, val in update['$set'].items():
+                    for key, val in update.get('$set', {}).items():
                         target = doc
                         parts = key.split('.')
                         for part in parts[:-1]:
                             target = target.setdefault(part, {})
                         target[parts[-1]] = copy.deepcopy(val)
+                    for key, val in update.get('$push', {}).items():
+                        doc.setdefault(key, []).append(copy.deepcopy(val))
+                    for key in update.get('$unset', {}):
+                        doc.pop(key, None)
                     return types.SimpleNamespace(matched_count=1)
             return types.SimpleNamespace(matched_count=0)
 
@@ -227,6 +231,24 @@ def test_updated_story_keeps_original_snapshot(setup):
     speech.assert_called_once()
 
 
+def test_explicit_changed_text_replaces_narration_but_unchanged_reuses(setup):
+    service, collection, entry, sdk, speech = setup
+    key = str(entry['_id'])
+    first = generate(setup)
+    service.replace(collection, key, 'pet')
+    assert first['narration_url'] == service.status(collection, key, 'pet')['narration_url']
+    speech.assert_called_once()
+    entry['crazyReplacement1Extract'] = 'A newly persisted body.'
+    service.replace(collection, key, 'pet')
+    assert not service.path(key).exists()
+    result = service.generate(collection, key, 'pet', {
+        'title':entry['crazyReplacement1Title'], 'body':entry['crazyReplacement1Extract']})
+    assert result['narration_status'] == 'complete'
+    assert entry['narration']['snapshot']['body'] == 'A newly persisted body.'
+    assert len(entry['narration_history']) == 1
+    assert speech.call_count == 2
+
+
 def test_unowned_file_or_unknown_metadata_never_generates(setup):
     service, collection, entry, sdk, speech = setup
     service.directory.mkdir()
@@ -261,6 +283,10 @@ def test_api_range_status_auth_and_missing_file(setup):
         assert part.status_code == 206 and part.content == MP3[:10]
         assert part.headers['content-range'] == f'bytes 0-9/{len(MP3)}'
         assert client.get(url + '/audio', headers={'Range': 'bytes=9000-'}).status_code == 416
+        entry['crazyReplacement1Extract'] = 'Changed persisted text.'
+        replaced = client.post(url + '/replace', json={'title':'Teapot mayor','body':'Changed persisted text.'})
+        assert replaced.status_code == 200
+        assert entry['narration']['snapshot']['body'] == 'Changed persisted text.'
         client.cookies.clear()
         assert client.get(url + '/audio').status_code == 401
         client.cookies.set('active_pet', 'other')
@@ -269,7 +295,7 @@ def test_api_range_status_auth_and_missing_file(setup):
         service.path(str(entry['_id'])).unlink()
         assert client.post(url, json={'title': 'Teapot mayor', 'body': 'Biscuits'}).json()['can_generate'] is False
         assert client.get(url + '/audio').status_code == 404
-    speech.assert_called_once()
+    assert speech.call_count == 2
 
 
 def test_frontend_and_template():

@@ -181,5 +181,24 @@ class Narrations:
                 temporary.unlink(missing_ok=True)
         return self.status(collection, key, owner)
 
+    def replace(self, collection, key, owner):
+        """Retire narration only after persisted nomination text has changed."""
+        entry = self.entry(collection, key, owner)
+        state = entry.get('narration')
+        if not isinstance(state, dict) or not all(field in state for field in ('entry_id', 'snapshot', 'status')):
+            raise NarrationError(409, 'Narration metadata cannot be replaced safely.')
+        if state.get('status') == 'started' and not self.has_audio(key):
+            raise NarrationError(409, 'Narration outcome is unresolved; replacement refused.')
+        if state['snapshot'] == snapshot(entry):
+            return self.status(collection, key, owner)
+        updated = collection.update_one(
+            {'_id': ObjectId(key), **owner_query(owner), 'narration': state},
+            {'$push': {'narration_history': state}, '$unset': {'narration': ''}})
+        if updated.matched_count != 1:
+            raise NarrationError(409, 'Narration changed while replacement was requested.')
+        path = self.path(key)
+        if path.is_file() and not path.is_symlink():
+            path.unlink()
+
 
 service = Narrations()
