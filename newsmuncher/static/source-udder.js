@@ -83,17 +83,27 @@
             spurt.style.setProperty('--liquid',colour);spurt.style.setProperty('--start-x',`${startX}px`);spurt.style.setProperty('--start-y',`${startY}px`);
             spurt.style.setProperty('--travel-x',`${impactX-startX}px`);spurt.style.setProperty('--travel-y',`${impactY-startY}px`);
             spurt.style.setProperty('--travel-angle',`${(impactX-startX)*.08}deg`);this.layer.appendChild(spurt);
-            this.schedule(()=>{spurt.remove();this.impact(impactX,impactY,colour);},350);
+            this.schedule(()=>{spurt.remove();this.impact(impactX,impactY,colour,parchment);},410);
         }
-        impact(x,y,colour) {
+        impact(x,y,colour,parchment) {
             const splash=document.createElement('span');splash.className='udder-splash';
+            const width=parchment.width*(.68+Math.random()*.14), height=parchment.height*(.58+Math.random()*.15);
+            x=Math.max(parchment.left+width*.42,Math.min(parchment.right-width*.42,x));
+            y=Math.max(parchment.top+height*.42,Math.min(parchment.bottom-height*.42,y));
             splash.style.setProperty('--impact-x',`${x}px`);splash.style.setProperty('--impact-y',`${y}px`);splash.style.setProperty('--liquid',colour);
+            splash.style.setProperty('--spill-width',`${width}px`);splash.style.setProperty('--spill-height',`${height}px`);
+            splash.style.setProperty('--spill-radius',`${35+Math.random()*20}% ${45+Math.random()*20}% ${32+Math.random()*22}% ${42+Math.random()*20}% / ${42+Math.random()*18}% ${34+Math.random()*20}% ${48+Math.random()*18}% ${36+Math.random()*22}%`);
+            const edge=[[2,41],[9,25],[21,20],[27,5],[38,16],[50,1],[59,15],[75,8],[79,24],[96,29],[88,46],[100,59],[83,68],[87,89],[69,83],[58,99],[47,84],[30,96],[25,78],[7,76],[14,59]];
+            splash.style.setProperty('--spill-shape',`polygon(${edge.map(([a,b])=>`${Math.max(0,Math.min(100,a+(Math.random()-.5)*7))}% ${Math.max(0,Math.min(100,b+(Math.random()-.5)*7))}%`).join(',')})`);
+            splash.style.setProperty('--run-x',`${25+Math.random()*50}%`);
             const blot=document.createElement('span');blot.className='udder-blot';splash.appendChild(blot);
-            for(let i=0;i<7;i++){
+            for(let i=0;i<14;i++){
                 const drop=document.createElement('i');drop.className='udder-drop';
-                drop.style.setProperty('--size',`${5+(i%3)*3}px`);drop.style.setProperty('--drop-x',`${(i-3)*16+(i%2)*7}px`);drop.style.setProperty('--drop-y',`${-28+(i%3)*20}px`);splash.appendChild(drop);
+                drop.style.setProperty('--size',`${8+(i%4)*6}px`);
+                drop.style.setProperty('--drop-x',`${Math.round((Math.random()-.5)*width*1.16+width/2)}px`);
+                drop.style.setProperty('--drop-y',`${Math.round((Math.random()-.5)*height*1.12+height/2)}px`);splash.appendChild(drop);
             }
-            this.layer.appendChild(splash);this.schedule(()=>splash.remove(),3100);
+            this.layer.appendChild(splash);this.schedule(()=>splash.remove(),4100);
         }
     }
     if(typeof module!=='undefined')module.exports={SourceUdder};

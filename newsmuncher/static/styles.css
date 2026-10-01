@@ -493,11 +493,12 @@ body { isolation: isolate; }
   overflow: visible; isolation: isolate;
 }
 .profile-page .udder-body {
-  position: absolute; inset: 0 0 auto; width: 100%; height: 72%; overflow: visible;
-  filter: drop-shadow(0 7px 5px #4a252d55); pointer-events: none;
+  position: absolute; inset: -6px 0 auto; width: 100%; height: 82%; overflow: visible;
+  filter: drop-shadow(0 10px 7px #35151c66); pointer-events: none;
 }
-.profile-page .udder-body path { fill: #d98d9d; stroke: #7e4556; stroke-width: 5; }
-.profile-page .udder-body ellipse { fill: #efaaba; opacity: .55; }
+.profile-page .udder-body .udder-rim { fill: url(#udderRim); filter: url(#udderTexture); }
+.profile-page .udder-body .udder-flesh { fill: url(#udderFlesh); filter: url(#udderTexture); }
+.profile-page .udder-body .udder-highlight { fill: #ffe8df; opacity: .34; filter: blur(4px); }
 .profile-page .nonsense-container .udder-teat {
   position: absolute; z-index: 2; top: 42%;
   left: calc((var(--teat-index) + .5) * 20%);
@@ -519,9 +520,10 @@ body { isolation: isolate; }
     scaleX(var(--squash)) scaleY(var(--stretch));
 }
 .profile-page .udder-teat .teat-shape svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.profile-page .udder-teat .teat-shape path { fill: #cc7488; stroke: #713b4c; stroke-width: 4; }
-.profile-page .udder-teat .teat-shape ellipse { fill: #a9546c; stroke: #713b4c; stroke-width: 3; }
-.profile-page .udder-teat[aria-pressed="true"] .teat-shape path { fill: #ef9caf; }
+.profile-page .udder-teat .teat-flesh { stroke: #743245; stroke-width: 2.3; filter: drop-shadow(3px 5px 3px #5d263955); }
+.profile-page .udder-teat .teat-highlight { fill: #fff0e9; opacity: .48; filter: blur(1.8px); }
+.profile-page .udder-teat .teat-tip { fill: #9f455a; stroke: #6d2c40; stroke-width: 2; }
+.profile-page .udder-teat[aria-pressed="true"] .teat-highlight { opacity: .7; }
 .profile-page .udder-teat:focus-visible { outline: 3px solid var(--purple); outline-offset: 5px; border-radius: 45%; }
 .profile-page .udder-teat .teat-shape.squeezed { animation: teat-squeeze 240ms ease-out; }
 @keyframes teat-squeeze {
@@ -530,36 +532,43 @@ body { isolation: isolate; }
 
 .udder-liquid-layer { position: fixed; inset: 0; z-index: 40; overflow: visible; pointer-events: none; }
 .udder-spurt {
-  position: fixed; left: var(--start-x); top: var(--start-y); width: 9px; height: 28px;
-  border-radius: 70% 70% 55% 55%; background: var(--liquid);
-  box-shadow: 0 0 0 2px #ffffff44 inset; transform-origin: center top;
-  animation: udder-spurt 360ms cubic-bezier(.18,.7,.35,1) forwards;
+  position: fixed; left: var(--start-x); top: var(--start-y); width: clamp(18px, 2vw, 30px); height: 74px;
+  border-radius: 65% 65% 48% 48%; background: var(--liquid);
+  box-shadow: 7px 0 0 color-mix(in srgb, var(--liquid), white 22%) inset, 0 2px 4px #0003;
+  transform-origin: center top; opacity: 1;
+  animation: udder-spurt 420ms cubic-bezier(.12,.68,.28,1) forwards;
 }
+.udder-spurt::before, .udder-spurt::after { content:''; position:absolute; border-radius:50%; background:var(--liquid); }
+.udder-spurt::before { width:18px; height:18px; left:-22px; top:30px; }
+.udder-spurt::after { width:12px; height:12px; right:-20px; top:54px; }
 @keyframes udder-spurt {
-  0% { transform: translate(-50%, 0) scaleY(.65); opacity: 1; }
-  75% { opacity: 1; }
-  100% { transform: translate(calc(-50% + var(--travel-x)), var(--travel-y)) rotate(var(--travel-angle)) scaleY(1.45); opacity: .15; }
+  0% { transform: translate(-50%, 0) scale(.65,.4); opacity: 1; }
+  82% { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--travel-x)), var(--travel-y)) rotate(var(--travel-angle)) scale(.9,2.3); opacity: .9; }
 }
-.udder-splash { position: fixed; left: var(--impact-x); top: var(--impact-y); width: 1px; height: 1px; }
+.udder-splash {
+  position: fixed; left: var(--impact-x); top: var(--impact-y);
+  width: var(--spill-width); height: var(--spill-height); transform: translate(-50%,-50%);
+}
 .udder-blot {
-  position: absolute; left: -42px; top: -22px; width: 84px; height: 48px;
-  border-radius: 48% 52% 43% 57% / 55% 42% 58% 45%; background: var(--liquid);
-  filter: saturate(.9); mix-blend-mode: multiply; opacity: .86;
-  animation: udder-blot-drain 3s ease-out forwards;
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border-radius: var(--spill-radius); background: var(--liquid); opacity: 1;
+  clip-path: var(--spill-shape); filter: saturate(1.2) drop-shadow(0 4px 2px #0003);
+  animation: udder-blot-drain 4s ease-in forwards;
 }
 .udder-blot::after {
-  content: ''; position: absolute; top: 30px; left: 34px; width: 13px; height: 78px;
-  border-radius: 40% 40% 65% 65%; background: var(--liquid); transform-origin: top;
-  animation: udder-drip 3s ease-in forwards;
+  content: ''; position: absolute; top: 72%; left: var(--run-x); width: clamp(15px,3vw,34px); height: 42%;
+  border-radius: 34% 34% 70% 70%; background: var(--liquid); transform-origin: top;
+  animation: udder-drip 4s ease-in forwards;
 }
 .udder-drop {
   position: absolute; width: var(--size); height: var(--size); border-radius: 50%;
-  left: var(--drop-x); top: var(--drop-y); background: var(--liquid); mix-blend-mode: multiply;
-  animation: udder-drop-fade 3s ease-out forwards;
+  left: var(--drop-x); top: var(--drop-y); background: var(--liquid); opacity: 1;
+  animation: udder-drop-fade 4s ease-in forwards;
 }
-@keyframes udder-blot-drain { 0%,38% { opacity:.86; transform:scale(.25); } 16% { transform:scale(1.15); } 100% { opacity:0; transform:scale(.72); } }
-@keyframes udder-drip { 0%,20% { transform:scaleY(.05); opacity:.8; } 70% { transform:scaleY(1); opacity:.55; } 100% { transform:scaleY(1.18); opacity:0; } }
-@keyframes udder-drop-fade { 0% { opacity:.8; transform:scale(.25); } 18% { transform:scale(1); } 70% { opacity:.55; transform:translateY(18px); } 100% { opacity:0; transform:translateY(32px) scale(.55); } }
+@keyframes udder-blot-drain { 0% { opacity:1; transform:scale(.18,.12); } 10% { opacity:1; transform:scale(1.06,.98); } 25% { opacity:.94; transform:scale(1); } 50% { opacity:.62; } 75% { opacity:.26; transform:translateY(10px) scale(.92,.86); } 100% { opacity:0; transform:translateY(30px) scale(.72,.58); } }
+@keyframes udder-drip { 0%,12% { transform:scaleY(.04); opacity:1; } 38% { transform:scaleY(.7); opacity:.9; } 70% { transform:translateY(18px) scaleY(1.15); opacity:.38; } 100% { transform:translateY(48px) scaleY(1.3); opacity:0; } }
+@keyframes udder-drop-fade { 0% { opacity:1; transform:scale(.1); } 12% { opacity:1; transform:scale(1.15); } 45% { opacity:.76; transform:scale(1); } 75% { opacity:.28; transform:translateY(22px); } 100% { opacity:0; transform:translateY(50px) scale(.45); } }
 
 @media (max-width: 620px) {
   .profile-page .nonsense-container { width: calc(100% + var(--paper-edge)); }

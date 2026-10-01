@@ -26,11 +26,25 @@ test('pointer brush bends without activating and fast movement flicks harder',()
  button.dispatch('pointerleave');assert.equal(t.ui.states[2].target,0);
 });
 
-test('click squashes, emits unique-colour liquid and cleans effects after three seconds',()=>{
+test('click squashes, emits a large opaque spill and cleans it after four seconds',()=>{
  const t=setup(),button=t.buttons[0];button.dataset.liquid='#45a8e8';button.dispatch('click');
  assert(button.shape.classList.contains('squeezed'));assert.equal(t.layer.children.length,1);
- const travel=t.timers.find(x=>x.ms===350);travel.fn();assert(t.layer.children[0].removed);assert.equal(t.layer.children.length,2);
- const cleanup=t.timers.find(x=>x.ms===3100);cleanup.fn();assert(t.layer.children[1].removed);
+ const travel=t.timers.find(x=>x.ms===410);travel.fn();assert(t.layer.children[0].removed);assert.equal(t.layer.children.length,2);
+ const spill=t.layer.children[1];assert.equal(spill.style.values['--liquid'],'#45a8e8');assert.equal(spill.children.length,15);
+ const spillWidth=parseFloat(spill.style.values['--spill-width']),spillHeight=parseFloat(spill.style.values['--spill-height']);
+ assert(spillWidth>=612&&spillWidth<=738);assert(spillHeight>=348&&spillHeight<=438);
+ assert.match(spill.style.values['--spill-shape'],/^polygon\(/);
+ const cleanup=t.timers.find(x=>x.ms===4100);cleanup.fn();assert(spill.removed);
+});
+
+test('rapid clicks retain independently coloured spills with independent lifetimes',()=>{
+ const t=setup();t.buttons[0].dataset.liquid='#ea4f7a';t.buttons[1].dataset.liquid='#45a8e8';
+ t.buttons[0].dispatch('click');t.timers.filter(x=>x.ms===410)[0].fn();
+ t.buttons[1].dispatch('click');t.timers.filter(x=>x.ms===410)[1].fn();
+ const spills=t.layer.children.filter(x=>x.className==='udder-splash');
+ assert.equal(spills.length,2);assert.deepEqual(spills.map(x=>x.style.values['--liquid']),['#ea4f7a','#45a8e8']);
+ t.timers.filter(x=>x.ms===4100)[0].fn();assert(spills[0].removed);assert(!spills[1].removed);
+ t.timers.filter(x=>x.ms===4100)[1].fn();assert(spills[1].removed);
 });
 
 test('template keeps five native accessible actions and page-level unclipped effect layer',()=>{
@@ -39,5 +53,5 @@ test('template keeps five native accessible actions and page-level unclipped eff
  for(const action of ['fetch_dating_from_api','fetch_historicalFunny_from_api','fetch_wikipedia_into_api','fetch_poem_into_api','fetch_people_into_api'])assert(html.includes(`'${action}'`));
  assert(html.includes("fetchAndDisplay('{{ action }}')"));
  assert(html.includes('aria-label="{{ label }}"'));assert.match(css,/\.udder-liquid-layer[^}]*position:\s*fixed[^}]*overflow:\s*visible[^}]*pointer-events:\s*none/);
- assert.match(css,/udder-blot-drain\s+3s/);assert.match(css,/prefers-reduced-motion/);
+ assert.match(css,/udder-blot-drain\s+4s/);assert.match(css,/opacity:1/);assert.match(css,/prefers-reduced-motion/);
 });
