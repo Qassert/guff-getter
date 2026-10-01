@@ -18,17 +18,16 @@
   <div class="container profile-container">
   <div class="container nonsense-container" role="group" aria-label="Source selection">
     <div id="sourceUdder" class="source-udder">
-      <img class="cow-body" src="{{ url_for('static', path='images/udder/cow-body.png') }}" alt="">
-      <img class="udder-body" src="{{ url_for('static', path='images/udder/udder-body.png') }}" alt="">
+      <img class="udder-master-body" src="{{ url_for('static', path='images/udder/udder-master-body.png') }}" alt="">
       {% set sources = [
-        ('DATING', 'fetch_dating_from_api', '#ea4f7a', 'teat-1.png', '16.4%'),
-        ('DRIVEL', 'fetch_historicalFunny_from_api', '#9acd32', 'teat-2.png', '31.3%'),
-        ('WIKIPEDIA', 'fetch_wikipedia_into_api', '#45a8e8', 'teat-3.png', '50%'),
-        ('POEM', 'fetch_poem_into_api', '#a96ee8', 'teat-4.png', '67.8%'),
-        ('PEOPLE', 'fetch_people_into_api', '#f1a33c', 'teat-5.png', '84.6%')
+        ('DATING', 'fetch_dating_from_api', '#ea4f7a', 'udder-teat-1.png', '17.7%', '15.7%'),
+        ('DRIVEL', 'fetch_historicalFunny_from_api', '#9acd32', 'udder-teat-2.png', '33.1%', '14.3%'),
+        ('WIKIPEDIA', 'fetch_wikipedia_into_api', '#45a8e8', 'udder-teat-3.png', '50.5%', '12.9%'),
+        ('POEM', 'fetch_poem_into_api', '#a96ee8', 'udder-teat-4.png', '68%', '13.8%'),
+        ('PEOPLE', 'fetch_people_into_api', '#f1a33c', 'udder-teat-5.png', '84.2%', '15.7%')
       ] %}
-      {% for label, action, colour, image, position in sources %}
-      <button type="button" class="source-choice udder-teat" style="--teat-x: {{ position }}; --liquid: {{ colour }}"
+      {% for label, action, colour, image, position, width in sources %}
+      <button type="button" class="source-choice udder-teat" style="--teat-x: {{ position }}; --teat-width: {{ width }}; --liquid: {{ colour }}"
         data-source="{{ action }}" data-liquid="{{ colour }}" aria-label="{{ label }}" title="{{ label }}"
         aria-pressed="false" onclick="fetchAndDisplay('{{ action }}')">
         <span class="teat-shape" aria-hidden="true">
