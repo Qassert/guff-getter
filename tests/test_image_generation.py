@@ -8,7 +8,8 @@ import types
 import unittest
 from unittest.mock import MagicMock, patch
 
-from newsmuncher.services.image_generation import RewriteStore, build_image_prompt, LocalStubProvider
+from newsmuncher.services.image_generation import (RewriteStore, build_image_prompt,
+    build_end_image_prompt, LocalStubProvider)
 
 
 class ImageTests(unittest.TestCase):
@@ -44,6 +45,14 @@ class ImageTests(unittest.TestCase):
         self.assertEqual(image['image_provider'], 'local-stub')
         self.assertTrue(Path('newsmuncher' + image['image_url']).exists())
         self.assertFalse(image['image_url'].startswith('data:'))
+
+    def test_start_and_independent_end_prompts_are_distinct(self):
+        start = build_image_prompt(self.result, 'Editorial')
+        end = build_end_image_prompt(self.result, 'Surreal art')
+        self.assertNotEqual(start, end)
+        self.assertIn('A cat paints the moon.', start)
+        self.assertIn('A cat paints the moon.', end)
+        self.assertIn('Do not preserve or try to match', end)
 
     def test_style_selected_once_persisted_and_restored(self):
         routes = self.previews()

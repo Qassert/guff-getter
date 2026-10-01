@@ -59,6 +59,19 @@ def build_image_prompt(result, image_style=None):
     return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 
 
+def build_end_image_prompt(result, image_style=None):
+    """A second, independent interpretation for video end-frame experiments."""
+    prompt = (
+        f'{STYLE}\n'
+        'Create an independently imagined alternative scene inspired by the material below. '
+        'Make it surreal, cinematic, visually rich, funny and strange, and dramatically different '
+        'from any other interpretation. Do not preserve or try to match another image\'s characters, '
+        'camera position, objects, setting or composition.\n'
+        f'Scene inspiration: {result["crazyReplacement1Extract"][:1200]}'
+    )
+    return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
+
+
 class ImageProvider(Protocol):
     def generate_image(self, prompt: str, rewrite_id: str) -> dict: ...
 

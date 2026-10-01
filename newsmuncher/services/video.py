@@ -5,13 +5,14 @@ import os
 from pathlib import Path
 import secrets
 import time
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from bson import ObjectId
 
 from newsmuncher.config import GENERATED_IMAGES_DIR, GENERATED_VIDEO_DIR
-from newsmuncher.services.image_generation import store
-from newsmuncher.services.video_prompt import build_motion_prompt
+from newsmuncher.services.image_generation import (store, choose_image_style, get_provider,
+    build_end_image_prompt)
+from newsmuncher.services.video_prompt import build_transition_prompt
 from newsmuncher.services.wavespeed import MODEL, create_video, read_image
 
 
@@ -27,8 +28,9 @@ def now():
 
 class Videos:
     def __init__(self, rewrites=store, directory=GENERATED_VIDEO_DIR,
-                 images=GENERATED_IMAGES_DIR, provider=create_video):
+                 images=GENERATED_IMAGES_DIR, provider=create_video, image_provider=None):
         self.store, self.directory, self.images, self.provider = rewrites, Path(directory), Path(images), provider
+        self.image_provider = image_provider
 
     def path(self, key):
         try:
@@ -148,9 +150,14 @@ class Videos:
             self.directory.mkdir(parents=True, exist_ok=True)
             state['video'] = {'rewrite_id': key, 'status': 'queued', 'provider': 'wavespeed',
                 'model': MODEL, 'duration': 8, 'resolution': '480p',
-                'prompt': build_motion_prompt(state['result']), 'seed': secrets.randbelow(2**31),
+                'prompt': build_transition_prompt(state['result']), 'seed': secrets.randbelow(2**31),
                 'source_sha256': hashlib.sha256(image).hexdigest(), 'requested_at': now(),
-                'requested_epoch': time.time(), 'storage_key': f'{key}.mp4'}
+                'requested_epoch': time.time(), 'storage_key': f'{key}.mp4',
+                'end_frame': {'mode': 'independent_end_frame', 'status': 'queued',
+                    'image_id': str(uuid4()),
+                    'image_style': choose_image_style(exclude=state['result'].get('image_style'))}}
+            state['video']['end_frame']['image_prompt'] = build_end_image_prompt(
+                state['result'], state['video']['end_frame']['image_style'])
             self.store.save(db, key, state)
             return self.public(key, state), True
 
@@ -193,7 +200,23 @@ class Videos:
             api_key = os.environ.get('WAVESPEED_API_KEY', '').strip()
             if not api_key:
                 raise VideoError(503, 'Animation configuration unavailable.')
-            self.provider(source, self.path(key), video['prompt'], video['seed'], video, checkpoint, api_key)
+            last_source = None
+            end_frame = video.get('end_frame')
+            if isinstance(end_frame, dict):
+                last_source = self.images / f"{end_frame['image_id']}.png"
+                if end_frame.get('status') != 'complete':
+                    end_frame['status'] = 'started'
+                    checkpoint()  # Permanent paid-image claim before contacting the provider.
+                    generated = (self.image_provider or get_provider()).generate_image(
+                        end_frame['image_prompt'], end_frame['image_id'])
+                    end_frame.update(generated, status='complete')
+                    data, _, _ = read_image(last_source)
+                    end_frame['source_sha256'] = hashlib.sha256(data).hexdigest()
+                    checkpoint()
+                elif not last_source.is_file():
+                    raise VideoError(409, 'Stored end frame is unavailable.')
+            self.provider(source, self.path(key), video['prompt'], video['seed'], video,
+                          checkpoint, api_key, last_source=last_source)
             if not self.has_video(key):
                 raise VideoError(502, 'Animation output unavailable.')
             video.update(status='complete', created_at=now())

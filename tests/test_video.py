@@ -45,14 +45,23 @@ def setup(tmp_path, monkeypatch):
     images.mkdir()
     (images / f'{key}.png').write_bytes(PNG)
     calls = []
-    def provider(source, target, prompt, seed, record, checkpoint, api_key):
-        calls.append((source, prompt, seed))
+    def provider(source, target, prompt, seed, record, checkpoint, api_key, last_source=None):
+        calls.append((source, prompt, seed, last_source))
         assert api_key == 'mock-secret'
         assert source.read_bytes() == PNG
+        assert last_source is not None and last_source.read_bytes() == PNG
         record['request_id'] = 'safe-id'
         checkpoint()
         target.write_bytes(MP4)
-    service = Videos(store, tmp_path / 'video', images, provider)
+    class ImageProvider:
+        def __init__(self): self.calls = []
+        def generate_image(self, prompt, image_id):
+            self.calls.append((prompt, image_id))
+            (images / f'{image_id}.png').write_bytes(PNG)
+            return {'image_url': f'/generated-images/{image_id}.png',
+                    'image_prompt': prompt, 'image_model': 'mock-image',
+                    'image_provider': 'mock', 'image_generated_at': 'now'}
+    service = Videos(store, tmp_path / 'video', images, provider, ImageProvider())
     with store.transaction() as db:
         state = store.read(db, key, 'pet')
         state['result']['image_url'] = f'/generated-images/{key}.png'
@@ -82,7 +91,8 @@ def test_views_never_generate_and_explicit_job_is_reused_after_restart(setup):
     assert not service.claim(collection, key, 'pet')[1]
     assert not calls  # Only a scheduled worker executes, not claim/status.
     service.run(collection, key, 'pet')
-    reopened = Videos(service.store, service.directory, service.images, service.provider)
+    reopened = Videos(service.store, service.directory, service.images, service.provider,
+                      service.image_provider)
     assert reopened.status(collection, key, 'pet')['video_status'] == 'complete'
     assert not reopened.claim(collection, key, 'pet')[1]
     reopened.run(collection, key, 'pet')
@@ -105,7 +115,7 @@ def test_concurrent_claims_and_duplicate_worker_delivery_pay_once(setup):
 
 def test_ambiguous_failure_is_permanent_and_safe(setup):
     service, collection, key, calls = setup
-    def fail(*args):
+    def fail(*args, **kwargs):
         calls.append('paid')
         raise requests.Timeout('mock-secret https://signed.invalid')
     service.provider = fail
@@ -241,11 +251,33 @@ def test_app_uses_shared_transport_and_persists_safe_stage_diagnostics(setup, mo
     if expected:
         assert video['error']['stage'] == expected
     assert len([c for c in fake.calls if c[0] == 'POST' and not c[1].endswith('/media/uploads')]) == 1
+    if failure not in ('submit',):
+        submission = next(c for c in fake.calls if c[0] == 'POST' and not c[1].endswith('/media/uploads'))
+        assert submission[2]['json']['image'].startswith('https://storage.invalid/input')
+        assert submission[2]['json']['last_image'].startswith('https://storage.invalid/input')
+        assert len([c for c in fake.calls if c[1].endswith('/media/uploads')]) == 2
     assert not service.claim(collection, key, 'pet')[1]
     assert fake.trust_env is False
     encoded = json.dumps(video)
     for secret in ('mock-secret', 'secret=signed', 'secret=upload', 'secret=download', 'Authorization'):
         assert secret not in encoded
+
+
+def test_legacy_claim_without_end_frame_keeps_single_image_provider_path(setup):
+    service, collection, key, calls = setup
+    service.claim(collection, key, 'pet')
+    with service.store.transaction() as db:
+        saved = service.store.read(db, key, 'pet')
+        saved['video'].pop('end_frame')
+        service.store.save(db, key, saved)
+    received = []
+    def legacy(source, target, prompt, seed, record, checkpoint, api_key, last_source=None):
+        received.append(last_source)
+        target.write_bytes(MP4)
+    service.provider = legacy
+    service.run(collection, key, 'pet')
+    assert received == [None]
+    assert state(service, key)['video']['status'] == 'complete'
 
 
 def test_metadata_failure_recovers_stored_file_without_generation(setup):
@@ -273,7 +305,7 @@ def test_untracked_and_symlink_media_fail_closed(setup):
 
 def test_discard_during_generation_cannot_attach_or_expose_output(setup):
     service, collection, key, calls = setup
-    def late(source, target, prompt, seed, record, checkpoint, api_key):
+    def late(source, target, prompt, seed, record, checkpoint, api_key, last_source=None):
         calls.append('paid')
         with patch('newsmuncher.services.image_generation.GENERATED_IMAGES_DIR', service.images):
             with service.store.transaction() as db:
@@ -287,3 +319,30 @@ def test_discard_during_generation_cannot_attach_or_expose_output(setup):
     with pytest.raises(VideoError): service.status(collection, key, 'pet')
     with pytest.raises(VideoError): service.claim(collection, key, 'pet')
     assert len(calls) == 1
+
+
+def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
+    service, collection, key, calls = setup
+    service.claim(collection, key, 'pet')
+    claimed = state(service, key)['video']
+    assert claimed['end_frame']['mode'] == 'independent_end_frame'
+    assert claimed['end_frame']['image_prompt'] != state(service, key)['result'].get('image_prompt')
+    assert 'Do not preserve or try to match' in claimed['end_frame']['image_prompt']
+    assert 'continuous surreal cinematic transformation' in claimed['prompt']
+    service.run(collection, key, 'pet')
+    saved = state(service, key)['video']['end_frame']
+    assert saved['status'] == 'complete'
+    assert saved['image_url'].endswith(saved['image_id'] + '.png')
+    assert calls[0][3].name == saved['image_id'] + '.png'
+
+
+def test_end_frame_failure_preserves_start_and_never_submits_video(setup):
+    service, collection, key, calls = setup
+    service.image_provider.generate_image = lambda *args: (_ for _ in ()).throw(RuntimeError('mock failure'))
+    service.claim(collection, key, 'pet')
+    service.run(collection, key, 'pet')
+    saved = state(service, key)
+    assert saved['result']['image_url'] == f'/generated-images/{key}.png'
+    assert saved['video']['status'] == 'failed_or_uncertain'
+    assert saved['video']['end_frame']['status'] == 'started'
+    assert not calls

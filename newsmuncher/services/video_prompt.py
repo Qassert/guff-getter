@@ -37,3 +37,15 @@ def build_motion_prompt(result):
     return BASE + (' If visible: ' + '; '.join(cues) + '.' if cues else
                    ' Existing figures react expressively to each other; visible materials bounce, '
                    'shift and settle with brisk comic energy throughout.')
+
+
+def build_transition_prompt(result):
+    """Motion direction for independent first/last-frame conditioning."""
+    return (
+        'Begin exactly from the supplied first image and finish exactly at the supplied last image. '
+        'Create one continuous surreal cinematic transformation between them, never a cut or dissolve. '
+        'Let visible objects morph into unrelated objects, creatures and faces transform, scenery melt '
+        'and reform, colours flow between scenes, and physical structures reshape through strange '
+        'intermediate forms. Use lively camera movement where it helps the journey. The middle may be '
+        'wildly imaginative, but strongly preserve the supplied opening and ending frames.'
+    )

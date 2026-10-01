@@ -123,7 +123,7 @@ def job_id(value):
 
 
 def generate_wan(session, key, image, mime, parameters, record, checkpoint, diagnostics,
-                 poll_timeout=900, poll_seconds=5):
+                 poll_timeout=900, poll_seconds=5, last_image=None):
     headers = {'Authorization': f'Bearer {key}'}
     diagnostics.start('auth_upload_ticket')
     uploaded = request_json(session, 'POST', WAN_BASE + '/media/uploads', diagnostics,
@@ -143,8 +143,31 @@ def generate_wan(session, key, image, mime, parameters, record, checkpoint, diag
     with session.request('PUT', upload_url, headers=upload_headers, data=image,
                          timeout=(15, 60), allow_redirects=False) as response:
         diagnostics.response(response)
+    last_image_url = None
+    if last_image:
+        last_bytes, last_mime = last_image
+        diagnostics.start('last_image_upload_ticket')
+        uploaded = request_json(session, 'POST', WAN_BASE + '/media/uploads', diagnostics,
+            headers=headers, json={'filename': 'last-image.' + last_mime.split('/')[1],
+                                   'size': len(last_bytes), 'content_type': last_mime})
+        ticket = uploaded['data']
+        upload = ticket['upload']
+        diagnostics.secrets.extend([upload['url'], ticket['download_url']])
+        upload_headers = upload['headers']
+        if not isinstance(upload_headers, dict) or not all(
+                isinstance(k, str) and isinstance(v, str) for k, v in upload_headers.items()):
+            raise SmokeError('Invalid upload headers in ticket.')
+        diagnostics.secrets.extend(upload_headers.values())
+        upload_url = https_url(upload['url'])
+        last_image_url = https_url(ticket['download_url'])
+        diagnostics.start('last_image_upload')
+        with session.request('PUT', upload_url, headers=upload_headers, data=last_bytes,
+                             timeout=(15, 60), allow_redirects=False) as response:
+            diagnostics.response(response)
     endpoint = WAN_BASE + '/' + MODEL
     payload = {**parameters, 'image': image_url}
+    if last_image_url:
+        payload['last_image'] = last_image_url
     record['state'] = 'submission_started'
     checkpoint()  # Durable checkpoint before the single potentially billable POST.
     diagnostics.start('model_submission')
@@ -195,16 +218,21 @@ def download(session, url, target, diagnostics):
         part.unlink(missing_ok=True)
 
 
-def create_video(source, target, prompt, seed, record, checkpoint, key):
+def create_video(source, target, prompt, seed, record, checkpoint, key, last_source=None):
     diagnostics = Diagnostics(record, checkpoint)
     diagnostics.secrets.append(key)
     diagnostics.start('local_preparation')
     try:
         image, mime, _ = read_image(source)
+        last_image = None
+        if last_source is not None:
+            last_bytes, last_mime, _ = read_image(last_source)
+            last_image = (last_bytes, last_mime)
         with requests.Session() as session:
             session.trust_env = False
             url = generate_wan(session, key, image, mime,
-                {'prompt': prompt, 'duration': 8, 'seed': seed}, record, checkpoint, diagnostics)
+                {'prompt': prompt, 'duration': 8, 'seed': seed}, record, checkpoint, diagnostics,
+                last_image=last_image)
             download(session, url, target, diagnostics)
         diagnostics.current['state'] = 'complete'
         checkpoint()

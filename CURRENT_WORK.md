@@ -13,12 +13,22 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Removed the in-flow 62px mode-navigation row above the cow and retired the temporary wrapper lift; awaiting review.
+CURRENT_TASK: Independent start/end-frame video experiment implemented; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Verify scrollY=0 and top-return alignment in-browser; no deployment performed.
-VALIDATION: Frontend 72/72; source-page Python checks 6/6; JavaScript syntax passed. Udder internals and interaction code unchanged. No provider calls.
+NEXT_STEP: Review the two-frame visual result with one explicitly authorized generation; no deployment performed.
+VALIDATION: Two-frame image/video tests 77 passed (6 subtests); frontend 72/72; Python full suite 291 passed with one pre-existing brittle CSS-string assertion failure. Compile validation passed. All HTTP/providers mocked; no live provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+
+## Independent video end-frame experiment — 2026-10-01
+
+New animation claims keep the existing generated still as the first frame and durably
+claim a second OpenAI `gpt-image-1.5` image with an independent scene prompt and image
+identity. The worker retains that end-frame metadata under the video claim, uploads
+both PNGs, and submits them to WaveSpeed Wan 2.2 I2V 480p Ultra Fast as `image` and
+`last_image`. Its motion prompt asks for a continuous surreal transformation rather
+than a cut. End-image failure preserves the first image and prevents video submission;
+legacy claims without end-frame metadata retain the single-image provider path.
 
 ## Progressive Creator follow-up — 2026-10-01
 
