@@ -15,7 +15,7 @@ HANDOVER: README.md
 
 CURRENT_TASK: Supplied PNG udder assembled with five independently animated teat assets; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review the seamless body/teat overlap and transformed-tip liquid origin in-browser; no deployment performed.
+NEXT_STEP: Review the seamless body/teat overlap and transformed-tip liquid origin in-browser; source artwork retained as images/udder/udder-source.png.
 VALIDATION: Frontend 72/72; source-page Python checks 6/6; JavaScript syntax and six PNG alpha checks passed. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
