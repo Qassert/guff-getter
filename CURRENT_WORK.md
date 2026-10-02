@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Generated creation titles hidden from presentation; awaiting review.
+CURRENT_TASK: Source and generated content titles removed from Creator and Viewing presentation; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review compact Creator body spacing and title-free Viewing layout in-browser; no deployment performed.
-VALIDATION: Full frontend 82/82; full Python 295 passed (105 subtests). Title generation, six-word limit, persistence and jingle seeding remain covered. No provider calls.
+NEXT_STEP: Review body-only Creator and Viewing presentation in-browser; no deployment performed.
+VALIDATION: Full frontend 83/83; full Python 295 passed (105 subtests). Exact source-title loader regression, title generation, six-word limit, persistence and jingle seeding remain covered. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
 
@@ -29,6 +29,24 @@ inset. Viewing removes the generated-title heading and renders the body as its p
 copy while the gallery API continues returning `title`. The audit found no other
 active generated-title presentation; internal audio, video and persistence consumers
 remain unchanged. Udder visuals, physics, liquid and sound code were untouched.
+
+## Hide source titles from presentation — 2026-10-02
+
+The remaining Creator heading was `sourceTitleDraft`, populated by `populateTempData`
+from the reusable/source response's `title` and `description`. The previous change hid
+only `responseTitleDraft`, so source headings such as “DEAD FUNNY - 1994 AMERICAN
+FILM” remained visible. `sourceTitleDraft` is now a hidden input, retaining the exact
+value used by MUNGE IT while only `sourceBodyDraft` is presented. Responsive top
+spacing derives from the existing desktop/mobile udder height clamps and clears the
+lower teat footprint without retaining the former headline-sized gap.
+
+Viewing remains body-only: no gallery title element or title DOM assignment exists,
+while its API still returns title metadata. Generated and source titles remain in
+requests, persistence and restore paths; the generated six-word title continues to
+seed jingles. Regression coverage runs the real source loader with the distinctive
+source heading and confirms it enters hidden metadata while the body remains visible.
+Full offline suites pass: frontend 83/83; Python 295 plus 105 subtests. No providers,
+deployment, main changes, or udder behavior changes.
 
 ## Polyphonic udder sounds — 2026-10-02
 

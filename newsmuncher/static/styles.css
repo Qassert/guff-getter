@@ -337,6 +337,10 @@ body { isolation: isolate; }
   width: 100%; min-width: 0; border: 0; padding: 0;
   resize: none; overflow: hidden;
 }
+.profile-page #sourceEditor {
+  /* The udder is an absolute overlay; reserve only its lower teat footprint. */
+  padding-top: calc(clamp(185px, 24vw, 235px) * .58);
+}
 .profile-page #responseEditor { padding-top: clamp(10px, 1.5vw, 16px); }
 .profile-page :is(.profile-container, #outputContainer) .section-editor textarea:focus {
   background: transparent; box-shadow: none;
@@ -579,6 +583,7 @@ body { isolation: isolate; }
   .profile-page .nonsense-container { width: calc(100% + var(--paper-edge)); }
   .profile-page .source-udder { width: min(108vw, 620px); height: clamp(145px, 31vw, 185px); }
   .profile-page .udder-teat { top: calc(min(90px, 14.8vw) + var(--teat-offset-y)); height: 68%; }
+  .profile-page #sourceEditor { padding-top: calc(clamp(145px, 31vw, 185px) * .62); }
 }
 @media (prefers-reduced-motion: reduce) {
   .profile-page .udder-teat .teat-shape { transform: none !important; animation: none !important; }
