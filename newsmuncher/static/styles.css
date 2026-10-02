@@ -511,8 +511,8 @@ body { isolation: isolate; }
   cursor: grab; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   transform: translateX(-50%);
 }
-.profile-page .nonsense-container .udder-teat:first-of-type { --teat-offset-y: -4px; }
-.profile-page .nonsense-container .udder-teat:last-of-type { --teat-offset-x: -4px; --teat-offset-y: -4px; }
+.profile-page .nonsense-container .udder-teat:first-of-type { --teat-offset-y: -12px; }
+.profile-page .nonsense-container .udder-teat:last-of-type { --teat-offset-x: -12px; --teat-offset-y: -12px; }
 .profile-page .nonsense-container .udder-teat[aria-pressed] {
   background: transparent; text-decoration: none; flex: none;
 }

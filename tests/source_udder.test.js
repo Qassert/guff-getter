@@ -69,8 +69,8 @@ test('template keeps five native accessible actions and page-level unclipped eff
 
 test('outer teat resting offsets move hit areas without touching animation transforms',()=>{
  const css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
- assert.match(css,/\.udder-teat:first-of-type\s*\{\s*--teat-offset-y:\s*-4px;/);
- assert.match(css,/\.udder-teat:last-of-type\s*\{\s*--teat-offset-x:\s*-4px;\s*--teat-offset-y:\s*-4px;/);
+ assert.match(css,/\.udder-teat:first-of-type\s*\{\s*--teat-offset-y:\s*-12px;/);
+ assert.match(css,/\.udder-teat:last-of-type\s*\{\s*--teat-offset-x:\s*-12px;\s*--teat-offset-y:\s*-12px;/);
  assert.match(css,/left:\s*calc\(var\(--teat-x\) \+ var\(--teat-offset-x\)\)/);
  assert.match(css,/top:\s*calc\(min\(132px, 14\.8vw\) \+ var\(--teat-offset-y\)\)/);
 });
