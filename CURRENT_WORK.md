@@ -13,12 +13,22 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Composition-preserving referenced end-frame generation complete; awaiting review.
+CURRENT_TASK: Polyphonic Creator udder and MUNGE IT sound effects complete; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review one explicitly authorized referenced two-frame animation; no deployment performed.
-VALIDATION: Targeted image/video tests 80 passed (6 subtests); service compilation passed. OpenAI image edit and WaveSpeed transports mocked; no live provider calls.
+NEXT_STEP: Review interaction volume and sound choices in-browser; no deployment performed.
+VALIDATION: Focused udder/audio tests 11/11; full frontend suite 79/79. Audio/browser media mocked; no provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+
+## Polyphonic udder sounds — 2026-10-02
+
+The Creator now assigns five unique transient Mixkit sounds from one centralized
+browser pool. Desktop pointer entry creates a fresh independent `Audio` instance;
+finished, errored and rejected instances release their references. Teat clicks play
+`suspense.wav` and reshuffle all assignments without affecting the existing action,
+physics or liquid handlers. MUNGE IT also plays suspense. Touch receives no synthetic
+hover, initial load is silent, and these effects do not interact with application
+narration, jingles, loading audio, gallery audio or video.
 
 ## Composition-preserving end frame — 2026-10-02
 

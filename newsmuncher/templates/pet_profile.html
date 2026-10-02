@@ -43,7 +43,7 @@
       <textarea id="sourceBodyDraft" aria-label="Source body" oninput="autoResize(this)"></textarea>
     </div>
 <div class="generation-controls">
-    <button class="funky-button shizzle-button" onclick="confirmData()">MUNGE IT</button>
+    <button id="mungeButton" class="funky-button shizzle-button" onclick="confirmData()">MUNGE IT</button>
   </div>
   </div>
 
@@ -95,4 +95,4 @@
 </div>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}"></script><script src="{{ url_for('static', path='udder-sounds.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
