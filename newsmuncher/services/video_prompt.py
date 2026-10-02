@@ -50,6 +50,8 @@ def build_transition_prompt(result, shared_visual_style=None):
         'Let visible objects morph into unrelated objects, creatures and faces transform, scenery melt '
         'and reform, objects split and merge, scale changes, textures transform, colours flow between '
         'scenes, and physical structures reshape through strange intermediate forms. Use lively camera '
-        'movement where it helps the journey. The middle may be wildly imaginative, but strongly '
-        'preserve the supplied opening and ending frames.' + style
+        'movement where it helps the journey, while keeping the camera reasonably coherent. The middle '
+        'may be wildly imaginative, but strongly preserve the supplied opening and ending frames. '
+        'Corresponding objects must physically morph into each other; do not use cuts, crossfades, '
+        'dissolves, scene changes, teleportation, disappearances or replacement pop-ins.' + style
     )

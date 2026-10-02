@@ -13,12 +13,22 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Shared-style two-frame video prompt refinement complete; awaiting review.
+CURRENT_TASK: Composition-preserving referenced end-frame generation complete; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review one explicitly authorized two-frame animation for visual continuity; no deployment performed.
-VALIDATION: Targeted image/video tests 78 passed (6 subtests). Both provider transports remain mocked; no live provider calls.
+NEXT_STEP: Review one explicitly authorized referenced two-frame animation; no deployment performed.
+VALIDATION: Targeted image/video tests 80 passed (6 subtests); service compilation passed. OpenAI image edit and WaveSpeed transports mocked; no live provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+
+## Composition-preserving end frame — 2026-10-02
+
+The installed OpenAI SDK supports `gpt-image-1.5` reference editing. New video claims
+persist a deterministic five-region transformation map. Their worker generates the
+end frame sequentially with the saved start PNG through `images.edit` and
+`input_fidelity=high`, asking the model to preserve camera geometry and spatial masses
+while replacing their reality. Providers without reference editing retain a prompt-only
+fallback containing matching spatial instructions. WaveSpeed start/end assignment,
+durable claims, failure handling and legacy video claims remain unchanged.
 
 ## Shared visual style for two-frame video — 2026-10-02
 

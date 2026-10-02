@@ -57,11 +57,14 @@ def setup(tmp_path, monkeypatch):
     class ImageProvider:
         def __init__(self): self.calls = []
         def generate_image(self, prompt, image_id):
-            self.calls.append((prompt, image_id))
+            self.calls.append(('generate', prompt, image_id, None))
             (images / f'{image_id}.png').write_bytes(PNG)
             return {'image_url': f'/generated-images/{image_id}.png',
                     'image_prompt': prompt, 'image_model': 'mock-image',
                     'image_provider': 'mock', 'image_generated_at': 'now'}
+        def generate_referenced_image(self, prompt, image_id, reference):
+            self.calls.append(('edit', prompt, image_id, reference))
+            return self.generate_image(prompt, image_id)
     service = Videos(store, tmp_path / 'video', images, provider, ImageProvider())
     with store.transaction() as db:
         state = store.read(db, key, 'pet')
@@ -326,7 +329,7 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     service, collection, key, calls = setup
     service.claim(collection, key, 'pet')
     claimed = state(service, key)['video']
-    assert claimed['end_frame']['mode'] == 'independent_end_frame'
+    assert claimed['end_frame']['mode'] == 'composition_reference_end_frame'
     shared = claimed['shared_visual_style']
     start_prompt = build_image_prompt(state(service, key)['result'], shared)
     assert shared == '1970s British folk-horror film'
@@ -334,7 +337,8 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     assert f'Visual style: {shared}.' in start_prompt
     assert f'Visual style: {shared}.' in claimed['end_frame']['image_prompt']
     assert claimed['end_frame']['image_style'] == shared
-    assert 'Do not preserve or try to match' in claimed['end_frame']['image_prompt']
+    assert 'Preserve geometry; transform reality' in claimed['end_frame']['image_prompt']
+    assert len(claimed['end_frame']['transformation_map']) == 5
     assert 'continuous surreal cinematic transformation' in claimed['prompt']
     assert f'same visual world: {shared}' in claimed['prompt']
     service.run(collection, key, 'pet')
@@ -342,6 +346,8 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     assert saved['status'] == 'complete'
     assert saved['image_url'].endswith(saved['image_id'] + '.png')
     assert calls[0][3].name == saved['image_id'] + '.png'
+    assert service.image_provider.calls[0][0] == 'edit'
+    assert service.image_provider.calls[0][3] == service.images / f'{key}.png'
 
 
 def test_end_frame_failure_preserves_start_and_never_submits_video(setup):

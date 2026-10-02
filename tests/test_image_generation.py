@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from newsmuncher.services.image_generation import (RewriteStore, build_image_prompt,
-    build_end_image_prompt, LocalStubProvider)
+    build_end_image_prompt, build_transformation_map, OpenAIImageProvider, LocalStubProvider)
 
 
 class ImageTests(unittest.TestCase):
@@ -23,6 +23,8 @@ class ImageTests(unittest.TestCase):
         self.addCleanup(self.api_patch.stop)
         self.api = self.openai.return_value.__enter__.return_value.images.generate
         self.api.return_value = types.SimpleNamespace(data=[types.SimpleNamespace(b64_json=base64.b64encode(self.png).decode())])
+        self.edit_api = self.openai.return_value.__enter__.return_value.images.edit
+        self.edit_api.return_value = types.SimpleNamespace(data=[types.SimpleNamespace(b64_json=base64.b64encode(self.png).decode())])
         directory = patch('newsmuncher.services.image_generation.GENERATED_IMAGES_DIR', self.images)
         directory.start()
         self.addCleanup(directory.stop)
@@ -52,7 +54,31 @@ class ImageTests(unittest.TestCase):
         self.assertNotEqual(start, end)
         self.assertIn('A cat paints the moon.', start)
         self.assertIn('A cat paints the moon.', end)
-        self.assertIn('Do not preserve or try to match', end)
+        self.assertIn('Preserve geometry; transform reality', end)
+        self.assertIn('centre foreground', start)
+        self.assertIn('centre foreground', end)
+
+    def test_transformation_map_is_stable_and_spatial(self):
+        first = build_transformation_map(self.result)
+        self.assertEqual(first, build_transformation_map(self.result))
+        self.assertEqual([item['region'] for item in first], [
+            'centre foreground', 'left midground', 'right foreground',
+            'background centre', 'upper background'])
+        self.assertEqual(len({item['destination'] for item in first}), 5)
+
+    def test_reference_generation_uses_start_png_as_high_fidelity_input(self):
+        reference = self.images / 'reference.png'
+        reference.parent.mkdir(parents=True, exist_ok=True)
+        reference.write_bytes(self.png)
+        identifier = '00000000-0000-0000-0000-000000000123'
+        metadata = OpenAIImageProvider().generate_referenced_image('transform', identifier, reference)
+        self.edit_api.assert_called_once()
+        kwargs = self.edit_api.call_args.kwargs
+        self.assertEqual(kwargs['model'], 'gpt-image-1.5')
+        self.assertEqual(kwargs['input_fidelity'], 'high')
+        self.assertEqual(kwargs['prompt'], 'transform')
+        self.assertEqual(Path(kwargs['image'].name), reference)
+        self.assertEqual(metadata['image_url'], f'/generated-images/{identifier}.png')
 
     def test_style_selected_once_persisted_and_restored(self):
         routes = self.previews()

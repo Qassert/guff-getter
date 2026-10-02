@@ -10,7 +10,8 @@ from uuid import UUID, uuid4
 from bson import ObjectId
 
 from newsmuncher.config import GENERATED_IMAGES_DIR, GENERATED_VIDEO_DIR
-from newsmuncher.services.image_generation import store, get_provider, build_end_image_prompt
+from newsmuncher.services.image_generation import (store, get_provider, build_end_image_prompt,
+    build_transformation_map)
 from newsmuncher.services.video_prompt import build_transition_prompt
 from newsmuncher.services.wavespeed import MODEL, create_video, read_image
 
@@ -148,17 +149,18 @@ class Videos:
                 raise VideoError(422, 'Stored image is invalid.') from None
             self.directory.mkdir(parents=True, exist_ok=True)
             shared_style = state['result'].get('image_style')
+            transformation_map = build_transformation_map(state['result'])
             state['video'] = {'rewrite_id': key, 'status': 'queued', 'provider': 'wavespeed',
                 'model': MODEL, 'duration': 8, 'resolution': '480p',
                 'prompt': build_transition_prompt(state['result'], shared_style),
                 'shared_visual_style': shared_style, 'seed': secrets.randbelow(2**31),
                 'source_sha256': hashlib.sha256(image).hexdigest(), 'requested_at': now(),
                 'requested_epoch': time.time(), 'storage_key': f'{key}.mp4',
-                'end_frame': {'mode': 'independent_end_frame', 'status': 'queued',
+                'end_frame': {'mode': 'composition_reference_end_frame', 'status': 'queued',
                     'image_id': str(uuid4()),
-                    'image_style': shared_style}}
+                    'image_style': shared_style, 'transformation_map': transformation_map}}
             state['video']['end_frame']['image_prompt'] = build_end_image_prompt(
-                state['result'], state['video']['end_frame']['image_style'])
+                state['result'], shared_style, transformation_map)
             self.store.save(db, key, state)
             return self.public(key, state), True
 
@@ -208,8 +210,11 @@ class Videos:
                 if end_frame.get('status') != 'complete':
                     end_frame['status'] = 'started'
                     checkpoint()  # Permanent paid-image claim before contacting the provider.
-                    generated = (self.image_provider or get_provider()).generate_image(
-                        end_frame['image_prompt'], end_frame['image_id'])
+                    image_provider = self.image_provider or get_provider()
+                    reference_generation = getattr(image_provider, 'generate_referenced_image', None)
+                    generated = (reference_generation(end_frame['image_prompt'], end_frame['image_id'], source)
+                        if callable(reference_generation) else image_provider.generate_image(
+                            end_frame['image_prompt'], end_frame['image_id']))
                     end_frame.update(generated, status='complete')
                     data, _, _ = read_image(last_source)
                     end_frame['source_sha256'] = hashlib.sha256(data).hexdigest()

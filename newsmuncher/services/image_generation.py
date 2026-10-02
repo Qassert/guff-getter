@@ -3,6 +3,7 @@ from contextlib import contextmanager, closing
 from datetime import datetime, timezone
 import random
 import base64
+import hashlib
 import os
 import tempfile
 import json
@@ -55,25 +56,64 @@ def choose_image_style(exclude=None):
 
 
 def build_image_prompt(result, image_style=None):
-    prompt = f'{STYLE}\nScene: {result["crazyReplacement1Extract"][:1200]}'
+    prompt = (f'{STYLE}\nScene: {result["crazyReplacement1Extract"][:1200]}\n'
+              f'{build_composition_map()}')
     return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 
 
-def build_end_image_prompt(result, image_style=None):
-    """A second, independent interpretation for video end-frame experiments."""
+TRANSFORMATION_TARGETS = (
+    'an impossible ceremonial creature', 'a monumental household object',
+    'a tiny mechanical civilisation', 'a living architectural structure',
+    'a luminous organic machine', 'an absurd animal-led institution',
+    'a colossal edible landscape', 'a botanical contraption',
+    'an antique vehicle fused with wildlife', 'a theatrical cosmic phenomenon',
+)
+
+
+def build_composition_map():
+    return ('Composition map: centre foreground = dominant subject and action; '
+            'left midground = secondary subject; right foreground = important object; '
+            'background centre = principal environment or structure; '
+            'upper background = sky, ceiling or distant atmosphere.')
+
+
+def build_transformation_map(result):
+    text = str(result.get('crazyReplacement1Extract') or '')
+    offset = int(hashlib.sha256(text.encode()).hexdigest()[:8], 16) % len(TRANSFORMATION_TARGETS)
+    targets = TRANSFORMATION_TARGETS[offset:] + TRANSFORMATION_TARGETS[:offset]
+    regions = ('centre foreground', 'left midground', 'right foreground',
+               'background centre', 'upper background')
+    return [{'region': region, 'source': f'visible visual mass at {region}',
+             'destination': targets[index]} for index, region in enumerate(regions)]
+
+
+def format_transformation_map(mapping):
+    return '\n'.join(f'{item["region"]}: {item["source"]} -> {item["destination"]}'
+                     for item in mapping)
+
+
+def build_end_image_prompt(result, image_style=None, transformation_map=None):
+    """Radically reinterpret a supplied start image while retaining its geometry."""
+    transformation_map = transformation_map or build_transformation_map(result)
     prompt = (
-        f'{STYLE}\n'
-        'Create an independently imagined alternative scene inspired by the material below. '
-        'Make it surreal, cinematic, visually rich, funny and strange, and dramatically different '
-        'from any other interpretation. Do not preserve or try to match another image\'s characters, '
-        'camera position, objects, setting or composition.\n'
-        f'Scene inspiration: {result["crazyReplacement1Extract"][:1200]}'
+        'Create a coherent, visually rich surreal scene with recognisable subjects and objects. '
+        'Use a strong palette of 4 to 6 dominant colours and apply the selected visual style '
+        'consistently. No text, captions, logos or lettering in the image.\n'
+        'Use the supplied image as a COMPOSITIONAL MAP, not as content that must be preserved. '
+        'Preserve its camera, framing, perspective, horizon, major spatial layout, approximate '
+        'silhouettes, foreground/midground/background structure and lighting direction. Radically '
+        'transform every subject, object and environment into a new surreal interpretation. Replace '
+        'each major visual object with a completely different thing occupying approximately the same '
+        'silhouette, size and position. Preserve geometry; transform reality.\n'
+        f'Scene inspiration: {result["crazyReplacement1Extract"][:1200]}\n'
+        f'{build_composition_map()}\nTransformation map:\n{format_transformation_map(transformation_map)}'
     )
     return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 
 
 class ImageProvider(Protocol):
     def generate_image(self, prompt: str, rewrite_id: str) -> dict: ...
+    def generate_referenced_image(self, prompt: str, rewrite_id: str, reference) -> dict: ...
 
 
 class DefinitiveImageFailure(RuntimeError):
@@ -86,6 +126,9 @@ class LocalStubProvider:
         return dict(image_url='/static/image-stub.svg', image_prompt=prompt,
                     image_model='local-placeholder-v1', image_provider='local-stub',
                     image_generated_at=datetime.now(timezone.utc).isoformat())
+
+    def generate_referenced_image(self, prompt, rewrite_id, reference):
+        return self.generate_image(prompt, rewrite_id)
 
 
 def image_path(rewrite_id):
@@ -111,16 +154,7 @@ def recover_image(rewrite_id, attempt):
 
 
 class OpenAIImageProvider:
-    def generate_image(self, prompt: str, rewrite_id: str) -> dict:
-        path = image_path(rewrite_id)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        existing = recover_image(rewrite_id, {'prompt': prompt, 'model': IMAGE_MODEL})
-        if existing:
-            return existing
-        load_dotenv(ENV_FILE)
-        with OpenAI(max_retries=0, timeout=IMAGE_TIMEOUT) as client:
-            response = client.images.generate(model=IMAGE_MODEL, quality=IMAGE_QUALITY,
-                size=IMAGE_SIZE, n=1, output_format='png', prompt=prompt)
+    def _save(self, response, path, rewrite_id, prompt):
         if not response.data or len(response.data) != 1 or not response.data[0].b64_json:
             raise DefinitiveImageFailure('Provider returned no usable image.')
         image = base64.b64decode(response.data[0].b64_json, validate=True)
@@ -138,6 +172,31 @@ class OpenAIImageProvider:
             if temporary and os.path.exists(temporary):
                 os.unlink(temporary)
         return image_metadata(rewrite_id, prompt)
+
+    def generate_image(self, prompt: str, rewrite_id: str) -> dict:
+        path = image_path(rewrite_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        existing = recover_image(rewrite_id, {'prompt': prompt, 'model': IMAGE_MODEL})
+        if existing:
+            return existing
+        load_dotenv(ENV_FILE)
+        with OpenAI(max_retries=0, timeout=IMAGE_TIMEOUT) as client:
+            response = client.images.generate(model=IMAGE_MODEL, quality=IMAGE_QUALITY,
+                size=IMAGE_SIZE, n=1, output_format='png', prompt=prompt)
+        return self._save(response, path, rewrite_id, prompt)
+
+    def generate_referenced_image(self, prompt: str, rewrite_id: str, reference) -> dict:
+        path = image_path(rewrite_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        existing = recover_image(rewrite_id, {'prompt': prompt, 'model': IMAGE_MODEL})
+        if existing:
+            return existing
+        load_dotenv(ENV_FILE)
+        with OpenAI(max_retries=0, timeout=IMAGE_TIMEOUT) as client, reference.open('rb') as image:
+            response = client.images.edit(model=IMAGE_MODEL, quality=IMAGE_QUALITY,
+                size=IMAGE_SIZE, n=1, output_format='png', input_fidelity='high',
+                image=image, prompt=prompt)
+        return self._save(response, path, rewrite_id, prompt)
 
 
 def get_provider() -> ImageProvider:
