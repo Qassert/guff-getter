@@ -13,12 +13,22 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Total -12px outer-teat resting offsets complete; awaiting review.
+CURRENT_TASK: Shared-style two-frame video prompt refinement complete; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Visually review the total -12px outer-teat offsets; no deployment performed.
-VALIDATION: Focused udder frontend tests 5/5. Teat transforms, physics, actions and liquid code unchanged. No provider calls.
+NEXT_STEP: Review one explicitly authorized two-frame animation for visual continuity; no deployment performed.
+VALIDATION: Targeted image/video tests 78 passed (6 subtests). Both provider transports remain mocked; no live provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+
+## Shared visual style for two-frame video — 2026-10-02
+
+Video claims now reuse the start image's one persisted `image_style` as
+`shared_visual_style`; no second style draw occurs. The independent end-frame prompt
+receives that exact value, while retaining its instruction to change subjects,
+objects, setting, camera and composition. The transition prompt names the shared
+visual world and asks WaveSpeed to preserve its medium, light, colour, era and
+texture throughout a physical surreal morph. Legacy images without style metadata
+remain supported without regeneration or invented metadata.
 
 ## Outer teat coordinate fine-tuning — 2026-10-02
 

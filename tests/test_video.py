@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 import pytest
 import requests
 
-from newsmuncher.services.image_generation import RewriteStore
+from newsmuncher.services.image_generation import RewriteStore, build_image_prompt
 from newsmuncher.services.video import Videos, VideoError
 from newsmuncher.services import wavespeed
 
@@ -39,7 +39,8 @@ def setup(tmp_path, monkeypatch):
     monkeypatch.setattr(requests.sessions.Session, 'request', lambda *a, **k: pytest.fail('Live HTTP forbidden'))
     store = RewriteStore(tmp_path / 'rewrite.sqlite3')
     result = store.create({'crazyReplacement1Title': 'Penguin disco',
-                          'crazyReplacement1Extract': 'A penguin opens a cupboard.'}, 'pet')
+                          'crazyReplacement1Extract': 'A penguin opens a cupboard.',
+                          'image_style': '1970s British folk-horror film'}, 'pet')
     key = result['rewrite_id']
     images = tmp_path / 'images'
     images.mkdir()
@@ -326,9 +327,16 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     service.claim(collection, key, 'pet')
     claimed = state(service, key)['video']
     assert claimed['end_frame']['mode'] == 'independent_end_frame'
-    assert claimed['end_frame']['image_prompt'] != state(service, key)['result'].get('image_prompt')
+    shared = claimed['shared_visual_style']
+    start_prompt = build_image_prompt(state(service, key)['result'], shared)
+    assert shared == '1970s British folk-horror film'
+    assert start_prompt != claimed['end_frame']['image_prompt']
+    assert f'Visual style: {shared}.' in start_prompt
+    assert f'Visual style: {shared}.' in claimed['end_frame']['image_prompt']
+    assert claimed['end_frame']['image_style'] == shared
     assert 'Do not preserve or try to match' in claimed['end_frame']['image_prompt']
     assert 'continuous surreal cinematic transformation' in claimed['prompt']
+    assert f'same visual world: {shared}' in claimed['prompt']
     service.run(collection, key, 'pet')
     saved = state(service, key)['video']['end_frame']
     assert saved['status'] == 'complete'

@@ -39,13 +39,17 @@ def build_motion_prompt(result):
                    'shift and settle with brisk comic energy throughout.')
 
 
-def build_transition_prompt(result):
+def build_transition_prompt(result, shared_visual_style=None):
     """Motion direction for independent first/last-frame conditioning."""
+    style = (f' Both endpoint images belong to the same visual world: {shared_visual_style}. '
+             'Maintain that exact artistic medium, lighting, colour treatment, era and texture '
+             'throughout the animation.' if shared_visual_style else '')
     return (
         'Begin exactly from the supplied first image and finish exactly at the supplied last image. '
         'Create one continuous surreal cinematic transformation between them, never a cut or dissolve. '
         'Let visible objects morph into unrelated objects, creatures and faces transform, scenery melt '
-        'and reform, colours flow between scenes, and physical structures reshape through strange '
-        'intermediate forms. Use lively camera movement where it helps the journey. The middle may be '
-        'wildly imaginative, but strongly preserve the supplied opening and ending frames.'
+        'and reform, objects split and merge, scale changes, textures transform, colours flow between '
+        'scenes, and physical structures reshape through strange intermediate forms. Use lively camera '
+        'movement where it helps the journey. The middle may be wildly imaginative, but strongly '
+        'preserve the supplied opening and ending frames.' + style
     )
