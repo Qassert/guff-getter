@@ -337,6 +337,7 @@ body { isolation: isolate; }
   width: 100%; min-width: 0; border: 0; padding: 0;
   resize: none; overflow: hidden;
 }
+.profile-page #responseEditor { padding-top: clamp(10px, 1.5vw, 16px); }
 .profile-page :is(.profile-container, #outputContainer) .section-editor textarea:focus {
   background: transparent; box-shadow: none;
   outline: 1px dashed #817259; outline-offset: 3px;

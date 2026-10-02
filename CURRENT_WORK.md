@@ -13,12 +13,22 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Polyphonic Creator udder and MUNGE IT sound effects complete; awaiting review.
+CURRENT_TASK: Generated creation titles hidden from presentation; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review interaction volume and sound choices in-browser; no deployment performed.
-VALIDATION: Focused udder/audio tests 11/11; full frontend suite 79/79. Audio/browser media mocked; no provider calls.
+NEXT_STEP: Review compact Creator body spacing and title-free Viewing layout in-browser; no deployment performed.
+VALIDATION: Full frontend 82/82; full Python 295 passed (105 subtests). Title generation, six-word limit, persistence and jingle seeding remain covered. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+
+## Hide generated titles from presentation — 2026-10-02
+
+Creator retains `responseTitleDraft` as a hidden value populated on generation and
+restore, so nomination updates, narration and jingles still receive the generated
+title. Its body now occupies the freed response space with a responsive 10–16px top
+inset. Viewing removes the generated-title heading and renders the body as its primary
+copy while the gallery API continues returning `title`. The audit found no other
+active generated-title presentation; internal audio, video and persistence consumers
+remain unchanged. Udder visuals, physics, liquid and sound code were untouched.
 
 ## Polyphonic udder sounds — 2026-10-02
 

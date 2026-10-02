@@ -313,7 +313,11 @@ def test_creator_and_viewing_share_compact_mode_navigation():
     assert 'justify-content: center' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
     assert 'flex-wrap: wrap' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
     assert '.workshop { max-width: 960px; margin-inline: auto; }' in shared_css
-    assert '.profile-page .workshop { padding-top: 0; }' in shared_css
+    creator_workshop = shared_css.split('.profile-page .workshop {', 1)[1].split('}', 1)[0]
+    assert 'padding-top: 0' in creator_workshop
+    assert 'position: relative' in creator_workshop
+    assert 'id="galleryTitle"' not in gallery
+    assert 'id="galleryBody"' in gallery
     assert 'width: min(960px' in gallery_css
     assert 'var(--accent)' not in gallery_css
     assert 'data-creation-url="{{ creation_url }}"' in gallery

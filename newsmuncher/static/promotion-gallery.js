@@ -276,7 +276,6 @@
         loading() { status.textContent = 'Turning the page…'; promote.disabled = true; page.setAttribute('aria-busy', 'true'); },
         empty() { page.hidden = true; page.setAttribute('aria-busy', 'false'); status.textContent = 'The collection is waiting for its first nomination. Head back to NewsMuncher to nominate a creation.'; },
         show(item) {
-            get('galleryTitle').textContent = item.title || 'Untitled creation';
             get('galleryBody').textContent = item.body || 'No saved text for this creation.';
             get('galleryPromoted').hidden = !item.promoted;
             promote.textContent = item.promoted ? 'PROMOTED' : 'PROMOTE';

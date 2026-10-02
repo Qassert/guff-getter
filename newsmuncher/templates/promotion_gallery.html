@@ -12,11 +12,10 @@
   </nav>
   {% if signed_in %}
   <div id="galleryStatus" class="gallery-status" role="status" aria-live="polite">Opening the collection…</div>
-  <article id="galleryPage" class="gallery-page" aria-labelledby="galleryTitle" hidden>
+  <article id="galleryPage" class="gallery-page" aria-label="Creation" hidden>
     <figure id="galleryIllustration" hidden><img id="galleryImage" alt="" decoding="async"></figure>
     <div class="gallery-copy">
       <p id="galleryPromoted" class="gallery-stamp" hidden>PROMOTED</p>
-      <h2 id="galleryTitle"></h2>
       <div id="galleryBody" class="gallery-body"></div>
     </div>
   </article>
