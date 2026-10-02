@@ -339,7 +339,7 @@ body { isolation: isolate; }
 }
 .profile-page #sourceEditor {
   /* The udder is an absolute overlay; reserve only its lower teat footprint. */
-  padding-top: calc(clamp(185px, 24vw, 235px) * .58);
+  padding-top: clamp(107px, 13.92vw, 136px);
 }
 .profile-page #responseEditor { padding-top: clamp(10px, 1.5vw, 16px); }
 .profile-page :is(.profile-container, #outputContainer) .section-editor textarea:focus {
@@ -376,6 +376,10 @@ body { isolation: isolate; }
 }
 .profile-page .generation-controls {
   bottom: calc(-1 * var(--paper-edge)); transform: translate(-50%, 32%);
+}
+.profile-page .munge-generation-controls {
+  position: relative; left: auto; bottom: auto; width: 100%;
+  transform: none; margin: 8px 0 0; overflow: visible;
 }
 .profile-page #bankButton {
   position: absolute; bottom: calc(-1 * var(--paper-edge)); left: 50%;
@@ -539,6 +543,41 @@ body { isolation: isolate; }
   45% { transform: translateX(var(--shift)) rotate(var(--bend)) scaleX(1.25) scaleY(.72); }
 }
 
+/* Supplied furry MUNGE artwork: one fixed body with six radial native-button teats. */
+.profile-page .munge-control {
+  position: relative; isolation: isolate; width: min(82vw, 370px); aspect-ratio: 1.18;
+  margin-inline: auto; overflow: visible;
+}
+.profile-page .munge-body {
+  position: absolute; z-index: 1; left: 16%; top: 5%; width: 68%; height: auto;
+  display: block; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 8px 7px #35151c55);
+}
+.profile-page .munge-teat {
+  position: absolute; z-index: 2; left: var(--x); top: var(--y); width: var(--w); aspect-ratio: 1;
+  min-width: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 45%;
+  background: transparent; box-shadow: none; overflow: visible; cursor: grab; touch-action: manipulation;
+  transform: translate(var(--tx),var(--ty)); -webkit-tap-highlight-color: transparent;
+}
+.profile-page .munge-teat:hover,
+.profile-page .munge-teat:active { transform: translate(var(--tx),var(--ty)); box-shadow: none; }
+.profile-page .munge-teat:active { cursor: grabbing; }
+.profile-page .munge-teat:focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
+.profile-page .munge-teat-shape {
+  --bend: 0deg; --travel-x: 0px; --travel-y: 0px; --stretch: 1; --squash: 1;
+  display: block; width: 100%; height: 100%; transform-origin: var(--origin-x) var(--origin-y);
+  will-change: transform;
+  transform: rotate(var(--base-rotation)) translate(var(--travel-x),var(--travel-y)) rotate(var(--bend)) scaleX(var(--squash)) scaleY(var(--stretch));
+}
+.profile-page .munge-teat-shape img {
+  display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none;
+  filter: drop-shadow(2px 5px 3px #35151c44);
+}
+.profile-page .munge-teat-shape.squeezed { animation: munge-teat-squeeze 240ms ease-out; }
+@keyframes munge-teat-squeeze {
+  45% { transform: rotate(var(--base-rotation)) scaleX(1.18) scaleY(.78); }
+}
+
 .udder-liquid-layer { position: fixed; inset: 0; z-index: 40; overflow: visible; pointer-events: none; }
 .udder-spurt {
   position: fixed; left: var(--start-x); top: var(--start-y); width: clamp(18px, 2vw, 30px); height: 74px;
@@ -583,10 +622,12 @@ body { isolation: isolate; }
   .profile-page .nonsense-container { width: calc(100% + var(--paper-edge)); }
   .profile-page .source-udder { width: min(108vw, 620px); height: clamp(145px, 31vw, 185px); }
   .profile-page .udder-teat { top: calc(min(90px, 14.8vw) + var(--teat-offset-y)); height: 68%; }
-  .profile-page #sourceEditor { padding-top: calc(clamp(145px, 31vw, 185px) * .62); }
+  .profile-page #sourceEditor { padding-top: clamp(90px, 19.22vw, 115px); }
+  .profile-page .munge-control { width: min(88vw, 330px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .profile-page .udder-teat .teat-shape { transform: none !important; animation: none !important; }
+  .profile-page .munge-teat-shape { transform: rotate(var(--base-rotation)) !important; animation: none !important; }
   .udder-liquid-layer { display: none; }
 }
 @keyframes l9 { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }

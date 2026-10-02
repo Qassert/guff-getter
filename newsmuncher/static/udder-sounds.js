@@ -57,7 +57,8 @@
 
     if(typeof module!=='undefined')module.exports={UdderSounds,MIXKIT_SOUNDS,SUSPENSE_SOUND,SOUND_ROOT};
     if(typeof document==='undefined')return;
-    const udder=document.getElementById('sourceUdder'),munge=document.getElementById('mungeButton');
+    const udder=document.getElementById('sourceUdder'),munge=document.getElementById('mungeControl');
     if(!udder)return;
-    root.udderSounds=new UdderSounds({buttons:udder.querySelectorAll('.udder-teat'),munge});
+    root.udderSounds=new UdderSounds({buttons:udder.querySelectorAll('.udder-teat')});
+    if(munge)root.mungeSounds=new UdderSounds({buttons:munge.querySelectorAll('.munge-teat')});
 })(typeof globalThis!=='undefined'?globalThis:this);

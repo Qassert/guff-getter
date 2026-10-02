@@ -13,12 +13,40 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Source and generated content titles removed from Creator and Viewing presentation; awaiting review.
+CURRENT_TASK: Six-teat furry MUNGE control implemented; awaiting review and pixel-level browser tuning.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review body-only Creator and Viewing presentation in-browser; no deployment performed.
-VALIDATION: Full frontend 83/83; full Python 295 passed (105 subtests). Exact source-title loader regression, title generation, six-word limit, persistence and jingle seeding remain covered. No provider calls.
+NEXT_STEP: Review the six socket/root joins in-browser and tune the centralized per-teat CSS variables if needed; no deployment performed.
+VALIDATION: Full frontend 87/87; relevant template/backend 21 passed. Six-teat interaction, sound uniqueness/polyphony, single MUNGE action/suspense, reduced motion and existing five-teat behavior covered. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+
+## Six-teat furry MUNGE control — 2026-10-02
+
+Replaced the rectangular MUNGE IT button with the supplied raster body and six
+transparent teat crops. The stationary branded body and six native buttons are
+assembled as separate layers. Each teat's socket position, size, attachment
+translation, radial movement axis, root pivot and base rotation live together in the
+template configuration for straightforward visual tuning. Furry collars render above
+the body and overlap its sockets; the original artwork is not redrawn or distorted.
+
+`MungeControl` applies the proven pointer-track, spring, wobble and squeeze approach
+independently along each teat's configured radial axis. Touch does not synthesize
+hover and reduced motion disables deformation without disabling native clicks. Every
+teat is bound directly to `confirmData`, so all six invoke the existing text-only
+MUNGE workflow exactly once. Sound binding loads first, preserving one suspense cue
+before the shared action without duplicating its business logic.
+
+The existing `UdderSounds` helper now owns two independent sets: five top-udder teats
+and six MUNGE teats. Both draw unique assignments from the same Mixkit pool, create a
+fresh Audio object on each non-touch pointer entry, allow overlap and clean finished,
+errored or rejected instances. A MUNGE teat click plays suspense once and reshuffles
+only its six-sound set; initial load is silent. The five-teat artwork, physics, liquid,
+actions and sound behavior are unchanged.
+
+Files include the supplied source sheet plus extracted `munge-body.png` and
+`munge-teat-1.png` through `munge-teat-6.png`, template/CSS, `munge-control.js`, shared
+sound initialization and focused tests. Full frontend: 87/87. Relevant Python:
+21 passed. No external/provider calls, deployment, or main changes.
 
 ## Hide generated titles from presentation — 2026-10-02
 

@@ -8,7 +8,7 @@ class FakeAudio{
  play(){this.played=true;return this.rejection?Promise.reject(Error('blocked')):Promise.resolve();}
  finish(name='ended'){this.listeners[name]?.();}
 }
-function setup(random=()=>0){FakeAudio.all=[];const buttons=Array.from({length:5},element),munge=element();return{buttons,munge,sounds:new UdderSounds({buttons,munge,AudioClass:FakeAudio,random})};}
+function setup(random=()=>0,count=5){FakeAudio.all=[];const buttons=Array.from({length:count},element),munge=element();return{buttons,munge,sounds:new UdderSounds({buttons,munge,AudioClass:FakeAudio,random})};}
 
 test('page load assigns five unique Mixkit sounds and remains silent',()=>{
  const {sounds}=setup();assert.equal(sounds.assignments.length,5);assert.equal(new Set(sounds.assignments).size,5);
@@ -40,5 +40,13 @@ test('rejected playback is swallowed and cleaned up',async()=>{
 });
 
 test('template loads isolated sound module and identifies the existing MUNGE action',()=>{
- const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');assert(html.includes('id="mungeButton"'));assert(html.includes("path='udder-sounds.js'"));assert(html.indexOf('source-udder.js')<html.indexOf('udder-sounds.js'));
+ const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');assert(html.includes('id="mungeControl"'));assert(html.includes("path='udder-sounds.js'"));assert(html.indexOf('source-udder.js')<html.indexOf('munge-control.js'));assert(html.indexOf('munge-control.js')<html.indexOf('udder-sounds.js'));
+});
+
+test('six-teat MUNGE set is unique, polyphonic and rerandomises with one suspense per click',()=>{
+ let values=[.1,.2,.3,.4,.5,.6,.7,.8,.9,.9,.8,.7,.6,.5,.4,.3,.2,.1],i=0;
+ const {buttons,sounds}=setup(()=>values[i++%values.length],6);assert.equal(sounds.assignments.length,6);assert.equal(new Set(sounds.assignments).size,6);assert(!sounds.assignments.includes(SUSPENSE_SOUND));
+ const before=[...sounds.assignments];for(const button of buttons)button.dispatch('pointerenter',{pointerType:'mouse'});assert.equal(FakeAudio.all.length,6);assert.equal(sounds.active.size,6);
+ let munges=0;buttons[4].addEventListener('click',()=>munges++);buttons[4].dispatch('click');assert.equal(munges,1);assert.equal(FakeAudio.all.filter(a=>a.src.endsWith('/suspense.wav')).length,1);
+ assert.equal(new Set(sounds.assignments).size,6);assert.notDeepEqual(sounds.assignments,before);FakeAudio.all[0].finish();assert.equal(sounds.active.size,6);
 });

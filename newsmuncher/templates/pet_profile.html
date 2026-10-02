@@ -42,8 +42,25 @@
       <input id="sourceTitleDraft" type="hidden" value="">
       <textarea id="sourceBodyDraft" aria-label="Source body" oninput="autoResize(this)"></textarea>
     </div>
-<div class="generation-controls">
-    <button id="mungeButton" class="funky-button shizzle-button" onclick="confirmData()">MUNGE IT</button>
+<div class="generation-controls munge-generation-controls">
+    <div id="mungeControl" class="munge-control" role="group" aria-label="MUNGE IT">
+      <img class="munge-body" src="{{ url_for('static', path='images/munge button/munge-body.png') }}" alt="">
+      {% set munge_teats = [
+        ('upper-left', 1, '29.5%', '20%', '31%', '-78%', '-72%', '-.72', '-.70', '78%', '72%', '0deg'),
+        ('upper-right', 3, '70.5%', '20%', '31%', '-22%', '-72%', '.72', '-.70', '22%', '72%', '0deg'),
+        ('left', 4, '23%', '42%', '29%', '-78%', '-22%', '-1', '0', '78%', '22%', '0deg'),
+        ('right', 6, '77%', '42%', '31%', '-22%', '-22%', '1', '0', '22%', '22%', '0deg'),
+        ('lower-left', 2, '35%', '63%', '27%', '-50%', '-12%', '-.62', '.78', '50%', '12%', '35deg'),
+        ('lower-right', 5, '65%', '63%', '27%', '-50%', '-12%', '.62', '.78', '50%', '12%', '-35deg')
+      ] %}
+      {% for orientation, image, x, y, width, tx, ty, axis_x, axis_y, origin_x, origin_y, rotation in munge_teats %}
+      <button type="button" class="munge-teat munge-teat-{{ orientation }}"
+        style="--x:{{ x }};--y:{{ y }};--w:{{ width }};--tx:{{ tx }};--ty:{{ ty }};--axis-x:{{ axis_x }};--axis-y:{{ axis_y }};--origin-x:{{ origin_x }};--origin-y:{{ origin_y }};--base-rotation:{{ rotation }}"
+        data-orientation="{{ orientation }}" aria-label="MUNGE IT — {{ orientation }} teat">
+        <span class="munge-teat-shape" aria-hidden="true"><img src="{{ url_for('static', path='images/munge button/munge-teat-' ~ image ~ '.png') }}" alt=""></span>
+      </button>
+      {% endfor %}
+    </div>
   </div>
   </div>
 
@@ -95,4 +112,4 @@
 </div>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}"></script><script src="{{ url_for('static', path='udder-sounds.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}"></script><script src="{{ url_for('static', path='munge-control.js') }}"></script><script src="{{ url_for('static', path='udder-sounds.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
