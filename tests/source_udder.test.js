@@ -57,7 +57,7 @@ test('template keeps five native accessible actions and page-level unclipped eff
  assert(html.includes('--teat-width: {{ width }}'));assert.match(css,/width:\s*var\(--teat-width\)/);
  assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*z-index:\s*2[^}]*pointer-events:\s*none/s);
  assert.match(css,/\.udder-teat\s*\{[^}]*z-index:\s*3/s);assert(!css.includes('mask-image: linear-gradient'));
- assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*top:\s*0/s);assert.match(css,/top:\s*min\(132px, 14\.8vw\)/);
+ assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*top:\s*0/s);assert.match(css,/top:\s*calc\(min\(132px, 14\.8vw\) \+ var\(--teat-offset-y\)\)/);
  assert.match(css,/\.profile-page \.workshop\s*\{[^}]*position:\s*relative/s);
  assert.match(css,/\.profile-page \.mode-nav\s*\{[^}]*position:\s*absolute[^}]*margin-bottom:\s*0/s);
  assert.match(css,/\.profile-page \.nonsense-container\s*\{[^}]*top:\s*calc\(-1\.25 \* var\(--paper-edge\)\)/s);
@@ -65,4 +65,12 @@ test('template keeps five native accessible actions and page-level unclipped eff
  for(const socket of ['18.1%','33.3%','50.9%','68.5%','84.7%'])assert(html.includes(`'${socket}'`));
  assert(html.includes('aria-label="{{ label }}"'));assert.match(css,/\.udder-liquid-layer[^}]*position:\s*fixed[^}]*overflow:\s*visible[^}]*pointer-events:\s*none/);
  assert.match(css,/udder-blot-drain\s+4s/);assert.match(css,/opacity:1/);assert.match(css,/prefers-reduced-motion/);
+});
+
+test('outer teat resting offsets move hit areas without touching animation transforms',()=>{
+ const css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
+ assert.match(css,/\.udder-teat:first-of-type\s*\{\s*--teat-offset-y:\s*-4px;/);
+ assert.match(css,/\.udder-teat:last-of-type\s*\{\s*--teat-offset-x:\s*-4px;\s*--teat-offset-y:\s*-4px;/);
+ assert.match(css,/left:\s*calc\(var\(--teat-x\) \+ var\(--teat-offset-x\)\)/);
+ assert.match(css,/top:\s*calc\(min\(132px, 14\.8vw\) \+ var\(--teat-offset-y\)\)/);
 });

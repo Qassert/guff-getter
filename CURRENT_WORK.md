@@ -13,12 +13,18 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Independent start/end-frame video experiment implemented; awaiting review.
+CURRENT_TASK: Teat 1 and teat 5 resting-coordinate fine-tuning complete; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review the two-frame visual result with one explicitly authorized generation; no deployment performed.
-VALIDATION: Two-frame image/video tests 77 passed (6 subtests); frontend 72/72; Python full suite 291 passed with one pre-existing brittle CSS-string assertion failure. Compile validation passed. All HTTP/providers mocked; no live provider calls.
+NEXT_STEP: Visually review the -4px outer-teat offsets; no deployment performed.
+VALIDATION: Focused udder frontend tests 5/5. Teat transforms, physics, actions and liquid code unchanged. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+
+## Outer teat coordinate fine-tuning — 2026-10-02
+
+Teat 1 now has a -4px Y resting offset. Teat 5 has -4px X and -4px Y
+resting offsets. These offsets adjust the absolute button coordinates, including hit
+areas and liquid-tip measurements, while leaving the animated child transform intact.
 
 ## Independent video end-frame experiment — 2026-10-01
 
