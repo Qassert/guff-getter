@@ -378,9 +378,10 @@ body { isolation: isolate; }
   bottom: calc(-1 * var(--paper-edge)); transform: translate(-50%, 32%);
 }
 .profile-page .munge-generation-controls {
-  position: relative; left: auto; bottom: auto; width: 100%;
-  transform: none; margin: 8px 0 0; overflow: visible;
+  position: absolute; left: 50%; bottom: calc(-1 * var(--paper-edge)); width: 100%;
+  transform: translate(-50%, 50%); margin: 0; overflow: visible;
 }
+.profile-page .profile-container { margin-bottom: clamp(145px, 18vw, 172px); }
 .profile-page #bankButton {
   position: absolute; bottom: calc(-1 * var(--paper-edge)); left: 50%;
   transform: translate(-50%, 32%); margin: 0; z-index: 4;

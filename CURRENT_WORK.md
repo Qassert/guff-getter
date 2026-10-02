@@ -13,12 +13,27 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Six-teat furry MUNGE control implemented; awaiting review and pixel-level browser tuning.
+CURRENT_TASK: MUNGE teats pulled inward and control centered across the shortened parchment edge; awaiting review.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review the six socket/root joins in-browser and tune the centralized per-teat CSS variables if needed; no deployment performed.
+NEXT_STEP: Review the tightened socket/root joins and 50/50 parchment-edge overlap in-browser; no deployment performed.
 VALIDATION: Full frontend 87/87; relevant template/backend 21 passed. Six-teat interaction, sound uniqueness/polyphony, single MUNGE action/suspense, reduced motion and existing five-teat behavior covered. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+
+## MUNGE edge placement tuning — 2026-10-02
+
+Pulled every teat toward its socket using only the existing centralized coordinates:
+upper-left 29.5/20 to 32/23; upper-right 70.5/20 to 68/23; left 23/42 to
+26/42; right 77/42 to 74/42; lower-left 35/63 to 37/60; lower-right 65/63
+to 63/60. Artwork, roots, rotations, axes, hit areas, animation and sound are unchanged.
+
+The large blank parchment area came from the full MUNGE control participating in
+normal flow. Its wrapper is now absolutely anchored to the parchment artwork's actual
+bottom edge (`bottom: -paper-edge`) and translated vertically by 50%, placing its
+centreline on that edge without clipping. A positive responsive `profile-container`
+bottom margin reserves 145–172px for the protruding half; width is unchanged and no
+negative margin is used. Focused frontend 20/20 and full frontend 87/87 passed. No
+provider calls, deployment, main changes, or functionality changes.
 
 ## Six-teat furry MUNGE control — 2026-10-02
 

@@ -28,4 +28,8 @@ test('template and CSS assemble one supplied body with six separately tuned teat
  const script=fs.readFileSync('newsmuncher/static/script.js','utf8');assert.match(script,/querySelectorAll\?\.\('\.munge-teat'\)\?\.forEach\(button => button\.addEventListener\('click', confirmData\)\)/);assert(!html.includes('id="mungeButton"'));
  for(const variable of ['--x','--y','--w','--axis-x','--axis-y','--origin-x','--origin-y','--base-rotation'])assert(html.includes(variable));
  assert.match(css,/\.munge-body\s*\{[^}]*z-index:\s*1[^}]*pointer-events:\s*none/s);assert.match(css,/\.munge-teat\s*\{[^}]*z-index:\s*2/s);assert.match(css,/prefers-reduced-motion/);
+ const positions={"upper-left":['32%','23%'],"upper-right":['68%','23%'],left:['26%','42%'],right:['74%','42%'],"lower-left":['37%','60%'],"lower-right":['63%','60%']};
+ for(const [name,[x,y]] of Object.entries(positions))assert(html.includes(`('${name}',`)&&html.includes(`'${x}', '${y}'`));
+ assert.match(css,/\.munge-generation-controls\s*\{[^}]*position:\s*absolute[^}]*bottom:\s*calc\(-1 \* var\(--paper-edge\)\)[^}]*transform:\s*translate\(-50%, 50%\)/s);
+ assert.match(css,/\.profile-page \.profile-container\s*\{\s*margin-bottom:\s*clamp\(145px, 18vw, 172px\)/);
 });
