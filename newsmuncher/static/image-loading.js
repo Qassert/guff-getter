@@ -79,11 +79,18 @@
         stop(keepVisual=false) {
             this.revision++; this.cancel(this.timer);
             this.audio?.stop();
+            this.active=false;
             if (!keepVisual) this.view.stop();
         }
+        freeze() {
+            this.revision++; this.cancel(this.timer);
+            // Keep the last loading card and its audio until the real image fires load.
+        }
+        isActive() { return this.active === true; }
         async start() {
             this.stop();
             this.audio?.reset();
+            this.active=true;
             const token=this.revision;
             this.view.start();
             try {

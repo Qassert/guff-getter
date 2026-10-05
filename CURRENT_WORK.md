@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: ElevenLabs Music v2.5 jingle migration and active narration retirement
-LAST_COMPLETED_COMMIT: this migration commit
+LAST_COMPLETED_FEATURE: Creator audio handoff and shared start/end image style
+LAST_COMPLETED_COMMIT: this follow-up commit
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,20 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Replace new Modal/ACE-Step jingles with ElevenLabs Music v2.5 and remove narration from the active experience.
+CURRENT_TASK: Synchronize jingle handoff with image/video playback and reuse one persisted style across video frames.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Configure ELEVENLABS_API_KEY server-side, then explicitly authorize one controlled real jingle when ready; no generation or deployment performed.
-VALIDATION: Full frontend 81/81; full Python 288 passed plus 105 subtests. All provider boundaries mocked; no external calls.
+NEXT_STEP: Manually verify the loading → still+jingle → video+jingle handoff; no generation or deployment performed.
+VALIDATION: Full frontend 82/82; full Python 289 passed plus 105 subtests. All provider boundaries mocked; no external calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+## Creator audio handoff and frame continuity — 2026-10-05
+
+Explicit EMBELLISH playback now waits until the generated image has actually loaded and the image-shuffle/loading audio has been stopped. A ready or slightly-late ElevenLabs jingle then starts from 0:00. The Creation video reports its first genuine `playing` event once per player; during the same explicit EMBELLISH session that event stops, resets and restarts the already-saved jingle. Restore remains silent because it never arms EMBELLISH playback, and autoplay failures retain the manual PLAY JINGLE control. No additional jingle request is made.
+
+Animation claims now require the start image's persisted `image_style`, copy that exact value to `shared_visual_style` and `end_frame.image_style`, and build both prompts with it. Historical images without style metadata fail before a paid claim. The referenced end-frame prompt now advances action while preserving characters, objects, setting, camera, palette, lighting and artistic treatment instead of replacing the scene. Redo's existing fresh-style choice is unchanged and its newly persisted style feeds the subsequent pair.
+
+Full validation: Node 82/82; Python 289 passed plus 105 subtests. No provider calls or generated media.
 
 ## ElevenLabs Music migration — 2026-10-05
 

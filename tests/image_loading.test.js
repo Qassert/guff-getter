@@ -23,8 +23,8 @@ test('empty and reduced motion cases keep loader without a rotating timer',async
  assert(!reduced.shown[0].animate);assert.equal(reduced.timers.length,0);
 });
 test('completion freezes visuals until real image loads; late retrieval ignored after teardown',async()=>{
- const t=setup(images);await t.ui.start();const before=t.stops();t.ui.stop(true);
- assert.equal(t.stops(),before);t.timers[0].fn();assert.equal(t.shown.length,1);t.ui.stop();assert.equal(t.stops(),before+1);
+ const t=setup(images);await t.ui.start();const before=t.stops();t.ui.freeze();
+ assert(t.ui.isActive());assert.equal(t.stops(),before);t.timers[0].fn();assert.equal(t.shown.length,1);t.ui.stop();assert(!t.ui.isActive());assert.equal(t.stops(),before+1);
  let resolve;t.ui.fetcher=()=>new Promise(r=>resolve=r);const work=t.ui.start();t.ui.stop();
  resolve({ok:true,json:async()=>({images})});await work;assert.equal(t.shown.length,1);
 });

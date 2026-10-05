@@ -337,7 +337,8 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     assert f'Visual style: {shared}.' in start_prompt
     assert f'Visual style: {shared}.' in claimed['end_frame']['image_prompt']
     assert claimed['end_frame']['image_style'] == shared
-    assert 'Preserve geometry; transform reality' in claimed['end_frame']['image_prompt']
+    assert 'same characters' in claimed['end_frame']['image_prompt']
+    assert 'Do not add, remove, replace or reinterpret' in claimed['end_frame']['image_prompt']
     assert len(claimed['end_frame']['transformation_map']) == 5
     assert 'continuous surreal cinematic transformation' in claimed['prompt']
     assert f'same visual world: {shared}' in claimed['prompt']
@@ -348,6 +349,19 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     assert calls[0][3].name == saved['image_id'] + '.png'
     assert service.image_provider.calls[0][0] == 'edit'
     assert service.image_provider.calls[0][3] == service.images / f'{key}.png'
+
+
+def test_historical_image_without_persisted_style_fails_before_paid_claim(setup):
+    service, collection, key, calls = setup
+    with service.store.transaction() as db:
+        saved = service.store.read(db, key, 'pet')
+        saved['result']['image_style'] = None
+        service.store.save(db, key, saved)
+    with pytest.raises(VideoError) as caught:
+        service.claim(collection, key, 'pet')
+    assert caught.value.status == 409
+    assert 'video' not in state(service, key)
+    assert not calls and not service.image_provider.calls
 
 
 def test_end_frame_failure_preserves_start_and_never_submits_video(setup):

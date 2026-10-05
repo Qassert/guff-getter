@@ -4,8 +4,8 @@
     // Same lifecycle as GalleryVideo: keep the still until playing, invalidate late
     // events/promises on stop, and unload old media. No generation/network API here.
     class CreationVideo {
-        constructor({makeVideo, hasImage, mount, reveal, reduced, status = () => {}}) {
-            Object.assign(this, {makeVideo, hasImage, mount, reveal, reduced, status});
+        constructor({makeVideo, hasImage, mount, reveal, reduced, status = () => {}, onPlaying = () => {}}) {
+            Object.assign(this, {makeVideo, hasImage, mount, reveal, reduced, status, onPlaying});
             this.generation = 0;
         }
         clearPlayer() {
@@ -41,6 +41,7 @@
                 this.status('Animation saved; showing the still image.');
             };
             let starting = false;
+            let playbackAnnounced = false;
             const play = async () => {
                 if (generation !== this.generation || starting) return;
                 if (this.reduced()) { this.clearPlayer(); return; }
@@ -55,6 +56,10 @@
                 if (generation !== this.generation) { player.pause(); return; }
                 if (this.reduced()) { this.clearPlayer(); return; }
                 this.reveal(true);
+                if (!playbackAnnounced) {
+                    playbackAnnounced = true;
+                    this.onPlaying();
+                }
             });
             player.addEventListener('error', fail);
             this.mount(player);
@@ -157,7 +162,10 @@
             get('imagePanel').classList.toggle('animation-playing', playing);
         },
         reduced: () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
-        status(message) { get('animationMessage').textContent = message; }
+        status(message) { get('animationMessage').textContent = message; },
+        onPlaying() {
+            if (typeof jingleUI !== 'undefined') jingleUI.restartForVideo?.();
+        }
     });
     root.videoUI = new AnimationUI({view: {
         stop() {

@@ -145,7 +145,7 @@ for (const operation of ['show/stop', 'poll scheduling']) {
 
 const {CreationVideo} = require('../newsmuncher/static/video.js');
 function visualSetup(start = () => Promise.resolve()) {
-    const players=[], shown=[], messages=[];
+    const players=[], shown=[], messages=[], playback=[];
     let imageReady=true, reduced=false;
     const visual=new CreationVideo({makeVideo(){
         const player={events:{},readyState:0,calls:0,paused:true,
@@ -154,11 +154,11 @@ function visualSetup(start = () => Promise.resolve()) {
             removeAttribute(){this.src='';},load(){this.loads=(this.loads||0)+1;},remove(){this.removed=true;}};
         players.push(player);return player;
     },hasImage:()=>imageReady,reduced:()=>reduced,mount(player){player.mounted=true;},
-    reveal(value){shown.push(value);},status(message){messages.push(message);}});
-    return {visual,players,shown,messages,setImage(value){imageReady=value;},setReduced(value){reduced=value;}};
+    reveal(value){shown.push(value);},status(message){messages.push(message);},onPlaying(){playback.push('playing');}});
+    return {visual,players,shown,messages,playback,setImage(value){imageReady=value;},setReduced(value){reduced=value;}};
 }
 test('generation retains still; ready URL preloads in place and canplay automatically starts muted inline loop', async()=>{
-    const {visual,players,shown}=visualSetup();
+    const {visual,players,shown,playback}=visualSetup();
     const pending=deferred();
     const ui=new AnimationUI({view:{stop:()=>visual.stop(),render(data){if(data.video_url)visual.show(data.video_url);}},
         fetcher:async()=>response(await pending.promise),schedule(){},cancel(){}});
@@ -172,7 +172,8 @@ test('generation retains still; ready URL preloads in place and canplay automati
     assert(player.muted && player.defaultMuted && player.playsInline && player.loop && !player.controls);
     await player.events.canplay();assert.equal(player.calls,1);
     assert.equal(shown.at(-1),false); // No fade until actual playback, not merely a resolved promise.
-    player.events.playing();assert.equal(shown.at(-1),true);
+    player.events.playing();assert.equal(shown.at(-1),true);assert.equal(playback.length,1);
+    player.events.playing();assert.equal(playback.length,1);
     await player.events.canplay();ui.render({video_url:'/stored'});
     assert.equal(player.calls,1);assert.equal(players.length,1);
 });

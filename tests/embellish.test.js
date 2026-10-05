@@ -7,6 +7,7 @@ function setup(){
   async show(){calls.push(kind+'-show');},async ensure(){calls.push(kind);this.state={[kind+'_url']:'/'+kind,can_generate:false};},
   pause(){calls.push(kind+'-pause');},isPlaying(){return false;},playForEmbellish(){calls.push('play-'+kind);}});
  const media={Jingle:unit('jingle'),Video:unit('video')};
+ media.Jingle.beginEmbellish=()=>calls.push('jingle-armed');
  media.Video.show=async()=>calls.push('video-show');
  media.Jingle.replace=async()=>{calls.push('jingle-replace');media.Jingle.state={jingle_url:'/new',can_generate:false};};
  const image=async(_id,_seq,replace)=>{calls.push(replace?'replace-image':'image');return{reveal:async()=>calls.push('reveal')}};
@@ -35,6 +36,19 @@ test('ready jingle autoplays without narration',async()=>{
  t.ui.show({nominated:true,rewrite_id:'r'});const running=t.ui.nominate({rewrite_id:'r',sequence:1});
  ready();await running;await Promise.resolve();
  assert(t.calls.includes('play-jingle'));assert(!t.calls.some(call=>call.includes('narration')));
+});
+
+test('loading audio owns playback until the real image is displayed and stopped',async()=>{
+ const t=setup();let reveal;
+ t.ui.image=async()=>({reveal:()=>new Promise(resolve=>reveal=()=>{t.calls.push('reveal');resolve();})});
+ t.media.Jingle.ensure=async()=>{t.calls.push('jingle-ready');t.media.Jingle.state={jingle_url:'/music',can_generate:false};};
+ const running=t.ui.nominate({rewrite_id:'r',sequence:1});
+ await Promise.resolve();await Promise.resolve();
+ assert(!t.calls.includes('play-jingle'));
+ reveal();await running;await Promise.resolve();
+ assert(t.calls.indexOf('loaded')<t.calls.indexOf('play-jingle'));
+ assert(t.calls.indexOf('reveal')<t.calls.indexOf('play-jingle'));
+ assert.equal(t.calls.filter(call=>call==='play-jingle').length,1);
 });
 
 test('queued video does not hold back the still and stale completion is ignored',async()=>{

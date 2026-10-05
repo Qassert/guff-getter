@@ -50,11 +50,13 @@ class ImageTests(unittest.TestCase):
 
     def test_start_and_independent_end_prompts_are_distinct(self):
         start = build_image_prompt(self.result, 'Editorial')
-        end = build_end_image_prompt(self.result, 'Surreal art')
+        end = build_end_image_prompt(self.result, 'Editorial')
         self.assertNotEqual(start, end)
         self.assertIn('A cat paints the moon.', start)
         self.assertIn('A cat paints the moon.', end)
-        self.assertIn('Preserve geometry; transform reality', end)
+        self.assertIn('Preserve the same characters', end)
+        self.assertIn('Visual style: Editorial.', start)
+        self.assertIn('Visual style: Editorial.', end)
         self.assertIn('centre foreground', start)
         self.assertIn('centre foreground', end)
 

@@ -149,6 +149,9 @@ class Videos:
                 raise VideoError(422, 'Stored image is invalid.') from None
             self.directory.mkdir(parents=True, exist_ok=True)
             shared_style = state['result'].get('image_style')
+            if not isinstance(shared_style, str) or not shared_style.strip():
+                raise VideoError(409, 'This historical image has no persisted visual style; animation was not submitted.')
+            shared_style = shared_style.strip()
             transformation_map = build_transformation_map(state['result'])
             state['video'] = {'rewrite_id': key, 'status': 'queued', 'provider': 'wavespeed',
                 'model': MODEL, 'duration': 8, 'resolution': '480p',

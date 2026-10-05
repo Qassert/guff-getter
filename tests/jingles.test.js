@@ -4,11 +4,12 @@ function setup(blocked = false) {
  const ids=['jingleControls','jingleButton','jingleStop','jingleGenre','jingleMessage','creationMeta','crazyTitleBox','crazyExtractBox'];
  const nodes=Object.fromEntries(ids.map(id=>[id,{hidden:true,textContent:'',value:'',disabled:false,children:[],replaceChildren(){this.children=[];},appendChild(child){this.children.push(child);}}]));
  const calls=[], audios=[], timers=[];
- let savedAnswer=null;
+ let savedAnswer=null, loading=false;
  let answer={jingle_status:'none',can_generate:true}, resolvePost;
  const context={
   document:{getElementById:id=>nodes[id],createElement:()=>({})},
   setTimeout:fn=>{timers.push(fn);return 1;},clearTimeout(){},
+  imageLoading:{isActive:()=>loading},
   Audio:class {constructor(url){this.url=url;this.paused=true;audios.push(this);}play(){this.played=true;this.plays=(this.plays||0)+1;if(blocked)return Promise.reject(new Error("NotAllowedError"));this.paused=false;return Promise.resolve();}pause(){this.paused=true;}},
   fetch(url, options) {
    calls.push({url,options});
@@ -19,7 +20,7 @@ function setup(blocked = false) {
  vm.createContext(context);
  vm.runInContext(fs.readFileSync('newsmuncher/static/creation-meta.js','utf8')+
    fs.readFileSync('newsmuncher/static/jingles.js','utf8')+'\nglobalThis.ui=jingleUI;',context);
- return {ui:context.ui,nodes,calls,audios,timers,setAnswer:v=>answer=v,setSaved:v=>savedAnswer=v,
+ return {ui:context.ui,nodes,calls,audios,timers,setAnswer:v=>answer=v,setSaved:v=>savedAnswer=v,setLoading:v=>loading=v,
   complete:(data,ok=true)=>resolvePost({ok,json:async()=>data})};
 }
 (async()=>{
@@ -61,6 +62,16 @@ function setup(blocked = false) {
  assert.equal(t.nodes.jingleGenre.hidden,true);
  assert.equal(t.nodes.creationMeta.textContent,'MUSIC GENRE: FUNK');
  assert.equal(t.audios.length,0);
+ t.setLoading(true);await t.ui.act();assert.equal(t.audios.length,0);
+ assert(t.nodes.jingleMessage.textContent.includes('waiting'));
+ t.setLoading(false);
+ t.ui.beginEmbellish();await t.ui.playForEmbellish();
+ assert.equal(t.audios.length,1);assert.equal(t.audios[0].plays,1);
+ t.audios[0].currentTime=4;
+ await t.ui.restartForVideo();
+ assert.equal(t.audios[0].currentTime,0);assert.equal(t.audios[0].plays,2);
+ assert.equal(t.calls.filter(c=>c.options.method==='POST').length,0);
+ t.ui.stop();
  // Late old response cannot attach to a new rewrite.
  t=setup();t.ui.show({nominated:true,rewrite_id:'old'});await flush();
  t.ui.act();t.ui.show({nominated:false,rewrite_id:'new'});

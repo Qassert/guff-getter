@@ -32,7 +32,7 @@ async function redoImage() {
         if (!response.ok) throw new Error('Replacement unavailable');
         const data = await response.json();
         if (!current()) return;
-        if (typeof imageLoading !== 'undefined') imageLoading.stop(true);
+        if (typeof imageLoading !== 'undefined') imageLoading.freeze();
         imageRedoPending = false;
         imageGenerationFailed = false;
         currentImageUrl = data.image_url;
@@ -307,7 +307,7 @@ async function loadRewriteImage(id, sequence) {
         if (!response.ok) throw new Error('Image generation failed');
         const data = await response.json();
         if (!current()) return;
-        if (typeof imageLoading !== 'undefined') imageLoading.stop(true);
+        if (typeof imageLoading !== 'undefined') imageLoading.freeze();
         displayRewriteImage(data.image_url, current, data.image_style);
 
     } catch (error) {

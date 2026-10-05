@@ -11,6 +11,7 @@
             this.cancel(this.timer);
             this.data = data;
             this.running = false;
+            this.imageDisplayed = false;
             this.render({available:!!(data?.nominated && data?.image_url), message:''});
         }
         terminal(state, kind) {
@@ -19,7 +20,7 @@
             return !busy && (state?.can_generate === false || !!state?.message);
         }
         maybeAutoplay(token) {
-            if (token !== this.revision || this.autoStarted) return;
+            if (token !== this.revision || this.autoStarted || !this.imageDisplayed) return;
             const media = this.media();
             if (media.Jingle.isPlaying?.()) {
                 this.autoStarted = true;
@@ -50,6 +51,7 @@
             const id = this.data.rewrite_id;
             const sequence = root.creationContext?.().sequence ?? this.data.sequence;
             const media = this.media();
+            media.Jingle.beginEmbellish?.();
             this.loading(true);
             this.render({available:false, message:''});
 
@@ -77,6 +79,10 @@
             }
             if (token !== this.revision) return;
             this.loading(false);
+            if (prepared) {
+                this.imageDisplayed = true;
+                this.maybeAutoplay(token);
+            }
 
             if (prepared) {
                 await media.Video.show({nominated:true, rewrite_id:id});

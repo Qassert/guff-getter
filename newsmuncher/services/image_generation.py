@@ -62,11 +62,11 @@ def build_image_prompt(result, image_style=None):
 
 
 TRANSFORMATION_TARGETS = (
-    'an impossible ceremonial creature', 'a monumental household object',
-    'a tiny mechanical civilisation', 'a living architectural structure',
-    'a luminous organic machine', 'an absurd animal-led institution',
-    'a colossal edible landscape', 'a botanical contraption',
-    'an antique vehicle fused with wildlife', 'a theatrical cosmic phenomenon',
+    'moves forward in its existing action', 'reacts physically to the same event',
+    'tilts or shifts while remaining the same object', 'shows natural secondary motion',
+    'changes gesture without changing identity', 'continues the established movement',
+    'leans into the action', 'settles or bounces from the preceding motion',
+    'turns slightly within the same composition', 'responds with a stronger expression',
 )
 
 
@@ -93,20 +93,19 @@ def format_transformation_map(mapping):
 
 
 def build_end_image_prompt(result, image_style=None, transformation_map=None):
-    """Radically reinterpret a supplied start image while retaining its geometry."""
+    """Create a later action state while preserving the supplied scene and style."""
     transformation_map = transformation_map or build_transformation_map(result)
     prompt = (
         'Create a coherent, visually rich surreal scene with recognisable subjects and objects. '
         'Use a strong palette of 4 to 6 dominant colours and apply the selected visual style '
         'consistently. No text, captions, logos or lettering in the image.\n'
-        'Use the supplied image as a COMPOSITIONAL MAP, not as content that must be preserved. '
-        'Preserve its camera, framing, perspective, horizon, major spatial layout, approximate '
-        'silhouettes, foreground/midground/background structure and lighting direction. Radically '
-        'transform every subject, object and environment into a new surreal interpretation. Replace '
-        'each major visual object with a completely different thing occupying approximately the same '
-        'silhouette, size and position. Preserve geometry; transform reality.\n'
+        'Use the supplied image as the exact start of the same shot. Preserve the same characters, '
+        'subjects, objects, clothing, props, environment, camera, framing, perspective, proportions, '
+        'palette, lighting and artistic treatment. Do not add, remove, replace or reinterpret the '
+        'scene. Show a clearly later moment by advancing only the physical action, gestures and '
+        'expressions already implied by the rewritten scene. Maintain character and object identity.\n'
         f'Scene inspiration: {result["crazyReplacement1Extract"][:1200]}\n'
-        f'{build_composition_map()}\nTransformation map:\n{format_transformation_map(transformation_map)}'
+        f'{build_composition_map()}\nContinuity map:\n{format_transformation_map(transformation_map)}'
     )
     return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 

@@ -2,6 +2,7 @@
 const jingleUI = (() => {
     let revision = 0, rewrite = null, state = null, pending = false, audio = null, timer = null;
     let saved = [], discovery = 0, nominated = null, lookup = Promise.resolve();
+    let embellishPlayback = false;
     const get = id => document.getElementById(id);
 
     function stop() {
@@ -51,6 +52,7 @@ const jingleUI = (() => {
         if (timer) clearTimeout(timer);
         stop();
         audio = null; state = null; pending = false;
+        embellishPlayback = false;
         nominated = Boolean(data && data.nominated);
         rewrite = nominated ? data.rewrite_id : null;
         const controls = get('jingleControls');
@@ -70,6 +72,11 @@ const jingleUI = (() => {
 
     async function playCurrent() {
         if (!state?.jingle_url) return false;
+        if (typeof imageLoading !== 'undefined' && imageLoading.isActive?.()) {
+            const msg = get('jingleMessage');
+            if (msg) msg.textContent = 'Jingle ready; waiting for the generated image.';
+            return false;
+        }
         if (!audio) {
             audio = new Audio(state.jingle_url);
             audio.onended = () => {
@@ -168,6 +175,13 @@ const jingleUI = (() => {
     }
 
     return {show, act, stop, discover,
+        beginEmbellish() { embellishPlayback = true; },
+        async restartForVideo() {
+            if (!embellishPlayback || !state?.jingle_url) return false;
+            stop();
+            if (audio) audio.currentTime = 0;
+            return playCurrent();
+        },
         isPlaying: () => !!(audio && !audio.paused),
         snapshot: () => ({...state, pending}),
         async ensure() {
@@ -187,6 +201,8 @@ const jingleUI = (() => {
             const token = revision;
             await lookup;
             if (token !== revision) return false;
+            embellishPlayback = true;
+            if (audio) audio.currentTime = 0;
             return playCurrent();
         },
         selectSaved: () => {}, playSaved: act, stopSaved: stop};
