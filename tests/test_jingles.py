@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from jingle_service.contract import MusicBrief
-from newsmuncher.services.jingles import Jingles, LocalAudio, JingleError, modal_audio
+from newsmuncher.services.jingles import Jingles, LocalAudio, JingleError, elevenlabs_audio
 
 MP3 = b"ID3" + b"\0" * 2000
 
@@ -25,7 +25,8 @@ class JingleTests(unittest.TestCase):
         self.collection = Mock()
         self.collection.update_one.return_value.matched_count = 1
         self.collection.find_one.side_effect = lambda query: self.entry.copy()
-        self.brief = Mock(return_value=(MusicBrief(music_prompt="Brass", lyrics="Toot"), {"input_tokens": 10}))
+        self.brief = Mock(return_value=(MusicBrief(music_prompt="Brass", lyrics="Toot",
+                                                  duration_seconds=10), {"input_tokens": 10}))
         self.provider = Mock(return_value=MP3)
         self.today = datetime(2026, 9, 10, tzinfo=timezone.utc)
         self.limit = 20
@@ -52,8 +53,8 @@ class JingleTests(unittest.TestCase):
         self.assertEqual(self.service.audio.path("a"*24).read_bytes(), MP3)
         metadata = self.collection.update_one.call_args.args[1]["$set"]
         self.assertEqual(metadata["jingle_text_snapshot"]["title"], "Teapot mayor")
-        self.assertEqual(metadata["jingle_provider"], "modal")
-        self.assertEqual(metadata["jingle_prompt"]["duration_seconds"], 25)
+        self.assertEqual(metadata["jingle_provider"], "elevenlabs")
+        self.assertEqual(metadata["jingle_prompt"]["duration_seconds"], 10)
         self.brief.assert_called_once()
         self.provider.assert_called_once()
 
@@ -225,7 +226,7 @@ class JingleTests(unittest.TestCase):
         other = self.path / "legacy.mp3"
         other.write_bytes(MP3)
         path.symlink_to(other)
-        self.entry.update(jingle_provider="modal", jingle_url=self.service.audio.url("a"*24))
+        self.entry.update(jingle_provider="elevenlabs", jingle_url=self.service.audio.url("a"*24))
         self.service.retire_deleted(self.collection, self.entry)
         self.assertTrue(path.is_symlink())
         self.assertEqual(other.read_bytes(), MP3)
@@ -311,11 +312,15 @@ class JingleTests(unittest.TestCase):
         response.headers = {"Content-Type": "audio/mpeg"}
         response.iter_content.return_value = [MP3]
         with patch("newsmuncher.services.jingles.configured", return_value=True), patch.dict(
-                "os.environ", {"MODAL_JINGLE_ENDPOINT": "https://test.modal.run",
-                               "MODAL_JINGLE_KEY": "fake", "MODAL_JINGLE_SECRET": "fake"}), patch(
+                "os.environ", {"ELEVENLABS_API_KEY": "fake"}), patch(
                 "newsmuncher.services.jingles.requests.post") as post:
             post.return_value.__enter__.return_value = response
-            self.assertEqual(modal_audio(self.brief.return_value[0], "id"), MP3)
+            self.assertEqual(elevenlabs_audio(self.brief.return_value[0], "id"), MP3)
+            payload = post.call_args.kwargs["json"]
+            self.assertEqual(payload["model_id"], "music_v2_5")
+            self.assertEqual(payload["composition_plan"]["chunks"][0]["text"], "[Jingle]\nToot")
+            self.assertEqual(payload["composition_plan"]["chunks"][0]["duration_ms"], 10000)
+            self.assertNotIn("id", payload)
             post.assert_called_once()
             self.assertFalse(post.call_args.kwargs["allow_redirects"])
             self.assertTrue(post.call_args.kwargs["stream"])

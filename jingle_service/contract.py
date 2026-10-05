@@ -26,14 +26,23 @@ class MusicBrief(BaseModel):
     model_config = ConfigDict(extra="forbid")
     music_prompt: str = Field(min_length=1, max_length=600)
     lyrics: str = Field(min_length=1, max_length=500)
-    duration_seconds: int = Field(default=25, ge=20, le=30)
+    duration_seconds: int = Field(default=25, ge=3, le=120)
     genre_profile: GenreProfile | None = None
+    positive_styles: list[str] = Field(default_factory=list)
+    negative_styles: list[str] = Field(default_factory=list)
+    context_adherence: Literal["low", "medium", "high"] = "high"
 
     @model_serializer(mode="wrap")
     def preserve_legacy_shape(self, handler):
         data = handler(self)
         if self.genre_profile is None:
             data.pop("genre_profile", None)
+        if not self.positive_styles:
+            data.pop("positive_styles", None)
+        if not self.negative_styles:
+            data.pop("negative_styles", None)
+        if not self.positive_styles and not self.negative_styles:
+            data.pop("context_adherence", None)
         return data
 
     def genre_params(self):

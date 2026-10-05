@@ -277,7 +277,9 @@ def test_api_range_status_auth_and_missing_file(setup):
         assert client.get(url).json()['can_generate']
         sdk.assert_not_called()
         response = client.post(url, json={'title': 'Teapot mayor', 'body': 'Biscuits take the bus.'})
-        assert response.status_code == 200
+        assert response.status_code == 410
+        service.generate(collection, str(entry['_id']), 'pet',
+                         {'title': 'Teapot mayor', 'body': 'Biscuits take the bus.'})
         assert client.get(url + '/audio').content == MP3
         part = client.get(url + '/audio', headers={'Range': 'bytes=0-9'})
         assert part.status_code == 206 and part.content == MP3[:10]
@@ -285,96 +287,27 @@ def test_api_range_status_auth_and_missing_file(setup):
         assert client.get(url + '/audio', headers={'Range': 'bytes=9000-'}).status_code == 416
         entry['crazyReplacement1Extract'] = 'Changed persisted text.'
         replaced = client.post(url + '/replace', json={'title':'Teapot mayor','body':'Changed persisted text.'})
-        assert replaced.status_code == 200
-        assert entry['narration']['snapshot']['body'] == 'Changed persisted text.'
+        assert replaced.status_code == 410
+        assert entry['narration']['snapshot']['body'] == 'Biscuits take the bus.'
         client.cookies.clear()
         assert client.get(url + '/audio').status_code == 401
         client.cookies.set('active_pet', 'other')
         assert client.get(url + '/audio').status_code == 404
         client.cookies.set('active_pet', 'pet')
         service.path(str(entry['_id'])).unlink()
-        assert client.post(url, json={'title': 'Teapot mayor', 'body': 'Biscuits'}).json()['can_generate'] is False
+        assert client.post(url, json={'title': 'Teapot mayor', 'body': 'Biscuits'}).status_code == 410
         assert client.get(url + '/audio').status_code == 404
-    assert speech.call_count == 2
+    assert speech.call_count == 1
 
 
 def test_frontend_and_template():
-    subprocess.run(['node', '--check', 'newsmuncher/static/narration.js'], check=True)
     subprocess.run(['node', '--check', 'newsmuncher/static/script.js'], check=True)
-    subprocess.run(['node', 'tests/narration.test.js'], check=True)
     from jinja2 import Environment, FileSystemLoader
     env = Environment(loader=FileSystemLoader('newsmuncher/templates'))
     env.globals['url_for'] = lambda name, **kw: '/static/' + kw['path']
     html = env.get_template('pet_profile.html').render(pet={})
-    from html.parser import HTMLParser
-    class IDs(HTMLParser):
-        def __init__(self):
-            super().__init__()
-            self.ids = []
-        def handle_starttag(self, tag, attrs):
-            if 'id' in dict(attrs):
-                self.ids.append(dict(attrs)['id'])
-    parser = IDs()
-    parser.feed(html)
-    assert len(parser.ids) == len(set(parser.ids))
-    assert html.count('id="narrationButton"') == 1
-    assert 'onclick="narrationUI.act()"' in html
-    assert 'preload="none"' in html
-    assert 'id="narrationControls" class="narration-controls-hidden" hidden' in html
-    assert 'id="narrationButton"' in html[html.index('id="creationActions"'):]
-    assert 'id="narrationControls" class="container"' not in html
-    assert 'savedNarration' not in html
-    assert 'PLAY saved narration' not in html
-    assert 'class="site-footer"' not in html
-    assert 'A little rough around the edges.' not in html
-    assert 'id="jingleControls" class="jingle-controls-hidden" hidden' in html
-
-
-def test_null_metadata_and_oversize_text_fail_without_spending(setup):
-    service, collection, entry, sdk, speech = setup
-    with pytest.raises(NarrationError) as exc:
-        generate(setup, {'title': 'Long', 'body': 'x' * 3501})
-    assert exc.value.status == 422
-    entry['narration'] = None
-    assert generate(setup)['can_generate'] is False
-    sdk.assert_not_called()
-
-
-def test_deletion_between_file_write_and_metadata_sync_is_missing(setup):
-    service, collection, entry, sdk, speech = setup
-    update = collection.update_one
-    def delete_before_completion(query, values):
-        if values['$set'].get('narration.status') == 'complete':
-            collection.docs.clear()
-        return update(query, values)
-    collection.update_one = delete_before_completion
-    with pytest.raises(NarrationError) as exc:
-        generate(setup)
-    assert exc.value.status == 404
-    assert not service.path(str(entry['_id'])).exists()
-    speech.assert_called_once()
-
-
-def test_existing_title_inclusive_audio_reused_unchanged(setup):
-    service, collection, entry, sdk, speech = setup
-    key = str(entry['_id'])
-    service.directory.mkdir(parents=True, exist_ok=True)
-    original = b'ID3existing-title-and-body-audio'
-    service.path(key).write_bytes(original)
-    entry['narration'] = {'entry_id': key, 'status': 'complete',
-        'voice': 'coral', 'voice_name': 'Coral',
-        'snapshot': {'title': 'Old spoken title', 'body': 'Old spoken body'}}
-    before = copy.deepcopy(entry['narration'])
-    result = generate(setup, {'title': 'New title', 'body': 'New body'})
-    assert result['narration_status'] == 'complete'
-    assert entry['narration'] == before
-    assert service.path(key).read_bytes() == original
-    sdk.assert_not_called()
-
-
-def test_body_only_preserves_internal_punctuation_and_newlines(setup):
-    _, _, _, _, speech = setup
-    body = '  Ferrets vote!\nBiscuits win?  '
-    generate(setup, {'title': 'DO NOT SPEAK THIS TITLE', 'body': body})
-    assert speech.call_args.kwargs['input'] == body.strip()
-    speech.assert_called_once()
+    assert 'narration.js' not in html
+    assert 'narrationButton' not in html
+    assert 'narrationAudio' not in html
+    assert 'PLAY NARRATION' not in html
+    assert 'VOICE:' not in html

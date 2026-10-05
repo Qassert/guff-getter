@@ -69,7 +69,6 @@ function setNominationState(data) {
     }
     renderRedoImage();
     if (typeof videoUI !== "undefined") videoUI.show(data);
-    if (typeof narrationUI !== "undefined") narrationUI.show(data);
     if (typeof jingleUI !== "undefined") jingleUI.show(data);
     const button = document.getElementById('bankButton');
     button.textContent = 'NOMINATE';
@@ -145,7 +144,6 @@ function beginNewCreation() {
     creationNominated = false;
     nominationPending = false;
     resetImagePanel();
-    if (typeof narrationUI !== 'undefined') narrationUI.show({nominated:false});
     if (typeof jingleUI !== 'undefined') jingleUI.show({nominated:false});
     if (typeof embellishUI !== 'undefined') embellishUI.show(null);
     document.getElementById('responseTitleDraft').value = '';
@@ -159,7 +157,6 @@ function beginNewCreation() {
 }
 
 function confirmData() {
-    if (typeof narrationUI !== "undefined") narrationUI.show({nominated: false});
     if (typeof jingleUI !== "undefined") jingleUI.show({nominated: false});
     const sequence = ++rewriteSequence;
     document.getElementById('bankButton').disabled = true;
@@ -251,7 +248,6 @@ function bankThisBeauty() {
         .then(data => {
             if (data.nominated !== true) throw new Error('Nomination was not confirmed.');
             if (nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence) {
-                if (typeof narrationUI !== 'undefined') narrationUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
                 if (typeof embellishUI !== 'undefined') embellishUI.show({nominated:true,rewrite_id:data.rewrite_id || nominatingId});
                 creationNominated = data.nominated === true;
                 renderRedoImage();

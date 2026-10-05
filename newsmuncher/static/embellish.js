@@ -21,14 +21,12 @@
         maybeAutoplay(token) {
             if (token !== this.revision || this.autoStarted) return;
             const media = this.media();
-            if (media.Narration.isPlaying?.() || media.Jingle.isPlaying?.()) {
+            if (media.Jingle.isPlaying?.()) {
                 this.autoStarted = true;
                 return;
             }
-            const narration = media.Narration.snapshot();
             const jingle = media.Jingle.snapshot();
-            const player = narration?.narration_url ? media.Narration :
-                jingle?.jingle_url ? media.Jingle : null;
+            const player = jingle?.jingle_url ? media.Jingle : null;
             if (player) {
                 this.autoStarted = true;
                 player.playForEmbellish?.();
@@ -38,8 +36,7 @@
             if (token !== this.revision) return;
             this.maybeAutoplay(token);
             const media = this.media();
-            const done = this.terminal(media.Narration.snapshot(), 'narration') &&
-                this.terminal(media.Jingle.snapshot(), 'jingle') &&
+            const done = this.terminal(media.Jingle.snapshot(), 'jingle') &&
                 this.terminal(media.Video.snapshot(), 'video');
             if (done || polls >= 720) return this.finish(token);
             this.timer = this.schedule(()=>this.wait(token, polls + 1), 1000);
@@ -57,18 +54,15 @@
             this.render({available:false, message:''});
 
             if (replace) {
-                media.Narration.pause();
                 try {
                     await this.persist();
-                    await media.Narration.show({nominated:true, rewrite_id:id});
                 } catch (_) {
                     this.errors = 'Edited text could not be saved; media was not replaced.';
                     return this.finish(token);
                 }
             }
 
-            const audio = replace ? [media.Narration.replaceIfChanged(), media.Jingle.replace()] :
-                [media.Narration.ensure(), media.Jingle.ensure()];
+            const audio = replace ? [media.Jingle.replace()] : [media.Jingle.ensure()];
             audio.forEach(work => Promise.resolve(work)
                 .then(()=>this.maybeAutoplay(token))
                 .catch(()=>{ if (token === this.revision) this.errors = 'Some audio is unavailable.'; }));
@@ -108,7 +102,7 @@
     if (typeof module !== 'undefined') module.exports = {Embellish};
     if (typeof document === 'undefined') return;
     root.embellishUI = new Embellish({
-        media:()=>({Narration:narrationUI, Jingle:jingleUI, Video:root.videoUI}),
+        media:()=>({Jingle:jingleUI, Video:root.videoUI}),
         image:(...args)=>root.generateCreationImage(...args),
         persist:()=>root.persistCreationText(),
         loading(active) {

@@ -8,13 +8,11 @@ test('metadata line includes only populated values with dynamic separators', () 
     const meta = new CreationMeta(id => id === 'creationMeta' ? node : null);
     meta.setStyle('Cyberpunk');
     assert.equal(node.textContent, 'IMAGE STYLE: CYBERPUNK');
-    meta.setVoice('Marin');
-    assert.equal(node.textContent, 'IMAGE STYLE: CYBERPUNK – VOICE: MARIN');
     meta.setGenre('Heavy Metal');
     assert.equal(node.textContent,
-        'IMAGE STYLE: CYBERPUNK – MUSIC GENRE: HEAVY METAL – VOICE: MARIN');
+        'IMAGE STYLE: CYBERPUNK – MUSIC GENRE: HEAVY METAL');
     meta.setStyle('');
-    assert.equal(node.textContent, 'MUSIC GENRE: HEAVY METAL – VOICE: MARIN');
+    assert.equal(node.textContent, 'MUSIC GENRE: HEAVY METAL');
     meta.reset();
     assert.equal(node.textContent, '');
     assert.equal(node.hidden, true);
@@ -25,7 +23,7 @@ test('template has one metadata line, one shared action row and correct script o
     assert.equal((html.match(/id="creationMeta"/g) || []).length, 1);
     assert.equal((html.match(/id="creationActions"/g) || []).length, 1);
     for (const id of ['bankButton', 'embellishButton', 'jingleButton',
-                      'jingleStop', 'narrationButton', 'narrationStop']) {
+                      'jingleStop']) {
         const row = html.slice(html.indexOf('id="creationActions"'), html.indexOf('</div>', html.indexOf('id="animationControls"')) + 6);
         assert(row.includes(`id="${id}"`), `${id} must be in shared action row`);
     }
@@ -34,7 +32,9 @@ test('template has one metadata line, one shared action row and correct script o
     assert(!html.includes('id="imageStyle"'));
     assert(!html.includes('id="jingleGenre"'));
     assert(html.indexOf("path='creation-meta.js'") < html.indexOf("path='video.js'"));
-    assert(html.indexOf("path='creation-meta.js'") < html.indexOf("path='narration.js'"));
+    assert(!html.includes("path='narration.js'"));
+    assert(!html.includes('narrationButton'));
+    assert(!html.includes('VOICE:'));
     assert(html.indexOf("path='creation-meta.js'") < html.indexOf("path='jingles.js'"));
 });
 

@@ -45,7 +45,7 @@
         }
         activate(item) {
             this.stop();
-            this.prepare([item.jingle_url, item.narration_url].filter(Boolean));
+            this.prepare([item.jingle_url].filter(Boolean));
             this.status({available: this.players.length > 0, blocked: false});
             return this.play();
         }

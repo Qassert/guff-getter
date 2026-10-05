@@ -362,28 +362,17 @@ def test_resume_concurrent_lock_prevents_calls(inputs, monkeypatch):
     provider.assert_not_called()
 
 
-def test_acid_profile_from_single_brief_call_to_ace_and_cache(endpoint, monkeypatch):
+def test_acid_profile_from_deterministic_brief_reaches_legacy_cache(endpoint, monkeypatch):
     from newsmuncher.services import jingle_brief
     from jingle_service.genres import GENRE_PROFILES
-    api = Mock(return_value=types.SimpleNamespace(
-        status='completed', output_text=json.dumps({'music_prompt': 'unwanted pop prose',
-        'lyrics': 'Ferrets vote again!', 'duration_seconds': 25}),
-        usage=types.SimpleNamespace(input_tokens=10, output_tokens=20), model='mock'))
-    client = Mock()
-    client.return_value.__enter__ = Mock(return_value=types.SimpleNamespace(responses=types.SimpleNamespace(create=api)))
-    client.return_value.__exit__ = Mock(return_value=False)
     choose = Mock(return_value='Acid House')
-    monkeypatch.setattr(jingle_brief, 'OpenAI', client)
-    monkeypatch.setattr(jingle_brief, 'load_dotenv', Mock())
     monkeypatch.setattr(jingle_brief.random, 'choice', choose)
     brief, _ = jingle_brief.create_jingle_brief({'nominated': True,
         'crazyReplacement1Title': 'Ferrets', 'crazyReplacement1Extract': 'Ferrets vote again.'})
-    api.assert_called_once()
     choose.assert_called_once_with(jingle_brief.GENRES)
     assert brief.genre_profile == GENRE_PROFILES['Acid House']
-    assert brief.lyrics == 'Ferrets vote again!'
+    assert brief.lyrics == 'Ferrets'
     assert 'TB-303' in brief.music_prompt and 'TR-909' in brief.music_prompt
-    assert 'unwanted pop prose' not in brief.music_prompt
     # Persist/reload as the production service does; one snapshot reaches the wire.
     restored = MusicBrief.model_validate_json(brief.model_dump_json())
     request = GenerationRequest(**restored.model_dump(), request_id=uuid4())
@@ -393,7 +382,7 @@ def test_acid_profile_from_single_brief_call_to_ace_and_cache(endpoint, monkeypa
     assert len(calls) == 1
     params, _ = calls[0]
     assert params.bpm == 125 and params.timesignature == '4'
-    assert params.caption == brief.music_prompt and params.duration == 25
+    assert params.caption == brief.music_prompt and params.duration == 10
     assert not hasattr(params, 'reference_audio') and not hasattr(params, 'src_audio')
     assert not hasattr(params, 'lm_negative_prompt')
     assert json.loads(request.output_path(root).with_suffix('.json').read_text())['request']['genre_profile'] == brief.genre_profile.model_dump()

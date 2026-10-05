@@ -39,5 +39,6 @@ test('Viewing renders body without a generated-title element while retaining API
 
 test('saved title remains available to the jingle seed',()=>{
  assert.match(jingle,/title\s*=\s*entry\.get\(["']crazyReplacement1Title["']\)/);
- assert.match(jingle,/input=json\.dumps\(\{"title":\s*title\[:200\]\}/);
+ assert.match(jingle,/lyrics=title\.strip\(\)/);
+ assert(!jingle.includes('OpenAI'));
 });

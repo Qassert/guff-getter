@@ -78,7 +78,7 @@
     <!-- Generated image -->
     <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
 
-    <!-- ONE centred metadata line: IMAGE STYLE - MUSIC GENRE - VOICE -->
+    <!-- ONE centred metadata line: IMAGE STYLE - MUSIC GENRE -->
     <p id="creationMeta" class="creation-meta" hidden></p>
 
     <!-- Error / status messages for individual operations (kept visible when set) -->
@@ -91,8 +91,6 @@
       <button type="button" id="embellishButton" class="funky-button shizzle-button" onclick="embellishUI.reembellish()" hidden>RE-EMBELLISH</button>
       <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled hidden>MAKE JINGLE</button>
       <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
-      <button type="button" id="narrationButton" class="funky-button" onclick="narrationUI.act()" disabled hidden>READ ALOUD</button>
-      <button type="button" id="narrationStop" class="funky-button" onclick="narrationUI.pause()" hidden>■ STOP</button>
       <div id="animationControls" class="animation-controls-inline" hidden>
       </div>
     </div>
@@ -100,11 +98,8 @@
     <!-- Operational status messages shown beneath the button row when non-empty -->
     <p id="animationMessage" role="status" aria-live="polite" class="creation-status-message"></p>
     <p id="jingleMessage" role="status" aria-live="polite" class="creation-status-message"></p>
-    <audio id="narrationAudio" preload="none" hidden></audio>
-    <p id="narrationMessage" role="status" aria-live="polite" class="creation-status-message"></p>
 
     <!-- Empty compatibility wrappers retain controller lifecycle state, never layout. -->
-    <div id="narrationControls" class="narration-controls-hidden" hidden></div>
     <div id="jingleControls" class="jingle-controls-hidden" hidden></div>
   </div>
 
@@ -114,4 +109,4 @@
 </div>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='narration.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}"></script><script src="{{ url_for('static', path='munge-control.js') }}"></script><script src="{{ url_for('static', path='udder-sounds.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}"></script><script src="{{ url_for('static', path='munge-control.js') }}"></script><script src="{{ url_for('static', path='udder-sounds.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}

@@ -34,7 +34,7 @@ database services or deployment were used for this cleanup.
 | --- | --- |
 | `newsmuncher/` | Production Python, APIs, templates and static JS/CSS/artwork. Keep the shared WaveSpeed client in `services/wavespeed.py`. |
 | `newsmuncher/resources/`, `data/seeds/` | Tracked prompts, word banks and reusable source JSON. These are source data, not generated artifacts. |
-| `jingle_service/` | Production Modal/ACE-Step source and contracts; also supports tested, opt-in reference experiments. |
+| `jingle_service/` | Shared persisted jingle wire contracts; legacy Modal experiment source remains inactive for historical reference. |
 | `data/avatars/` | Real pet/user images. Preserve, including existing tracked images. |
 | `data/previews/` | Live preview JSON **and persistent SQLite claims/associations** (`image_rewrites.sqlite3`, `jingles.sqlite3`, including journals/WAL/SHM). Preserve and back up; never clear as a cache. |
 | `data/generated_images/`, `data/generated_audio/`, `data/generated_narration/`, `data/generated_video/` | Reusable application media. Preserve these paths and files, including empty directory scaffolds. Ignoring them only prevents accidental commits. |
@@ -162,33 +162,22 @@ Overlap logging is diagnostic only and does not reject or regenerate output.
 ### Canonical rewrite flow
 
 Source → rewritten body → copy-edited final body and short derived title. The
-existing second text call finishes the body before summarising it into a headline of up to six words.
-A local 140-character/six-word cap and body-vocabulary check reject unrelated
-wording; invalid titles or failed copy-editing use a short excerpt of the accepted
-body. This check is conservative, not a semantic entailment guarantee. No extra
+existing second text call finishes the body before summarising it into a singable 12–18-word headline.
+A local hard cap keeps newly generated titles to 18 words; existing saved titles remain unchanged. This check is conservative, not a semantic entailment guarantee. No extra
 text call is added. Word claims use the accepted final title/body as before.
 
 Images use only the rewritten body plus the persisted visual style and composition
-guidance. Jingle lyrics use only the saved title (bounded to 200 characters for
-legacy titles), with the existing genre profile. Narration remains body-only.
+guidance. Jingle lyrics use the saved title unchanged, with the existing random genre profile. Historical narration remains stored and readable, but new narration is retired from the active experience.
 Existing saved titles and generated media are not modified or regenerated.
 
 ### Creation Page media controls
 
-EMBELLISH, narration and animation controls appear only after successful persisted nomination,
+EMBELLISH and animation controls appear only after successful persisted nomination,
 including restore. Nomination never starts paid media generation. Video stops and
 unloads automatically on creation/page changes; there are no visible Stop Animation
 buttons. Existing saved video may still play before nomination.
 
-EMBELLISH is an explicit user action that coordinates the existing narration, video
-and jingle controls independently. Saved media is reused; in-progress work is polled;
-missing media uses the same guarded generation APIs once. Individual controls remain
-available, with component-specific statuses if any enhancement fails. Nomination has
-no success popup and never starts these paid requests. Narration uses a PLAY NARRATION
-button plus voice label and a hidden audio element, without a native timeline. It
-never autoplays on restore. EMBELLISH records explicit playback intent: narration
-plays first and its natural end starts the jingle; either available track still works
-when the other is unavailable. Manual narration/jingle playback remains exclusive.
+EMBELLISH is an explicit user action that coordinates the existing video and jingle controls. Saved media is reused; in-progress work is polled; missing media uses the guarded generation APIs once. Nomination has no success popup and never starts these paid requests. The final media experience is the WaveSpeed video plus the sung jingle.
 
 Jingles display `GENRE` from their persisted genre profile (unknown legacy genres
 stay hidden). Loading, discovery and generation completion remain silent unless they
@@ -278,98 +267,15 @@ checks, and an authenticated moderation endpoint. No gallery or video system exi
 
 ## Nominated-entry jingles
 
-After nominating a rewrite, MAKE JINGLE creates one approximately 25-second song.
-PLAY JINGLE and STOP use its stored MP3; they never generate another song.
-Nothing auto-generates on nomination. The original source article is never used
-for the music brief.
+After nomination, MAKE JINGLE submits one approximately ten-second song using ElevenLabs Music `music_v2_5`. PLAY JINGLE and STOP reuse the stored MP3; nomination and restore never auto-generate music.
 
-Architecture: nominated Mongo entry → bounded server-side OpenAI structured brief
-→ private Modal HTTPS endpoint → ACE-Step 1.5 turbo on L4 → local MP3 + Mongo
-metadata. The app remains Python 3.13; Modal runs a separate Python 3.11 ML image.
-Do not install ACE-Step into the app's .venv.
+The saved hidden headline is passed unchanged as the composition lyric. The existing random genre profile supplies positive style guidance, alongside immediate intelligible vocals, comedy-ad energy and a clean ending. Negative styles reject instrumental-only output, long intros, indistinct vocals and extended outros. This deterministic plan makes no extra text-model call.
 
-### Configuration
+Configure `ELEVENLABS_API_KEY` only in the server-side root `.env`. `NEWSMUNCHER_JINGLE_ENABLED` can disable new generation while preserving playback, and `NEWSMUNCHER_JINGLE_DAILY_LIMIT` defaults to 20 new claims per UTC day.
 
-Root .env (see .env.example; never commit secrets):
+The durable SQLite claim is committed before the single paid request. Duplicate requests reuse status/audio, and ambiguous submitted outcomes never auto-retry. MP3s remain in `data/generated_audio/<Mongo nomination ID>.mp3`; Mongo retains provider/model, prompt plan, genre and the nominated text snapshot. Historical Modal/ACE-Step records and files remain readable. The old Modal deployment/benchmark utilities are inactive legacy tooling and are not part of the application path.
 
-- OPENAI_API_KEY: existing key, reused.
-- MODAL_JINGLE_ENDPOINT: deployed private Web Function URL.
-- MODAL_JINGLE_KEY / MODAL_JINGLE_SECRET: Modal Proxy Token pair, server-side only.
-- NEWSMUNCHER_JINGLE_BRIEF_MODEL: gpt-4.1-mini by default; max400 output tokens,
-  structured JSON, no tools, no reasoning configuration and no automatic retries.
-- NEWSMUNCHER_JINGLE_ENABLED: true by default, provided credentials are configured;
-  set false to disable new generation while preserving playback.
-- NEWSMUNCHER_JINGLE_DAILY_LIMIT: default20 new claims globally per UTC day.
-- NEWSMUNCHER_JINGLE_GPU: deployment-only, default L4 (the successful benchmark).
-
-Run the existing app normally:
-
-    python -m uvicorn newsmuncher.main:app --reload --host 127.0.0.1 --port 8000
-
-Generate a rewrite, NOMINATE it, then click MAKE JINGLE explicitly. It shows a
-disabled loading control until the response arrives. On completion, use PLAY
-JINGLE/STOP. Refresh/restoration fetches status only. Switching rewrites discards
-stale UI callbacks and stops old playback. No automatic music-generation retries.
-
-### Storage, limits and recovery
-
-MP3 files are stored in data/generated_audio/<Mongo nomination ID>.mp3 and served
-at /generated-audio/<ID>.mp3. Only .mp3 files are served; benchmark reports/markers
-are not public. Files and benchmark output are ignored by Git. LocalAudio in
-newsmuncher/services/jingles.py is the replaceable storage adapter.
-
-Mongo stores jingle URL/status/provider/model/time, brief, OpenAI token usage,
-and the nominated text snapshot/hash. It never stores audio bytes/base64.
-Updating a nomination retains the existing song and original text snapshot;
-the UI indicates when text has changed. No automatic regeneration or version fee.
-
-SQLite data/previews/jingles.sqlite3 reserves one claim per nomination before
-either provider call. BEGIN IMMEDIATE makes the claim and UTC daily count atomic
-across threads/workers on the same host. Failed claims count too, so retries cannot
-bypass the cap. Existing playback/status/duplicate requests do not use quota.
-All app workers MUST share this ledger and generated-audio directory. Multiple
-independent hosts would need shared transactional storage before deployment.
-
-Only entries with nominated == true and matching active-pet ownership can generate.
-GET /jingles/<rewrite_id> restores status; POST to the same path explicitly claims
-generation. No frontend-supplied nomination flag or rewritten text is trusted.
-
-A brief failure is safe to retry explicitly (no music was submitted); it consumes
-another daily claim. After Modal submission, transport/provider failures are
-conservatively marked uncertain and cannot automatically retry. Browser closure
-does not cancel the synchronous server worker. A server crash leaves the durable
-claim in place. Atomically saved local files are recovered on status requests;
-failed Mongo metadata sync is retried without another provider call.
-
-For an uncertain attempt, inspect the private Modal result volume/logs using the
-request_id stored in SQLite. Do not delete markers, reset the ledger or submit a
-new ID merely because a request timed out. If a completed remote file exists,
-operator-assisted retrieval can recover it without inference. Automated remote
-reconciliation is not included in this first version.
-
-### Modal deployment
-
-Separate development CLI:
-
-    python3 -m venv .venv-modal
-    .venv-modal/bin/python -m pip install -r jingle_service/requirements-dev.txt
-    .venv-modal/bin/modal token new
-    NEWSMUNCHER_JINGLE_GPU=L4 .venv-modal/bin/modal deploy jingle_service/modal_app.py
-
-Use the existing workspace; do not add payment methods without authorization.
-Create a Proxy Token and store its pair only in root .env. Modal CLI curl did NOT
-authenticate this .modal.run Web Function in our test; use proxy credentials.
-
-The service is private, max one container/input, zero minimum/buffer containers,
-two-second scale-down window, no generation retries. Models load once per warm
-container. Source is pinned at ca1e85fe9430179831e6bc6be790c332190a3866.
-Remote CPU builds download the full set of files required by upstream's startup
-check; the bundled LM is not initialized or used. Eight turbo steps, one batch,
-25-second target; WAV is converted to browser-compatible 128kbps MP3.
-
-Remote attempt markers and output files live on a Modal Volume. Do not run multiple
-deployments against that single-writer volume. Model weights and volume storage
-are not in Git. Model weight revision is not independently pinned yet.
+New narration generation is retired (POST returns 410). Historical narration state and authenticated audio retrieval remain available, while Creator, EMBELLISH and Gallery use jingle audio only. WaveSpeed video generation is unchanged.
 
 ### Actual benchmark and cost
 

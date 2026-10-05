@@ -38,16 +38,12 @@ def narration_status(entry_id: str, active_pet: str = Cookie(None)):
 
 @router.post('/{entry_id}')
 def create_narration(entry_id: str, text: NarrationText, active_pet: str = Cookie(None)):
-    return invoke(service.generate, entry_id, active_pet, text.model_dump())
+    raise HTTPException(410, 'New narration generation has been retired.')
 
 
 @router.post('/{entry_id}/replace')
 def replace_narration(entry_id: str, text: NarrationText, active_pet: str = Cookie(None)):
-    try:
-        service.replace(collection, entry_id, active_pet)
-    except NarrationError as exc:
-        raise HTTPException(exc.status, str(exc)) from exc
-    return invoke(service.generate, entry_id, active_pet, text.model_dump())
+    raise HTTPException(410, 'New narration generation has been retired.')
 
 
 @router.get('/{entry_id}/audio')

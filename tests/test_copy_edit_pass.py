@@ -216,3 +216,11 @@ class CopyEditPassTests(unittest.TestCase):
         finally:
             fixture.tearDown()
             fixture.doCleanups()
+
+
+def test_generated_title_is_hard_capped_at_eighteen_words():
+    from newsmuncher.utils.clean_data import format_shizzalise_result
+    words = [f'word{i}' for i in range(25)]
+    result = format_shizzalise_result({'title': ' '.join(words), 'extract': 'Body remains intact.'})
+    assert result['crazyReplacement1Title'].split() == words[:18]
+    assert result['crazyReplacement1Extract'] == 'Body remains intact.'

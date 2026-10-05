@@ -108,7 +108,7 @@ class PromotionGallery:
             'seen_count': seen(entry),
             'image_style': entry.get('image_style'),
             **{kind + '_url': f'/promotion-gallery/items/{key}/media/{kind}'
-               if self.media_path(entry, kind) else None for kind in ('image', 'narration', 'jingle', 'video')}}
+               if self.media_path(entry, kind) else None for kind in ('image', 'jingle', 'video')}}
 
     def select(self, viewer, previous=None):
         # Only IDs/counts are scanned; content/assets are loaded for one item.

@@ -181,7 +181,8 @@ def test_existing_media_only_and_safe_paths(setup):
     for path in (service.images / f'{image_id}.png', service.narration / f'{key}.mp3', service.audio / f'{key}.mp3'):
         path.write_bytes(b'existing bytes')
     result = service.serialize(entry)
-    assert all(result[k + '_url'] for k in ('image', 'narration', 'jingle'))
+    assert all(result[k + '_url'] for k in ('image', 'jingle'))
+    assert 'narration_url' not in result
     assert result['image_style'] is None
     entry['image_style'] = 'Cyberpunk'
     assert service.serialize(entry)['image_style'] == 'Cyberpunk'

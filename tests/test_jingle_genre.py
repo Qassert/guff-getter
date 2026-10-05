@@ -1,100 +1,32 @@
-import json
-from unittest import mock
-
 import pytest
-
 from newsmuncher.services.jingle_brief import create_jingle_brief, GENRES
-
-# Helper mock response
-class MockResponse:
-    def __init__(self, output_text="{\"music_prompt\": \"original prompt\", \"lyrics\": \"some lyrics\", \"duration_seconds\": 25}", status="completed"):
-        self.output_text = output_text
-        self.status = status
-        self.usage = mock.Mock(input_tokens=10, output_tokens=20)
-        self.model = "mock-model"
-
-def make_mock_client(mock_resp=None):
-    mock_client = mock.MagicMock()
-    mock_client.__enter__.return_value = mock_client
-    mock_client.__exit__.return_value = None
-    mock_client.responses.create.return_value = mock_resp or MockResponse()
-    return mock_client
+from jingle_service.genres import GENRE_PROFILES
 
 @pytest.fixture
 def entry():
-    return {
-        "nominated": True,
-        "crazyReplacement1Title": "Test Title",
-        "crazyReplacement1Extract": "Test body of the rewritten article.",
-    }
+    return {'nominated': True, 'crazyReplacement1Title':
+            'Local badger trains furious seagull to steal parking tickets while delighted tourists cheer'}
 
-def test_genre_prefix_and_description(entry, monkeypatch):
-    # Force a known genre
-    chosen = GENRES[3]  # "Heavy Metal"
-    monkeypatch.setattr("random.choice", lambda _: chosen)
-    mock_client = make_mock_client()
-    monkeypatch.setattr("newsmuncher.services.jingle_brief.OpenAI", lambda *a, **kw: mock_client)
+def test_saved_title_is_exact_lyric_without_text_model_call(entry, monkeypatch):
+    monkeypatch.setattr('newsmuncher.services.jingle_brief.random.choice', lambda pool: 'Funk')
     brief, usage = create_jingle_brief(entry)
-    # Expect genre first
-    assert brief.music_prompt.startswith(f"{chosen}.")
-    # Profile owns sonic conditioning rather than decorative model prose
-    assert "original prompt" not in brief.music_prompt
-    assert brief.genre_profile.label == chosen
-    # Story remains in lyrics rather than dilution of the production caption
-    assert "Story subject:" not in brief.music_prompt
-    assert brief.genre_profile.cues in brief.music_prompt
-    # Confirm genre is from approved list
-    assert chosen in GENRES
-
-def test_no_extra_ai_calls(entry, monkeypatch):
-    mock_client = make_mock_client()
-    monkeypatch.setattr("newsmuncher.services.jingle_brief.OpenAI", lambda *a, **kw: mock_client)
-    monkeypatch.setattr("random.choice", lambda _: GENRES[0])
-    create_jingle_brief(entry)
-    # Only one call to the provider's create method
-    assert mock_client.responses.create.call_count == 1
-
-def test_brief_structure(entry, monkeypatch):
-    # Ensure the brief contains required fields
-    mock_client = make_mock_client()
-    monkeypatch.setattr("newsmuncher.services.jingle_brief.OpenAI", lambda *a, **kw: mock_client)
-    monkeypatch.setattr("random.choice", lambda _: GENRES[1])
-    brief, usage = create_jingle_brief(entry)
-    # The brief should be a MusicBrief model; we can check attributes existence
-    assert hasattr(brief, "music_prompt")
-    assert hasattr(brief, "lyrics")
-    assert hasattr(brief, "duration_seconds")
-    assert brief.duration_seconds == 25
-
+    assert brief.lyrics == entry['crazyReplacement1Title']
+    assert usage is None
+    assert brief.duration_seconds == 10
+    assert brief.context_adherence == 'high'
+    assert brief.genre_profile == GENRE_PROFILES['Funk']
+    assert 'Funk' in brief.positive_styles
+    assert any('immediate clear lead vocal' in style for style in brief.positive_styles)
+    assert 'instrumental-only' in brief.negative_styles
 
 @pytest.mark.parametrize('selected', GENRES)
-def test_production_pool_vocals_and_single_call(entry, monkeypatch, selected):
-    from jingle_service.genres import GENRE_PROFILES
-    expected = ['Country', 'Folk', 'Heavy Metal', 'Punk Rock', 'Pop Rock',
-        'Indie Rock', 'Glam Rock', 'Blues', 'Soul', 'Funk', 'Gospel', 'Ska',
-        'Reggae', 'Rockabilly', 'Bluegrass', 'Musical Theatre', 'Opera',
-        'Power Ballad', 'Disco', 'Electro-pop']
-    assert GENRES == expected
-    def choose(pool):
-        assert pool == expected
-        return selected
-    client = make_mock_client()
-    monkeypatch.setattr('newsmuncher.services.jingle_brief.random.choice', choose)
-    monkeypatch.setattr('newsmuncher.services.jingle_brief.load_dotenv', lambda *a: None)
-    monkeypatch.setattr('newsmuncher.services.jingle_brief.OpenAI', lambda **kw: client)
+def test_existing_random_genre_pool_maps_to_elevenlabs_styles(entry, monkeypatch, selected):
+    monkeypatch.setattr('newsmuncher.services.jingle_brief.random.choice', lambda pool: selected)
     brief, _ = create_jingle_brief(entry)
-    profile = GENRE_PROFILES[selected]
-    assert brief.genre_profile == profile
-    assert 'clear' in profile.cues and 'lead vocal' in profile.cues
-    assert brief.music_prompt == profile.caption()
-    assert brief.genre_params() == {'bpm': profile.bpm, 'timesignature': '4'}
-    assert brief.duration_seconds == 25
-    assert 'reference_audio' not in brief.model_dump()
-    client.responses.create.assert_called_once()
+    assert brief.genre_profile == GENRE_PROFILES[selected]
+    assert selected in brief.positive_styles
+    assert brief.music_prompt == GENRE_PROFILES[selected].caption()
 
-
-def test_historical_profiles_remain_available_but_not_selected():
-    from jingle_service.genres import GENRE_PROFILES
-    for genre in ('Acid House', 'Ambient', 'Techno', 'Drum and Bass', 'Jazz'):
-        assert genre in GENRE_PROFILES and genre not in GENRES
-    assert GENRE_PROFILES['Acid House'].bpm == 125
+def test_rejects_non_nominated_or_missing_title():
+    with pytest.raises(ValueError): create_jingle_brief({'nominated': False, 'crazyReplacement1Title': 'x'})
+    with pytest.raises(ValueError): create_jingle_brief({'nominated': True, 'crazyReplacement1Title': ''})

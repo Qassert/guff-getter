@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Safe image recovery, six-word titles and explicit Creator audio sequencing
-LAST_COMPLETED_COMMIT: :/^Refine creation recovery titles and audio intent
+LAST_COMPLETED_FEATURE: ElevenLabs Music v2.5 jingle migration and active narration retirement
+LAST_COMPLETED_COMMIT: this migration commit
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,20 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: MUNGE teats pulled inward and control centered across the shortened parchment edge; awaiting review.
+CURRENT_TASK: Replace new Modal/ACE-Step jingles with ElevenLabs Music v2.5 and remove narration from the active experience.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Review the tightened socket/root joins and 50/50 parchment-edge overlap in-browser; no deployment performed.
-VALIDATION: Full frontend 87/87; relevant template/backend 21 passed. Six-teat interaction, sound uniqueness/polyphony, single MUNGE action/suspense, reduced motion and existing five-teat behavior covered. No provider calls.
+NEXT_STEP: Configure ELEVENLABS_API_KEY server-side, then explicitly authorize one controlled real jingle when ready; no generation or deployment performed.
+VALIDATION: Full frontend 81/81; full Python 288 passed plus 105 subtests. All provider boundaries mocked; no external calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
-LIMITATIONS: Browser visual review remains unavailable: local startup requires Mongo DNS and no browser surface is exposed. Asset, template, syntax and interaction tests passed. No deployment or live provider/Mongo calls.
+LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+## ElevenLabs Music migration — 2026-10-05
+
+New jingles now use one server-side ElevenLabs Music `music_v2_5` composition-plan request. The saved hidden title is passed unchanged as the lyric; deterministic positive/negative styles combine the existing random genre with immediate intelligible vocals and a clean ten-second comedy-jingle shape. The durable pre-submission claim, daily cap, duplicate protection and ambiguous-outcome no-retry rule remain in place.
+
+New titles target 12–18 words and are locally hard-capped at 18. Creator/EMBELLISH/Viewing now use the WaveSpeed video plus jingle only. New narration POST/replace routes return 410, while historical narration data/files and authenticated playback remain intact. Gallery omits historical narration from its payload and audio sequence. WaveSpeed code was not changed. Legacy Modal/ACE-Step tools remain as inactive historical/diagnostic source; the production path and `.env.example` now require only `ELEVENLABS_API_KEY` for jingles.
+
+Full validation: Node 81/81; Python 288 passed plus 105 subtests. `ELEVENLABS_API_KEY` was absent. No OpenAI, ElevenLabs, WaveSpeed, Modal, Mongo or other provider call occurred.
 
 ## MUNGE edge placement tuning — 2026-10-02
 

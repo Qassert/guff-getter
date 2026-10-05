@@ -358,8 +358,10 @@ def format_shizzalise_result(response_data):
         for key in ("title", "extract"):
             if not isinstance(response_data.get(key), str) or not response_data[key].strip():
                 raise ValueError(f"Generated {key} must be a nonempty string.")
+        title = sanitize_text(response_data["title"])
+        title = " ".join(title.split()[:18])
         return {
-            "crazyReplacement1Title": sanitize_text(response_data["title"]),
+            "crazyReplacement1Title": title,
             "crazyReplacement1Extract": sanitize_text(response_data["extract"]),
             "crazyReplacement1done": True,
             "flagForDeleteCount": 0,
@@ -413,7 +415,8 @@ def copy_edit_pass(pass1_result):
         "Fix only: grammar, broken sentence structure, agreement, flow and readability. "
         "First finish the extract. It is the canonical content. Then derive the title "
         "ONLY from that final extract, never using the preliminary title. "
-        "Write a punchy, coherent headline-like summary of about 6 words, with a hard maximum of 6 words and 140 characters. "
+        "Write a punchy, funny, grammatical headline-like summary that also works naturally "
+        "as one sung or rapped lyric. Aim for 12–18 words, with a hard maximum of 18 words and 180 characters. "
         "Use only words present in the final extract; introduce no new subjects, "
         "objects, events or ideas. Return JSON with extract first, then title. "
         "Do not add commentary, markdown or code fences."

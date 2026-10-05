@@ -6,10 +6,9 @@ function setup(){
  const unit=kind=>({state:{can_generate:true},snapshot(){return this.state;},
   async show(){calls.push(kind+'-show');},async ensure(){calls.push(kind);this.state={[kind+'_url']:'/'+kind,can_generate:false};},
   pause(){calls.push(kind+'-pause');},isPlaying(){return false;},playForEmbellish(){calls.push('play-'+kind);}});
- const media={Narration:unit('narration'),Jingle:unit('jingle'),Video:unit('video')};
+ const media={Jingle:unit('jingle'),Video:unit('video')};
  media.Video.show=async()=>calls.push('video-show');
  media.Jingle.replace=async()=>{calls.push('jingle-replace');media.Jingle.state={jingle_url:'/new',can_generate:false};};
- media.Narration.replaceIfChanged=async()=>{calls.push('narration-conditional');media.Narration.state={narration_url:'/voice',can_generate:false};};
  const image=async(_id,_seq,replace)=>{calls.push(replace?'replace-image':'image');return{reveal:async()=>calls.push('reveal')}};
  const ui=new Embellish({media:()=>media,image,persist:async()=>calls.push('persist'),render:x=>renders.push(x),
   loading:x=>calls.push(x?'loading':'loaded'),schedule:fn=>{timers.push(fn);return timers.length;},cancel(){}});
@@ -18,26 +17,24 @@ function setup(){
 
 test('nomination reveals still before requesting dependent video',async()=>{
  const t=setup();t.ui.show({nominated:true,rewrite_id:'r'});await t.ui.nominate({rewrite_id:'r',sequence:1});
- assert(t.calls.includes('narration'));assert(t.calls.includes('jingle'));
+ assert(t.calls.includes('jingle'));assert(!t.calls.includes('narration'));
  assert(t.calls.indexOf('reveal')<t.calls.indexOf('video-show'));
  assert(t.calls.indexOf('loaded')<t.calls.indexOf('video-show'));
 });
 
-test('re-embellish persists first and conditionally replaces narration',async()=>{
+test('re-embellish persists first and replaces jingle without narration',async()=>{
  const t=setup();t.ui.show({nominated:true,rewrite_id:'r',image_url:'/old'});await t.ui.reembellish();
  assert(t.calls.indexOf('persist')<t.calls.indexOf('replace-image'));
- assert(t.calls.indexOf('persist')<t.calls.indexOf('narration-conditional'));
+ assert(!t.calls.some(call=>call.includes('narration')));
  assert(t.calls.includes('jingle-replace'));assert(t.calls.includes('video'));
 });
 
-test('first ready audio autoplays alone and second remains manually available',async()=>{
- const t=setup();let narrationReady,jingleReady;
- t.media.Narration.ensure=()=>new Promise(resolve=>narrationReady=()=>{t.media.Narration.state={narration_url:'/voice',can_generate:false};resolve();});
- t.media.Jingle.ensure=()=>new Promise(resolve=>jingleReady=()=>{t.media.Jingle.state={jingle_url:'/music',can_generate:false};resolve();});
+test('ready jingle autoplays without narration',async()=>{
+ const t=setup(); let ready;
+ t.media.Jingle.ensure=()=>new Promise(resolve=>ready=()=>{t.media.Jingle.state={jingle_url:'/music',can_generate:false};resolve();});
  t.ui.show({nominated:true,rewrite_id:'r'});const running=t.ui.nominate({rewrite_id:'r',sequence:1});
- narrationReady();await Promise.resolve();await Promise.resolve();
- assert(t.calls.includes('play-narration'));assert(!t.calls.includes('play-jingle'));
- jingleReady();await running;await Promise.resolve();assert(!t.calls.includes('play-jingle'));
+ ready();await running;await Promise.resolve();
+ assert(t.calls.includes('play-jingle'));assert(!t.calls.some(call=>call.includes('narration')));
 });
 
 test('queued video does not hold back the still and stale completion is ignored',async()=>{

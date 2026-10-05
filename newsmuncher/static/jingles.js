@@ -79,7 +79,6 @@ const jingleUI = (() => {
         }
         const token = revision, playing = audio;
         try {
-            if (typeof narrationUI !== 'undefined') narrationUI.pause();
             await playing.play();
             if (token !== revision) { playing.pause(); return false; }
             const stopBtn = get('jingleStop');

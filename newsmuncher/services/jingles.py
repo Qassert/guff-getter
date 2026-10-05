@@ -16,7 +16,8 @@ from dotenv import load_dotenv
 from newsmuncher.config import ENV_FILE, GENERATED_AUDIO_DIR, JINGLE_STATE_FILE
 from newsmuncher.services.jingle_brief import create_jingle_brief
 
-MODEL = "acestep-v15-turbo"
+MODEL = "music_v2_5"
+ELEVENLABS_MUSIC_URL = "https://api.elevenlabs.io/v1/music"
 MAX_AUDIO_BYTES = 5_000_000
 
 
@@ -29,8 +30,7 @@ class JingleError(Exception):
 def configured():
     load_dotenv(ENV_FILE)
     return (os.getenv("NEWSMUNCHER_JINGLE_ENABLED", "true").lower() == "true"
-            and os.getenv("MODAL_JINGLE_ENDPOINT", "").startswith("https://")
-            and bool(os.getenv("MODAL_JINGLE_KEY")) and bool(os.getenv("MODAL_JINGLE_SECRET")))
+            and bool(os.getenv("ELEVENLABS_API_KEY")))
 
 
 def daily_limit():
@@ -40,15 +40,22 @@ def daily_limit():
         return 0  # A bad configuration fails closed.
 
 
-def modal_audio(brief, request_id):
+def elevenlabs_audio(brief, request_id):
     """One POST only. Any transport/provider failure is conservatively uncertain."""
     if not configured():
         raise JingleError(503, "Jingle provider is not configured.")
     with requests.post(
-        os.environ["MODAL_JINGLE_ENDPOINT"],
-        json={**brief.model_dump(), "request_id": request_id},
-        headers={"Modal-Key": os.environ["MODAL_JINGLE_KEY"],
-                 "Modal-Secret": os.environ["MODAL_JINGLE_SECRET"]},
+        ELEVENLABS_MUSIC_URL,
+        params={"output_format": "mp3_48000_192"},
+        json={"model_id": MODEL, "composition_plan": {"chunks": [{
+            "text": "[Jingle]\n" + brief.lyrics,
+            "duration_ms": brief.duration_seconds * 1000,
+            "positive_styles": brief.positive_styles,
+            "negative_styles": brief.negative_styles,
+            "context_adherence": brief.context_adherence,
+        }]}},
+        headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"],
+                 "Content-Type": "application/json"},
         timeout=(15, 600), allow_redirects=False, stream=True,
     ) as response:
         response.raise_for_status()
@@ -102,7 +109,7 @@ class LocalAudio:
 
 class Jingles:
     def __init__(self, database=JINGLE_STATE_FILE, audio=None, brief_factory=create_jingle_brief,
-                 provider=modal_audio, enabled=configured, limit=daily_limit, now=None):
+                 provider=elevenlabs_audio, enabled=configured, limit=daily_limit, now=None):
         self.database = Path(database)
         self.audio = audio or LocalAudio()
         self.brief_factory, self.provider = brief_factory, provider
@@ -176,7 +183,7 @@ class Jingles:
             "jingle_status": "complete", "jingle_url": self.audio.url(key),
             "jingle_generated_at": state.get("generated_at") or
                 datetime.fromtimestamp(self.audio.path(key).stat().st_mtime, timezone.utc).isoformat(),
-            "jingle_provider": "modal", "jingle_model": MODEL,
+            "jingle_provider": "elevenlabs", "jingle_model": MODEL,
             "jingle_prompt": state["brief"],
             "jingle_text_snapshot": state["snapshot"],
             "jingle_text_sha256": state["text_hash"],
@@ -213,7 +220,7 @@ class Jingles:
             replacement = int((state or {}).get('replacement', 0))
             request_id = self.request_id(key, replacement)
             owned = (state and state.get("request_id") == request_id) or (
-                entry.get("jingle_provider") == "modal"
+                entry.get("jingle_provider") in {"modal", "elevenlabs"}
                 and entry.get("jingle_url") == self.audio.url(key))
             if not owned:
                 return
