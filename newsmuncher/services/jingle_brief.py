@@ -8,6 +8,8 @@ from jingle_service.genres import GENRES, GENRE_PROFILES
 def create_jingle_brief(entry):
     if entry.get("nominated") is not True:
         raise ValueError("Only a nominated entry can receive a jingle.")
+    # The persisted response title is the complete vocal prompt. The rewritten
+    # description/body is intentionally excluded from the ElevenLabs request.
     title = entry.get("crazyReplacement1Title")
     if not isinstance(title, str) or not title.strip():
         raise ValueError("Nominated rewritten title is required.")

@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Creator audio handoff and shared start/end image style
-LAST_COMPLETED_COMMIT: this follow-up commit
+LAST_COMPLETED_FEATURE: Explicit response-title-only ElevenLabs lyric input
+LAST_COMPLETED_COMMIT: this title-input verification commit
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,16 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Synchronize jingle handoff with image/video playback and reuse one persisted style across video frames.
+CURRENT_TASK: Verify ElevenLabs music uses the saved response title, never the response description/body.
 APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
 NEXT_STEP: Manually verify the loading → still+jingle → video+jingle handoff; no generation or deployment performed.
 VALIDATION: Full frontend 82/82; full Python 289 passed plus 105 subtests. All provider boundaries mocked; no external calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+## ElevenLabs response-title input verification — 2026-10-05
+
+The deterministic jingle plan reads only persisted `crazyReplacement1Title` and passes it unchanged as `brief.lyrics`, which becomes the ElevenLabs composition chunk text. `crazyReplacement1Extract` (the response description/body) is excluded. A focused regression fixture now contains a distinctive body marker and proves it cannot enter the serialized music plan. Focused mocked tests: 51 passed. No provider call.
 
 ## Creator audio handoff and frame continuity — 2026-10-05
 

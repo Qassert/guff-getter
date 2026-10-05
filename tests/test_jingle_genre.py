@@ -5,12 +5,14 @@ from jingle_service.genres import GENRE_PROFILES
 @pytest.fixture
 def entry():
     return {'nominated': True, 'crazyReplacement1Title':
-            'Local badger trains furious seagull to steal parking tickets while delighted tourists cheer'}
+            'Local badger trains furious seagull to steal parking tickets while delighted tourists cheer',
+            'crazyReplacement1Extract': 'DISTINCTIVE RESPONSE DESCRIPTION MUST NEVER REACH ELEVENLABS'}
 
 def test_saved_title_is_exact_lyric_without_text_model_call(entry, monkeypatch):
     monkeypatch.setattr('newsmuncher.services.jingle_brief.random.choice', lambda pool: 'Funk')
     brief, usage = create_jingle_brief(entry)
     assert brief.lyrics == entry['crazyReplacement1Title']
+    assert entry['crazyReplacement1Extract'] not in str(brief.model_dump())
     assert usage is None
     assert brief.duration_seconds == 10
     assert brief.context_adherence == 'high'
