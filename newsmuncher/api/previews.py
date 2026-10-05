@@ -125,7 +125,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     result = dict(result)
     result['crazyReplacement1Title'] = final_title(
         result['crazyReplacement1Extract'],
-        result['crazyReplacement1Title'] if polished else None,
+        result['crazyReplacement1Title'],
     )
 
     full_result = {

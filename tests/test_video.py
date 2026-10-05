@@ -330,18 +330,19 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     service.claim(collection, key, 'pet')
     claimed = state(service, key)['video']
     assert claimed['end_frame']['mode'] == 'composition_reference_end_frame'
-    shared = claimed['shared_visual_style']
-    start_prompt = build_image_prompt(state(service, key)['result'], shared)
-    assert shared == '1970s British folk-horror film'
+    start_style = claimed['start_image_style']
+    end_style = claimed['end_frame']['image_style']
+    start_prompt = build_image_prompt(state(service, key)['result'], start_style)
+    assert start_style == '1970s British folk-horror film'
+    assert end_style != start_style
     assert start_prompt != claimed['end_frame']['image_prompt']
-    assert f'Visual style: {shared}.' in start_prompt
-    assert f'Visual style: {shared}.' in claimed['end_frame']['image_prompt']
-    assert claimed['end_frame']['image_style'] == shared
+    assert f'Visual style: {start_style}.' in start_prompt
+    assert f'Visual style: {end_style}.' in claimed['end_frame']['image_prompt']
     assert 'same characters' in claimed['end_frame']['image_prompt']
-    assert 'Do not add, remove, replace or reinterpret' in claimed['end_frame']['image_prompt']
+    assert 'do not preserve the start image palette' in claimed['end_frame']['image_prompt']
     assert len(claimed['end_frame']['transformation_map']) == 5
     assert 'continuous surreal cinematic transformation' in claimed['prompt']
-    assert f'same visual world: {shared}' in claimed['prompt']
+    assert 'same visual world' not in claimed['prompt']
     service.run(collection, key, 'pet')
     saved = state(service, key)['video']['end_frame']
     assert saved['status'] == 'complete'

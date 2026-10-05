@@ -33,8 +33,9 @@
         select(url) {
             const token=++this.revision;
             if (!url) {
-                // Continue audible music, but don't start a late-loading old selection.
-                if (this.current && !this.current.playing) this.dispose(this.current);
+                const previous=this.current;
+                if (previous?.playing) this.fade(previous,0,()=>this.dispose(previous));
+                else if (previous) this.dispose(previous);
                 return;
             }
             if (this.blocked) return;
@@ -115,7 +116,7 @@
                     this.view.show(url, !this.reduced()); last=url;
                     const jingle=items.get(url).jingle_url;
                     if (this.reduced()) this.audio?.stop();
-                    else this.audio?.select(/^\/generated-audio\/[a-f0-9]{24}\.mp3$/.test(jingle) ? jingle : null);
+                    else this.audio?.select(/^\/generated-audio\/[a-f0-9]{24}(?:\.[a-z0-9_-]+)?\.mp3$/.test(jingle) ? jingle : null);
                     if (!this.reduced() && urls.length>1) this.timer=this.schedule(next,500);
                 };
                 next();

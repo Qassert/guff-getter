@@ -9,7 +9,8 @@ import unittest
 from unittest.mock import Mock, patch
 
 from jingle_service.contract import MusicBrief
-from newsmuncher.services.jingles import Jingles, LocalAudio, JingleError, elevenlabs_audio
+from newsmuncher.services.jingles import (GENERATION_VERSION, Jingles, LocalAudio,
+                                          JingleError, elevenlabs_audio)
 
 MP3 = b"ID3" + b"\0" * 2000
 
@@ -54,6 +55,7 @@ class JingleTests(unittest.TestCase):
         metadata = self.collection.update_one.call_args.args[1]["$set"]
         self.assertEqual(metadata["jingle_text_snapshot"]["title"], "Teapot mayor")
         self.assertEqual(metadata["jingle_provider"], "elevenlabs")
+        self.assertEqual(metadata["jingle_generation_version"], GENERATION_VERSION)
         self.assertEqual(metadata["jingle_prompt"]["duration_seconds"], 10)
         self.brief.assert_called_once()
         self.provider.assert_called_once()
@@ -83,6 +85,36 @@ class JingleTests(unittest.TestCase):
         self.provider.assert_called_once()
         with self.service.transaction() as db:
             self.assertEqual(db.execute("SELECT COUNT(*) FROM jingle_claims").fetchone()[0], 1)
+
+    def test_legacy_jingle_does_not_satisfy_current_fingerprint(self):
+        key = "a" * 24
+        legacy = self.service.audio.directory / f"{key}.mp3"
+        legacy.parent.mkdir(parents=True, exist_ok=True)
+        legacy.write_bytes(MP3)
+        with self.service.transaction() as db:
+            db.execute("INSERT INTO jingles(id,state) VALUES (?,?)",
+                       (key, json.dumps({"status": "complete", "brief": {"lyrics": "legacy"}})))
+        self.entry.update(jingle_url=f"/generated-audio/{key}.mp3", jingle_provider="modal")
+        result = self.generate()
+        self.assertIn(GENERATION_VERSION, result["jingle_url"])
+        self.assertTrue(legacy.exists())
+        self.provider.assert_called_once()
+
+    def test_saved_url_supports_legacy_and_earlier_fingerprints(self):
+        key = "a" * 24
+        self.service.audio.directory.mkdir(parents=True, exist_ok=True)
+        legacy = self.service.audio.directory / f"{key}.mp3"
+        legacy.write_bytes(MP3)
+        with self.service.transaction() as db:
+            db.execute("INSERT INTO jingles(id,state) VALUES (?,?)",
+                       (key, json.dumps({"status": "complete"})))
+        self.assertEqual(self.service.saved_url(key), f"/generated-audio/{key}.mp3")
+        earlier = "elevenlabs-music_v2_5-title-v1"
+        (self.service.audio.directory / f"{key}.{earlier}.mp3").write_bytes(MP3)
+        with self.service.transaction() as db:
+            db.execute("INSERT INTO jingles(id,state) VALUES (?,?)",
+                       (f"{key}:{earlier}", json.dumps({"status": "complete"})))
+        self.assertEqual(self.service.saved_url(key), f"/generated-audio/{key}.{earlier}.mp3")
 
     def test_explicit_replace_retires_old_audio_and_uses_new_claim(self):
         first = self.generate()
@@ -279,7 +311,8 @@ class JingleTests(unittest.TestCase):
 
     def test_discovery_sort_and_duplicate_rewrite_identity(self):
         entries = [{**self.entry, "_id": key*24, "crazyReplacement1Title": key,
-                    "jingle_url": self.service.audio.url(key*24)} for key in "ba"]
+                    "jingle_url": self.service.audio.url(key*24),
+                    "jingle_generation_version": GENERATION_VERSION} for key in "ba"]
         for entry in entries:
             self.service.audio.save(entry["_id"], MP3)
         self.collection.find.return_value.sort.return_value = entries

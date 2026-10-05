@@ -1,25 +1,9 @@
-"""Bound final titles to accepted body content without another model request."""
-import re
+"""Bound AI-written final titles without deriving them from the story body."""
 
 
 def final_title(body, candidate):
-    """Accept a short grounded summary; otherwise use an extractive body heading.
-
-    Vocabulary validation is conservative, not a semantic entailment proof. The
-    model instruction supplies summarisation; fallback cannot invent new words.
-    """
-    words = lambda text: re.findall(r"[\w]+(?:['’_-][\w]+)*", text.casefold())
+    """Return the independently written headline with a hard 18-word cap."""
     candidate = ' '.join((candidate or '').split()).strip('"“”')
-    vocabulary = set(words(body))
-    if (candidate and len(candidate) <= 140 and 3 <= len(candidate.split()) <= 6
-            and set(words(candidate)) <= vocabulary):
-        return candidate
-    # Keep original word order and stop at a sentence boundary or the hard cap.
-    heading = []
-    for word in body.split():
-        if len(heading) == 6 or len(' '.join(heading + [word])) > 140:
-            break
-        heading.append(word)
-        if word.endswith(('.', '!', '?')):
-            break
-    return ' '.join(heading).rstrip('.!?;,:') or body[:140].strip()
+    if not candidate:
+        raise ValueError("AI-written title is required.")
+    return ' '.join(candidate.split()[:18])

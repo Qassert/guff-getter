@@ -137,10 +137,9 @@ class CopyEditPassTests(unittest.TestCase):
                 result = routes.shizzalise_data(routes.ShizzRequest(title='ORIGINAL',description='',extract='SECRET'), 'alice','alice')
                 routes.copy_edit_pass.assert_called_with(first)
                 accepted = dict(polished or first)
-                accepted['crazyReplacement1Title'] = 'A cat paints the moon'
                 routes.claim_used_words.assert_called_with(contenders, accepted)
                 self.assertNotIn('ORIGINAL', str(routes.copy_edit_pass.call_args))
-                self.assertEqual(result['crazyReplacement1Title'], 'A cat paints the moon')
+                self.assertEqual(result['crazyReplacement1Title'], accepted['crazyReplacement1Title'])
         finally:
             fixture.tearDown()
             fixture.doCleanups()

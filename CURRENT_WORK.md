@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Explicit response-title-only ElevenLabs lyric input
-LAST_COMPLETED_COMMIT: this title-input verification commit
+LAST_COMPLETED_FEATURE: Singable headlines, versioned ElevenLabs jingles, independent frame styles and saved-audio compatibility
+LAST_COMPLETED_COMMIT: checkpoint title jingles and media compatibility
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,30 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Verify ElevenLabs music uses the saved response title, never the response description/body.
-APPROVAL: Reuse durable generation paths, mock providers in tests, preserve styling and unrelated behavior. No live provider calls or main changes.
-NEXT_STEP: Manually verify the loading → still+jingle → video+jingle handoff; no generation or deployment performed.
-VALIDATION: Full frontend 82/82; full Python 289 passed plus 105 subtests. All provider boundaries mocked; no external calls.
+CURRENT_TASK: Checkpoint the manually approved Creator, jingle, loading-audio, Gallery and independent-frame-style behavior.
+APPROVAL: Preserve current behavior, run focused mocked/local tests, commit and push feature/video-animation. No live provider calls or main changes.
+NEXT_STEP: Andy review; do not deploy or merge main.
+VALIDATION: Focused frontend 47/47; focused Python 142 passed plus 6 subtests. All provider boundaries mocked; no external calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+## Creator headline and versioned-jingle checkpoint — 2026-10-05
+
+New rewrites retain the AI-written headline instead of replacing it with the first six
+description words. Both existing rewrite passes request a grammatical, singable 12–18
+word headline and local validation applies only the hard 18-word cap; it never derives
+a fallback from the body.
+
+ElevenLabs Music uses only that persisted title under the `[Jingle]` composition section.
+Current claims and MP3 filenames carry `elevenlabs-music_v2_5-title-v2`, so legacy or
+earlier-version audio cannot suppress one current generation while duplicate current
+requests remain idempotent. Historical files and claims remain intact. Read-only loading
+image and Gallery lookup accepts legacy, earlier fingerprinted and current saved audio;
+missing audio is silent and cannot block Gallery content.
+
+Video end frames now select a random style independently of the start image while
+preserving scene/character/action continuity. Focused validation: frontend 47/47;
+Python 142 passed plus 6 subtests. No provider calls or generated media.
 
 ## ElevenLabs response-title input verification — 2026-10-05
 

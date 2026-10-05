@@ -11,7 +11,7 @@ from bson import ObjectId
 
 from newsmuncher.config import GENERATED_IMAGES_DIR, GENERATED_VIDEO_DIR
 from newsmuncher.services.image_generation import (store, get_provider, build_end_image_prompt,
-    build_transformation_map)
+    build_transformation_map, choose_image_style)
 from newsmuncher.services.video_prompt import build_transition_prompt
 from newsmuncher.services.wavespeed import MODEL, create_video, read_image
 
@@ -148,22 +148,23 @@ class Videos:
             except Exception:
                 raise VideoError(422, 'Stored image is invalid.') from None
             self.directory.mkdir(parents=True, exist_ok=True)
-            shared_style = state['result'].get('image_style')
-            if not isinstance(shared_style, str) or not shared_style.strip():
+            start_style = state['result'].get('image_style')
+            if not isinstance(start_style, str) or not start_style.strip():
                 raise VideoError(409, 'This historical image has no persisted visual style; animation was not submitted.')
-            shared_style = shared_style.strip()
+            start_style = start_style.strip()
+            end_style = choose_image_style(exclude=start_style)
             transformation_map = build_transformation_map(state['result'])
             state['video'] = {'rewrite_id': key, 'status': 'queued', 'provider': 'wavespeed',
                 'model': MODEL, 'duration': 8, 'resolution': '480p',
-                'prompt': build_transition_prompt(state['result'], shared_style),
-                'shared_visual_style': shared_style, 'seed': secrets.randbelow(2**31),
+                'prompt': build_transition_prompt(state['result']),
+                'start_image_style': start_style, 'seed': secrets.randbelow(2**31),
                 'source_sha256': hashlib.sha256(image).hexdigest(), 'requested_at': now(),
                 'requested_epoch': time.time(), 'storage_key': f'{key}.mp4',
                 'end_frame': {'mode': 'composition_reference_end_frame', 'status': 'queued',
                     'image_id': str(uuid4()),
-                    'image_style': shared_style, 'transformation_map': transformation_map}}
+                    'image_style': end_style, 'transformation_map': transformation_map}}
             state['video']['end_frame']['image_prompt'] = build_end_image_prompt(
-                state['result'], shared_style, transformation_map)
+                state['result'], end_style, transformation_map)
             self.store.save(db, key, state)
             return self.public(key, state), True
 

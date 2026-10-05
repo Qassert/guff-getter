@@ -17,6 +17,7 @@ from newsmuncher.config import ENV_FILE, GENERATED_AUDIO_DIR, JINGLE_STATE_FILE
 from newsmuncher.services.jingle_brief import create_jingle_brief
 
 MODEL = "music_v2_5"
+GENERATION_VERSION = "elevenlabs-music_v2_5-title-v2"
 ELEVENLABS_MUSIC_URL = "https://api.elevenlabs.io/v1/music"
 MAX_AUDIO_BYTES = 5_000_000
 
@@ -44,16 +45,19 @@ def elevenlabs_audio(brief, request_id):
     """One POST only. Any transport/provider failure is conservatively uncertain."""
     if not configured():
         raise JingleError(503, "Jingle provider is not configured.")
+    if not isinstance(brief.lyrics, str) or not brief.lyrics.strip():
+        raise JingleError(400, "A valid persisted title is required for the jingle.")
+    payload = {"model_id": MODEL, "composition_plan": {"chunks": [{
+        "text": f"[Jingle]\n{brief.lyrics.strip()}",
+        "duration_ms": brief.duration_seconds * 1000,
+        "positive_styles": brief.positive_styles,
+        "negative_styles": brief.negative_styles,
+        "context_adherence": brief.context_adherence,
+    }]}}
     with requests.post(
         ELEVENLABS_MUSIC_URL,
         params={"output_format": "mp3_48000_192"},
-        json={"model_id": MODEL, "composition_plan": {"chunks": [{
-            "text": "[Jingle]\n" + brief.lyrics,
-            "duration_ms": brief.duration_seconds * 1000,
-            "positive_styles": brief.positive_styles,
-            "negative_styles": brief.negative_styles,
-            "context_adherence": brief.context_adherence,
-        }]}},
+        json=payload,
         headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"],
                  "Content-Type": "application/json"},
         timeout=(15, 600), allow_redirects=False, stream=True,
@@ -83,7 +87,7 @@ class LocalAudio:
     def path(self, key):
         if not re.fullmatch(r"[a-f0-9]{24}", key):
             raise ValueError("Invalid nomination identity.")
-        return self.directory / (key + ".mp3")
+        return self.directory / f"{key}.{GENERATION_VERSION}.mp3"
 
     def exists(self, key):
         path = self.path(key)
@@ -104,7 +108,7 @@ class LocalAudio:
         os.replace(temporary, path)
 
     def url(self, key):
-        return f"/generated-audio/{key}.mp3"
+        return f"/generated-audio/{key}.{GENERATION_VERSION}.mp3"
 
 
 class Jingles:
@@ -129,13 +133,17 @@ class Jingles:
 
     @staticmethod
     def read(db, key):
-        row = db.execute("SELECT state FROM jingles WHERE id=?", (key,)).fetchone()
+        row = db.execute("SELECT state FROM jingles WHERE id=?", (Jingles.state_key(key),)).fetchone()
         return json.loads(row[0]) if row else None
 
     @staticmethod
     def save(db, key, state):
         db.execute("INSERT INTO jingles VALUES (?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state",
-                   (key, json.dumps(state)))
+                   (Jingles.state_key(key), json.dumps(state)))
+
+    @staticmethod
+    def state_key(key):
+        return f"{key}:{GENERATION_VERSION}"
 
     @staticmethod
     def nomination(collection, rewrite_id, owner):
@@ -166,9 +174,23 @@ class Jingles:
             return None
         try:
             with closing(sqlite3.connect(self.database.resolve().as_uri() + '?mode=ro', uri=True)) as db:
-                state = self.read(db, key)
-            if state and state.get('status') == 'complete' and self.audio.exists(key):
-                return self.audio.url(key)
+                rows = db.execute(
+                    "SELECT id,state FROM jingles WHERE id=? OR id LIKE ? ORDER BY rowid DESC",
+                    (key, key + ':%'),
+                ).fetchall()
+            for state_id, encoded in rows:
+                state = json.loads(encoded)
+                if not isinstance(state, dict) or state.get('status') != 'complete':
+                    continue
+                version = state_id.partition(':')[2]
+                if version and not re.fullmatch(r'[a-z0-9_-]+', version):
+                    continue
+                filename = f'{key}.{version}.mp3' if version else f'{key}.mp3'
+                path = self.audio.directory / filename
+                if (path.is_file() and not path.is_symlink()
+                        and 1000 < path.stat().st_size <= MAX_AUDIO_BYTES
+                        and valid_mp3(path.read_bytes())):
+                    return f'/generated-audio/{filename}'
         except (sqlite3.Error, ValueError, OSError):
             pass
         return None
@@ -184,11 +206,16 @@ class Jingles:
             "jingle_generated_at": state.get("generated_at") or
                 datetime.fromtimestamp(self.audio.path(key).stat().st_mtime, timezone.utc).isoformat(),
             "jingle_provider": "elevenlabs", "jingle_model": MODEL,
+            "jingle_generation_version": GENERATION_VERSION,
             "jingle_prompt": state["brief"],
             "jingle_text_snapshot": state["snapshot"],
             "jingle_text_sha256": state["text_hash"],
             "jingle_brief_usage": state.get("brief_usage"),
         }
+
+    def current_entry(self, entry, key):
+        return (entry.get("jingle_generation_version") == GENERATION_VERSION
+                and entry.get("jingle_url") == self.audio.url(key))
 
     def sync(self, collection, entry, metadata):
         result = collection.update_one({"_id": entry["_id"], "nominated": True},
@@ -253,7 +280,7 @@ class Jingles:
                 if exc.status in (403, 404):
                     continue  # Deleted or ownership changed during discovery.
                 raise
-            if result.get("jingle_url") or entry.get("jingle_url"):
+            if result.get("jingle_url"):
                 saved.append({"entry_id": str(entry["_id"]), "rewrite_id": entry["rewrite_id"],
                               "title": self.snapshot(entry)["title"], **result})
         return {"jingles": saved}
@@ -294,11 +321,11 @@ class Jingles:
                     "metadata_pending": pending, "can_generate": False,
                     "jingle_genre": (state["brief"].get("genre_profile") or {}).get("label"),
                     "text_changed": state["snapshot"] != self.snapshot(entry)}
-        if not state and self.audio.exists(key) and not entry.get("jingle_url"):
+        if not state and self.audio.exists(key) and not self.current_entry(entry, key):
             return {"jingle_status": "unavailable", "can_generate": False,
                     "message": "Audio exists but metadata needs recovery; no automatic regeneration."}
         # Mongo jingle metadata prevents another claim even if local state/file was lost.
-        if entry.get("jingle_url"):
+        if self.current_entry(entry, key):
             return {"jingle_status": "complete" if self.audio.exists(key) else "unavailable",
                     "jingle_url": self.audio.url(key) if self.audio.exists(key) else None,
                     "jingle_genre": ((entry.get("jingle_prompt") or {}).get("genre_profile") or {}).get("label"),
@@ -307,6 +334,8 @@ class Jingles:
                         entry["jingle_text_snapshot"] != self.snapshot(entry),
                     "message": "Stored jingle; no automatic regeneration."}
         status = state["status"] if state else "none"
+        if status == "complete":
+            status = "unavailable"
         allowed = status in {"none", "brief_failed"} and remaining > 0 and bool(self.enabled())
         messages = {
             "submitted": "Outcome pending or uncertain. No automatic retry; restore later or inspect provider logs.",
@@ -322,19 +351,18 @@ class Jingles:
 
     @staticmethod
     def snapshot(entry):
-        return {"title": entry.get("crazyReplacement1Title", ""),
-                "body": entry.get("crazyReplacement1Extract", "")}
+        return {"title": entry.get("crazyReplacement1Title", "")}
 
     def generate(self, collection, rewrite_id, owner):
         entry = self.nomination(collection, rewrite_id, owner)
         key = str(entry["_id"])
         self.audio.path(key)  # Validate identity before creating state or contacting providers.
         snapshot = self.snapshot(entry)
-        if not all(isinstance(v, str) and v.strip() for v in snapshot.values()):
-            raise JingleError(400, "Nominated title and body are required.")
+        if not isinstance(snapshot["title"], str) or not snapshot["title"].strip():
+            raise JingleError(400, "A valid persisted title is required for the jingle.")
         with self.transaction() as db:
             existing = self.read(db, key)
-            if entry.get("jingle_url") or self.audio.exists(key) or (
+            if self.current_entry(entry, key) or self.audio.exists(key) or (
                     existing and existing["status"] != "brief_failed"):
                 claimed = False
             else:
@@ -344,6 +372,7 @@ class Jingles:
                     raise JingleError(429, "Daily jingle limit reached; resets at UTC midnight.")
                 replacement = int((existing or {}).get('replacement', 0))
                 state = {"status": "started", "snapshot": snapshot, "replacement": replacement,
+                         "generation_version": GENERATION_VERSION,
                          "text_hash": hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest(),
                          "request_id": self.request_id(key, replacement)}
                 db.execute("INSERT INTO jingle_claims(day,nomination) VALUES (?,?)",
@@ -405,7 +434,7 @@ class Jingles:
         collection.update_one({'_id':entry['_id'], 'nominated':True}, {'$unset':{
             'jingle_status':'', 'jingle_url':'', 'jingle_generated_at':'', 'jingle_provider':'',
             'jingle_model':'', 'jingle_prompt':'', 'jingle_text_snapshot':'',
-            'jingle_text_sha256':'', 'jingle_brief_usage':''}})
+            'jingle_text_sha256':'', 'jingle_brief_usage':'', 'jingle_generation_version':''}})
 
 
 service = Jingles()

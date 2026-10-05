@@ -251,7 +251,7 @@ class ImageTests(unittest.TestCase):
             self.assertIn('rewrite_id', result)
             self.assertFalse(result['nominated'])
             self.assertNotIn('generate_images', result)
-            self.assertEqual(result['crazyReplacement1Title'], 'A cat paints the moon')
+            self.assertEqual(result['crazyReplacement1Title'], 'Moon soup')
 
     def test_legacy_and_image_document_storage(self):
         client = MagicMock()

@@ -81,8 +81,10 @@ WORD-BANK RULES:
 
 TITLE:
 - Completely rewrite the original title.
-- Make it short, punchy and outrageous.
+- Write a genuine, independent, funny headline of ideally 12–18 words, with a hard maximum of 18 words.
+- Make it grammatical, singable, punchy and outrageous while concisely summarising the rewritten story.
 - It should resemble an unhinged tabloid headline.
+- Do not construct it by copying or truncating the opening words of the extract.
 - Do not simply append a joke to the original title.
 - Change names and important nouns in the title where appropriate.
 

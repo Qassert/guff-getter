@@ -18,7 +18,9 @@ def test_saved_title_is_exact_lyric_without_text_model_call(entry, monkeypatch):
     assert brief.context_adherence == 'high'
     assert brief.genre_profile == GENRE_PROFILES['Funk']
     assert 'Funk' in brief.positive_styles
-    assert any('immediate clear lead vocal' in style for style in brief.positive_styles)
+    assert 'immediate lead vocal' in brief.positive_styles
+    assert 'sing the supplied lyrics exactly' in brief.positive_styles
+    assert 'no additional lyrics' in brief.positive_styles
     assert 'instrumental-only' in brief.negative_styles
 
 @pytest.mark.parametrize('selected', GENRES)

@@ -1,31 +1,26 @@
+import pytest
+
 from newsmuncher.services.rewrite_title import final_title
 
 
-def test_grounded_summary_and_unrelated_title():
+def test_independently_written_headline_is_not_replaced_by_body_prefix():
     body = 'The mayor sells moon soup. Cats queue outside the town hall.'
-    assert final_title(body, 'Mayor sells moon soup') == 'Mayor sells moon soup'
-    assert final_title(body, 'Aliens steal a spaceship') == 'The mayor sells moon soup'
-
-
-def test_caps_and_fallback_use_only_body():
-    body = 'The extraordinarily eccentric mayor sells luminous moon soup to bewildered cats.'
-    for candidate in (None, 'x' * 141, body, 'A completely unrelated title'):
-        title = final_title(body, candidate)
-        assert len(title) <= 140
-        assert len(title.split()) <= 6
-        assert title in body
-
-
-def test_short_and_single_long_word_bodies():
-    assert final_title('Moon soup.', None) == 'Moon soup'
-    assert len(final_title('x' * 180, None)) == 140
-
-
-def test_six_word_title_accepted_but_seven_falls_back():
-    title = ' '.join('word' + str(i) for i in range(6))
-    body = title + ' extra sentence.'
+    title = 'Bewildered Cats Queue Overnight After Moon Soup Mayor Opens Town Hall Café'
     assert final_title(body, title) == title
-    rejected = final_title(body, title + ' extra')
-    assert len(rejected.split()) <= 6
-    assert len(rejected) <= 140
-    assert rejected != title + ' extra'
+    assert not title.startswith('The mayor sells moon soup')
+
+
+def test_twelve_to_eighteen_word_headlines_are_preserved():
+    for count in (12, 15, 18):
+        title = ' '.join(f'word{i}' for i in range(count))
+        assert final_title('Unrelated body opening words.', title) == title
+
+
+def test_headline_has_hard_eighteen_word_cap_without_body_fallback():
+    words = [f'word{i}' for i in range(25)]
+    assert final_title('Body prefix must never become the title.', ' '.join(words)).split() == words[:18]
+
+
+def test_missing_ai_title_fails_instead_of_using_body_prefix():
+    with pytest.raises(ValueError):
+        final_title('The first six body words must not be used.', None)

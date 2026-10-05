@@ -18,8 +18,13 @@ def create_jingle_brief(entry):
     positive = [
         genre,
         profile.caption(),
-        "short comedy advertising jingle",
-        "immediate clear lead vocal with every supplied word sung or rapped intelligibly",
+        "short advertising jingle",
+        "immediate lead vocal",
+        "sing the supplied lyrics exactly",
+        "every supplied word must be clearly vocalised",
+        "no additional lyrics",
+        "no invented words",
+        "no instrumental intro",
         "catchy, energetic, concise, high quality, clean ending",
     ]
     negative = [

@@ -11,13 +11,13 @@ function setup({duration=10,blocked=false}={}) {
  },schedule(fn,ms){timers.set(++id,{fn,ms});return id;},cancel:id=>timers.delete(id)});
  return {audio,players,timers,ramp(){for(const [id,t] of [...timers]){timers.delete(id);t.fn();}}};
 }
-test('associated track seeks to two seconds; musicless image continues; next track restarts',async()=>{
+test('associated track seeks to two seconds; musicless image silences it; next track restarts',async()=>{
  const t=setup();t.audio.select('/one');let p=t.players[0];await p.events.loadedmetadata();
  assert.equal(p.currentTime,LOADING_JINGLE_OFFSET_SECONDS);assert.equal(p.plays,1);
- t.ramp();assert.equal(p.volume,1);t.audio.select(null);assert.equal(p.pauses,0);
+ t.ramp();assert.equal(p.volume,1);t.audio.select(null);assert.equal(p.pauses,0);t.ramp();assert(p.unloaded);
  t.audio.select('/two');const q=t.players[1];await q.events.canplay();
  assert.equal(q.currentTime,2);assert.equal(q.plays,1);
- assert([...t.timers.values()].every(x=>x.ms<=100));t.ramp();assert(p.unloaded);assert.equal(q.volume,1);
+ assert([...t.timers.values()].every(x=>x.ms<=100));t.ramp();assert.equal(q.volume,1);
  t.audio.select('/two');const again=t.players[2];await again.events.loadedmetadata();await again.events.canplay();
  assert.equal(again.plays,1);assert.equal(again.currentTime,2);
  t.audio.stop();assert(t.players.every(p=>p.unloaded));assert.equal(t.timers.size,0);

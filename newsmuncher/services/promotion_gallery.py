@@ -4,6 +4,7 @@ from pathlib import Path
 from contextlib import closing
 import json
 import random
+import re
 import sqlite3
 from uuid import UUID, uuid4
 
@@ -80,24 +81,40 @@ class PromotionGallery:
                 return None
             path = self.narration / f'{key}.mp3'
         elif kind == 'jingle':
-            path = self.audio / f'{key}.mp3'
-            if not self.exists(path):
-                return None
-            # Recover an existing, unsynced jingle from its read-only local sidecar.
-            if entry.get('jingle_url') != f'/generated-audio/{key}.mp3':
-                if not self.jingles.is_file():
-                    return None
-                try:
-                    with closing(sqlite3.connect(self.jingles.resolve().as_uri() + '?mode=ro', uri=True)) as db:
-                        row = db.execute('SELECT state FROM jingles WHERE id=?', (key,)).fetchone()
-                    state = json.loads(row[0]) if row else {}
-                    if not isinstance(state, dict) or state.get('status') == 'retired' or not state.get('brief'):
-                        return None
-                except (sqlite3.Error, ValueError, TypeError):
+            url = entry.get('jingle_url')
+            name = url.removeprefix('/generated-audio/') if isinstance(url, str) else ''
+            if re.fullmatch(rf'{key}(?:\.[a-z0-9_-]+)?\.mp3', name):
+                path = self.audio / name
+            else:
+                path = self._sidecar_jingle(key)
+                if not path:
                     return None
         else:
             return None
         return path if self.exists(path) else None
+
+    def _sidecar_jingle(self, key):
+        """Recover existing legacy/versioned audio without generating or mutating."""
+        if not self.jingles.is_file():
+            return None
+        try:
+            with closing(sqlite3.connect(self.jingles.resolve().as_uri() + '?mode=ro', uri=True)) as db:
+                rows = db.execute(
+                    'SELECT id,state FROM jingles WHERE id=? OR id LIKE ? ORDER BY rowid DESC',
+                    (key, key + ':%')).fetchall()
+            for state_id, encoded in rows:
+                state = json.loads(encoded)
+                if not isinstance(state, dict) or state.get('status') == 'retired' or not state.get('brief'):
+                    continue
+                version = state_id.partition(':')[2]
+                if version and not re.fullmatch(r'[a-z0-9_-]+', version):
+                    continue
+                candidate = self.audio / (f'{key}.{version}.mp3' if version else f'{key}.mp3')
+                if self.exists(candidate):
+                    return candidate
+        except (sqlite3.Error, ValueError, TypeError, OSError):
+            return None
+        return None
 
     def serialize(self, entry):
         key = str(entry['_id'])
