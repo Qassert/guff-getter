@@ -44,14 +44,16 @@
     </div>
 <div class="generation-controls munge-generation-controls">
     <div id="mungeControl" class="munge-control" role="group" aria-label="MUNGE IT">
-      <img class="munge-body" src="{{ url_for('static', path='images/munge button/munge-body.png') }}" alt="">
+      <button type="button" id="mungeBodyButton" class="munge-body-button" aria-label="MUNGE IT">
+        <img class="munge-body" src="{{ url_for('static', path='images/munge button/munge-body.png') }}" alt="">
+      </button>
       {% set munge_teats = [
-        ('upper-left', 1, '32%', '23%', '31%', '-78%', '-72%', '-.72', '-.70', '78%', '72%', '0deg'),
-        ('upper-right', 3, '68%', '23%', '31%', '-22%', '-72%', '.72', '-.70', '22%', '72%', '0deg'),
-        ('left', 4, '26%', '42%', '29%', '-78%', '-22%', '-1', '0', '78%', '22%', '0deg'),
-        ('right', 6, '74%', '42%', '31%', '-22%', '-22%', '1', '0', '22%', '22%', '0deg'),
-        ('lower-left', 2, '37%', '60%', '27%', '-50%', '-12%', '-.62', '.78', '50%', '12%', '35deg'),
-        ('lower-right', 5, '63%', '60%', '27%', '-50%', '-12%', '.62', '.78', '50%', '12%', '-35deg')
+        ('upper-left', 1, 'calc(32% + 16px)', '23%', '31%', '-78%', '-72%', '-.72', '-.70', '78%', '72%', '0deg'),
+        ('upper-right', 3, 'calc(68% - 16px)', '23%', '31%', '-22%', '-72%', '.72', '-.70', '22%', '72%', '0deg'),
+        ('left', 4, 'calc(26% + 8px)', 'calc(42% - 21px)', '29%', '-78%', '-22%', '-1', '0', '78%', '22%', '0deg'),
+        ('right', 6, 'calc(74% - 6px)', 'calc(42% - 22px)', '31%', '-22%', '-22%', '1', '0', '22%', '22%', '0deg'),
+        ('lower-left', 2, 'calc(37% + 20px)', 'calc(60% - 16px)', '27%', '-50%', '-12%', '-.31', '.39', '50%', '12%', '35deg'),
+        ('lower-right', 5, 'calc(63% - 12px)', 'calc(60% - 16px)', '27%', '-50%', '-12%', '.31', '.39', '50%', '12%', '-35deg')
       ] %}
       {% for orientation, image, x, y, width, tx, ty, axis_x, axis_y, origin_x, origin_y, rotation in munge_teats %}
       <button type="button" class="munge-teat munge-teat-{{ orientation }}"

@@ -381,7 +381,9 @@ body { isolation: isolate; }
   position: absolute; left: 50%; bottom: calc(-1 * var(--paper-edge)); width: 100%;
   transform: translate(-50%, 50%); margin: 0; overflow: visible;
 }
-.profile-page .profile-container { margin-bottom: clamp(145px, 18vw, 172px); }
+.profile-page .profile-container { margin-bottom: 38px; }
+.profile-page .profile-container { z-index: 2; }
+.profile-page #outputContainer { z-index: 1; }
 .profile-page #bankButton {
   position: absolute; bottom: calc(-1 * var(--paper-edge)); left: 50%;
   transform: translate(-50%, 32%); margin: 0; z-index: 4;
@@ -547,13 +549,17 @@ body { isolation: isolate; }
 /* Supplied furry MUNGE artwork: one fixed body with six radial native-button teats. */
 .profile-page .munge-control {
   position: relative; isolation: isolate; width: min(82vw, 370px); aspect-ratio: 1.18;
-  margin-inline: auto; overflow: visible;
+  margin-inline: auto; overflow: visible; transform-origin: 50% 50%; transition: transform 150ms cubic-bezier(.2,.8,.3,1.35);
+}
+.profile-page .munge-body-button {
+  position: absolute; z-index: 1; left: 16%; top: 5%; width: 68%; height: auto;
+  display: block; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; cursor: pointer;
 }
 .profile-page .munge-body {
-  position: absolute; z-index: 1; left: 16%; top: 5%; width: 68%; height: auto;
-  display: block; pointer-events: none; user-select: none;
+  display: block; width: 100%; height: auto; pointer-events: none; user-select: none;
   filter: drop-shadow(0 8px 7px #35151c55);
 }
+.profile-page .munge-control:has(.munge-body-button:active) { transform: scale(.92); }
 .profile-page .munge-teat {
   position: absolute; z-index: 2; left: var(--x); top: var(--y); width: var(--w); aspect-ratio: 1;
   min-width: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 45%;
@@ -629,6 +635,7 @@ body { isolation: isolate; }
 @media (prefers-reduced-motion: reduce) {
   .profile-page .udder-teat .teat-shape { transform: none !important; animation: none !important; }
   .profile-page .munge-teat-shape { transform: rotate(var(--base-rotation)) !important; animation: none !important; }
+  .profile-page .munge-control { transition: none; }
   .udder-liquid-layer { display: none; }
 }
 @keyframes l9 { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }

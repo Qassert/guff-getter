@@ -402,7 +402,7 @@ async function restoreImageRewrite() {
     } catch (_) {} // Restoration is optional and never initiates paid generation.
 }
 
-document.getElementById('mungeControl')?.querySelectorAll?.('.munge-teat')?.forEach(button => button.addEventListener('click', confirmData));
+document.getElementById('mungeControl')?.querySelectorAll?.('.munge-teat, .munge-body-button')?.forEach(button => button.addEventListener('click', confirmData));
 
 window.onload = () => {
     populateTempData();
