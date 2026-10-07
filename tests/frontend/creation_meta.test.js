@@ -1,7 +1,7 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const {CreationMeta} = require('../newsmuncher/static/js/creation/creation-meta.js');
+const {CreationMeta} = require('../../newsmuncher/static/js/creation/creation-meta.js');
 
 test('metadata line includes only populated values with dynamic separators', () => {
     const node = {textContent: '', hidden: true};

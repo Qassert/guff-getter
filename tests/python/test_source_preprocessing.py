@@ -13,7 +13,7 @@ from newsmuncher.utils.source_preprocessing import (
 
 
 def local_word_helpers():
-    path = Path(__file__).resolve().parents[1] / 'newsmuncher/utils/clean_data.py'
+    path = Path(__file__).resolve().parents[2] / 'newsmuncher/utils/clean_data.py'
     tree = ast.parse(path.read_text())
     nodes = [node for node in tree.body if
              isinstance(node, ast.FunctionDef) and node.name == 'split_list']
@@ -40,7 +40,7 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(result['masked']['extract'].count('[PERSON_1]'), 2)
 
     def test_prompt_boundary(self):
-        path = Path(__file__).resolve().parents[1] / 'newsmuncher/utils/clean_data.py'
+        path = Path(__file__).resolve().parents[2] / 'newsmuncher/utils/clean_data.py'
         nodes = [n for n in ast.parse(path.read_text()).body if isinstance(n, ast.FunctionDef)
                  and n.name == 'prepare_prompt']
         ns = local_word_helpers()

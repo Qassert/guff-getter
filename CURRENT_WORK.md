@@ -16,7 +16,7 @@ HANDOVER: README.md
 CURRENT_TASK: Remaining repository reorganisation and baseline test repair in progress on `feature/video-animation`.
 APPROVAL: Batch C committed locally as `e2ebb1a`; autonomous low-risk completion of Batches D–F and test repair is approved. No push or merge.
 NEXT_STEP: Organise tests and operational scripts, then repair stale baseline assertions without changing approved application behavior.
-VALIDATION: Batch D full Python results remain exactly 280 passed / 11 failed / 105 subtests. The isolated WaveSpeed transport move introduced no failures and made no provider calls.
+VALIDATION: Batch E retains the exact baseline after the test-directory split: Node 63 passed / 19 failed; Python 280 passed / 11 failed / 105 subtests. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
@@ -27,6 +27,13 @@ EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `
 - Moved the isolated WaveSpeed HTTP transport from `services/wavespeed.py` to `integrations/wavespeed.py`; API/service orchestration and provider behavior are unchanged.
 - Added a compatibility import at the former module path and updated production, smoke-test, test and documentation imports to the canonical integration path.
 - Focused video validation: 48 passed / 3 known failures. Full Python validation: 280 passed / 11 known failures / 105 subtests, exactly matching Batch C.
+- No provider call, database access, generated-media mutation, push or merge.
+
+## Repository reorganisation Batch E — 2026-10-08
+
+- Moved 16 Node tests to `tests/frontend/` and 26 Python tests to `tests/python/`.
+- Updated only structural module paths, repository-root calculations, cross-runner commands and documentation references.
+- Full Node validation: 63 passed / 19 known failures. Full Python validation: 280 passed / 11 known failures / 105 subtests. Results exactly match Batch D.
 - No provider call, database access, generated-media mutation, push or merge.
 
 ## Repository reorganisation Batch C — 2026-10-08

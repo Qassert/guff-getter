@@ -445,6 +445,6 @@ class ImageTests(unittest.TestCase):
 
     def test_javascript(self):
         import subprocess
-        subprocess.run(['node', 'tests/image_flow.test.js'], check=True)
-        subprocess.run(['node', 'tests/image_background.test.js'], check=True)
-        subprocess.run(['node', 'tests/profile_editing.test.js'], check=True)
+        subprocess.run(['node', 'tests/frontend/image_flow.test.js'], check=True)
+        subprocess.run(['node', 'tests/frontend/image_background.test.js'], check=True)
+        subprocess.run(['node', 'tests/frontend/profile_editing.test.js'], check=True)

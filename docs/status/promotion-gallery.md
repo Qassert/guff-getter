@@ -77,13 +77,13 @@ does not replay the completed jingle. No browser autoplay-policy bypass.
 125 Python tests passed + 6 subtests:
 
 ```sh
-./.venv/bin/python -m pytest tests/test_promotion_gallery.py tests/test_dating_source.py tests/test_draft_lifecycle.py tests/test_image_generation.py tests/test_narration.py tests/test_jingles.py tests/test_jingle_frontend.py tests/test_profile_background.py tests/test_copy_edit_pass.py tests/test_permanent_word_claims.py tests/test_source_preprocessing.py -q
+./.venv/bin/python -m pytest tests/python/test_promotion_gallery.py tests/python/test_dating_source.py tests/python/test_draft_lifecycle.py tests/python/test_image_generation.py tests/python/test_narration.py tests/python/test_jingles.py tests/python/test_jingle_frontend.py tests/python/test_profile_background.py tests/python/test_copy_edit_pass.py tests/python/test_permanent_word_claims.py tests/python/test_source_preprocessing.py -q
 ```
 
 15 Node tests passed:
 
 ```sh
-node --test tests/promotion_gallery.test.js tests/profile_editing.test.js tests/image_flow.test.js tests/image_background.test.js tests/narration.test.js tests/jingles.test.js
+node --test tests/frontend/promotion_gallery.test.js tests/frontend/profile_editing.test.js tests/frontend/image_flow.test.js tests/frontend/image_background.test.js tests/frontend/narration.test.js tests/frontend/jingles.test.js
 ```
 
 Only existing dependency/datetime deprecation warnings. Diff reviewed; whitespace

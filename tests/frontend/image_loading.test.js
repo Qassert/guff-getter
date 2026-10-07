@@ -1,5 +1,5 @@
 const {test}=require('node:test'), assert=require('node:assert/strict'), fs=require('node:fs');
-const {ImageShuffle}=require('../newsmuncher/static/js/creation/image-loading.js');
+const {ImageShuffle}=require('../../newsmuncher/static/js/creation/image-loading.js');
 function setup(images, reduced=false) {
  const shown=[], timers=[], cancelled=[];let stopped=0, fetches=0;
  const ui=new ImageShuffle({view:{start(){},show(url,animate){shown.push({url,animate});},stop(){stopped++;}},

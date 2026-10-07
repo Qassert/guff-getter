@@ -85,7 +85,7 @@ actual provider responses and video quality remain unverified until an authorize
 
 ```sh
 ./.venv/bin/python -m py_compile scripts/video_smoke_test.py
-./.venv/bin/python -m pytest tests/test_video_smoke_test.py -q
+./.venv/bin/python -m pytest tests/python/test_video_smoke_test.py -q
 ```
 
 Tests mock all transport and block real HTTP, covering dry-run/default-off, all-key

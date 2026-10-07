@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {Embellish}=require('../newsmuncher/static/js/creation/embellish.js');
+const {Embellish}=require('../../newsmuncher/static/js/creation/embellish.js');
 
 function setup(){
  const calls=[],renders=[],timers=[];

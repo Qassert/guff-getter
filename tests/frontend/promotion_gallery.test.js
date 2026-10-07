@@ -1,6 +1,6 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
-const {PromotionGallery,creatorEditUrl} = require('../newsmuncher/static/js/gallery/promotion-gallery.js');
+const {PromotionGallery,creatorEditUrl} = require('../../newsmuncher/static/js/gallery/promotion-gallery.js');
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a; reject=b;}); return {promise,resolve,reject}; };
 const response = data => ({ok:true, json:async () => data});
 const item = id => ({id,title:'Title '+id,body:'Body '+id,promoted:false});
@@ -62,7 +62,7 @@ test('EDIT targets the current rewrite within the authenticated Creator route',(
     assert.equal(creatorEditUrl('/pets/pet_profile/current-pet',null),'/pets/pet_profile/current-pet');
 });
 
-const {GalleryMedia} = require('../newsmuncher/static/js/gallery/promotion-gallery.js');
+const {GalleryMedia} = require('../../newsmuncher/static/js/gallery/promotion-gallery.js');
 class FakeAudio {
     constructor(start) { this.start=start; this.src=''; this.playing=false; this.events={}; this.calls=0; }
     addEventListener(name, callback) {this.events[name]=callback;}
@@ -142,7 +142,7 @@ test('default fetch adapter does not bind native fetch to the gallery instance',
     } finally { globalThis.fetch = original; }
 });
 
-const {GalleryVideo,GalleryBackdrop} = require('../newsmuncher/static/js/gallery/promotion-gallery.js');
+const {GalleryVideo,GalleryBackdrop} = require('../../newsmuncher/static/js/gallery/promotion-gallery.js');
 function videoSetup(start=()=>Promise.resolve()) {
     const players=[], timers=[], revealed=[], cancelled=[]; let reduce=false;
     const visual=new GalleryVideo({makeVideo(){

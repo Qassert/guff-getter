@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {UdderSounds,MIXKIT_SOUNDS,SUSPENSE_SOUND}=require('../newsmuncher/static/js/creation/udder-sounds.js');
+const {UdderSounds,MIXKIT_SOUNDS,SUSPENSE_SOUND}=require('../../newsmuncher/static/js/creation/udder-sounds.js');
 
 function element(){const listeners={};return{listeners,addEventListener:(name,fn)=>(listeners[name]??=[]).push(fn),dispatch(name,event={}){for(const fn of listeners[name]||[])fn(event);}};}
 class FakeAudio{

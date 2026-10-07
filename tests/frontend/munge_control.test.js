@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {MungeControl}=require('../newsmuncher/static/js/creation/munge-control.js');
+const {MungeControl}=require('../../newsmuncher/static/js/creation/munge-control.js');
 function element(className=''){
  const listeners={},classes=new Set(className.split(' ').filter(Boolean));
  const style={values:{'--axis-x':'1','--axis-y':'0'},setProperty(k,v){this.values[k]=v;},getPropertyValue(k){return this.values[k]||'';}};

@@ -1,6 +1,6 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
-const {AnimationUI} = require('../newsmuncher/static/js/creation/video.js');
+const {AnimationUI} = require('../../newsmuncher/static/js/creation/video.js');
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a;reject=b;}); return {promise,resolve,reject}; };
 const response = data => ({ok:true,json:async()=>data});
 function setup(fetcher) {
@@ -143,7 +143,7 @@ for (const operation of ['show/stop', 'poll scheduling']) {
     });
 }
 
-const {CreationVideo} = require('../newsmuncher/static/js/creation/video.js');
+const {CreationVideo} = require('../../newsmuncher/static/js/creation/video.js');
 function visualSetup(start = () => Promise.resolve()) {
     const players=[], shown=[], messages=[], playback=[];
     let imageReady=true, reduced=false;

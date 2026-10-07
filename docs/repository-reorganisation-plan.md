@@ -79,6 +79,12 @@ No empty `models`, `repositories`, or `migrations` package is proposed. Current 
 - Retained `newsmuncher/services/wavespeed.py` as a compatibility import for external callers; provider payloads, polling, retries, diagnostics and persistence behavior are unchanged.
 - Updated direct tests and documentation references. No other backend service, API route, database path or historical-media boundary was moved.
 
+## Batch E implementation
+
+- Moved all 16 Node tests to `tests/frontend/` and all 26 Python tests to `tests/python/`.
+- Updated Node module paths, Python repository-root calculations, cross-runner invocations and documented test commands for the additional directory level.
+- Pytest discovery and Node's test runner retain the exact Batch D baseline; test behavior and assertions were not changed in this structural batch.
+
 ## Complete tracked-file map
 
 Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
@@ -271,41 +277,41 @@ Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
 | `tests/creation_meta.test.js` | MOVE | `tests/frontend/creation_meta.test.js` | Batch E frontend tests |
 | `tests/creation_title_presentation.test.js` | MOVE | `tests/frontend/creation_title_presentation.test.js` | Batch E frontend tests |
 | `tests/embellish.test.js` | MOVE | `tests/frontend/embellish.test.js` | Batch E frontend tests |
-| `tests/image_background.test.js` | MOVE | `tests/frontend/image_background.test.js` | Batch E frontend tests |
-| `tests/image_flow.test.js` | MOVE | `tests/frontend/image_flow.test.js` | Batch E frontend tests |
+| `tests/frontend/image_background.test.js` | MOVE | `tests/frontend/image_background.test.js` | Batch E frontend tests |
+| `tests/frontend/image_flow.test.js` | MOVE | `tests/frontend/image_flow.test.js` | Batch E frontend tests |
 | `tests/image_loading.test.js` | MOVE | `tests/frontend/image_loading.test.js` | Batch E frontend tests |
-| `tests/jingles.test.js` | MOVE | `tests/frontend/jingles.test.js` | Batch E frontend tests |
+| `tests/frontend/jingles.test.js` | MOVE | `tests/frontend/jingles.test.js` | Batch E frontend tests |
 | `tests/loading_audio.test.js` | MOVE | `tests/frontend/loading_audio.test.js` | Batch E frontend tests |
 | `tests/media_orchestration.test.js` | MOVE | `tests/frontend/media_orchestration.test.js` | Batch E frontend tests |
 | `tests/munge_control.test.js` | MOVE | `tests/frontend/munge_control.test.js` | Batch E frontend tests |
-| `tests/narration.test.js` | MOVE | `tests/frontend/narration.test.js` | Batch E frontend tests |
-| `tests/profile_editing.test.js` | MOVE | `tests/frontend/profile_editing.test.js` | Batch E frontend tests |
-| `tests/promotion_gallery.test.js` | MOVE | `tests/frontend/promotion_gallery.test.js` | Batch E frontend tests |
+| `tests/frontend/narration.test.js` | MOVE | `tests/frontend/narration.test.js` | Batch E frontend tests |
+| `tests/frontend/profile_editing.test.js` | MOVE | `tests/frontend/profile_editing.test.js` | Batch E frontend tests |
+| `tests/frontend/promotion_gallery.test.js` | MOVE | `tests/frontend/promotion_gallery.test.js` | Batch E frontend tests |
 | `tests/source_udder.test.js` | MOVE | `tests/frontend/source_udder.test.js` | Batch E frontend tests |
 | `tests/test_clean_word_banks.py` | MOVE | `tests/python/test_clean_word_banks.py` | Batch E Python tests |
 | `tests/test_compare_tts.py` | MOVE | `tests/python/test_compare_tts.py` | Batch E Python tests |
 | `tests/test_contender_frontend.py` | MOVE | `tests/python/test_contender_frontend.py` | Batch E Python tests |
-| `tests/test_copy_edit_pass.py` | MOVE | `tests/python/test_copy_edit_pass.py` | Batch E Python tests |
-| `tests/test_dating_source.py` | MOVE | `tests/python/test_dating_source.py` | Batch E Python tests |
-| `tests/test_draft_lifecycle.py` | MOVE | `tests/python/test_draft_lifecycle.py` | Batch E Python tests |
-| `tests/test_image_generation.py` | MOVE | `tests/python/test_image_generation.py` | Batch E Python tests |
+| `tests/python/test_copy_edit_pass.py` | MOVE | `tests/python/test_copy_edit_pass.py` | Batch E Python tests |
+| `tests/python/test_dating_source.py` | MOVE | `tests/python/test_dating_source.py` | Batch E Python tests |
+| `tests/python/test_draft_lifecycle.py` | MOVE | `tests/python/test_draft_lifecycle.py` | Batch E Python tests |
+| `tests/python/test_image_generation.py` | MOVE | `tests/python/test_image_generation.py` | Batch E Python tests |
 | `tests/test_image_redo.py` | MOVE | `tests/python/test_image_redo.py` | Batch E Python tests |
 | `tests/test_jingle_brief.py` | MOVE | `tests/python/test_jingle_brief.py` | Batch E Python tests |
-| `tests/test_jingle_frontend.py` | MOVE | `tests/python/test_jingle_frontend.py` | Batch E Python tests |
+| `tests/python/test_jingle_frontend.py` | MOVE | `tests/python/test_jingle_frontend.py` | Batch E Python tests |
 | `tests/test_jingle_genre.py` | MOVE | `tests/python/test_jingle_genre.py` | Batch E Python tests |
 | `tests/test_jingle_genre_truncate.py` | MOVE | `tests/python/test_jingle_genre_truncate.py` | Batch E Python tests |
 | `tests/test_jingle_reference.py` | MOVE | `tests/python/test_jingle_reference.py` | Batch E Python tests |
-| `tests/test_jingles.py` | MOVE | `tests/python/test_jingles.py` | Batch E Python tests |
+| `tests/python/test_jingles.py` | MOVE | `tests/python/test_jingles.py` | Batch E Python tests |
 | `tests/test_loading_images.py` | MOVE | `tests/python/test_loading_images.py` | Batch E Python tests |
 | `tests/test_modal_schema_diagnostic.py` | MOVE | `tests/python/test_modal_schema_diagnostic.py` | Batch E Python tests |
-| `tests/test_narration.py` | MOVE | `tests/python/test_narration.py` | Batch E Python tests |
-| `tests/test_permanent_word_claims.py` | MOVE | `tests/python/test_permanent_word_claims.py` | Batch E Python tests |
-| `tests/test_profile_background.py` | MOVE | `tests/python/test_profile_background.py` | Batch E Python tests |
-| `tests/test_promotion_gallery.py` | MOVE | `tests/python/test_promotion_gallery.py` | Batch E Python tests |
+| `tests/python/test_narration.py` | MOVE | `tests/python/test_narration.py` | Batch E Python tests |
+| `tests/python/test_permanent_word_claims.py` | MOVE | `tests/python/test_permanent_word_claims.py` | Batch E Python tests |
+| `tests/python/test_profile_background.py` | MOVE | `tests/python/test_profile_background.py` | Batch E Python tests |
+| `tests/python/test_promotion_gallery.py` | MOVE | `tests/python/test_promotion_gallery.py` | Batch E Python tests |
 | `tests/test_rewrite_title.py` | MOVE | `tests/python/test_rewrite_title.py` | Batch E Python tests |
-| `tests/test_source_preprocessing.py` | MOVE | `tests/python/test_source_preprocessing.py` | Batch E Python tests |
-| `tests/test_video.py` | MOVE | `tests/python/test_video.py` | Batch E Python tests |
-| `tests/test_video_prompt.py` | MOVE | `tests/python/test_video_prompt.py` | Batch E Python tests |
-| `tests/test_video_smoke_test.py` | MOVE | `tests/python/test_video_smoke_test.py` | Batch E Python tests |
+| `tests/python/test_source_preprocessing.py` | MOVE | `tests/python/test_source_preprocessing.py` | Batch E Python tests |
+| `tests/python/test_video.py` | MOVE | `tests/python/test_video.py` | Batch E Python tests |
+| `tests/python/test_video_prompt.py` | MOVE | `tests/python/test_video_prompt.py` | Batch E Python tests |
+| `tests/python/test_video_smoke_test.py` | MOVE | `tests/python/test_video_smoke_test.py` | Batch E Python tests |
 | `tests/udder_sounds.test.js` | MOVE | `tests/frontend/udder_sounds.test.js` | Batch E frontend tests |
-| `tests/video.test.js` | MOVE | `tests/frontend/video.test.js` | Batch E frontend tests |
+| `tests/frontend/video.test.js` | MOVE | `tests/frontend/video.test.js` | Batch E frontend tests |

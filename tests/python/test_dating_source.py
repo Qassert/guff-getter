@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from jinja2 import Environment, FileSystemLoader
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class Collection:

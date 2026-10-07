@@ -7,7 +7,7 @@ from html.parser import HTMLParser
 
 class JingleFrontendTests(unittest.TestCase):
     def test_javascript(self):
-        subprocess.run(["node", "tests/jingles.test.js"], check=True)
+        subprocess.run(["node", "tests/frontend/jingles.test.js"], check=True)
         for file in ("jingles.js", "script.js"):
             subprocess.run(["node", "--check", "newsmuncher/static/js/creation/" + file], check=True)
 

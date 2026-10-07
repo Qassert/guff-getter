@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {SourceUdder}=require('../newsmuncher/static/js/creation/source-udder.js');
+const {SourceUdder}=require('../../newsmuncher/static/js/creation/source-udder.js');
 
 function element(className=''){
  const listeners={},children=[],classes=new Set(className.split(' ').filter(Boolean));

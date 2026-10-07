@@ -64,7 +64,8 @@ No live MongoDB writes or live browser-generated jingle during implementation.
 - newsmuncher/static/js/creation/jingles.js, newsmuncher/static/js/creation/script.js,
   newsmuncher/static/css/shared/styles.css
 - newsmuncher/templates/pet_profile.html
-- tests/test_jingle_brief.py, test_jingles.py, test_jingle_frontend.py, jingles.test.js
+- `tests/python/test_jingle_brief.py`, `tests/python/test_jingles.py`,
+  `tests/python/test_jingle_frontend.py`, `tests/frontend/jingles.test.js`
 
 ## Limits / future hosting
 - Browser UI tested with mocks/template checks; no live MAKE click after proof.

@@ -63,7 +63,7 @@ proof. Do not infer that old-looking media is orphaned without checking its runt
 association. This audit did not contact MongoDB or inspect remote Modal storage.
 
 Offline validation runs the full Python suite with socket/DNS connections blocked,
-all `tests/*.test.js` with Node network entry points blocked, and an app import with
+all `tests/frontend/*.test.js` with Node network entry points blocked, and an app import with
 Mongo constructors mocked and `.env` loading disabled. Importing admin/reset scripts
 is **not** a safe startup check (`check_database.py` contacts Mongo on import).
 
@@ -311,7 +311,7 @@ listening review, not asserted by automated tests.
 ### Offline testing
 
     .venv/bin/python -B -m unittest discover -s tests -q
-    node tests/jingles.test.js
+    node tests/frontend/jingles.test.js
     .venv/bin/python -m scripts.benchmark_jingle
 
 The benchmark defaults to dry-run. --generate is a LIVE cost-incurring request.
