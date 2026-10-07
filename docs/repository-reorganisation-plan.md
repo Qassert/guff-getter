@@ -72,6 +72,13 @@ No empty `models`, `repositories`, or `migrations` package is proposed. Current 
 - Inactive historical `static/narration.js` and obsolete `static/profile-editing.js` remain at their existing paths pending a separate compatibility/deletion decision.
 - No JavaScript or CSS content was refactored beyond the required CSS-relative asset path correction.
 
+## Batch D implementation
+
+- Moved the isolated WaveSpeed HTTP transport to `newsmuncher/integrations/wavespeed.py` and added the integrations package.
+- Production video orchestration and the opt-in smoke-test utility now import the transport from its responsibility-based location.
+- Retained `newsmuncher/services/wavespeed.py` as a compatibility import for external callers; provider payloads, polling, retries, diagnostics and persistence behavior are unchanged.
+- Updated direct tests and documentation references. No other backend service, API route, database path or historical-media boundary was moved.
+
 ## Complete tracked-file map
 
 Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.

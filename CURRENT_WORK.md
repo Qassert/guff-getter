@@ -13,14 +13,21 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Batch C frontend JavaScript/CSS reorganisation completed for review on `feature/video-animation`.
-APPROVAL: Batch B committed locally as `0bba0f0`; Batch C remains intentionally uncommitted. No obsolete files were deleted.
-NEXT_STEP: Andy reviews Batch C before approving a focused commit or any Batch D backend/service reorganisation.
-VALIDATION: All moved JavaScript passes `node --check`; static reference audit found only the pre-existing `gallery-back.png` issue plus one expected dynamic-path false positive. Local HTTP checks returned 200 for representative moved CSS/JS and the Gallery shell. Full tests exactly match the Batch B baseline: Node 63 passed / 19 failed and Python 280 passed / 11 failed / 105 subtests. No provider calls.
+CURRENT_TASK: Remaining repository reorganisation and baseline test repair in progress on `feature/video-animation`.
+APPROVAL: Batch C committed locally as `e2ebb1a`; autonomous low-risk completion of Batches D–F and test repair is approved. No push or merge.
+NEXT_STEP: Organise tests and operational scripts, then repair stale baseline assertions without changing approved application behavior.
+VALIDATION: Batch D full Python results remain exactly 280 passed / 11 failed / 105 subtests. The isolated WaveSpeed transport move introduced no failures and made no provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
 EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `gpt-6-luna` → `gpt-6-sol`. Prompts and all other rewrite settings remain unchanged.
+
+## Repository reorganisation Batch D — 2026-10-08
+
+- Moved the isolated WaveSpeed HTTP transport from `services/wavespeed.py` to `integrations/wavespeed.py`; API/service orchestration and provider behavior are unchanged.
+- Added a compatibility import at the former module path and updated production, smoke-test, test and documentation imports to the canonical integration path.
+- Focused video validation: 48 passed / 3 known failures. Full Python validation: 280 passed / 11 known failures / 105 subtests, exactly matching Batch C.
+- No provider call, database access, generated-media mutation, push or merge.
 
 ## Repository reorganisation Batch C — 2026-10-08
 

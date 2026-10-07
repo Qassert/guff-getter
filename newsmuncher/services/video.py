@@ -15,7 +15,7 @@ from newsmuncher.services.image_generation import (store, get_provider, build_en
     build_transformation_map, choose_image_style)
 from newsmuncher.services.video_prompt import build_transition_prompt
 from newsmuncher.services.video_pingpong import service as pingpong
-from newsmuncher.services.wavespeed import MODEL, create_video, read_image
+from newsmuncher.integrations.wavespeed import MODEL, create_video, read_image
 
 
 log = logging.getLogger(__name__)

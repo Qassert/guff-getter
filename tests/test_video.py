@@ -16,7 +16,7 @@ import requests
 
 from newsmuncher.services.image_generation import RewriteStore, build_image_prompt
 from newsmuncher.services.video import Videos, VideoError
-from newsmuncher.services import wavespeed
+from newsmuncher.integrations import wavespeed
 
 PNG = b'\x89PNG\r\n\x1a\n' + b'fixture'
 MP4 = b'\0\0\0\x18ftypmp42fixture'

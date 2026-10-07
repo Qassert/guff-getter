@@ -37,7 +37,7 @@ database services or deployment were used for this cleanup.
 
 | Area | Purpose and retention |
 | --- | --- |
-| `newsmuncher/` | Production Python, APIs, templates and static JS/CSS/artwork. Keep the shared WaveSpeed client in `services/wavespeed.py`. |
+| `newsmuncher/` | Production Python, APIs, provider integrations, templates and static JS/CSS/artwork. |
 | `newsmuncher/resources/`, `data/seeds/` | Tracked prompts, word banks and reusable source JSON. These are source data, not generated artifacts. |
 | `jingle_service/` | Shared persisted jingle wire contracts; legacy Modal experiment source remains inactive for historical reference. |
 | `data/avatars/` | Real pet/user images. Preserve, including existing tracked images. |

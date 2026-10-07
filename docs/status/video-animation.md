@@ -54,7 +54,7 @@ camera drift. The final prompt and random seed are stored before provider work.
 Unsaved editor changes do not replace this saved scene snapshot. Later edits do not
 regenerate animation.
 
-The shared client in `newsmuncher/services/wavespeed.py` is extracted from the smoke
+The shared client in `newsmuncher/integrations/wavespeed.py` is extracted from the smoke
 test; the CLI now imports it and retains its original spend guard. The app uses:
 
 1. `POST /api/v3/media/uploads`: filename, byte count, content type.
@@ -160,7 +160,7 @@ not a second ANIMATE request or the standalone CLI.
 - `newsmuncher/config.py`, `newsmuncher/main.py`
 - `newsmuncher/api/previews.py`, `newsmuncher/api/videos.py`, `newsmuncher/api/promotion_gallery.py`
 - `newsmuncher/services/image_generation.py`, `newsmuncher/services/video.py`,
-  `newsmuncher/services/video_prompt.py`, `newsmuncher/services/wavespeed.py`,
+  `newsmuncher/services/video_prompt.py`, `newsmuncher/integrations/wavespeed.py`,
   `newsmuncher/services/promotion_gallery.py`
 - `newsmuncher/static/js/creation/video.js`, `newsmuncher/static/js/creation/script.js`, `newsmuncher/static/css/shared/styles.css`,
   `newsmuncher/static/js/gallery/promotion-gallery.js`, `newsmuncher/static/css/gallery/promotion-gallery.css`

@@ -1,7 +1,7 @@
 # Standalone video smoke test
 
 Standalone CLI: no gallery, nomination or Mongo integration. Shared transport helpers
-now live in `newsmuncher/services/wavespeed.py`; importing them never generates media.
+now live in `newsmuncher/integrations/wavespeed.py`; importing them never generates media.
 The separate app integration is documented in `docs/status/video-animation.md`.
 Uses the existing `requests` dependency; no SDK/install or dependency changes.
 Keys are read only from the process environment: WAVESPEED_API_KEY and FAL_KEY.

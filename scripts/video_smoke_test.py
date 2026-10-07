@@ -40,7 +40,7 @@ POLL_TIMEOUT = 900
 # Allow both `python scripts/video_smoke_test.py` and module imports.
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from newsmuncher.services.wavespeed import (
+from newsmuncher.integrations.wavespeed import (
     SmokeError, Diagnostics, read_image, https_url, request_json, job_id, download, generate_wan,
 )
 
