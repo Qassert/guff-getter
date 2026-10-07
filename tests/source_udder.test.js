@@ -52,7 +52,7 @@ test('template keeps five native accessible actions and page-level unclipped eff
  assert.equal((html.match(/class="source-choice udder-teat"/g)||[]).length,1); // Jinja loop source
  for(const action of ['fetch_dating_from_api','fetch_historicalFunny_from_api','fetch_wikipedia_into_api','fetch_poem_into_api','fetch_people_into_api'])assert(html.includes(`'${action}'`));
  assert(html.includes("fetchAndDisplay('{{ action }}')"));
- assert(html.includes("images/udder/udder-master-body.png"));for(let i=1;i<=5;i++)assert(html.includes(`udder-teat-${i}.png`));
+ assert(html.includes("images/udders/source/udder-master-body.png"));for(let i=1;i<=5;i++)assert(html.includes(`udder-teat-${i}.png`));
  assert(!html.includes('<svg class="udder-body"'));assert.match(css,/transform-origin:\s*50% 5%/);
  assert(html.includes('--teat-width: {{ width }}'));assert.match(css,/width:\s*var\(--teat-width\)/);
  assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*z-index:\s*2[^}]*pointer-events:\s*none/s);

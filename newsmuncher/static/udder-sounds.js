@@ -1,6 +1,6 @@
 /* Polyphonic, interaction-only sound effects for the Creator udder. */
 (function(root) {
-    const SOUND_ROOT = '/static/audio/udder/';
+    const SOUND_ROOT = '/static/audio/effects/udder/';
     const SUSPENSE_SOUND = 'suspense.wav';
     const MIXKIT_SOUNDS = Object.freeze([
         'mixkit-wet-accident-fart-3041.wav',
@@ -13,7 +13,7 @@
         'mixkit-funny-cartoon-fast-splat-2889.wav',
         'mixkit-cartoon-laugh-voice-2882.wav'
     ]);
-    const MUNGE_ROOT = '/static/audio/Munge it/';
+    const MUNGE_ROOT = '/static/audio/effects/munge/';
     const MUNGE_SOUNDS = Object.freeze([
         'Funny Run Up Take - QuickSounds.com.mp3',
         'Man screaming aaaah - QuickSounds.com.mp3',

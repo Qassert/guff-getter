@@ -2,7 +2,7 @@ STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: Singable headlines, versioned ElevenLabs jingles, independent frame styles and saved-audio compatibility
-LAST_COMPLETED_COMMIT: checkpoint title jingles and media compatibility
+LAST_COMPLETED_COMMIT: 50d0e45 refactor: organise project documentation
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,14 +13,26 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Repository reorganisation plan completed and low-risk Batch A documentation moves implemented for review.
-APPROVAL: Batch A is intentionally uncommitted. No obsolete files were deleted and no later batch was started.
-NEXT_STEP: Andy reviews `docs/repository-reorganisation-plan.md` and Batch A before approving a focused commit or Batch B.
-VALIDATION: Checkpoint `309aa54` preserved. Batch A targeted video-smoke tests: 29 passed. Reference scan and Python compilation passed. No provider calls were made.
+CURRENT_TASK: Batch B static UI image/audio reorganisation completed for review on `feature/video-animation`.
+APPROVAL: Batch A committed locally as `50d0e45`; Batch B remains intentionally uncommitted. No obsolete files were deleted.
+NEXT_STEP: Andy reviews Batch B before approving a focused commit or any Batch C JavaScript/CSS reorganisation.
+VALIDATION: Static reference audit checked 61 paths; only the pre-existing missing `gallery-back.png` remains. Local HTTP checks returned 200. Focused tests exactly match Batch A baseline: Node 20/37 and Python 39 passed / 7 failed / 6 subtests. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
 EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `gpt-6-luna` → `gpt-6-sol`. Prompts and all other rewrite settings remain unchanged.
+
+## Repository reorganisation Batch B — 2026-10-08
+
+- Moved 14 active images without changing bytes: parchment background, six source-udder files and seven MUNGE assembly files.
+- Moved all 31 packaged static audio files without changing bytes: seven voices and 24 UI/MUNGE/source-udder effects. There are no packaged application music assets, so no empty `music/` folder was added.
+- Updated Jinja, JavaScript, CSS and directly affected path assertions. Cache tokens for changed CSS/JavaScript references now use `static-assets-b1`.
+- Preserved `/static/image-stub.svg` because the URL is stored in rewrite state. Gallery buttons already live in `images/buttons/` and remain there.
+- Left all obsolete/reference artwork in its original location. The known missing `images/buttons/gallery-back.png` remains unresolved by design; no replacement was generated.
+- Static reference audit checked 61 literal/dynamic references. The only missing reference is the pre-existing Gallery BACK asset.
+- Local NewsMuncher HTTP verification returned 200 for parchment, source udder, MUNGE, voice, UI effect, both effect pools and the preserved image-stub URL.
+- Focused Node selection: 20 passed / 17 failed, exactly matching `50d0e45`. Focused Python selection: 39 passed / 7 failed / 6 subtests, exactly matching `50d0e45`. Failures are the documented stale baseline assertions; no new failures.
+- JavaScript syntax checks and `git diff --check` passed. No provider call, production database access, generated-media mutation, deletion, commit, push or merge.
 
 ## Repository reorganisation Batch A — 2026-10-07
 

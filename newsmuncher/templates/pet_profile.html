@@ -11,15 +11,15 @@
 <div id="imageAmbient" class="image-ambient" aria-hidden="true"><div class="wash-group"><span></span><span></span></div><div class="wash-group"><span></span><span></span></div></div>
 <div class="workshop">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
-    <span class="mode-nav-button mode-nav-create mode-nav-active" aria-current="page" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/Create_Shout.mp3') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></span>
-    <a class="mode-nav-button mode-nav-gallery" href="/promotion-gallery/" aria-label="GALLERY" data-hover-voice="{{ url_for('static', path='audio/Gallery_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/squelch_02_suction_slurp.wav') }}"><img src="{{ url_for('static', path='images/buttons/gallery-idle.png') }}" alt=""></a>
+    <span class="mode-nav-button mode-nav-create mode-nav-active" aria-current="page" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/voices/Create_Shout.mp3') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></span>
+    <a class="mode-nav-button mode-nav-gallery" href="/promotion-gallery/" aria-label="GALLERY" data-hover-voice="{{ url_for('static', path='audio/voices/Gallery_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_02_suction_slurp.wav') }}"><img src="{{ url_for('static', path='images/buttons/gallery-idle.png') }}" alt=""></a>
   </nav>
 
 
   <div class="container profile-container">
   <div class="container nonsense-container" role="group" aria-label="Source selection">
     <div id="sourceUdder" class="source-udder">
-      <img class="udder-master-body" src="{{ url_for('static', path='images/udder/udder-master-body.png') }}" alt="">
+      <img class="udder-master-body" src="{{ url_for('static', path='images/udders/source/udder-master-body.png') }}" alt="">
       {% set sources = [
         ('DATING', 'fetch_dating_from_api', '#ea4f7a', 'udder-teat-1.png', '18.1%', '15.7%'),
         ('DRIVEL', 'fetch_historicalFunny_from_api', '#9acd32', 'udder-teat-2.png', '33.3%', '14.3%'),
@@ -32,7 +32,7 @@
         data-source="{{ action }}" data-liquid="{{ colour }}" aria-label="{{ label }}" title="{{ label }}"
         aria-pressed="false" onclick="fetchAndDisplay('{{ action }}')">
         <span class="teat-shape" aria-hidden="true">
-          <img src="{{ url_for('static', path='images/udder/' ~ image) }}" alt="">
+          <img src="{{ url_for('static', path='images/udders/source/' ~ image) }}" alt="">
         </span>
       </button>
       {% endfor %}
@@ -47,7 +47,7 @@
     <div id="mungeControl" class="munge-control" role="group" aria-label="MUNGE IT">
       <div id="mungeRotor" class="munge-rotor">
       <button type="button" id="mungeBodyButton" class="munge-body-button" aria-label="MUNGE IT">
-        <img class="munge-body" src="{{ url_for('static', path='images/munge button/munge-body.png') }}" alt="">
+        <img class="munge-body" src="{{ url_for('static', path='images/udders/munge/munge-body.png') }}" alt="">
       </button>
       {% set munge_teats = [
         ('upper-left', 1, 'calc(32% + 16px)', '23%', '31%', '-78%', '-72%', '-.72', '-.70', '78%', '72%', '0deg'),
@@ -61,7 +61,7 @@
       <button type="button" class="munge-teat munge-teat-{{ orientation }}"
         style="--x:{{ x }};--y:{{ y }};--w:{{ width }};--tx:{{ tx }};--ty:{{ ty }};--axis-x:{{ axis_x }};--axis-y:{{ axis_y }};--origin-x:{{ origin_x }};--origin-y:{{ origin_y }};--base-rotation:{{ rotation }}"
         data-orientation="{{ orientation }}" aria-label="MUNGE IT — {{ orientation }} teat">
-        <span class="munge-teat-shape" aria-hidden="true"><img src="{{ url_for('static', path='images/munge button/munge-teat-' ~ image ~ '.png') }}" alt=""></span>
+        <span class="munge-teat-shape" aria-hidden="true"><img src="{{ url_for('static', path='images/udders/munge/munge-teat-' ~ image ~ '.png') }}" alt=""></span>
       </button>
       {% endfor %}
       </div>
@@ -131,4 +131,4 @@
 </div>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='mode-nav.js') }}"></script><script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}?v=bespoke-teats-3"></script><script src="{{ url_for('static', path='munge-control.js') }}"></script><script src="{{ url_for('static', path='udder-sounds.js') }}"></script><script src="{{ url_for('static', path='script.js') }}?v=munge-heartbeat-2"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='mode-nav.js') }}"></script><script src="{{ url_for('static', path='creation-meta.js') }}"></script><script src="{{ url_for('static', path='image-loading.js') }}"></script><script src="{{ url_for('static', path='embellish.js') }}"></script><script src="{{ url_for('static', path='video.js') }}"></script><script src="{{ url_for('static', path='jingles.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='source-udder.js') }}?v=bespoke-teats-3"></script><script src="{{ url_for('static', path='munge-control.js') }}"></script><script src="{{ url_for('static', path='udder-sounds.js') }}?v=static-assets-b1"></script><script src="{{ url_for('static', path='script.js') }}?v=munge-heartbeat-2"></script>{% endblock %}

@@ -21,7 +21,7 @@
 .promotion-gallery-page .funky-button::before {
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   border: solid transparent; border-width: 15px 12px 12px;
-  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
   background: #eee5cf; background-clip: padding-box;
   filter: drop-shadow(1px 2px 1px #594b3540);
 }
@@ -47,7 +47,7 @@
 .promotion-gallery-page .mode-nav { z-index: 5; margin-bottom: 14px; }
 .gallery-page {
   position: relative; isolation: isolate; transform-origin: left center;
-  border: 24px solid transparent; border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  border: 24px solid transparent; border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
   padding: clamp(12px, 2.8vw, 36px); background-clip: padding-box;
   box-shadow: none; min-height: 310px; overflow: visible;
 }

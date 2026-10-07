@@ -22,7 +22,7 @@ test('pointer motion bends along configured radial axis and touch does not hover
 
 test('template and CSS assemble one supplied body with six separately tuned teat hit areas',()=>{
  const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
- assert(html.includes('images/munge button/munge-body.png'));assert.equal((html.match(/class="munge-teat munge-teat-/g)||[]).length,1);
+ assert(html.includes('images/udders/munge/munge-body.png'));assert.equal((html.match(/class="munge-teat munge-teat-/g)||[]).length,1);
  for(const name of ['upper-left','upper-right','left','right','lower-left','lower-right'])assert(html.includes(`('${name}'`)||html.includes(`, '${name}'`));
  for(let i=1;i<=6;i++)assert(html.includes(`munge-teat-' ~ image`));
  const script=fs.readFileSync('newsmuncher/static/script.js','utf8');assert.match(script,/querySelectorAll\?\.\('\.munge-teat, \.munge-body-button'\)\?\.forEach\(button => button\.addEventListener\('click', confirmData\)\)/);assert(!html.includes('id="mungeButton"'));

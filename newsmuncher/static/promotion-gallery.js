@@ -746,8 +746,8 @@
         control.addEventListener('click', () => playUiSound(universalClickSound));
     });
     const hoverSounds = new Map([
-        [get('galleryNext'), '/static/audio/farty_button_squelch.wav'],
-        [get('galleryBack'), '/static/audio/farty_button_squelch.wav']
+        [get('galleryNext'), '/static/audio/effects/ui/farty_button_squelch.wav'],
+        [get('galleryBack'), '/static/audio/effects/ui/farty_button_squelch.wav']
     ]);
     hoverSounds.forEach((url, control) => control.addEventListener('pointerenter', event => {
         if (event.pointerType !== 'touch') playUiSound(url);

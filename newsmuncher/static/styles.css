@@ -263,7 +263,7 @@ body { isolation: isolate; }
   border-style: solid;
   border-color: transparent;
   border-width: calc(var(--paper-edge) * 1.25) var(--paper-edge) var(--paper-edge);
-  border-image-source: url('parchment.png');
+  border-image-source: url('images/backgrounds/parchment.png');
   border-image-slice: 300 240 240 240 fill;
   border-image-width: 1;
   border-image-repeat: round;
@@ -322,7 +322,7 @@ body { isolation: isolate; }
 .profile-page .funky-button::before {
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   border: solid transparent; border-width: 15px 12px 12px;
-  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
   background: #eee5cf; background-clip: padding-box;
   filter: var(--tab-tint) drop-shadow(1px 2px 1px #594b3540);
 }
@@ -464,7 +464,7 @@ body { isolation: isolate; }
     calc(-1 * var(--paper-edge));
   border: solid transparent;
   border-width: calc(1.25 * var(--paper-edge)) var(--paper-edge) var(--paper-edge);
-  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
   background: #eee5cf; background-clip: padding-box;
 }
 .profile-page .funky-button::before {
@@ -528,7 +528,7 @@ body { isolation: isolate; }
 .creation-delete-dialog {
   width: min(420px, calc(100% - 32px)); padding: 28px; color: var(--ink);
   border: 18px solid transparent;
-  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
   background: #eee5cf; box-shadow: 0 16px 50px #1d1710aa; text-align: center;
 }
 .creation-delete-dialog::backdrop { background: #17120da8; }

@@ -21,8 +21,8 @@ This plan was prepared from checkpoint `309aa54` on `feature/video-animation`. I
 │   └── static/
 │       ├── js/
 │       ├── css/
-│       ├── images/(buttons, munge, udder)/
-│       └── audio/(voices, ui, munge, udder)/
+│       ├── images/(buttons, udders, backgrounds)/
+│       └── audio/(voices, effects/(ui, munge, udder))/
 ├── scripts/
 │   ├── maintenance/            # database/account/word-bank administration
 │   └── diagnostics/            # opt-in benchmarks and provider diagnostics
@@ -52,9 +52,20 @@ No empty `models`, `repositories`, or `migrations` package is proposed. Current 
 - `gallery-back.png` is referenced but missing; resolve that defect separately rather than treating the reference as dead.
 - `jingle_service.contract` and `jingle_service.genres` are active production imports, so the package remains top-level.
 
+## Batch B implementation
+
+- Active source-udder artwork moved from `images/udder/` to `images/udders/source/`.
+- Active six-teat MUNGE artwork moved from `images/munge button/` to `images/udders/munge/`.
+- The parchment moved to `images/backgrounds/`; its CSS references remain relative to the same `/static` mount.
+- Seven spoken controls moved to `audio/voices/`. Interaction sounds moved to `audio/effects/ui/`, `audio/effects/munge/`, and `audio/effects/udder/`.
+- `image-stub.svg` remains at `/static/image-stub.svg` because that URL is persisted in rewrite state. Gallery button artwork remains in `images/buttons/` because it is already correctly grouped.
+- All audit-classified obsolete/reference artwork remains at its original path. The missing `images/buttons/gallery-back.png` remains a separately recorded defect; no replacement was invented.
+- Existing stylesheet and affected JavaScript cache tokens were advanced to `static-assets-b1` so browsers fetch references to the new paths.
+- Batch B changes paths and references only. Image/audio bytes, generated media, animations, playback logic, API contracts, database paths and provider code remain unchanged.
+
 ## Complete tracked-file map
 
-Summary: **100 MOVE, 101 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
+Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
 
 | Old path | Class | Proposed path | Evidence / batch |
 | --- | --- | --- | --- |
@@ -139,40 +150,40 @@ Summary: **100 MOVE, 101 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
 | `newsmuncher/static/audio/Create_Shout.mp3` | MOVE | `newsmuncher/static/audio/voices/Create_Shout.mp3` | Batch B voice clips |
 | `newsmuncher/static/audio/Enhance_Shout.mp3` | MOVE | `newsmuncher/static/audio/voices/Enhance_Shout.mp3` | Batch B voice clips |
 | `newsmuncher/static/audio/Gallery_Shout.mp3` | MOVE | `newsmuncher/static/audio/voices/Gallery_Shout.mp3` | Batch B voice clips |
-| `newsmuncher/static/audio/Munge it/Funny Run Up Take - QuickSounds.com.mp3` | MOVE | `newsmuncher/static/audio/munge/Funny Run Up Take - QuickSounds.com.mp3` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/Man screaming aaaah - QuickSounds.com.mp3` | MOVE | `newsmuncher/static/audio/munge/Man screaming aaaah - QuickSounds.com.mp3` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/fart-02.wav` | MOVE | `newsmuncher/static/audio/munge/fart-02.wav` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/fart-03.wav` | MOVE | `newsmuncher/static/audio/munge/fart-03.wav` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/fart-08.wav` | MOVE | `newsmuncher/static/audio/munge/fart-08.wav` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/fart-quick-puffy-brukowskij-fart-quick-and-puffy-02-1-0m00s.mp3` | MOVE | `newsmuncher/static/audio/munge/fart-quick-puffy-brukowskij-fart-quick-and-puffy-02-1-0m00s.mp3` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/fart-raspy-flab-om-fx-1-00-02.mp3` | MOVE | `newsmuncher/static/audio/munge/fart-raspy-flab-om-fx-1-00-02.mp3` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/fart-squeak-01.wav` | MOVE | `newsmuncher/static/audio/munge/fart-squeak-01.wav` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/hello meme funny - QuickSounds.com.mp3` | MOVE | `newsmuncher/static/audio/munge/hello meme funny - QuickSounds.com.mp3` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/slap sound effect funny memes - QuickSounds.com.mp3` | MOVE | `newsmuncher/static/audio/munge/slap sound effect funny memes - QuickSounds.com.mp3` | Batch B normalize MUNGE audio directory |
-| `newsmuncher/static/audio/Munge it/suspense.wav` | MOVE | `newsmuncher/static/audio/munge/suspense.wav` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/Funny Run Up Take - QuickSounds.com.mp3` | MOVE | `newsmuncher/static/audio/effects/munge/Funny Run Up Take - QuickSounds.com.mp3` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/Man screaming aaaah - QuickSounds.com.mp3` | MOVE | `newsmuncher/static/audio/effects/munge/Man screaming aaaah - QuickSounds.com.mp3` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/fart-02.wav` | MOVE | `newsmuncher/static/audio/effects/munge/fart-02.wav` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/fart-03.wav` | MOVE | `newsmuncher/static/audio/effects/munge/fart-03.wav` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/fart-08.wav` | MOVE | `newsmuncher/static/audio/effects/munge/fart-08.wav` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/fart-quick-puffy-brukowskij-fart-quick-and-puffy-02-1-0m00s.mp3` | MOVE | `newsmuncher/static/audio/effects/munge/fart-quick-puffy-brukowskij-fart-quick-and-puffy-02-1-0m00s.mp3` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/fart-raspy-flab-om-fx-1-00-02.mp3` | MOVE | `newsmuncher/static/audio/effects/munge/fart-raspy-flab-om-fx-1-00-02.mp3` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/fart-squeak-01.wav` | MOVE | `newsmuncher/static/audio/effects/munge/fart-squeak-01.wav` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/hello meme funny - QuickSounds.com.mp3` | MOVE | `newsmuncher/static/audio/effects/munge/hello meme funny - QuickSounds.com.mp3` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/slap sound effect funny memes - QuickSounds.com.mp3` | MOVE | `newsmuncher/static/audio/effects/munge/slap sound effect funny memes - QuickSounds.com.mp3` | Batch B normalize MUNGE audio directory |
+| `newsmuncher/static/audio/Munge it/suspense.wav` | MOVE | `newsmuncher/static/audio/effects/munge/suspense.wav` | Batch B normalize MUNGE audio directory |
 | `newsmuncher/static/audio/Mute_Shout.mp3` | MOVE | `newsmuncher/static/audio/voices/Mute_Shout.mp3` | Batch B voice clips |
 | `newsmuncher/static/audio/NewsMuncher_Edit_Shout.mp3` | MOVE | `newsmuncher/static/audio/voices/NewsMuncher_Edit_Shout.mp3` | Batch B voice clips |
 | `newsmuncher/static/audio/NewsMuncher_Promote_Shout.mp3` | MOVE | `newsmuncher/static/audio/voices/NewsMuncher_Promote_Shout.mp3` | Batch B voice clips |
 | `newsmuncher/static/audio/Play_Shout.mp3` | MOVE | `newsmuncher/static/audio/voices/Play_Shout.mp3` | Batch B voice clips |
-| `newsmuncher/static/audio/farty_button_squelch.wav` | MOVE | `newsmuncher/static/audio/ui/farty_button_squelch.wav` | Batch B UI effects |
-| `newsmuncher/static/audio/squelch_01_wet_pop.wav` | MOVE | `newsmuncher/static/audio/ui/squelch_01_wet_pop.wav` | Batch B UI effects |
-| `newsmuncher/static/audio/squelch_02_suction_slurp.wav` | MOVE | `newsmuncher/static/audio/ui/squelch_02_suction_slurp.wav` | Batch B UI effects |
-| `newsmuncher/static/audio/udder/mixkit-cartoon-catapult-737.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-cartoon-catapult-737.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/mixkit-cartoon-fail-blow-fart-3053.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-cartoon-fail-blow-fart-3053.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/mixkit-cartoon-fart-sound-2891.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-cartoon-fart-sound-2891.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/mixkit-cartoon-laugh-voice-2882.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-cartoon-laugh-voice-2882.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/mixkit-falling-into-mud-surface-385.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-falling-into-mud-surface-385.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/mixkit-funny-cartoon-fast-splat-2889.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-funny-cartoon-fast-splat-2889.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/mixkit-funny-clown-horn-sounds-2886.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-funny-clown-horn-sounds-2886.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/mixkit-long-kiss-clean-sound-2188.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-long-kiss-clean-sound-2188.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/mixkit-wet-accident-fart-3041.wav` | KEEP | `newsmuncher/static/audio/udder/mixkit-wet-accident-fart-3041.wav` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/audio/udder/suspense.wav` | KEEP | `newsmuncher/static/audio/udder/suspense.wav` | Already appropriate or compatibility-sensitive |
+| `newsmuncher/static/audio/farty_button_squelch.wav` | MOVE | `newsmuncher/static/audio/effects/ui/farty_button_squelch.wav` | Batch B UI effects |
+| `newsmuncher/static/audio/squelch_01_wet_pop.wav` | MOVE | `newsmuncher/static/audio/effects/ui/squelch_01_wet_pop.wav` | Batch B UI effects |
+| `newsmuncher/static/audio/squelch_02_suction_slurp.wav` | MOVE | `newsmuncher/static/audio/effects/ui/squelch_02_suction_slurp.wav` | Batch B UI effects |
+| `newsmuncher/static/audio/udder/mixkit-cartoon-catapult-737.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-cartoon-catapult-737.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/mixkit-cartoon-fail-blow-fart-3053.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-cartoon-fail-blow-fart-3053.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/mixkit-cartoon-fart-sound-2891.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-cartoon-fart-sound-2891.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/mixkit-cartoon-laugh-voice-2882.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-cartoon-laugh-voice-2882.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/mixkit-falling-into-mud-surface-385.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-falling-into-mud-surface-385.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/mixkit-funny-cartoon-fast-splat-2889.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-funny-cartoon-fast-splat-2889.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/mixkit-funny-clown-horn-sounds-2886.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-funny-clown-horn-sounds-2886.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/mixkit-long-kiss-clean-sound-2188.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-long-kiss-clean-sound-2188.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/mixkit-wet-accident-fart-3041.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-wet-accident-fart-3041.wav` | Batch B source-udder effects |
+| `newsmuncher/static/audio/udder/suspense.wav` | MOVE | `newsmuncher/static/audio/effects/udder/suspense.wav` | Batch B source-udder effects |
 | `newsmuncher/static/creation-meta.js` | MOVE | `newsmuncher/static/js/creation-meta.js` | Batch C JavaScript |
 | `newsmuncher/static/embellish.js` | MOVE | `newsmuncher/static/js/embellish.js` | Batch C JavaScript |
 | `newsmuncher/static/image-background.js` | MOVE | `newsmuncher/static/js/image-background.js` | Batch C JavaScript |
 | `newsmuncher/static/image-colors.js` | MOVE | `newsmuncher/static/js/image-colors.js` | Batch C JavaScript |
 | `newsmuncher/static/image-loading.js` | MOVE | `newsmuncher/static/js/image-loading.js` | Batch C JavaScript |
-| `newsmuncher/static/image-stub.svg` | MOVE | `newsmuncher/static/images/image-stub.svg` | Batch B image asset |
+| `newsmuncher/static/image-stub.svg` | KEEP | `newsmuncher/static/image-stub.svg` | Persisted public URL; compatibility requires original path |
 | `newsmuncher/static/images/Furry Cow-Spot Button Sprite Sheet.png` | OBSOLETE | `newsmuncher/static/images/Furry Cow-Spot Button Sprite Sheet.png` | Audit candidate; retain until deletion is approved |
 | `newsmuncher/static/images/Whimsical Fur-Button Gallery Interface.png` | OBSOLETE | `newsmuncher/static/images/Whimsical Fur-Button Gallery Interface.png` | Audit candidate; retain until deletion is approved |
 | `newsmuncher/static/images/buttons/Coral Arrow on Cowhide Cushion.png` | KEEP | `newsmuncher/static/images/buttons/Coral Arrow on Cowhide Cushion.png` | Already appropriate or compatibility-sensitive |
@@ -184,13 +195,13 @@ Summary: **100 MOVE, 101 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
 | `newsmuncher/static/images/buttons/create-idle.png` | KEEP | `newsmuncher/static/images/buttons/create-idle.png` | Already appropriate or compatibility-sensitive |
 | `newsmuncher/static/images/buttons/gallery-idle.png` | KEEP | `newsmuncher/static/images/buttons/gallery-idle.png` | Already appropriate or compatibility-sensitive |
 | `newsmuncher/static/images/munge button/Furry Cow Udder Button Asset Sheet.png` | OBSOLETE | `newsmuncher/static/images/munge button/Furry Cow Udder Button Asset Sheet.png` | Audit candidate; retain until deletion is approved |
-| `newsmuncher/static/images/munge button/munge-body.png` | MOVE | `newsmuncher/static/images/munge/munge-body.png` | Batch B normalize MUNGE image directory |
-| `newsmuncher/static/images/munge button/munge-teat-1.png` | MOVE | `newsmuncher/static/images/munge/munge-teat-1.png` | Batch B normalize MUNGE image directory |
-| `newsmuncher/static/images/munge button/munge-teat-2.png` | MOVE | `newsmuncher/static/images/munge/munge-teat-2.png` | Batch B normalize MUNGE image directory |
-| `newsmuncher/static/images/munge button/munge-teat-3.png` | MOVE | `newsmuncher/static/images/munge/munge-teat-3.png` | Batch B normalize MUNGE image directory |
-| `newsmuncher/static/images/munge button/munge-teat-4.png` | MOVE | `newsmuncher/static/images/munge/munge-teat-4.png` | Batch B normalize MUNGE image directory |
-| `newsmuncher/static/images/munge button/munge-teat-5.png` | MOVE | `newsmuncher/static/images/munge/munge-teat-5.png` | Batch B normalize MUNGE image directory |
-| `newsmuncher/static/images/munge button/munge-teat-6.png` | MOVE | `newsmuncher/static/images/munge/munge-teat-6.png` | Batch B normalize MUNGE image directory |
+| `newsmuncher/static/images/munge button/munge-body.png` | MOVE | `newsmuncher/static/images/udders/munge/munge-body.png` | Batch B normalize MUNGE image directory |
+| `newsmuncher/static/images/munge button/munge-teat-1.png` | MOVE | `newsmuncher/static/images/udders/munge/munge-teat-1.png` | Batch B normalize MUNGE image directory |
+| `newsmuncher/static/images/munge button/munge-teat-2.png` | MOVE | `newsmuncher/static/images/udders/munge/munge-teat-2.png` | Batch B normalize MUNGE image directory |
+| `newsmuncher/static/images/munge button/munge-teat-3.png` | MOVE | `newsmuncher/static/images/udders/munge/munge-teat-3.png` | Batch B normalize MUNGE image directory |
+| `newsmuncher/static/images/munge button/munge-teat-4.png` | MOVE | `newsmuncher/static/images/udders/munge/munge-teat-4.png` | Batch B normalize MUNGE image directory |
+| `newsmuncher/static/images/munge button/munge-teat-5.png` | MOVE | `newsmuncher/static/images/udders/munge/munge-teat-5.png` | Batch B normalize MUNGE image directory |
+| `newsmuncher/static/images/munge button/munge-teat-6.png` | MOVE | `newsmuncher/static/images/udders/munge/munge-teat-6.png` | Batch B normalize MUNGE image directory |
 | `newsmuncher/static/images/udder/cow-body.png` | OBSOLETE | `newsmuncher/static/images/udder/cow-body.png` | Audit candidate; retain until deletion is approved |
 | `newsmuncher/static/images/udder/full-udder.png` | OBSOLETE | `newsmuncher/static/images/udder/full-udder.png` | Audit candidate; retain until deletion is approved |
 | `newsmuncher/static/images/udder/master_udder.png` | OBSOLETE | `newsmuncher/static/images/udder/master_udder.png` | Audit candidate; retain until deletion is approved |
@@ -200,18 +211,18 @@ Summary: **100 MOVE, 101 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
 | `newsmuncher/static/images/udder/teat-4.png` | OBSOLETE | `newsmuncher/static/images/udder/teat-4.png` | Audit candidate; retain until deletion is approved |
 | `newsmuncher/static/images/udder/teat-5.png` | OBSOLETE | `newsmuncher/static/images/udder/teat-5.png` | Audit candidate; retain until deletion is approved |
 | `newsmuncher/static/images/udder/udder-body.png` | OBSOLETE | `newsmuncher/static/images/udder/udder-body.png` | Audit candidate; retain until deletion is approved |
-| `newsmuncher/static/images/udder/udder-master-body.png` | KEEP | `newsmuncher/static/images/udder/udder-master-body.png` | Already appropriate or compatibility-sensitive |
+| `newsmuncher/static/images/udder/udder-master-body.png` | MOVE | `newsmuncher/static/images/udders/source/udder-master-body.png` | Batch B active source-udder artwork |
 | `newsmuncher/static/images/udder/udder-source.png` | OBSOLETE | `newsmuncher/static/images/udder/udder-source.png` | Audit candidate; retain until deletion is approved |
-| `newsmuncher/static/images/udder/udder-teat-1.png` | KEEP | `newsmuncher/static/images/udder/udder-teat-1.png` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/images/udder/udder-teat-2.png` | KEEP | `newsmuncher/static/images/udder/udder-teat-2.png` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/images/udder/udder-teat-3.png` | KEEP | `newsmuncher/static/images/udder/udder-teat-3.png` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/images/udder/udder-teat-4.png` | KEEP | `newsmuncher/static/images/udder/udder-teat-4.png` | Already appropriate or compatibility-sensitive |
-| `newsmuncher/static/images/udder/udder-teat-5.png` | KEEP | `newsmuncher/static/images/udder/udder-teat-5.png` | Already appropriate or compatibility-sensitive |
+| `newsmuncher/static/images/udder/udder-teat-1.png` | MOVE | `newsmuncher/static/images/udders/source/udder-teat-1.png` | Batch B active source-udder artwork |
+| `newsmuncher/static/images/udder/udder-teat-2.png` | MOVE | `newsmuncher/static/images/udders/source/udder-teat-2.png` | Batch B active source-udder artwork |
+| `newsmuncher/static/images/udder/udder-teat-3.png` | MOVE | `newsmuncher/static/images/udders/source/udder-teat-3.png` | Batch B active source-udder artwork |
+| `newsmuncher/static/images/udder/udder-teat-4.png` | MOVE | `newsmuncher/static/images/udders/source/udder-teat-4.png` | Batch B active source-udder artwork |
+| `newsmuncher/static/images/udder/udder-teat-5.png` | MOVE | `newsmuncher/static/images/udders/source/udder-teat-5.png` | Batch B active source-udder artwork |
 | `newsmuncher/static/jingles.js` | MOVE | `newsmuncher/static/js/jingles.js` | Batch C JavaScript |
 | `newsmuncher/static/mode-nav.js` | MOVE | `newsmuncher/static/js/mode-nav.js` | Batch C JavaScript |
 | `newsmuncher/static/munge-control.js` | MOVE | `newsmuncher/static/js/munge-control.js` | Batch C JavaScript |
 | `newsmuncher/static/narration.js` | REVIEW | `newsmuncher/static/narration.js` | Historical compatibility or tooling boundary |
-| `newsmuncher/static/parchment.png` | MOVE | `newsmuncher/static/images/parchment.png` | Batch B image asset |
+| `newsmuncher/static/parchment.png` | MOVE | `newsmuncher/static/images/backgrounds/parchment.png` | Batch B parchment background |
 | `newsmuncher/static/profile-editing.js` | OBSOLETE | `newsmuncher/static/profile-editing.js` | Audit candidate; retain until deletion is approved |
 | `newsmuncher/static/promotion-gallery.css` | MOVE | `newsmuncher/static/css/promotion-gallery.css` | Batch C CSS |
 | `newsmuncher/static/promotion-gallery.js` | MOVE | `newsmuncher/static/js/promotion-gallery.js` | Batch C JavaScript |
