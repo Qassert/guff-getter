@@ -9,7 +9,7 @@ class JingleFrontendTests(unittest.TestCase):
     def test_javascript(self):
         subprocess.run(["node", "tests/jingles.test.js"], check=True)
         for file in ("jingles.js", "script.js"):
-            subprocess.run(["node", "--check", "newsmuncher/static/" + file], check=True)
+            subprocess.run(["node", "--check", "newsmuncher/static/js/creation/" + file], check=True)
 
     def test_template_controls_and_unique_ids(self):
         env = Environment(loader=FileSystemLoader("newsmuncher/templates"))
@@ -36,7 +36,7 @@ class JingleFrontendTests(unittest.TestCase):
         self.assertNotIn('savedJinglePlay', html)
         self.assertNotIn('savedJingleStop', html)
         self.assertNotIn('jingleUI.playSaved()', html)
-        script = Path("newsmuncher/static/script.js").read_text()
+        script = Path("newsmuncher/static/js/creation/script.js").read_text()
         self.assertIn('jingleUI.discover();', script.split('window.onload =')[1])
         self.assertIn('jingleUI.discover();', script.split('function bankThisBeauty()')[1].split('async function loadRewriteImage')[0])
         self.assertIn('aria-live="polite"', html)

@@ -63,6 +63,15 @@ No empty `models`, `repositories`, or `migrations` package is proposed. Current 
 - Existing stylesheet and affected JavaScript cache tokens were advanced to `static-assets-b1` so browsers fetch references to the new paths.
 - Batch B changes paths and references only. Image/audio bytes, generated media, animations, playback logic, API contracts, database paths and provider code remain unchanged.
 
+## Batch C implementation
+
+- Eleven Creation scripts moved unchanged to `static/js/creation/`; Gallery JavaScript moved to `static/js/gallery/`; shared mode navigation moved to `static/js/shared/`.
+- Shared/base CSS moved to `static/css/shared/`; Gallery CSS moved to `static/css/gallery/`.
+- Script tag order is unchanged. Templates now load the new URLs with the common `frontend-c1` cache token.
+- CSS parchment references use `../../images/backgrounds/parchment.png`, preserving the resolved `/static/images/backgrounds/parchment.png` URL after the stylesheets moved two levels deeper.
+- Inactive historical `static/narration.js` and obsolete `static/profile-editing.js` remain at their existing paths pending a separate compatibility/deletion decision.
+- No JavaScript or CSS content was refactored beyond the required CSS-relative asset path correction.
+
 ## Complete tracked-file map
 
 Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
@@ -178,11 +187,11 @@ Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
 | `newsmuncher/static/audio/udder/mixkit-long-kiss-clean-sound-2188.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-long-kiss-clean-sound-2188.wav` | Batch B source-udder effects |
 | `newsmuncher/static/audio/udder/mixkit-wet-accident-fart-3041.wav` | MOVE | `newsmuncher/static/audio/effects/udder/mixkit-wet-accident-fart-3041.wav` | Batch B source-udder effects |
 | `newsmuncher/static/audio/udder/suspense.wav` | MOVE | `newsmuncher/static/audio/effects/udder/suspense.wav` | Batch B source-udder effects |
-| `newsmuncher/static/creation-meta.js` | MOVE | `newsmuncher/static/js/creation-meta.js` | Batch C JavaScript |
-| `newsmuncher/static/embellish.js` | MOVE | `newsmuncher/static/js/embellish.js` | Batch C JavaScript |
-| `newsmuncher/static/image-background.js` | MOVE | `newsmuncher/static/js/image-background.js` | Batch C JavaScript |
-| `newsmuncher/static/image-colors.js` | MOVE | `newsmuncher/static/js/image-colors.js` | Batch C JavaScript |
-| `newsmuncher/static/image-loading.js` | MOVE | `newsmuncher/static/js/image-loading.js` | Batch C JavaScript |
+| `newsmuncher/static/creation-meta.js` | MOVE | `newsmuncher/static/js/creation/creation-meta.js` | Batch C Creation JavaScript |
+| `newsmuncher/static/embellish.js` | MOVE | `newsmuncher/static/js/creation/embellish.js` | Batch C Creation JavaScript |
+| `newsmuncher/static/image-background.js` | MOVE | `newsmuncher/static/js/creation/image-background.js` | Batch C Creation JavaScript |
+| `newsmuncher/static/image-colors.js` | MOVE | `newsmuncher/static/js/creation/image-colors.js` | Batch C Creation JavaScript |
+| `newsmuncher/static/image-loading.js` | MOVE | `newsmuncher/static/js/creation/image-loading.js` | Batch C Creation JavaScript |
 | `newsmuncher/static/image-stub.svg` | KEEP | `newsmuncher/static/image-stub.svg` | Persisted public URL; compatibility requires original path |
 | `newsmuncher/static/images/Furry Cow-Spot Button Sprite Sheet.png` | OBSOLETE | `newsmuncher/static/images/Furry Cow-Spot Button Sprite Sheet.png` | Audit candidate; retain until deletion is approved |
 | `newsmuncher/static/images/Whimsical Fur-Button Gallery Interface.png` | OBSOLETE | `newsmuncher/static/images/Whimsical Fur-Button Gallery Interface.png` | Audit candidate; retain until deletion is approved |
@@ -218,19 +227,19 @@ Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
 | `newsmuncher/static/images/udder/udder-teat-3.png` | MOVE | `newsmuncher/static/images/udders/source/udder-teat-3.png` | Batch B active source-udder artwork |
 | `newsmuncher/static/images/udder/udder-teat-4.png` | MOVE | `newsmuncher/static/images/udders/source/udder-teat-4.png` | Batch B active source-udder artwork |
 | `newsmuncher/static/images/udder/udder-teat-5.png` | MOVE | `newsmuncher/static/images/udders/source/udder-teat-5.png` | Batch B active source-udder artwork |
-| `newsmuncher/static/jingles.js` | MOVE | `newsmuncher/static/js/jingles.js` | Batch C JavaScript |
-| `newsmuncher/static/mode-nav.js` | MOVE | `newsmuncher/static/js/mode-nav.js` | Batch C JavaScript |
-| `newsmuncher/static/munge-control.js` | MOVE | `newsmuncher/static/js/munge-control.js` | Batch C JavaScript |
+| `newsmuncher/static/jingles.js` | MOVE | `newsmuncher/static/js/creation/jingles.js` | Batch C Creation JavaScript |
+| `newsmuncher/static/mode-nav.js` | MOVE | `newsmuncher/static/js/shared/mode-nav.js` | Batch C shared navigation |
+| `newsmuncher/static/munge-control.js` | MOVE | `newsmuncher/static/js/creation/munge-control.js` | Batch C Creation JavaScript |
 | `newsmuncher/static/narration.js` | REVIEW | `newsmuncher/static/narration.js` | Historical compatibility or tooling boundary |
 | `newsmuncher/static/parchment.png` | MOVE | `newsmuncher/static/images/backgrounds/parchment.png` | Batch B parchment background |
 | `newsmuncher/static/profile-editing.js` | OBSOLETE | `newsmuncher/static/profile-editing.js` | Audit candidate; retain until deletion is approved |
-| `newsmuncher/static/promotion-gallery.css` | MOVE | `newsmuncher/static/css/promotion-gallery.css` | Batch C CSS |
-| `newsmuncher/static/promotion-gallery.js` | MOVE | `newsmuncher/static/js/promotion-gallery.js` | Batch C JavaScript |
-| `newsmuncher/static/script.js` | MOVE | `newsmuncher/static/js/script.js` | Batch C JavaScript |
-| `newsmuncher/static/source-udder.js` | MOVE | `newsmuncher/static/js/source-udder.js` | Batch C JavaScript |
-| `newsmuncher/static/styles.css` | MOVE | `newsmuncher/static/css/styles.css` | Batch C CSS |
-| `newsmuncher/static/udder-sounds.js` | MOVE | `newsmuncher/static/js/udder-sounds.js` | Batch C JavaScript |
-| `newsmuncher/static/video.js` | MOVE | `newsmuncher/static/js/video.js` | Batch C JavaScript |
+| `newsmuncher/static/promotion-gallery.css` | MOVE | `newsmuncher/static/css/gallery/promotion-gallery.css` | Batch C Gallery CSS |
+| `newsmuncher/static/promotion-gallery.js` | MOVE | `newsmuncher/static/js/gallery/promotion-gallery.js` | Batch C Gallery JavaScript |
+| `newsmuncher/static/script.js` | MOVE | `newsmuncher/static/js/creation/script.js` | Batch C Creation JavaScript |
+| `newsmuncher/static/source-udder.js` | MOVE | `newsmuncher/static/js/creation/source-udder.js` | Batch C Creation JavaScript |
+| `newsmuncher/static/styles.css` | MOVE | `newsmuncher/static/css/shared/styles.css` | Batch C shared/base CSS |
+| `newsmuncher/static/udder-sounds.js` | MOVE | `newsmuncher/static/js/creation/udder-sounds.js` | Batch C Creation JavaScript |
+| `newsmuncher/static/video.js` | MOVE | `newsmuncher/static/js/creation/video.js` | Batch C Creation JavaScript |
 | `newsmuncher/templates/adopt_pet.html` | KEEP | `newsmuncher/templates/adopt_pet.html` | Already appropriate or compatibility-sensitive |
 | `newsmuncher/templates/base.html` | KEEP | `newsmuncher/templates/base.html` | Already appropriate or compatibility-sensitive |
 | `newsmuncher/templates/login_pet.html` | KEEP | `newsmuncher/templates/login_pet.html` | Already appropriate or compatibility-sensitive |

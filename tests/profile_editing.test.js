@@ -10,7 +10,7 @@ assert(html.includes('aria-label="{{ label }}"'));
 assert(html.includes('aria-label="MUNGE IT"'));assert(html.includes('>NOMINATE<'));
 for(const removed of ['>EDIT<','>SAVE<','>CANCEL<','IMAGE GENERATION MODE','SHIZZALISE'])assert(!html.includes(removed));
 assert(!html.includes("path='profile-editing.js'"));
-const css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
+const css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
 assert.match(css,/#sourceEditor\s*\{[^}]*padding-top:\s*clamp\(107px, 13\.92vw, 136px\)/s);
 assert.match(css,/#responseEditor\s*\{\s*padding-top:\s*clamp\(10px, 1\.5vw, 16px\)/);
 assert(!css.includes(':is(.profile-container, #outputContainer)::after'));

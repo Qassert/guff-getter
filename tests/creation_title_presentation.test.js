@@ -1,9 +1,9 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const creator=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');
 const gallery=fs.readFileSync('newsmuncher/templates/promotion_gallery.html','utf8');
-const galleryJs=fs.readFileSync('newsmuncher/static/promotion-gallery.js','utf8');
+const galleryJs=fs.readFileSync('newsmuncher/static/js/gallery/promotion-gallery.js','utf8');
 const galleryService=fs.readFileSync('newsmuncher/services/promotion_gallery.py','utf8');
-const creatorJs=fs.readFileSync('newsmuncher/static/script.js','utf8');
+const creatorJs=fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8');
 const jingle=fs.readFileSync('newsmuncher/services/jingle_brief.py','utf8');
 
 test('Creator retains source and generated titles as hidden data and renders body fields only',()=>{

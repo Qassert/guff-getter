@@ -92,7 +92,7 @@ def test_real_seed_and_button_layout(api):
     import re
     labels = re.findall(r'<button[^>]*class="source-choice udder-teat"[^>]*aria-label="([^"]+)"', html)
     assert labels == ['DATING', 'DRIVEL', 'WIKIPEDIA', 'POEM', 'PEOPLE']
-    css = (ROOT / 'newsmuncher/static/styles.css').read_text()
+    css = (ROOT / 'newsmuncher/static/css/shared/styles.css').read_text()
     block = css.split('.profile-page .nonsense-container, .profile-page .generation-controls {')[1].split('}')[0]
     assert 'justify-content: center' in block and 'left: 50%' in block
     assert 'flex-wrap: wrap' in css.split('.nonsense-container {')[1].split('}')[0]

@@ -1,6 +1,6 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
-const {AnimationUI} = require('../newsmuncher/static/video.js');
+const {AnimationUI} = require('../newsmuncher/static/js/creation/video.js');
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a;reject=b;}); return {promise,resolve,reject}; };
 const response = data => ({ok:true,json:async()=>data});
 function setup(fetcher) {
@@ -63,7 +63,7 @@ test('real DOM binding keeps animation automatic with no generation button', asy
             pause(){},load(){},removeAttribute(){this.src='';},getAttribute(){return this.src;}};
     }
     const context={document:{getElementById:id=>elements[id]},addEventListener(){},setTimeout,clearTimeout,fetch:async()=>response({can_generate:true})};
-    vm.createContext(context); vm.runInContext(fs.readFileSync('newsmuncher/static/video.js','utf8'),context);
+    vm.createContext(context); vm.runInContext(fs.readFileSync('newsmuncher/static/js/creation/video.js','utf8'),context);
     await context.videoUI.show({nominated:true,rewrite_id:'a'});
     assert(elements.animationControls.hidden);
     context.videoUI.render({video_status:'started',can_generate:false});
@@ -82,13 +82,13 @@ test('real DOM binding keeps animation automatic with no generation button', asy
     await context.videoUI.act();
     assert(!template.includes('animationPreview'));
     assert(!template.includes('<video'));
-    const css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
+    const css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
     assert.match(css,/\.image-panel \.creation-animation \{ position: absolute; inset: 0; width: 100%; height: 100%/);
     assert.match(css,/\.image-panel\.animation-playing \.creation-animation \{ opacity: 1/);
 });
 
 test('Creator restore accepts an exact gallery rewrite selector without generating media',()=>{
-    const fs=require('node:fs'); const script=fs.readFileSync('newsmuncher/static/script.js','utf8');
+    const fs=require('node:fs'); const script=fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8');
     assert.match(script,/new URLSearchParams\(window\.location\.search\)\.get\('rewrite_id'\)/);
     assert.match(script,/fetch\(`\/temp\/image_result\/\$\{encodeURIComponent\(id\)\}`/);
 });
@@ -109,7 +109,7 @@ for (const operation of ['show/stop', 'poll scheduling']) {
                 cancelled.push(timer);
             }
         `, context);
-        vm.runInContext(fs.readFileSync('newsmuncher/static/video.js', 'utf8'), context);
+        vm.runInContext(fs.readFileSync('newsmuncher/static/js/creation/video.js', 'utf8'), context);
         const calls = [], states = [];
         const ui = new context.module.exports.AnimationUI({
             view: {stop() {}, render(data) { states.push(data); }},
@@ -143,7 +143,7 @@ for (const operation of ['show/stop', 'poll scheduling']) {
     });
 }
 
-const {CreationVideo} = require('../newsmuncher/static/video.js');
+const {CreationVideo} = require('../newsmuncher/static/js/creation/video.js');
 function visualSetup(start = () => Promise.resolve()) {
     const players=[], shown=[], messages=[], playback=[];
     let imageReady=true, reduced=false;

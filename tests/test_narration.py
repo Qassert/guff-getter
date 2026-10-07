@@ -301,7 +301,7 @@ def test_api_range_status_auth_and_missing_file(setup):
 
 
 def test_frontend_and_template():
-    subprocess.run(['node', '--check', 'newsmuncher/static/script.js'], check=True)
+    subprocess.run(['node', '--check', 'newsmuncher/static/js/creation/script.js'], check=True)
     from jinja2 import Environment, FileSystemLoader
     env = Environment(loader=FileSystemLoader('newsmuncher/templates'))
     env.globals['url_for'] = lambda name, **kw: '/static/' + kw['path']

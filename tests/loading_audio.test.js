@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {LoadingAudio,ImageShuffle,LOADING_JINGLE_OFFSET_SECONDS}=require('../newsmuncher/static/image-loading.js');
+const {LoadingAudio,ImageShuffle,LOADING_JINGLE_OFFSET_SECONDS}=require('../newsmuncher/static/js/creation/image-loading.js');
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 function setup({duration=10,blocked=false}={}) {
  const players=[],timers=new Map();let id=0;

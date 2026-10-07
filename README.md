@@ -20,7 +20,8 @@ database services or deployment were used for this cleanup.
 - `newsmuncher/utils/`: prompt preparation, rewriting, and file utilities.
 - `newsmuncher/endpoints.py`: API URL definitions.
 - `newsmuncher/templates/`: HTML templates.
-- `newsmuncher/static/`: JavaScript and CSS plus grouped UI images and audio, served at `/static`.
+- `newsmuncher/static/js/`: active Creation, Gallery and shared browser modules.
+- `newsmuncher/static/css/`: shared/base and Gallery stylesheets.
 - `newsmuncher/static/images/`: button artwork, source/MUNGE udder assemblies and backgrounds.
 - `newsmuncher/static/audio/`: spoken control voices and interaction effects grouped by purpose.
 - `newsmuncher/resources/prompts/rewrite.txt`: rewrite prompt.

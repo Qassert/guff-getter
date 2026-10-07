@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Gallery · NewsMuncher{% endblock %}
-{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='promotion-gallery.css') }}?v=static-assets-b1">{% endblock %}
+{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=frontend-c1">{% endblock %}
 {% block body_attributes %} class="promotion-gallery-page"{% endblock %}
 {% block header %}{% endblock %}
 {% block background %}<div id="galleryBackdrop" class="gallery-backdrop" aria-hidden="true"><img id="galleryBackdropImage" alt=""></div>{% endblock %}
@@ -55,4 +55,4 @@
 </section>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='mode-nav.js') }}" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='promotion-gallery.js') }}?v=static-assets-b1" defer></script>{% endif %}{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=frontend-c1" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=frontend-c1" defer></script>{% endif %}{% endblock %}

@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {SourceUdder}=require('../newsmuncher/static/source-udder.js');
+const {SourceUdder}=require('../newsmuncher/static/js/creation/source-udder.js');
 
 function element(className=''){
  const listeners={},children=[],classes=new Set(className.split(' ').filter(Boolean));
@@ -48,7 +48,7 @@ test('rapid clicks retain independently coloured spills with independent lifetim
 });
 
 test('template keeps five native accessible actions and page-level unclipped effect layer',()=>{
- const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
+ const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
  assert.equal((html.match(/class="source-choice udder-teat"/g)||[]).length,1); // Jinja loop source
  for(const action of ['fetch_dating_from_api','fetch_historicalFunny_from_api','fetch_wikipedia_into_api','fetch_poem_into_api','fetch_people_into_api'])assert(html.includes(`'${action}'`));
  assert(html.includes("fetchAndDisplay('{{ action }}')"));
@@ -68,7 +68,7 @@ test('template keeps five native accessible actions and page-level unclipped eff
 });
 
 test('outer teat resting offsets move hit areas without touching animation transforms',()=>{
- const css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
+ const css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
  assert.match(css,/\.udder-teat:first-of-type\s*\{\s*--teat-offset-y:\s*-12px;/);
  assert.match(css,/\.udder-teat:last-of-type\s*\{\s*--teat-offset-x:\s*-12px;\s*--teat-offset-y:\s*-12px;/);
  assert.match(css,/left:\s*calc\(var\(--teat-x\) \+ var\(--teat-offset-x\)\)/);

@@ -1,5 +1,5 @@
 const {test}=require('node:test'), assert=require('node:assert/strict'), fs=require('node:fs');
-const {ImageShuffle}=require('../newsmuncher/static/image-loading.js');
+const {ImageShuffle}=require('../newsmuncher/static/js/creation/image-loading.js');
 function setup(images, reduced=false) {
  const shown=[], timers=[], cancelled=[];let stopped=0, fetches=0;
  const ui=new ImageShuffle({view:{start(){},show(url,animate){shown.push({url,animate});},stop(){stopped++;}},
@@ -29,7 +29,7 @@ test('completion freezes visuals until real image loads; late retrieval ignored 
  resolve({ok:true,json:async()=>({images})});await work;assert.equal(t.shown.length,1);
 });
 test('shared loader, centered redo/overlay, stable clipped pane and reduced motion styles',()=>{
- const css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
+ const css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
  assert.match(css,/\.loader \{/);assert(!css.includes('.spinner'));
  assert.match(css,/\.creation-actions\s*\{[^}]*justify-content:\s*center/);
  assert.match(css,/\.creation-actions\s*\{[^}]*flex-wrap:\s*wrap/);

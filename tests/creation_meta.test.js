@@ -1,7 +1,7 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const {CreationMeta} = require('../newsmuncher/static/creation-meta.js');
+const {CreationMeta} = require('../newsmuncher/static/js/creation/creation-meta.js');
 
 test('metadata line includes only populated values with dynamic separators', () => {
     const node = {textContent: '', hidden: true};
@@ -31,15 +31,15 @@ test('template has one metadata line, one shared action row and correct script o
     assert(!html.includes('id="animationButton"'));
     assert(!html.includes('id="imageStyle"'));
     assert(!html.includes('id="jingleGenre"'));
-    assert(html.indexOf("path='creation-meta.js'") < html.indexOf("path='video.js'"));
+    assert(html.indexOf("path='js/creation/creation-meta.js'") < html.indexOf("path='js/creation/video.js'"));
     assert(!html.includes("path='narration.js'"));
     assert(!html.includes('narrationButton'));
     assert(!html.includes('VOICE:'));
-    assert(html.indexOf("path='creation-meta.js'") < html.indexOf("path='jingles.js'"));
+    assert(html.indexOf("path='js/creation/creation-meta.js'") < html.indexOf("path='js/creation/jingles.js'"));
 });
 
 test('shared action CSS centres, wraps and removes hidden controls from layout', () => {
-    const css = fs.readFileSync('newsmuncher/static/styles.css', 'utf8');
+    const css = fs.readFileSync('newsmuncher/static/css/shared/styles.css', 'utf8');
     assert.match(css, /\.creation-actions\s*\{[^}]*justify-content:\s*center/);
     assert.match(css, /\.creation-actions\s*\{[^}]*flex-wrap:\s*wrap/);
     assert.match(css, /\.creation-actions\s*>\s*\[hidden\][^{]*\{\s*display:\s*none/);

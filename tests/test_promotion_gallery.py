@@ -288,7 +288,7 @@ def test_gallery_page_and_navigation(routes):
 
 
 def test_polish_accessibility_and_scoped_styles():
-    css = Path('newsmuncher/static/promotion-gallery.css').read_text()
+    css = Path('newsmuncher/static/css/gallery/promotion-gallery.css').read_text()
     template = Path('newsmuncher/templates/promotion_gallery.html').read_text()
     assert '@media (prefers-reduced-motion: reduce)' in css
     assert '.gallery-page.turning { animation: none; }' in css
@@ -301,8 +301,8 @@ def test_polish_accessibility_and_scoped_styles():
 def test_creator_and_viewing_share_compact_mode_navigation():
     creator = Path('newsmuncher/templates/pet_profile.html').read_text()
     gallery = Path('newsmuncher/templates/promotion_gallery.html').read_text()
-    shared_css = Path('newsmuncher/static/styles.css').read_text()
-    gallery_css = Path('newsmuncher/static/promotion-gallery.css').read_text()
+    shared_css = Path('newsmuncher/static/css/shared/styles.css').read_text()
+    gallery_css = Path('newsmuncher/static/css/gallery/promotion-gallery.css').read_text()
 
     assert 'aria-current="page">CREATOR' in creator
     assert 'VIEWING<span class="mode-nav-action"> — VIEW GALLERY</span>' in creator

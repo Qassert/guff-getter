@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {MungeControl}=require('../newsmuncher/static/munge-control.js');
+const {MungeControl}=require('../newsmuncher/static/js/creation/munge-control.js');
 function element(className=''){
  const listeners={},classes=new Set(className.split(' ').filter(Boolean));
  const style={values:{'--axis-x':'1','--axis-y':'0'},setProperty(k,v){this.values[k]=v;},getPropertyValue(k){return this.values[k]||'';}};
@@ -21,11 +21,11 @@ test('pointer motion bends along configured radial axis and touch does not hover
 });
 
 test('template and CSS assemble one supplied body with six separately tuned teat hit areas',()=>{
- const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),css=fs.readFileSync('newsmuncher/static/styles.css','utf8');
+ const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
  assert(html.includes('images/udders/munge/munge-body.png'));assert.equal((html.match(/class="munge-teat munge-teat-/g)||[]).length,1);
  for(const name of ['upper-left','upper-right','left','right','lower-left','lower-right'])assert(html.includes(`('${name}'`)||html.includes(`, '${name}'`));
  for(let i=1;i<=6;i++)assert(html.includes(`munge-teat-' ~ image`));
- const script=fs.readFileSync('newsmuncher/static/script.js','utf8');assert.match(script,/querySelectorAll\?\.\('\.munge-teat, \.munge-body-button'\)\?\.forEach\(button => button\.addEventListener\('click', confirmData\)\)/);assert(!html.includes('id="mungeButton"'));
+ const script=fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8');assert.match(script,/querySelectorAll\?\.\('\.munge-teat, \.munge-body-button'\)\?\.forEach\(button => button\.addEventListener\('click', confirmData\)\)/);assert(!html.includes('id="mungeButton"'));
  for(const variable of ['--x','--y','--w','--axis-x','--axis-y','--origin-x','--origin-y','--base-rotation'])assert(html.includes(variable));
  assert.match(css,/\.munge-body-button\s*\{[^}]*z-index:\s*1/s);assert.match(css,/\.munge-body\s*\{[^}]*pointer-events:\s*none/s);assert.match(css,/\.munge-teat\s*\{[^}]*z-index:\s*2/s);assert.match(css,/prefers-reduced-motion/);
  const positions={"upper-left":['calc(32% + 16px)','23%'],"upper-right":['calc(68% - 16px)','23%'],left:['calc(26% + 8px)','calc(42% - 21px)'],right:['calc(74% - 6px)','calc(42% - 22px)'],"lower-left":['calc(37% + 20px)','calc(60% - 16px)'],"lower-right":['calc(63% - 12px)','calc(60% - 16px)']};

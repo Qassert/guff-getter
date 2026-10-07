@@ -2,7 +2,7 @@ STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: Singable headlines, versioned ElevenLabs jingles, independent frame styles and saved-audio compatibility
-LAST_COMPLETED_COMMIT: 50d0e45 refactor: organise project documentation
+LAST_COMPLETED_COMMIT: 0bba0f0 refactor: organise static images and audio
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,14 +13,25 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Batch B static UI image/audio reorganisation completed for review on `feature/video-animation`.
-APPROVAL: Batch A committed locally as `50d0e45`; Batch B remains intentionally uncommitted. No obsolete files were deleted.
-NEXT_STEP: Andy reviews Batch B before approving a focused commit or any Batch C JavaScript/CSS reorganisation.
-VALIDATION: Static reference audit checked 61 paths; only the pre-existing missing `gallery-back.png` remains. Local HTTP checks returned 200. Focused tests exactly match Batch A baseline: Node 20/37 and Python 39 passed / 7 failed / 6 subtests. No provider calls.
+CURRENT_TASK: Batch C frontend JavaScript/CSS reorganisation completed for review on `feature/video-animation`.
+APPROVAL: Batch B committed locally as `0bba0f0`; Batch C remains intentionally uncommitted. No obsolete files were deleted.
+NEXT_STEP: Andy reviews Batch C before approving a focused commit or any Batch D backend/service reorganisation.
+VALIDATION: All moved JavaScript passes `node --check`; static reference audit found only the pre-existing `gallery-back.png` issue plus one expected dynamic-path false positive. Local HTTP checks returned 200 for representative moved CSS/JS and the Gallery shell. Full tests exactly match the Batch B baseline: Node 63 passed / 19 failed and Python 280 passed / 11 failed / 105 subtests. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
 EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `gpt-6-luna` → `gpt-6-sol`. Prompts and all other rewrite settings remain unchanged.
+
+## Repository reorganisation Batch C — 2026-10-08
+
+- Moved 13 active JavaScript files and two active stylesheets with `git mv`: Creation scripts now live under `static/js/creation/`, Gallery code under `static/js/gallery/`, shared navigation under `static/js/shared/`, shared CSS under `static/css/shared/` and Gallery CSS under `static/css/gallery/`.
+- Preserved the Creation script loading order and existing global/DOMContentLoaded architecture. Updated Jinja, JavaScript/Python test fixtures, README and status documentation to the new paths; moved static references use the `frontend-c1` cache token.
+- Updated the two moved stylesheets' parchment URL from a root-relative-file assumption to `../../images/backgrounds/parchment.png`. No other CSS, JavaScript behavior or asset contents changed.
+- Retained `static/narration.js` at its compatibility-sensitive historical path and retained the obsolete-but-unapproved `static/profile-editing.js` in place.
+- JavaScript syntax checks passed for every production script. Static reference checking found only the pre-existing missing `images/buttons/gallery-back.png`; its other reported item is the expected runtime-composed `munge-teat-${index}.png` path.
+- Local HTTP verification returned 200 for both moved stylesheets, representative shared/Creation/Gallery JavaScript, and the Gallery page. The rendered Gallery shell references the new shared and Gallery CSS and shared navigation URL.
+- Full Node validation: 63 passed / 19 failed, exactly matching Batch B. Full Python validation: 280 passed / 11 failed / 105 subtests, exactly matching Batch B. No new failures.
+- No provider call, production database access, generated-media mutation, deletion, push or merge. Batch C remains uncommitted for review.
 
 ## Repository reorganisation Batch B — 2026-10-08
 

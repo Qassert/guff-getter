@@ -61,7 +61,8 @@ No live MongoDB writes or live browser-generated jingle during implementation.
 - newsmuncher/config.py, main.py
 - newsmuncher/api/jingles.py
 - newsmuncher/services/jingle_brief.py, jingles.py
-- newsmuncher/static/jingles.js, script.js, styles.css
+- newsmuncher/static/js/creation/jingles.js, newsmuncher/static/js/creation/script.js,
+  newsmuncher/static/css/shared/styles.css
 - newsmuncher/templates/pet_profile.html
 - tests/test_jingle_brief.py, test_jingles.py, test_jingle_frontend.py, jingles.test.js
 

@@ -18,8 +18,8 @@ function setup(blocked = false) {
   }
  };
  vm.createContext(context);
- vm.runInContext(fs.readFileSync('newsmuncher/static/creation-meta.js','utf8')+
-   fs.readFileSync('newsmuncher/static/jingles.js','utf8')+'\nglobalThis.ui=jingleUI;',context);
+ vm.runInContext(fs.readFileSync('newsmuncher/static/js/creation/creation-meta.js','utf8')+
+   fs.readFileSync('newsmuncher/static/js/creation/jingles.js','utf8')+'\nglobalThis.ui=jingleUI;',context);
  return {ui:context.ui,nodes,calls,audios,timers,setAnswer:v=>answer=v,setSaved:v=>savedAnswer=v,setLoading:v=>loading=v,
   complete:(data,ok=true)=>resolvePost({ok,json:async()=>data})};
 }

@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {UdderSounds,MIXKIT_SOUNDS,SUSPENSE_SOUND}=require('../newsmuncher/static/udder-sounds.js');
+const {UdderSounds,MIXKIT_SOUNDS,SUSPENSE_SOUND}=require('../newsmuncher/static/js/creation/udder-sounds.js');
 
 function element(){const listeners={};return{listeners,addEventListener:(name,fn)=>(listeners[name]??=[]).push(fn),dispatch(name,event={}){for(const fn of listeners[name]||[])fn(event);}};}
 class FakeAudio{
@@ -40,7 +40,7 @@ test('rejected playback is swallowed and cleaned up',async()=>{
 });
 
 test('template loads isolated sound module and identifies the existing MUNGE action',()=>{
- const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');assert(html.includes('id="mungeControl"'));assert(html.includes("path='udder-sounds.js'"));assert(html.indexOf('source-udder.js')<html.indexOf('munge-control.js'));assert(html.indexOf('munge-control.js')<html.indexOf('udder-sounds.js'));
+ const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');assert(html.includes('id="mungeControl"'));assert(html.includes("path='js/creation/udder-sounds.js'"));assert(html.indexOf('source-udder.js')<html.indexOf('munge-control.js'));assert(html.indexOf('munge-control.js')<html.indexOf('udder-sounds.js'));
 });
 
 test('six-teat MUNGE set is unique, polyphonic and rerandomises with one suspense per click',()=>{

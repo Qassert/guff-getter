@@ -24,7 +24,7 @@ class ContenderBackendOnlyTests(unittest.TestCase):
     def test_contender_words_absent_from_css(self):
         """CSS for contender words has been removed."""
         import pathlib
-        css_path = pathlib.Path('newsmuncher/static/styles.css')
+        css_path = pathlib.Path('newsmuncher/static/css/shared/styles.css')
         css = css_path.read_text()
         # No CSS rules for .contender-words or .contender-side
         self.assertNotIn('.contender-words', css)
