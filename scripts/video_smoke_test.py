@@ -1,4 +1,4 @@
-"""Standalone, opt-in image-to-video comparison; see video_smoke_test.md.
+"""Standalone, opt-in image-to-video comparison; see docs/diagnostics/video-smoke-test.md.
 
 No NewsMuncher imports, dotenv loading, SDK retries or application integration.
 """

@@ -26,6 +26,8 @@ database services or deployment were used for this cleanup.
 - `data/seeds/`: historical funnies and lonely-hearts JSON source data.
 - `data/avatars/`: existing and uploaded pet images, served at `/avatars`.
 - `data/previews/`: live preview JSON and durable rewrite/jingle SQLite state, excluded from Git.
+- `docs/status/`: feature handovers and implementation history.
+- `docs/diagnostics/`: operator guidance for standalone diagnostic tools.
 - `scripts/`: administrative, diagnostic and explicitly opt-in comparison tools.
 
 ## Repository storage and cleanup boundaries

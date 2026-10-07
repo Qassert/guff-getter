@@ -2,7 +2,7 @@
 
 Standalone CLI: no gallery, nomination or Mongo integration. Shared transport helpers
 now live in `newsmuncher/services/wavespeed.py`; importing them never generates media.
-The separate app integration is documented in `VIDEO_ANIMATION_STATUS.md`.
+The separate app integration is documented in `docs/status/video-animation.md`.
 Uses the existing `requests` dependency; no SDK/install or dependency changes.
 Keys are read only from the process environment: WAVESPEED_API_KEY and FAL_KEY.
 The script does not read `.env`. Never put key values in commands or this document.

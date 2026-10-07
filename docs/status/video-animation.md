@@ -156,7 +156,7 @@ not a second ANIMATE request or the standalone CLI.
 
 ## Changed files
 
-- `.gitignore`, `CURRENT_WORK.md`, `VIDEO_ANIMATION_STATUS.md`
+- `.gitignore`, `CURRENT_WORK.md`, `docs/status/video-animation.md`
 - `newsmuncher/config.py`, `newsmuncher/main.py`
 - `newsmuncher/api/previews.py`, `newsmuncher/api/videos.py`, `newsmuncher/api/promotion_gallery.py`
 - `newsmuncher/services/image_generation.py`, `newsmuncher/services/video.py`,
@@ -165,6 +165,6 @@ not a second ANIMATE request or the standalone CLI.
 - `newsmuncher/static/video.js`, `newsmuncher/static/script.js`, `newsmuncher/static/styles.css`,
   `newsmuncher/static/promotion-gallery.js`, `newsmuncher/static/promotion-gallery.css`
 - `newsmuncher/templates/pet_profile.html`, `newsmuncher/templates/promotion_gallery.html`
-- `scripts/video_smoke_test.py`, `scripts/video_smoke_test.md`
+- `scripts/video_smoke_test.py`, `docs/diagnostics/video-smoke-test.md`
 - `tests/test_video.py`, `tests/test_video_prompt.py`, `tests/video.test.js`,
   `tests/test_promotion_gallery.py`, `tests/promotion_gallery.test.js`

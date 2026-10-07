@@ -1,4 +1,4 @@
-STATUS: ACTIVE
+STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: Singable headlines, versioned ElevenLabs jingles, independent frame styles and saved-audio compatibility
@@ -13,14 +13,99 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Make finished creation jingles play exactly twice and vertically centre MUNGE over the parchment transition strip.
-APPROVAL: Preserve loading-image audio and all generation behavior. No provider calls, commit, push, deployment or main changes.
-NEXT_STEP: Andy manual UX review before tests or checkpointing.
-VALIDATION: Focused frontend 47/47; focused Python 142 passed plus 6 subtests. All provider boundaries mocked; no external calls.
+CURRENT_TASK: Repository reorganisation plan completed and low-risk Batch A documentation moves implemented for review.
+APPROVAL: Batch A is intentionally uncommitted. No obsolete files were deleted and no later batch was started.
+NEXT_STEP: Andy reviews `docs/repository-reorganisation-plan.md` and Batch A before approving a focused commit or Batch B.
+VALIDATION: Checkpoint `309aa54` preserved. Batch A targeted video-smoke tests: 29 passed. Reference scan and Python compilation passed. No provider calls were made.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
 EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `gpt-6-luna` → `gpt-6-sol`. Prompts and all other rewrite settings remain unchanged.
+
+## Repository reorganisation Batch A — 2026-10-07
+
+- Complete 224-file old-path → proposed-path map saved in `docs/repository-reorganisation-plan.md` with MOVE, KEEP, REVIEW and OBSOLETE classifications.
+- Proposed structure keeps runtime/generated data paths fixed, retains active `jingle_service` contracts at top level and defers public static URL, Python import and test-tree changes to separately reviewed batches.
+- Documentation moved with `git mv`:
+  - `JINGLE_IMPLEMENTATION_STATUS.md` → `docs/status/jingle-implementation.md`
+  - `PROMOTION_GALLERY_STATUS.md` → `docs/status/promotion-gallery.md`
+  - `VIDEO_ANIMATION_STATUS.md` → `docs/status/video-animation.md`
+  - `WORD_SHUFFLE_STATUS.md` → `docs/status/word-shuffle.md`
+  - `scripts/video_smoke_test.md` → `docs/diagnostics/video-smoke-test.md`
+- Updated only documentation references, the smoke-test module docstring and README structure listing. Script module paths and behavior are unchanged.
+- Maintenance/diagnostic script moves were deliberately deferred because their module paths are referenced by tests, documentation and operational commands.
+- Targeted offline validation: `tests/test_video_smoke_test.py` 29/29 passed; `scripts/video_smoke_test.py` compiles; no stale old documentation references remain outside the historical mapping/audit record.
+- No new failure, provider call, production database access, generated-media mutation, deletion, commit, push or merge.
+
+## Pre-cleanup audit — 2026-10-07
+
+### Checkpoint and inventory
+
+- Created local-only checkpoint `309aa54` (`checkpoint pre-cleanup application state`) on `feature/video-animation`: 39 files changed, 2,047 insertions and 129 deletions. It has not been pushed or merged; `main` was untouched.
+- Credential-like values, `.env`, generated creation media, caches, virtual environments and ignored runtime artifacts were excluded.
+- Inventory: 224 tracked files (~52.1 MiB); 78 Python files repository-wide (35 under `newsmuncher/`), 31 JavaScript files (15 production static scripts), 2 CSS files, 6 templates and 41 tests.
+- Static media: 34 tracked files under `newsmuncher/static/images/` and 31 under `newsmuncher/static/audio/`.
+- Ignored local environments/caches include `.venv` (~263 MiB), `.venv-modal` (~60 MiB), `.pytest_cache`, bytecode caches and temporary data.
+
+### A — definitely unused / low-risk candidates
+
+- Fourteen unreferenced raster source/reference assets (~18.43 MiB):
+  - `newsmuncher/static/images/Furry Cow-Spot Button Sprite Sheet.png`
+  - `newsmuncher/static/images/Whimsical Fur-Button Gallery Interface.png`
+  - `newsmuncher/static/images/buttons/Furry Cow-Print Button States Spec.png`
+  - `newsmuncher/static/images/munge button/Furry Cow Udder Button Asset Sheet.png`
+  - `newsmuncher/static/images/udder/cow-body.png`, `full-udder.png`, `master_udder.png`, `udder-body.png`, `udder-source.png`
+  - `newsmuncher/static/images/udder/teat-1.png` through `teat-5.png`
+- `newsmuncher/static/profile-editing.js`: no template loads it; tests explicitly assert the retired controller is absent from Creation.
+- Unused imports: `Response` in `api/pets.py`; `Body` in `api/previews.py`; `clean_data` in `jobs/fetch_people.py`; `os` in `jobs/fetch_poem.py` and `jobs/fetch_wikipedia.py`; `json` in `jobs/process_data.py`; `Path` in `scripts/benchmark_jingle.py`; `math` and `Path` in `scripts/clean_word_banks.py`.
+
+### B — probably unused or superseded; verify before removal
+
+- `newsmuncher/endpoints.py`: unreferenced endpoint constants, apparently superseded by current route construction.
+- `utils/file_handler.py`: `load_json()` and `save_json()` have no call sites; active `load_prompt()` must remain.
+- `utils/clean_data.py:process_batch()` has no call sites.
+- `services/video_prompt.py:build_motion_prompt()` is test-only; production uses `build_transition_prompt()`.
+- Hidden `#loader.page-loader` remains in `pet_profile.html` but is forced to `display:none`; current loading feedback is MUNGE. The separate active image-loader and shared `.loader`/`l9` CSS must remain.
+- Likely retired `base.css` selectors include `#titleDescBox`, `.info-textarea`, `.result-heading`, `#crazyExtractBox`, `.confirmation-message` and possibly `.vibrate`; verify each at runtime. `.speech-bubble` and `@keyframes l9` are active.
+- `modal==1.5.5` is outside the active app path and could move from main requirements to the existing `jingle_service` development requirements after verification.
+- MUNGE and udder `suspense.wav` files are byte-identical but both URL roots are active; consolidation requires deliberate reference changes, so neither is directly deletable.
+
+### C — historical compatibility / recovery material
+
+- Narration API/service and `static/narration.js`: generation is retired, but backend read/status/resolve/audio paths preserve historical media and mutation endpoints deliberately return `410`.
+- `jingle_service/`, Modal/ACE-Step comparison/recovery scripts and `.venv-modal`: inactive in the ElevenLabs production path but documented historical/diagnostic tooling.
+- Persisted creations and all ignored generated images, end images, videos, ping-pong derivatives, jingles and narration.
+- Tracked seed data, avatars, word-bank CSVs and claim/accounting data.
+
+### D — active runtime paths/assets
+
+- Creation, Gallery, deletion, Enhance/completion, image/end-image, WaveSpeed video, ping-pong derivation and ElevenLabs jingle code.
+- Source udder: `udder-master-body.png` plus dynamically selected `udder-teat-1.png` through `udder-teat-5.png`.
+- MUNGE: `munge-body.png` plus dynamically selected `munge-teat-1.png` through `munge-teat-6.png`.
+- Current furry navigation/Gallery button images, all 31 tracked audio files, loading-image shuffle audio and hover/click sound pools.
+- Active dependencies: FastAPI, Uvicorn, Pydantic, Jinja2, python-multipart, requests, python-dotenv, certifi, PyMongo, Motor, Passlib/bcrypt, OpenAI and spaCy.
+
+### E — uncertain / owner decision or correction needed
+
+- `pet_profile.html` references `static/images/buttons/gallery-back.png`, but the file is not tracked. BACK appears only with history, making this a latent missing-asset defect rather than unused code.
+- Static cache tokens are ad hoc across templates; consolidation can affect browser caching and should be separate.
+- `.venv-modal` is ignored but ~60 MiB; retention for recovery/diagnostics is an owner decision.
+
+### Offline baseline
+
+- Python: 280 passed, 11 failed, 105 subtests passed, 12 warnings in 4.75 seconds.
+- Frontend Node: 63 passed, 19 failed, 0 skipped (82 total).
+- Provider keys were blank and MongoDB targeted an unavailable local port. No OpenAI, WaveSpeed, ElevenLabs, Modal or other provider calls occurred.
+- Failures were not changed. Most are stale expectations after approved behavior changes: old rewrite model, new teat DOM/canvas, image-only Gallery navigation, two-play jingles, Gallery Enhance imports, versioned video URLs, ping-pong sidecars and current completion/end-image states. Some frontend mocks lack newly used browser/DOM state. Warnings cover Starlette/httpx and `datetime.utcnow()` deprecations.
+
+### Proposed order — requires approval
+
+1. Update stale offline tests and repair/resolve the missing Gallery BACK asset reference so current approved behavior has a trustworthy baseline.
+2. Remove only A-class dead imports, retired controller and confirmed unreferenced artwork in coherent, separately validated batches.
+3. Verify and remove B-class functions/selectors subsystem by subsystem, preserving shared active CSS/helpers.
+4. Separate legacy Modal tooling dependencies from active application dependencies without deleting recovery tooling.
+5. Review narration and legacy jingle compatibility boundaries with Andy before structural removal.
+6. Handle cache-token and duplicate-asset consolidation as separate behavior-aware changes.
 
 ## Creator headline and versioned-jingle checkpoint — 2026-10-05
 

@@ -54,7 +54,7 @@ New Python syntax and JS syntax/template rendering checks passed.
 No live MongoDB writes or live browser-generated jingle during implementation.
 
 ## Files in this feature
-- .gitignore, .env.example, README.md, JINGLE_IMPLEMENTATION_STATUS.md
+- .gitignore, .env.example, README.md, docs/status/jingle-implementation.md
 - data/generated_audio/.gitkeep
 - jingle_service/__init__.py, contract.py, modal_app.py, requirements-dev.txt
 - scripts/benchmark_jingle.py
