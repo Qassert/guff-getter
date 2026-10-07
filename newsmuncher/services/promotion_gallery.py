@@ -16,6 +16,7 @@ from pymongo.write_concern import WriteConcern
 
 from newsmuncher.config import (GENERATED_IMAGES_DIR, GENERATED_AUDIO_DIR,
                                GENERATED_NARRATION_DIR, GENERATED_VIDEO_DIR, JINGLE_STATE_FILE)
+from newsmuncher.services.video_pingpong import service as pingpong
 
 # Same conservative legacy interpretation as nomination_state; explicit false wins.
 NOMINATED = {'$or': [{'nominated': True},
@@ -65,16 +66,10 @@ class PromotionGallery:
                 return None
             path = self.images / f'{image_id}.png'
         elif kind == 'video':
-            state = entry.get('video')
-            if not isinstance(state, dict) or state.get('status') != 'complete':
+            path = self.original_video_path(entry)
+            if not path:
                 return None
-            try:
-                rewrite_id = str(UUID(entry.get('rewrite_id', '')))
-            except (ValueError, TypeError, AttributeError):
-                return None
-            if state.get('rewrite_id') != rewrite_id or state.get('storage_key') != f'{rewrite_id}.mp4':
-                return None
-            path = self.videos / f'{rewrite_id}.mp4'
+            path = pingpong.preferred(path)
         elif kind == 'narration':
             state = entry.get('narration')
             if not isinstance(state, dict) or state.get('entry_id') != key:
@@ -91,6 +86,19 @@ class PromotionGallery:
                     return None
         else:
             return None
+        return path if self.exists(path) else None
+
+    def original_video_path(self, entry):
+        state = entry.get('video')
+        if not isinstance(state, dict) or state.get('status') != 'complete':
+            return None
+        try:
+            rewrite_id = str(UUID(entry.get('rewrite_id', '')))
+        except (ValueError, TypeError, AttributeError):
+            return None
+        if state.get('rewrite_id') != rewrite_id or state.get('storage_key') != f'{rewrite_id}.mp4':
+            return None
+        path = self.videos / f'{rewrite_id}.mp4'
         return path if self.exists(path) else None
 
     def _sidecar_jingle(self, key):
@@ -124,8 +132,32 @@ class PromotionGallery:
             'promoted': entry.get('promoted') is True,
             'seen_count': seen(entry),
             'image_style': entry.get('image_style'),
-            **{kind + '_url': f'/promotion-gallery/items/{key}/media/{kind}'
-               if self.media_path(entry, kind) else None for kind in ('image', 'jingle', 'video')}}
+            'video_derivative_status': self.video_derivative_status(entry),
+            **{kind + '_url': self.media_url(entry, kind) for kind in ('image', 'jingle', 'video')}}
+
+    def video_derivative_status(self, entry):
+        original = self.original_video_path(entry)
+        if not original:
+            return 'unavailable'
+        if pingpong.available(original):
+            return 'ready'
+        if pingpong.failure_reason(original):
+            return 'failed'
+        return 'pending' if pingpong.can_attempt(original) else 'unavailable'
+
+    def media_url(self, entry, kind):
+        path = self.media_path(entry, kind)
+        if not path:
+            return None
+        url = f"/promotion-gallery/items/{entry['_id']}/media/{kind}"
+        if kind != 'video':
+            return url
+        try:
+            stat = path.stat()
+            variant = 'pingpong' if path.name.endswith('-pingpong.mp4') else 'original'
+            return f'{url}?v={variant}-{stat.st_mtime_ns}-{stat.st_size}'
+        except OSError:
+            return url
 
     def select(self, viewer, previous=None):
         # Only IDs/counts are scanned; content/assets are loaded for one item.

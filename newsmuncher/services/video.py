@@ -1,6 +1,7 @@
 """One non-expiring animation claim per existing rewrite; status never generates."""
 from datetime import datetime, timezone
 import hashlib
+import logging
 import os
 from pathlib import Path
 import secrets
@@ -13,7 +14,11 @@ from newsmuncher.config import GENERATED_IMAGES_DIR, GENERATED_VIDEO_DIR
 from newsmuncher.services.image_generation import (store, get_provider, build_end_image_prompt,
     build_transformation_map, choose_image_style)
 from newsmuncher.services.video_prompt import build_transition_prompt
+from newsmuncher.services.video_pingpong import service as pingpong
 from newsmuncher.services.wavespeed import MODEL, create_video, read_image
+
+
+log = logging.getLogger(__name__)
 
 
 class VideoError(Exception):
@@ -84,15 +89,28 @@ class Videos:
                 available = not self.path(key).exists() and not self.path(key).is_symlink()
             except VideoError:
                 available = False
-            return {'rewrite_id': key, 'video_status': 'none', 'can_generate': available}
+            return {'rewrite_id': key, 'video_status': 'none', 'end_image_status': 'none',
+                    'can_generate': available}
         status = video.get('status') if isinstance(video, dict) else 'failed_or_uncertain'
+        end_frame = video.get('end_frame') if isinstance(video, dict) else None
+        end_status = end_frame.get('status', 'none') if isinstance(end_frame, dict) else 'none'
+        if end_status == 'complete':
+            end_path = self.images / f"{end_frame.get('image_id', '')}.png"
+            if end_path.is_symlink() or not end_path.is_file():
+                end_status = 'unavailable'
         if status == 'complete' and self.has_video(key):
             return {'rewrite_id': key, 'video_status': 'complete', 'can_generate': False,
-                    'video_url': f'/videos/{key}/media'}
+                    'end_image_status': end_status, 'video_url': f'/videos/{key}/media'}
         if status in ('queued', 'started') and time.time() - video.get('requested_epoch', 0) < 1800:
-            return {'rewrite_id': key, 'video_status': status, 'can_generate': False}
-        return {'rewrite_id': key, 'video_status': 'failed_or_uncertain', 'can_generate': False,
+            return {'rewrite_id': key, 'video_status': status, 'end_image_status': end_status,
+                    'can_generate': False}
+        result = {'rewrite_id': key, 'video_status': 'failed_or_uncertain', 'can_generate': False,
+                'end_image_status': end_status,
                 'message': 'Animation unavailable or interrupted. Operator review is needed; no automatic retry.'}
+        if (isinstance(end_frame, dict) and end_status in ('started', 'uncertain') and
+                isinstance(end_frame.get('image_id'), str)):
+            result['end_image_retry_attempt_id'] = end_frame['image_id']
+        return result
 
     def status(self, collection, key, owner):
         with self.store.transaction() as db:
@@ -149,9 +167,7 @@ class Videos:
                 raise VideoError(422, 'Stored image is invalid.') from None
             self.directory.mkdir(parents=True, exist_ok=True)
             start_style = state['result'].get('image_style')
-            if not isinstance(start_style, str) or not start_style.strip():
-                raise VideoError(409, 'This historical image has no persisted visual style; animation was not submitted.')
-            start_style = start_style.strip()
+            start_style = start_style.strip() if isinstance(start_style, str) and start_style.strip() else None
             end_style = choose_image_style(exclude=start_style)
             transformation_map = build_transformation_map(state['result'])
             state['video'] = {'rewrite_id': key, 'status': 'queued', 'provider': 'wavespeed',
@@ -162,9 +178,47 @@ class Videos:
                 'requested_epoch': time.time(), 'storage_key': f'{key}.mp4',
                 'end_frame': {'mode': 'composition_reference_end_frame', 'status': 'queued',
                     'image_id': str(uuid4()),
+                    'created_at': now(), 'stage': 'end',
                     'image_style': end_style, 'transformation_map': transformation_map}}
             state['video']['end_frame']['image_prompt'] = build_end_image_prompt(
                 state['result'], end_style, transformation_map)
+            self.store.save(db, key, state)
+            return self.public(key, state), True
+
+    def retry_uncertain_end_image(self, collection, key, owner, attempt_id):
+        """Atomically consume one explicit retry for one exact uncertain end frame."""
+        try:
+            expected = str(UUID(str(attempt_id)))
+        except (ValueError, TypeError, AttributeError):
+            raise VideoError(409, 'End-image attempt is invalid.') from None
+        with self.store.transaction() as db:
+            state = self.read(db, key, owner)
+            video = state.get('video')
+            end_frame = video.get('end_frame') if isinstance(video, dict) else None
+            if not isinstance(end_frame, dict) or end_frame.get('image_id') != expected:
+                raise VideoError(409, 'End-image attempt changed; retry authorisation was not used.')
+            if video.get('status') != 'failed_or_uncertain' or end_frame.get('status') not in ('started', 'uncertain'):
+                raise VideoError(409, 'This end-image attempt is not eligible for uncertain-outcome recovery.')
+            old_path = self.images / f'{expected}.png'
+            if old_path.is_symlink():
+                raise VideoError(409, 'Untrusted end-image path.')
+            if old_path.is_file():
+                raise VideoError(409, 'An end-image file already exists; operator review is required.')
+            video.setdefault('end_frame_history', []).append({
+                **end_frame, 'status': 'superseded_by_confirmed_retry'
+            })
+            replacement = {**end_frame, 'image_id': str(uuid4()), 'status': 'queued',
+                           'stage': 'end', 'created_at': now(), 'retry_of': expected,
+                           'confirmed_at': now()}
+            for field in ('provider_call_entered_at', 'provider_response_received_at',
+                          'persistence_completed_at', 'failure_category', 'failure_message'):
+                replacement.pop(field, None)
+            video['end_frame'] = replacement
+            video['status'] = 'queued'
+            video['worker_started'] = False
+            video['retry_requested_at'] = now()
+            video['requested_epoch'] = time.time()
+            video.pop('error', None)
             self.store.save(db, key, state)
             return self.public(key, state), True
 
@@ -182,6 +236,14 @@ class Videos:
             collection.update_one({'_id':ObjectId(entry_id),'rewrite_id':key,
                                    'image_owner':owner,'nominated':True}, {'$unset':{'video':''}})
         path = self.path(key)
+        if path.is_file() and not path.is_symlink():
+            path.unlink()
+        pingpong.remove(path)
+
+    def remove_local_media(self, key):
+        """Remove an owned original and its purely local Gallery derivative."""
+        path = self.path(key)
+        pingpong.remove(path)
         if path.is_file() and not path.is_symlink():
             path.unlink()
 
@@ -213,15 +275,20 @@ class Videos:
                 last_source = self.images / f"{end_frame['image_id']}.png"
                 if end_frame.get('status') != 'complete':
                     end_frame['status'] = 'started'
+                    end_frame.setdefault('created_at', now())
+                    end_frame['stage'] = 'end'
+                    end_frame['provider_call_entered_at'] = now()
                     checkpoint()  # Permanent paid-image claim before contacting the provider.
                     image_provider = self.image_provider or get_provider()
                     reference_generation = getattr(image_provider, 'generate_referenced_image', None)
                     generated = (reference_generation(end_frame['image_prompt'], end_frame['image_id'], source)
                         if callable(reference_generation) else image_provider.generate_image(
                             end_frame['image_prompt'], end_frame['image_id']))
+                    end_frame['provider_response_received_at'] = now()
                     end_frame.update(generated, status='complete')
                     data, _, _ = read_image(last_source)
                     end_frame['source_sha256'] = hashlib.sha256(data).hexdigest()
+                    end_frame['persistence_completed_at'] = now()
                     checkpoint()
                 elif not last_source.is_file():
                     raise VideoError(409, 'Stored end frame is unavailable.')
@@ -231,11 +298,28 @@ class Videos:
                 raise VideoError(502, 'Animation output unavailable.')
             video.update(status='complete', created_at=now())
             checkpoint()
-        except Exception:
+            # This best-effort local post-process is outside provider state. Failure
+            # leaves the completed original authoritative and cannot trigger a retry.
+            try:
+                if not pingpong.derive(self.path(key)):
+                    log.info('Gallery ping-pong derivative unavailable for %s; using original.', key)
+            except Exception as exc:
+                log.warning('Gallery ping-pong post-process failed for %s: %s', key, exc)
+        except Exception as exc:
             video['status'] = 'failed_or_uncertain'
+            end_frame = video.get('end_frame')
+            if isinstance(end_frame, dict) and end_frame.get('status') == 'started':
+                end_frame['status'] = 'uncertain'
+                end_frame['failure_category'] = type(exc).__name__
+                end_frame['failure_message'] = (
+                    str(exc)[:240] if isinstance(exc, VideoError)
+                    else f'Image provider or local persistence raised {type(exc).__name__}.')
             if 'error' not in video:
-                video['error'] = {'stage': 'local_preparation_or_persistence', 'http_status': None,
-                                  'exception_type': 'VideoError', 'exception_message': 'Local animation work interrupted.'}
+                stage = 'end_image' if isinstance(end_frame, dict) and end_frame.get('status') == 'uncertain' else 'video'
+                video['error'] = {'stage': stage, 'http_status': getattr(exc, 'status', None),
+                                  'exception_type': type(exc).__name__,
+                                  'exception_message': (str(exc)[:240] if isinstance(exc, VideoError)
+                                                        else f'{stage} work raised {type(exc).__name__}.')}
             try:
                 checkpoint()
             except Exception:
@@ -244,7 +328,7 @@ class Videos:
             self.sync(collection, key, owner)
         except VideoError:
             # Discarded drafts cannot expose their orphaned outputs.
-            self.path(key).unlink(missing_ok=True)
+            self.remove_local_media(key)
 
 
 service = Videos()

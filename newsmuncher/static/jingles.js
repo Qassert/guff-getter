@@ -1,11 +1,12 @@
 /* Only MAKE sends POST. Status restoration and PLAY never request generation. */
 const jingleUI = (() => {
-    let revision = 0, rewrite = null, state = null, pending = false, audio = null, timer = null;
+    let revision = 0, playbackRevision = 0, rewrite = null, state = null, pending = false, audio = null, timer = null;
     let saved = [], discovery = 0, nominated = null, lookup = Promise.resolve();
     let embellishPlayback = false;
     const get = id => document.getElementById(id);
 
     function stop() {
+        playbackRevision++;
         if (audio) { audio.pause(); audio.currentTime = 0; }
         const stopBtn = get('jingleStop');
         if (stopBtn) stopBtn.hidden = true;
@@ -79,15 +80,33 @@ const jingleUI = (() => {
         }
         if (!audio) {
             audio = new Audio(state.jingle_url);
-            audio.onended = () => {
-                const stopBtn = get('jingleStop');
-                if (stopBtn) stopBtn.hidden = true;
-            };
         }
-        const token = revision, playing = audio;
+        const token = revision, playbackToken = ++playbackRevision, playing = audio;
+        let completed = 0;
+        playing.pause();
+        playing.currentTime = 0;
+        playing.onended = async () => {
+            if (token !== revision || playbackToken !== playbackRevision) return;
+            completed++;
+            if (completed < 2) {
+                playing.currentTime = 0;
+                try {
+                    await playing.play();
+                    if (token !== revision || playbackToken !== playbackRevision) playing.pause();
+                } catch (_) {
+                    if (token === revision && playbackToken === playbackRevision) {
+                        const msg = get('jingleMessage');
+                        if (msg) msg.textContent = 'Audio could not play. Try PLAY again.';
+                    }
+                }
+                return;
+            }
+            const stopBtn = get('jingleStop');
+            if (stopBtn) stopBtn.hidden = true;
+        };
         try {
             await playing.play();
-            if (token !== revision) { playing.pause(); return false; }
+            if (token !== revision || playbackToken !== playbackRevision) { playing.pause(); return false; }
             const stopBtn = get('jingleStop');
             if (stopBtn) stopBtn.hidden = false;
             return true;
@@ -179,7 +198,6 @@ const jingleUI = (() => {
         async restartForVideo() {
             if (!embellishPlayback || !state?.jingle_url) return false;
             stop();
-            if (audio) audio.currentTime = 0;
             return playCurrent();
         },
         isPlaying: () => !!(audio && !audio.paused),
@@ -202,7 +220,6 @@ const jingleUI = (() => {
             await lookup;
             if (token !== revision) return false;
             embellishPlayback = true;
-            if (audio) audio.currentTime = 0;
             return playCurrent();
         },
         selectSaved: () => {}, playSaved: act, stopSaved: stop};

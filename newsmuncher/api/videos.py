@@ -1,12 +1,19 @@
 """Explicit authenticated animation requests; all GETs retrieve stored state only."""
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
+from uuid import UUID
 
 from newsmuncher.api.entries import collection
 from newsmuncher.api.promotion_gallery import viewer
 from newsmuncher.services.video import service, VideoError
 
 router = APIRouter(prefix='/videos', tags=['Animation'])
+
+
+class EndImageRetry(BaseModel):
+    attempt_id: UUID
+    confirmed: bool
 
 
 def invoke(action, *args):
@@ -28,6 +35,17 @@ def status(rewrite_id: str, user=Depends(viewer)):
 @router.post('/{rewrite_id}')
 def animate(rewrite_id: str, tasks: BackgroundTasks, user=Depends(viewer)):
     data, claimed = invoke(service.claim, rewrite_id, user['pet'])
+    if claimed:
+        tasks.add_task(service.run, collection, rewrite_id, user['pet'])
+    return response(data, 202 if claimed else 200)
+
+
+@router.post('/{rewrite_id}/retry-uncertain-end-image')
+def retry_uncertain_end_image(rewrite_id: str, payload: EndImageRetry,
+                              tasks: BackgroundTasks, user=Depends(viewer)):
+    if not payload.confirmed:
+        raise HTTPException(400, 'Explicit retry confirmation is required.')
+    data, claimed = invoke(service.retry_uncertain_end_image, rewrite_id, user['pet'], payload.attempt_id)
     if claimed:
         tasks.add_task(service.run, collection, rewrite_id, user['pet'])
     return response(data, 202 if claimed else 200)

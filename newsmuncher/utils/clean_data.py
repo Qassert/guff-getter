@@ -318,7 +318,7 @@ def send_prompt(full_prompt):
         # Single API call with the improved prompt
         with OpenAI(max_retries=0, timeout=30.0) as client:
             response = client.responses.create(
-                model="gpt-5.6-luna",
+                model="gpt-6-sol",
                 input=[
                     {"role": "system", "content": "You are an assistant that transforms text into absurd versions in strict JSON format."},
                     {"role": "user", "content": full_prompt}
@@ -427,7 +427,7 @@ def copy_edit_pass(pass1_result):
     try:
         with OpenAI(max_retries=0, timeout=30.0) as client:
             response = client.responses.create(
-                model="gpt-5.6-luna",
+                model="gpt-6-sol",
                 input=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_content},

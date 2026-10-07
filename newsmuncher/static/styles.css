@@ -60,13 +60,49 @@ button, .funky-button { display: inline-block; background: var(--button-backgrou
 button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
 button:active { transform: translate(2px, 2px); box-shadow: none; }
 :focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
-.mode-nav { display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
-  gap: 10px 20px; margin: 0 auto 18px; text-align: center; }
-.mode-nav .funky-button { min-height: 44px; padding: 9px 18px; }
-.mode-nav-active { cursor: default; }
-.mode-nav-link { color: var(--ink); font-weight: 800; letter-spacing: .04em;
-  text-decoration-thickness: 2px; text-underline-offset: 4px; }
-.mode-nav-action { font-size: .8em; letter-spacing: .02em; }
+.mode-nav { position: relative; top: -60px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 8px 69px; margin: 0 auto 18px; text-align: center; }
+.mode-nav-button {
+  --fur-tilt: -.45deg;
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: clamp(190px, 29vw, 300px); aspect-ratio: 3 / 1; min-height: 0; padding: 0; overflow: visible;
+  border: 0; border-radius: 0; background: transparent; box-shadow: none; text-decoration: none;
+  transform: rotate(var(--fur-tilt)); transform-origin: 50% 58%;
+  animation: mode-fur-breathe 5.8s ease-in-out infinite;
+  transition: filter 120ms ease, box-shadow 120ms ease;
+}
+.mode-nav-button img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+.mode-nav-gallery { --fur-tilt: .45deg; }
+.mode-nav-button:hover { filter: brightness(1.09) saturate(1.05) drop-shadow(0 7px 5px #2b160955); animation: mode-fur-hover 420ms ease-in-out infinite alternate; }
+.mode-nav-button:active, .mode-nav-button.mode-nav-clicked { animation: mode-fur-click 150ms ease-out both; }
+.mode-nav-button:focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
+.mode-nav-active {
+  cursor: default; filter: brightness(1.1) saturate(1.08) drop-shadow(0 8px 5px #2b160966);
+}
+@keyframes mode-fur-breathe {
+  0%,100% { transform: rotate(var(--fur-tilt)) scale(1); }
+  50% { transform: rotate(var(--fur-tilt)) scale(1.012,.985); }
+}
+@keyframes mode-fur-hover {
+  from { transform: translateY(-2px) rotate(calc(var(--fur-tilt) - .8deg)) scale(1.02,.98); }
+  to { transform: translateY(-3px) rotate(calc(var(--fur-tilt) + .8deg)) scale(.99,1.025); }
+}
+@keyframes mode-fur-click {
+  0% { transform: rotate(var(--fur-tilt)) scale(1); }
+  36% { transform: translateY(3px) rotate(calc(var(--fur-tilt) + 2deg)) scale(1.07,.78); }
+  64% { transform: rotate(calc(var(--fur-tilt) - 2deg)) scale(.97,1.055); }
+  82% { transform: rotate(calc(var(--fur-tilt) + .8deg)) scale(1.018,.985); }
+  100% { transform: rotate(var(--fur-tilt)) scale(1); }
+}
+@media (max-width: 620px) {
+  .mode-nav { flex-wrap: nowrap; gap: 59px; }
+  .mode-nav-button { width: min(47vw, 230px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mode-nav-button, .mode-nav-button:hover, .mode-nav-button:active, .mode-nav-button.mode-nav-clicked {
+    animation: none; transform: rotate(var(--fur-tilt));
+  }
+}
 .form-container button { width: 100%; margin-top: 8px; }
 .error-message { background: #fff0ee; border-left: 4px solid var(--error); color: var(--error); font-weight: 700; padding: var(--space-2); margin-bottom: var(--space-3); }
 .workshop { max-width: 960px; margin-inline: auto; }
@@ -178,7 +214,7 @@ body { isolation: isolate; }
 /* Creator and Viewing begin at the same shell inset. */
 .profile-page .workshop { position: relative; padding-top: 0; }
 .profile-page .mode-nav {
-  position: absolute; z-index: 5; top: 0; left: 50%; width: 100%;
+  position: absolute; z-index: 5; top: -60px; left: 50%; width: 100%;
   transform: translateX(-50%); margin-bottom: 0;
 }
 .profile-page .nonsense-container { min-height: 0; margin-bottom: 0;
@@ -264,6 +300,10 @@ body { isolation: isolate; }
   color: var(--print-ink);
   text-shadow: var(--print-body-relief);
 }
+.profile-page #responseBodyDraft {
+  font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
+  font-size: .9375rem;
+}
 
 /* Parchment tabs: texture and tint live beneath the readable ink labels. */
 .profile-page .funky-button,
@@ -339,7 +379,7 @@ body { isolation: isolate; }
 }
 .profile-page #sourceEditor {
   /* The udder is an absolute overlay; reserve only its lower teat footprint. */
-  padding-top: clamp(107px, 13.92vw, 136px);
+  position:relative; z-index:1; padding-top: clamp(107px, 13.92vw, 136px);
 }
 .profile-page #responseEditor { padding-top: clamp(10px, 1.5vw, 16px); }
 .profile-page :is(.profile-container, #outputContainer) .section-editor textarea:focus {
@@ -378,12 +418,18 @@ body { isolation: isolate; }
   bottom: calc(-1 * var(--paper-edge)); transform: translate(-50%, 32%);
 }
 .profile-page .munge-generation-controls {
-  position: absolute; left: 50%; bottom: calc(-1 * var(--paper-edge)); width: 100%;
+  position: absolute; left: 50%; width: 100%;
+  bottom: calc(-1 * var(--paper-edge) - var(--paper-transition-half-gap) - 10px);
   transform: translate(-50%, 50%); margin: 0; overflow: visible;
 }
-.profile-page .profile-container { margin-bottom: 38px; }
+.profile-page .profile-container {
+  --paper-transition-half-gap: 19px;
+  margin-bottom: calc(2 * var(--paper-transition-half-gap));
+}
 .profile-page .profile-container { z-index: 2; }
 .profile-page #outputContainer { z-index: 1; }
+.profile-page .profile-container:has(:is(.munge-control-processing, .munge-control-decelerating)) { z-index: 50; }
+.profile-page .munge-generation-controls:has(:is(.munge-control-processing, .munge-control-decelerating)) { z-index: 60; }
 .profile-page #bankButton {
   position: absolute; bottom: calc(-1 * var(--paper-edge)); left: 50%;
   transform: translate(-50%, 32%); margin: 0; z-index: 4;
@@ -478,6 +524,17 @@ body { isolation: isolate; }
   width: auto; min-width: 0; z-index: auto;
 }
 .profile-page .creation-actions .shizzle-button { margin: 0; width: auto; min-width: 0; }
+.profile-page .creation-delete-button { min-height: 56px; padding: 16px 24px; font-size: 1rem; opacity: 1; }
+.creation-delete-dialog {
+  width: min(420px, calc(100% - 32px)); padding: 28px; color: var(--ink);
+  border: 18px solid transparent;
+  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  background: #eee5cf; box-shadow: 0 16px 50px #1d1710aa; text-align: center;
+}
+.creation-delete-dialog::backdrop { background: #17120da8; }
+.creation-delete-dialog h2 { margin: 0 0 20px; font: 700 1.05rem/1.4 var(--print-body-font, Georgia, serif); }
+.creation-delete-dialog p { margin: 0 0 14px; color: #8d241b; }
+.creation-delete-dialog-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 
 /* Keep the still image as the positioning parent for the animation overlay. */
 .image-panel { position: relative; }
@@ -546,11 +603,33 @@ body { isolation: isolate; }
   45% { transform: translateX(var(--shift)) rotate(var(--bend)) scaleX(1.25) scaleY(.72); }
 }
 
+/* Bespoke effects leave every raster teat intact apart from a restrained recoil. */
+.profile-page .udder-teat .teat-shape.effect-squeezed { animation:teat-cream-squeeze 210ms ease-out; }
+@keyframes teat-cream-squeeze {
+  45% { transform:translateX(var(--shift)) rotate(var(--bend)) scaleX(1.06) scaleY(.91); }
+}
+.udder-cream-canvas {
+  position:fixed; inset:0; z-index:0; display:block; pointer-events:none;
+  width:100vw; height:100vh; background:transparent;
+}
+
+/* The five-teat assembly now owns the Creation loading state. */
+.profile-page #loader.page-loader { display:none !important; }
+
 /* Supplied furry MUNGE artwork: one fixed body with six radial native-button teats. */
 .profile-page .munge-control {
   position: relative; isolation: isolate; width: min(82vw, 370px); aspect-ratio: 1.18;
-  margin-inline: auto; overflow: visible; transform-origin: 50% 50%; transition: transform 150ms cubic-bezier(.2,.8,.3,1.35);
+  margin-inline: auto; overflow: visible; transform-origin: 50% 50%;
+  transition: transform 150ms cubic-bezier(.2,.8,.3,1.35);
 }
+.profile-page .munge-rotor {
+  position:absolute; inset:0; overflow:visible; transform-origin:50% calc(50% - 30px);
+  transition:filter 120ms ease-out;
+}
+.profile-page .munge-control.munge-control-processing .munge-rotor {
+  filter:blur(1.5px);
+}
+.profile-page .munge-control.munge-control-decelerating .munge-rotor { filter:blur(1.5px); }
 .profile-page .munge-body-button {
   position: absolute; z-index: 1; left: 16%; top: 5%; width: 68%; height: auto;
   display: block; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; cursor: pointer;
@@ -559,7 +638,7 @@ body { isolation: isolate; }
   display: block; width: 100%; height: auto; pointer-events: none; user-select: none;
   filter: drop-shadow(0 8px 7px #35151c55);
 }
-.profile-page .munge-control:has(.munge-body-button:active) { transform: scale(.92); }
+.profile-page .munge-control:not(.munge-control-processing):not(.munge-control-decelerating):has(.munge-body-button:active) { transform: scale(.92); }
 .profile-page .munge-teat {
   position: absolute; z-index: 2; left: var(--x); top: var(--y); width: var(--w); aspect-ratio: 1;
   min-width: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 45%;
@@ -633,10 +712,21 @@ body { isolation: isolate; }
   .profile-page .munge-control { width: min(88vw, 330px); }
 }
 @media (prefers-reduced-motion: reduce) {
+  .profile-page .munge-control.munge-control-processing {
+    animation:munge-control-processing-pulse 700ms ease-in-out infinite alternate !important;
+  }
+  .profile-page .munge-control.munge-control-processing .munge-rotor {
+    filter:blur(.3px);
+  }
   .profile-page .udder-teat .teat-shape { transform: none !important; animation: none !important; }
+  .profile-page .udder-teat .teat-shape.effect-squeezed { animation:teat-cream-squeeze 210ms ease-out !important; }
   .profile-page .munge-teat-shape { transform: rotate(var(--base-rotation)) !important; animation: none !important; }
   .profile-page .munge-control { transition: none; }
   .udder-liquid-layer { display: none; }
+}
+@keyframes munge-control-processing-pulse {
+  from { transform:scale(.99); }
+  to { transform:scale(1.01); }
 }
 @keyframes l9 { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }
 .page-loader, .image-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 4; }

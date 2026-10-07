@@ -1,13 +1,17 @@
 from newsmuncher.utils.source_preprocessing import log_overlap
-from newsmuncher.config import PROJECT_ROOT, PROMPT_FILE, TEMP_FILE, TEMP_SHIZZ_FILE
+from newsmuncher.config import (PROJECT_ROOT, PROMPT_FILE, TEMP_FILE, TEMP_SHIZZ_FILE,
+    GENERATED_NARRATION_DIR)
 from fastapi import APIRouter, HTTPException, Request, Cookie, Body
 from pydantic import BaseModel, Field
+from openai import BadRequestError
 import json
 import requests
 import subprocess
 import sys
 import os
-from uuid import uuid4
+from datetime import datetime, timezone
+from uuid import uuid4, UUID
+from bson import ObjectId
 from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result, copy_edit_pass, claim_used_words
 from newsmuncher.utils.file_handler import load_prompt
 from newsmuncher.services.word_shuffle import WordClaimConflict
@@ -19,6 +23,24 @@ from newsmuncher.services.image_generation import store, choose_image_style, get
 router = APIRouter()
 
 ENTRIES_API_BASE_URL = os.getenv("ENTRIES_API_BASE_URL", "http://127.0.0.1:8000")
+
+
+def safe_provider_failure(exc):
+    """Small diagnostic subset only; never persist request/auth/full response data."""
+    body = getattr(exc, 'body', None)
+    error = body.get('error', body) if isinstance(body, dict) else {}
+    def text(value, limit):
+        if not isinstance(value, str):
+            return None
+        return ' '.join(value.split())[:limit]
+    return {
+        'failure_category': type(exc).__name__,
+        'failure_http_status': getattr(exc, 'status_code', None),
+        'failure_code': text(error.get('code') if isinstance(error, dict) else None, 80),
+        'failure_param': text(error.get('param') if isinstance(error, dict) else None, 80),
+        'failure_message': text(error.get('message') if isinstance(error, dict) else None, 240)
+                           or 'Provider rejected the image request.',
+    }
 
 def entries_collection():
     from newsmuncher.api.entries import collection
@@ -163,6 +185,109 @@ class ImageRequest(BaseModel):
     rewrite_id: str
 
 
+def _owned_image_ids(rewrite_id, state):
+    """Return only UUID image keys recorded in this server-owned rewrite state."""
+    owned = {rewrite_id}
+    def add(value):
+        try:
+            owned.add(str(UUID(str(value))))
+        except (ValueError, TypeError, AttributeError):
+            pass
+    result = state.get('result') or {}
+    url = result.get('image_url', '')
+    if isinstance(url, str) and url.startswith('/generated-images/') and url.endswith('.png'):
+        add(url.removeprefix('/generated-images/').removesuffix('.png'))
+    for field in ('image_attempt', 'image_redo'):
+        add((state.get(field) or {}).get('image_id'))
+    for field in ('image_attempt_history', 'image_redo_history'):
+        for attempt in state.get(field) or []:
+            add((attempt or {}).get('image_id'))
+    for video in [state.get('video'), *(state.get('video_history') or [])]:
+        add(((video or {}).get('end_frame') or {}).get('image_id'))
+    return owned
+
+
+@router.delete('/creation/{rewrite_id}')
+def delete_creation(rewrite_id: str, active_pet: str = Cookie(None)):
+    """Delete one owner-checked rewrite and only its deterministically owned media."""
+    if not active_pet:
+        raise HTTPException(401, 'No active pet selected.')
+    try:
+        key = str(UUID(rewrite_id))
+    except (ValueError, TypeError, AttributeError):
+        raise HTTPException(404, 'Creation unavailable.') from None
+    if key != rewrite_id:
+        raise HTTPException(404, 'Creation unavailable.')
+
+    collection = entries_collection()
+    entry = None
+    with store.transaction() as db:
+        state = read_image_rewrite(db, key, active_pet, allow_discarded=True)
+        if state.get('deleted'):
+            raise HTTPException(410, 'Creation already deleted.')
+        ownership = {'rewrite_id': key, '$or': [
+            {'image_owner': active_pet},
+            {'image_owner': {'$exists': False}, 'creationUser': active_pet},
+        ]}
+        entry_id = state.get('entry_id')
+        if entry_id:
+            if not ObjectId.is_valid(entry_id):
+                raise HTTPException(409, 'Creation identity is invalid; nothing was deleted.')
+        entries = list(collection.find(ownership).limit(2))
+        if len(entries) > 1:
+            raise HTTPException(409, 'Creation identity is ambiguous; nothing was deleted.')
+        entry = entries[0] if entries else None
+        if entry and entry_id and entry['_id'] != ObjectId(entry_id):
+            raise HTTPException(409, 'Creation identity does not match; nothing was deleted.')
+        image_ids = _owned_image_ids(key, state)
+        if entry:
+            result = collection.delete_one({'_id': entry['_id'], **ownership})
+            if result.deleted_count != 1:
+                raise HTTPException(409, 'Creation changed while deletion was requested.')
+        # A tombstone prevents late image/video workers from resurrecting this UUID.
+        store.save(db, key, {'owner': active_pet, 'entry_id': None, 'discarded': True,
+                             'deleted': True, 'result': {'rewrite_id': key}})
+        db.execute('DELETE FROM draft_slots WHERE owner=? AND rewrite_id=?', (active_pet, key))
+
+    failures = []
+    if entry:
+        try:
+            from newsmuncher.services.jingles import service as jingles
+            jingles.retire_deleted(collection, entry)
+        except Exception:
+            failures.append('jingle')
+        narration = GENERATED_NARRATION_DIR / f"{entry['_id']}.mp3"
+        try:
+            if narration.is_file() and not narration.is_symlink():
+                narration.unlink()
+        except OSError:
+            failures.append('narration')
+    for image_id in image_ids:
+        path = image_path(image_id)
+        try:
+            if path.is_file() and not path.is_symlink():
+                path.unlink()
+        except OSError:
+            failures.append(f'image:{image_id}')
+    try:
+        from newsmuncher.services.video import service as videos
+        videos.remove_local_media(key)
+    except (OSError, ValueError):
+        failures.append('video')
+    if os.path.exists(TEMP_SHIZZ_FILE):
+        try:
+            with open(TEMP_SHIZZ_FILE) as file:
+                current = json.load(file)
+            if current.get('rewrite_id') == key:
+                os.remove(TEMP_SHIZZ_FILE)
+        except (OSError, ValueError, TypeError):
+            failures.append('temporary state')
+    if failures:
+        raise HTTPException(500, 'Creation deleted, but some local media needs operator cleanup: '
+                            + ', '.join(failures))
+    return {'deleted': True, 'rewrite_id': key}
+
+
 def read_image_rewrite(db, rewrite_id, owner, allow_discarded=False):
     try:
         state = store.read(db, rewrite_id, owner)
@@ -224,12 +349,18 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                 state['image_attempt'] = {**attempt, 'status': 'complete'}
                 store.save(db, payload.rewrite_id, state)
             elif state.get('image_attempt'):
-                raise HTTPException(status_code=409, detail='Image attempt already started; no automatic paid retry.')
+                raise HTTPException(status_code=409, detail={
+                    'code': 'image_outcome_uncertain',
+                    'message': 'Previous image generation had an uncertain outcome.',
+                    'attempt_id': state['image_attempt'].get('image_id'),
+                    'rewrite_id': payload.rewrite_id,
+                })
             else:
                 # Commit before contacting OpenAI. Never clear this marker on failure.
                 image_style = choose_image_style()
                 prompt = build_image_prompt(state['result'], image_style)
-                attempt.update(prompt=prompt, image_style=image_style)
+                attempt.update(prompt=prompt, image_style=image_style, stage='main',
+                               created_at=datetime.now(timezone.utc).isoformat())
                 state['image_attempt'] = {**attempt, 'status': 'started'}
                 store.save(db, payload.rewrite_id, state)
     if cached:
@@ -237,7 +368,14 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
         return cached
     while True:
         try:
+            attempt['provider_call_entered_at'] = datetime.now(timezone.utc).isoformat()
+            with store.transaction() as db:
+                state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
+                if (state.get('image_attempt') or {}).get('image_id') == attempt['image_id']:
+                    state['image_attempt'].update(attempt)
+                    store.save(db, payload.rewrite_id, state)
             metadata = get_provider().generate_image(attempt['prompt'], attempt['image_id'])
+            attempt['provider_response_received_at'] = datetime.now(timezone.utc).isoformat()
             metadata['image_style'] = attempt['image_style']
             with store.transaction() as db:
                 state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
@@ -245,7 +383,8 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                     image_path(attempt['image_id']).unlink(missing_ok=True)
                     raise HTTPException(status_code=410, detail='Draft discarded; generated file removed.')
                 state['result'].update(metadata)
-                state['image_attempt']['status'] = 'complete'
+                state['image_attempt'].update(attempt, status='complete',
+                    persistence_completed_at=datetime.now(timezone.utc).isoformat())
                 store.save(db, payload.rewrite_id, state)
             break
         except DefinitiveImageFailure as exc:
@@ -262,16 +401,33 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                     terminal = True
                 else:
                     state.setdefault('image_attempt_history', []).append(current)
-                    attempt = {**current, 'image_id': str(uuid4()), 'status': 'started', 'retry_count': 1}
+                    attempt = {**current, 'image_id': str(uuid4()), 'status': 'started', 'retry_count': 1,
+                               'stage': 'main', 'created_at': datetime.now(timezone.utc).isoformat()}
+                    for field in ('provider_call_entered_at', 'provider_response_received_at',
+                                  'persistence_completed_at', 'failure_category', 'failure_message'):
+                        attempt.pop(field, None)
                     state['image_attempt'] = attempt
                     store.save(db, payload.rewrite_id, state)  # Retry claim precedes the second paid call.
             if terminal:
                 raise HTTPException(422, 'Image generation failed twice. Use REDO IMAGE to try again.') from exc
+        except BadRequestError as exc:
+            with store.transaction() as db:
+                state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
+                current = state.get('image_attempt') or {}
+                if current.get('image_id') == attempt['image_id']:
+                    current.update(status='definitive_failed', **safe_provider_failure(exc))
+                    store.save(db, payload.rewrite_id, state)
+            raise HTTPException(422, 'Image request was rejected by the provider; no automatic retry.') from exc
         except Exception as exc:
             with store.transaction() as db:
                 state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
                 if state.get('discarded'):
                     image_path(attempt['image_id']).unlink(missing_ok=True)
+                current = state.get('image_attempt') or {}
+                if current.get('image_id') == attempt['image_id']:
+                    current.update(status='uncertain', failure_category=type(exc).__name__,
+                                   failure_message=f'Image provider or local persistence raised {type(exc).__name__}.')
+                    store.save(db, payload.rewrite_id, state)
             if isinstance(exc, HTTPException):
                 raise
             raise HTTPException(status_code=502, detail='Image outcome uncertain. Use REDO IMAGE only if you choose to make another paid attempt.') from exc
@@ -282,6 +438,104 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
 class RedoImageRequest(ImageRequest):
     previous_image_url: str | None = Field(default=None, max_length=300)
     replace_nomination: bool = False
+
+
+class UncertainImageRetryRequest(ImageRequest):
+    attempt_id: UUID
+    confirmed: bool
+
+
+@router.post('/retry_uncertain_image')
+def retry_uncertain_image(payload: UncertainImageRetryRequest, active_pet: str = Cookie(None)):
+    """Spend once only after an owner explicitly accepts an uncertain prior outcome."""
+    if not payload.confirmed:
+        raise HTTPException(400, 'Explicit retry confirmation is required.')
+    with store.transaction() as db:
+        state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+        if state['result'].get('image_url'):
+            return {key: state['result'].get(key) for key in IMAGE_FIELDS}
+        unresolved_redo = state.get('image_redo') or {}
+        if unresolved_redo and unresolved_redo.get('status') != 'complete':
+            raise HTTPException(409, 'A separate image replacement attempt is unresolved; operator review is required.')
+        previous = state.get('image_attempt') or {}
+        if str(previous.get('image_id')) != str(payload.attempt_id):
+            raise HTTPException(409, 'Image attempt changed; retry authorisation was not used.')
+        if previous.get('status') not in ('started', 'uncertain'):
+            raise HTTPException(409, 'This image attempt is not eligible for uncertain-outcome recovery.')
+        try:
+            recovered = recover_image(previous['image_id'], previous)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
+        if recovered:
+            state['result'].update(recovered)
+            state['image_attempt'] = {**previous, 'status': 'complete'}
+            store.save(db, payload.rewrite_id, state)
+            return recovered
+        state.setdefault('image_attempt_history', []).append({
+            **previous, 'status': 'superseded_by_confirmed_retry'
+        })
+        style = choose_image_style()
+        attempt = dict(image_id=str(uuid4()), image_style=style,
+                       prompt=build_image_prompt(state['result'], style),
+                       model=IMAGE_MODEL, quality=IMAGE_QUALITY, size=IMAGE_SIZE,
+                       status='started', stage='main', retry_of=previous['image_id'],
+                       created_at=datetime.now(timezone.utc).isoformat(),
+                       confirmed_at=datetime.now(timezone.utc).isoformat())
+        # This transaction is the single-use claim. A concurrent/replayed request
+        # can no longer match payload.attempt_id and therefore cannot spend again.
+        state['image_attempt'] = attempt
+        store.save(db, payload.rewrite_id, state)
+    try:
+        attempt['provider_call_entered_at'] = datetime.now(timezone.utc).isoformat()
+        with store.transaction() as db:
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+            if (state.get('image_attempt') or {}).get('image_id') == attempt['image_id']:
+                state['image_attempt'].update(attempt)
+                store.save(db, payload.rewrite_id, state)
+        metadata = get_provider().generate_image(attempt['prompt'], attempt['image_id'])
+        attempt['provider_response_received_at'] = datetime.now(timezone.utc).isoformat()
+        metadata['image_style'] = attempt['image_style']
+        with store.transaction() as db:
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+            current = state.get('image_attempt') or {}
+            if current.get('image_id') != attempt['image_id']:
+                raise HTTPException(409, 'Image attempt changed; generated result was not attached.')
+            state['result'].update(metadata)
+            current.update(attempt, status='complete',
+                           persistence_completed_at=datetime.now(timezone.utc).isoformat())
+            store.save(db, payload.rewrite_id, state)
+    except DefinitiveImageFailure as exc:
+        with store.transaction() as db:
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+            current = state.get('image_attempt') or {}
+            if current.get('image_id') == attempt['image_id']:
+                current.update(status='definitive_failed', failure_category=type(exc).__name__,
+                               failure_message='Provider returned no usable image.')
+                store.save(db, payload.rewrite_id, state)
+        raise HTTPException(422, 'Confirmed image retry failed definitively; no further retry was submitted.') from exc
+    except BadRequestError as exc:
+        # An HTTP 400 is a definite provider response, not an ambiguous transport
+        # outcome. Preserve the claim and require a fresh explicit user decision.
+        with store.transaction() as db:
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+            current = state.get('image_attempt') or {}
+            if current.get('image_id') == attempt['image_id']:
+                current.update(status='definitive_failed', **safe_provider_failure(exc))
+                store.save(db, payload.rewrite_id, state)
+        raise HTTPException(422, 'Confirmed image retry was rejected by the provider; no automatic retry.') from exc
+    except Exception as exc:
+        if isinstance(exc, HTTPException):
+            raise
+        with store.transaction() as db:
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+            current = state.get('image_attempt') or {}
+            if current.get('image_id') == attempt['image_id']:
+                current.update(status='uncertain', failure_category=type(exc).__name__,
+                               failure_message=f'Image provider or local persistence raised {type(exc).__name__}.')
+                store.save(db, payload.rewrite_id, state)
+        raise HTTPException(502, 'Confirmed image retry outcome is uncertain; no automatic retry.') from exc
+    sync_image_metadata(payload.rewrite_id, active_pet)
+    return metadata
 
 
 def finish_image_redo(db, rewrite_id, state, metadata):
@@ -309,6 +563,9 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
         if previous and previous['status'] != 'complete':
             raise HTTPException(409, 'Replacement needs operator review; no paid retry.')
         current_url = state['result'].get('image_url')
+        main_attempt = state.get('image_attempt') or {}
+        if not current_url and main_attempt.get('status') in ('started', 'uncertain'):
+            raise HTTPException(409, 'Main image outcome is uncertain; use the explicit confirmed recovery flow.')
         if state.get('generating') or (current_url and current_url != payload.previous_image_url):
             raise HTTPException(409, 'Current saved image required.')
         if not current_url and (payload.previous_image_url is not None or not state.get('image_attempt')):
@@ -336,6 +593,14 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
             from newsmuncher.services.video import service as videos
             videos.replace(entries_collection(), payload.rewrite_id, active_pet)
         return metadata
+    except BadRequestError as exc:
+        with store.transaction() as db:
+            state = read_image_rewrite(db, payload.rewrite_id, active_pet)
+            current = state.get('image_redo') or {}
+            if current.get('image_id') == attempt['image_id']:
+                current.update(status='definitive_failed', **safe_provider_failure(exc))
+                store.save(db, payload.rewrite_id, state)
+        raise HTTPException(422, 'Replacement image was rejected by the provider; no automatic retry.') from exc
     except Exception as exc:
         # Preserve the old image and permanent attempt, including uncertain outcomes.
         raise HTTPException(502, 'Replacement unavailable; old image retained. No automatic paid retry.') from exc
@@ -398,6 +663,10 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
         result['nominated'] = bool(state.get('entry_id') or result.get('nominated'))
         result['image_redo_pending'] = bool(state.get('image_redo') and state['image_redo']['status'] != 'complete')
         result['image_generation_failed'] = bool(not result.get('image_url') and state.get('image_attempt'))
+        uncertain = state.get('image_attempt') or {}
+        result['image_outcome_uncertain'] = bool(
+            not result.get('image_url') and uncertain.get('status') in ('started', 'uncertain'))
+        result['image_attempt_id'] = uncertain.get('image_id') if result['image_outcome_uncertain'] else None
     if result.get('image_url'):
         sync_image_metadata(rewrite_id, active_pet)
     return result

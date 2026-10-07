@@ -1,4 +1,4 @@
-STATUS: REVIEW
+STATUS: ACTIVE
 OWNER: CODEX
 BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: Singable headlines, versioned ElevenLabs jingles, independent frame styles and saved-audio compatibility
@@ -13,12 +13,14 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Checkpoint the manually approved Creator, jingle, loading-audio, Gallery and independent-frame-style behavior.
-APPROVAL: Preserve current behavior, run focused mocked/local tests, commit and push feature/video-animation. No live provider calls or main changes.
-NEXT_STEP: Andy review; do not deploy or merge main.
+CURRENT_TASK: Make finished creation jingles play exactly twice and vertically centre MUNGE over the parchment transition strip.
+APPROVAL: Preserve loading-image audio and all generation behavior. No provider calls, commit, push, deployment or main changes.
+NEXT_STEP: Andy manual UX review before tests or checkpointing.
 VALIDATION: Focused frontend 47/47; focused Python 142 passed plus 6 subtests. All provider boundaries mocked; no external calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `gpt-6-luna` → `gpt-6-sol`. Prompts and all other rewrite settings remain unchanged.
 
 ## Creator headline and versioned-jingle checkpoint — 2026-10-05
 

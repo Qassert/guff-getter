@@ -4,6 +4,7 @@ let displayedRewriteId = null;
 let nominatedSnapshot = null;
 let draftSession = null;
 let creationNominated = false, currentImageUrl = null, imageRedoPending = false, imageGenerationFailed = false;
+let imageRetryAttemptId = null, imageRetryConfirmation = null;
 window.creationContext=()=>({rewrite_id:displayedRewriteId,sequence:rewriteSequence});
 function renderRedoImage() {
     const button = document.getElementById('redoImageButton');
@@ -12,7 +13,38 @@ function renderRedoImage() {
     button.disabled = imageRedoPending || nominationPending;
     const bank = document.getElementById('bankButton');
     if (bank) bank.disabled = imageRedoPending || nominationPending;
-    button.textContent = imageRedoPending ? 'REPLACING IMAGE…' : 'REDO IMAGE';
+    button.textContent = imageRedoPending ? 'REPLACING IMAGE…' :
+        (!currentImageUrl && imageRetryAttemptId ? 'RETRY IMAGE' : 'REDO IMAGE');
+}
+function confirmUncertainImageRetry() {
+    if (!imageRetryAttemptId || imageRetryConfirmation) return Promise.resolve(false);
+    const dialog = document.getElementById('imageRetryDialog');
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+    return new Promise(resolve => { imageRetryConfirmation = resolve; });
+}
+function closeImageRetryDialog(confirmed) {
+    const dialog = document.getElementById('imageRetryDialog');
+    if (typeof dialog.close === 'function') dialog.close();
+    else dialog.removeAttribute('open');
+    const resolve = imageRetryConfirmation;
+    imageRetryConfirmation = null;
+    if (resolve) resolve(confirmed);
+}
+async function confirmedImageRetry(id, sequence) {
+    const attempt = imageRetryAttemptId;
+    if (!attempt || !(await confirmUncertainImageRetry())) throw new Error('Image retry cancelled.');
+    const response = await fetch('/temp/retry_uncertain_image', {
+        method: 'POST', credentials: 'include', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({rewrite_id: id, attempt_id: attempt, confirmed: true})
+    });
+    if (!response.ok) {
+        const failure = await response.json().catch(() => ({}));
+        throw new Error(failure.detail || 'Image retry unavailable.');
+    }
+    if (id !== displayedRewriteId || sequence !== rewriteSequence) throw new Error('Rewrite changed.');
+    imageRetryAttemptId = null;
+    return response.json();
 }
 async function redoImage() {
     if (creationNominated || (!currentImageUrl && !imageGenerationFailed) || imageRedoPending || nominationPending) return;
@@ -25,12 +57,16 @@ async function redoImage() {
     const message = document.getElementById('imageRedoMessage');
     if (message) { message.hidden = false; message.textContent = 'Generating a replacement image (paid action)…'; }
     try {
-        const response = await fetch('/temp/redo_image', {
-            method: 'POST', credentials: 'include', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({rewrite_id: id, previous_image_url: previous || null})
-        });
-        if (!response.ok) throw new Error('Replacement unavailable');
-        const data = await response.json();
+        let data;
+        if (!previous && imageRetryAttemptId) data = await confirmedImageRetry(id, sequence);
+        else {
+            const response = await fetch('/temp/redo_image', {
+                method: 'POST', credentials: 'include', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rewrite_id: id, previous_image_url: previous || null})
+            });
+            if (!response.ok) throw new Error('Replacement unavailable');
+            data = await response.json();
+        }
         if (!current()) return;
         if (typeof imageLoading !== 'undefined') imageLoading.freeze();
         imageRedoPending = false;
@@ -61,6 +97,7 @@ function setNominationState(data) {
     creationNominated = data.nominated === true;
     currentImageUrl = data.image_url || null;
     imageGenerationFailed = !currentImageUrl && data.image_generation_failed === true;
+    imageRetryAttemptId = data.image_outcome_uncertain ? data.image_attempt_id : null;
     imageRedoPending = !!data.image_redo_pending;
     const redoMessage = document.getElementById('imageRedoMessage');
     if (redoMessage && imageRedoPending) {
@@ -78,6 +115,48 @@ function setNominationState(data) {
         crazyReplacement1Title: data.crazyReplacement1Title || '',
         crazyReplacement1Extract: data.crazyReplacement1Extract || ''
     }) : null;
+    renderDeleteCreation();
+}
+function renderDeleteCreation() {
+    const button = document.getElementById('deleteCreationButton');
+    if (button) button.hidden = !displayedRewriteId;
+}
+function setDisplayedRewriteId(rewriteId) {
+    displayedRewriteId = rewriteId || null;
+    renderDeleteCreation();
+}
+function openDeleteCreation() {
+    if (!displayedRewriteId) return;
+    const dialog = document.getElementById('deleteCreationDialog');
+    const error = document.getElementById('deleteCreationError');
+    error.hidden = true; error.textContent = '';
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+}
+async function deleteCurrentCreation() {
+    if (!displayedRewriteId) return;
+    const id = displayedRewriteId, sequence = rewriteSequence;
+    const confirm = document.getElementById('confirmDeleteCreation');
+    const error = document.getElementById('deleteCreationError');
+    confirm.disabled = true;
+    try {
+        const response = await fetch(`/temp/creation/${encodeURIComponent(id)}`, {
+            method: 'DELETE', credentials: 'include'
+        });
+        if (!response.ok) {
+            const detail = await response.json().catch(() => ({}));
+            throw new Error(detail.detail || 'Creation could not be deleted.');
+        }
+        if (sequence !== rewriteSequence || id !== displayedRewriteId) return;
+        document.getElementById('deleteCreationDialog').close();
+        beginNewCreation();
+        try { history.replaceState({}, '', window.location.pathname); } catch (_) {}
+    } catch (failure) {
+        error.textContent = failure.message || 'Creation could not be deleted.';
+        error.hidden = false;
+    } finally {
+        confirm.disabled = false;
+    }
 }
 function responseEdited() {
     if (nominatedSnapshot) document.getElementById('bankButton').textContent = 'UPDATE NOMINATION';
@@ -88,12 +167,123 @@ function autoResize(textarea) {
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
+let mungeProcessing = false;
+let mungeSpinAnimation = null;
+let mungeDeceleration = null;
+let mungeThrobAnimation = null;
+const MUNGE_REVOLUTION_MS = 1120;
+const MUNGE_THROB_MS = 1400;
+const MUNGE_ANGULAR_VELOCITY = 360 / MUNGE_REVOLUTION_MS;
+
+function mungeRotation(element) {
+    const transform = getComputedStyle(element).transform;
+    if (!transform || transform === 'none') return 0;
+    try {
+        const matrix = new DOMMatrixReadOnly(transform);
+        return (Math.atan2(matrix.b, matrix.a) * 180 / Math.PI + 360) % 360;
+    } catch (_) { return 0; }
+}
+
+function finishMungeProcessing(mungeControl, mungeButton) {
+    mungeSpinAnimation?.cancel(); mungeSpinAnimation = null;
+    mungeDeceleration?.cancel(); mungeDeceleration = null;
+    mungeThrobAnimation?.cancel(); mungeThrobAnimation = null;
+    mungeControl?.classList.remove('munge-control-processing', 'munge-control-decelerating');
+    if (mungeControl) {
+        mungeControl.style.transform = '';
+        mungeControl.setAttribute('aria-busy', 'false');
+    }
+    const rotor = document.getElementById('mungeRotor');
+    if (rotor) { rotor.style.transform = ''; rotor.style.filter = ''; }
+    if (mungeButton) {
+        mungeButton.disabled = false;
+        mungeButton.setAttribute('aria-disabled', 'false');
+    }
+    mungeProcessing = false;
+}
+
+function setMungeProcessing(running) {
+    const mungeControl = document.getElementById('mungeControl');
+    const mungeRotor = document.getElementById('mungeRotor');
+    const mungeButton = document.getElementById('mungeBodyButton');
+    if (!mungeControl || !mungeRotor) return;
+    const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    if (running) {
+        const angle = mungeRotation(mungeRotor);
+        mungeDeceleration?.cancel(); mungeDeceleration = null;
+        mungeSpinAnimation?.cancel();
+        mungeProcessing = true;
+        mungeControl.classList.remove('munge-control-decelerating');
+        mungeControl.classList.add('munge-control-processing');
+        mungeControl.setAttribute('aria-busy', 'true');
+        if (mungeButton) {
+            mungeButton.disabled = true;
+            mungeButton.setAttribute('aria-disabled', 'true');
+        }
+        if (!reduced) {
+            mungeSpinAnimation = mungeRotor.animate(
+                [{transform:`rotate(${angle}deg)`},{transform:`rotate(${angle+360}deg)`}],
+                {duration:MUNGE_REVOLUTION_MS,iterations:Infinity,easing:'linear'}
+            );
+            if (mungeThrobAnimation) {
+                mungeThrobAnimation.effect.updateTiming({iterations:Infinity});
+                mungeThrobAnimation.play();
+            } else {
+                mungeThrobAnimation = mungeControl.animate([
+                    {transform:'scale(1)',offset:0,easing:'cubic-bezier(.45,0,.55,1)'},
+                    {transform:'scale(1.5)',offset:.5,easing:'cubic-bezier(.45,0,.55,1)'},
+                    {transform:'scale(1)',offset:1}
+                ],{duration:MUNGE_THROB_MS,iterations:Infinity});
+            }
+        }
+        return;
+    }
+
+    if (!mungeProcessing || mungeDeceleration) return;
+    if (reduced) return finishMungeProcessing(mungeControl, mungeButton);
+
+    const angle = mungeRotation(mungeRotor);
+    mungeSpinAnimation?.cancel(); mungeSpinAnimation = null;
+    mungeControl.classList.remove('munge-control-processing');
+    mungeControl.classList.add('munge-control-decelerating');
+    const distance = ((360 - angle) % 360) + 360;
+    const duration = Math.max(1, (2 * distance) / MUNGE_ANGULAR_VELOCITY);
+    const steps = 60;
+    const rotationFrames = Array.from({length:steps + 1}, (_, index) => {
+        const progress = index / steps;
+        const travelled = distance * (2 * progress - progress * progress);
+        return {transform:`rotate(${angle + travelled}deg)`,filter:`blur(${1.5 * (1-progress)}px)`,offset:progress};
+    });
+    mungeDeceleration = mungeRotor.animate(rotationFrames,{duration,easing:'linear',fill:'forwards'});
+
+    let throbFinished = Promise.resolve();
+    if (mungeThrobAnimation) {
+        const currentTime = Number(mungeThrobAnimation.currentTime) || 0;
+        const completedCycles = Math.floor(currentTime / MUNGE_THROB_MS);
+        mungeThrobAnimation.effect.updateTiming({iterations:completedCycles + 1});
+        throbFinished = mungeThrobAnimation.finished.catch(()=>{});
+    }
+    Promise.all([mungeDeceleration.finished, throbFinished]).then(()=>{
+        if (!mungeDeceleration) return;
+        mungeRotor.style.transform='rotate(0deg)';mungeRotor.style.filter='blur(0px)';
+        mungeControl.style.transform='scale(1)';
+        finishMungeProcessing(mungeControl, mungeButton);
+    }).catch(()=>{});
+}
+
+function cancelMungeProcessingImmediately() {
+    finishMungeProcessing(document.getElementById('mungeControl'), document.getElementById('mungeBodyButton'));
+}
+
 function showLoader() {
     document.getElementById("loader").classList.remove("hidden");
+    setMungeProcessing(true);
 }
 
 function hideLoader() {
     document.getElementById("loader").classList.add("hidden");
+    setMungeProcessing(false);
 }
 
 function populateTempData() {
@@ -139,7 +329,7 @@ function fetchAndDisplay(scriptName) {
 
 function beginNewCreation() {
     rewriteSequence++;
-    displayedRewriteId = null;
+    setDisplayedRewriteId(null);
     nominatedSnapshot = null;
     creationNominated = false;
     nominationPending = false;
@@ -157,6 +347,7 @@ function beginNewCreation() {
 }
 
 function confirmData() {
+    if (mungeProcessing) return;
     if (typeof jingleUI !== "undefined") jingleUI.show({nominated: false});
     const sequence = ++rewriteSequence;
     document.getElementById('bankButton').disabled = true;
@@ -179,7 +370,7 @@ function confirmData() {
         })
         .then(data => {
             if (sequence !== rewriteSequence) return;
-            displayedRewriteId = data.rewrite_id || null;
+            setDisplayedRewriteId(data.rewrite_id);
             setNominationState(data);
             try {
                 if (displayedRewriteId) sessionStorage.setItem('newsmuncher.imageRewrite', displayedRewriteId);
@@ -281,7 +472,7 @@ function resetImagePanel() {
     if (typeof creationMeta !== 'undefined') creationMeta.reset();
     imageDisplaySequence++;
     setImageStyle(null);
-    currentImageUrl = null; imageRedoPending = false; imageGenerationFailed = false;
+    currentImageUrl = null; imageRedoPending = false; imageGenerationFailed = false; imageRetryAttemptId = null;
     renderRedoImage();
     const message = document.getElementById('imageRedoMessage');
     if (message) message.hidden = true;
@@ -304,7 +495,13 @@ async function loadRewriteImage(id, sequence) {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({rewrite_id: id})
         });
-        if (!response.ok) throw new Error('Image generation failed');
+        if (!response.ok) {
+            const failure = await response.json().catch(() => ({}));
+            if (failure.detail?.code === 'image_outcome_uncertain') {
+                imageRetryAttemptId = failure.detail.attempt_id || null;
+            }
+            throw new Error(failure.detail?.message || failure.detail || 'Image generation failed');
+        }
         const data = await response.json();
         if (!current()) return;
         if (typeof imageLoading !== 'undefined') imageLoading.freeze();
@@ -315,13 +512,16 @@ async function loadRewriteImage(id, sequence) {
             if (typeof imageLoading !== 'undefined') imageLoading.stop();
             imageGenerationFailed = true;
             renderRedoImage();
-            panel.textContent = 'Image unavailable. Use REDO IMAGE if you want to make another paid attempt.';
+            panel.textContent = imageRetryAttemptId
+                ? 'Previous image generation had an uncertain outcome. Use RETRY IMAGE to review a paid retry.'
+                : 'Image unavailable. Use REDO IMAGE if you want to make another paid attempt.';
         }
     }
 }
 
 window.generateCreationImage=async(id,sequence,replace=false)=>{
  const current=()=>sequence===rewriteSequence&&id===displayedRewriteId;
+ if(replace&&!currentImageUrl&&imageRetryAttemptId){const data=await confirmedImageRetry(id,sequence);return{data,reveal(){currentImageUrl=data.image_url;return displayRewriteImage(data.image_url,current,data.image_style);}};}
  const url=replace?'/temp/redo_image':'/temp/generate_image';
  const body=replace?{rewrite_id:id,previous_image_url:currentImageUrl,replace_nomination:true}:{rewrite_id:id};
  const response=await fetch(url,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -387,7 +587,7 @@ async function restoreImageRewrite() {
         if (!response.ok) return;
         const data = await response.json();
         if (sequence !== rewriteSequence || data.rewrite_id !== id) return;
-        displayedRewriteId = id;
+        setDisplayedRewriteId(id);
         setNominationState(data);
         const title=document.getElementById('responseTitleDraft'),extract=document.getElementById('responseBodyDraft');
         title.value=data.crazyReplacement1Title||'';extract.value=data.crazyReplacement1Extract||'';
@@ -399,6 +599,20 @@ async function restoreImageRewrite() {
 }
 
 document.getElementById('mungeControl')?.querySelectorAll?.('.munge-teat, .munge-body-button')?.forEach(button => button.addEventListener('click', confirmData));
+window.addEventListener('pagehide', cancelMungeProcessingImmediately);
+document.getElementById('deleteCreationButton')?.addEventListener('click', openDeleteCreation);
+document.getElementById('confirmDeleteCreation')?.addEventListener('click', deleteCurrentCreation);
+document.getElementById('cancelDeleteCreation')?.addEventListener('click', () => {
+    const dialog = document.getElementById('deleteCreationDialog');
+    if (typeof dialog.close === 'function') dialog.close();
+    else dialog.removeAttribute('open');
+});
+document.getElementById('confirmImageRetry')?.addEventListener('click', () => closeImageRetryDialog(true));
+document.getElementById('cancelImageRetry')?.addEventListener('click', () => closeImageRetryDialog(false));
+document.getElementById('imageRetryDialog')?.addEventListener('cancel', event => {
+    event.preventDefault(); closeImageRetryDialog(false);
+});
+window.addEventListener('pageshow', renderDeleteCreation);
 
 window.onload = () => {
     populateTempData();

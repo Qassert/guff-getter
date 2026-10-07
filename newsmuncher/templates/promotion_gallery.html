@@ -1,34 +1,49 @@
 {% extends "base.html" %}
-{% block title %}Viewing · NewsMuncher{% endblock %}
-{% block styles %}<link rel="stylesheet" href="{{ url_for('static', path='promotion-gallery.css') }}">{% endblock %}
+{% block title %}Gallery · NewsMuncher{% endblock %}
+{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='promotion-gallery.css') }}?v=gallery-next-circle-2">{% endblock %}
 {% block body_attributes %} class="promotion-gallery-page"{% endblock %}
 {% block header %}{% endblock %}
 {% block background %}<div id="galleryBackdrop" class="gallery-backdrop" aria-hidden="true"><img id="galleryBackdropImage" alt=""></div>{% endblock %}
 {% block content %}
-<section class="promotion-gallery" aria-label="Nominated creations" data-creation-url="{{ creation_url }}">
+<section class="promotion-gallery" aria-label="Nominated creations" data-creation-url="{{ creation_url }}" data-click-sound="{{ url_for('static', path='audio/Munge it/hello meme funny - QuickSounds.com.mp3') }}" data-enhance-hover="{{ url_for('static', path='audio/Enhance_Shout.mp3') }}" data-edit-hover="{{ url_for('static', path='audio/NewsMuncher_Edit_Shout.mp3') }}" data-promote-hover="{{ url_for('static', path='audio/NewsMuncher_Promote_Shout.mp3') }}" data-play-hover="{{ url_for('static', path='audio/Play_Shout.mp3') }}" data-mute-hover="{{ url_for('static', path='audio/Mute_Shout.mp3') }}">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
-    <a class="mode-nav-link" href="{{ creation_url }}">CREATOR</a>
-    <span class="funky-button mode-nav-active" aria-current="page">VIEWING</span>
+    <a class="mode-nav-button mode-nav-create" href="{{ creation_url }}" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/Create_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/squelch_01_wet_pop.wav') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></a>
+    <span class="mode-nav-button mode-nav-gallery mode-nav-active" aria-current="page" aria-label="GALLERY" data-hover-voice="{{ url_for('static', path='audio/Gallery_Shout.mp3') }}"><img src="{{ url_for('static', path='images/buttons/gallery-idle.png') }}" alt=""></span>
   </nav>
   {% if signed_in %}
   <div id="galleryStatus" class="gallery-status" role="status" aria-live="polite">Opening the collection…</div>
   <article id="galleryPage" class="gallery-page" aria-label="Creation" hidden>
+    <button id="galleryBack" type="button" class="gallery-arrow gallery-arrow-back" aria-label="Previous creation" title="Previous creation" hidden><img src="{{ url_for('static', path='images/buttons/gallery-back.png') }}" alt=""></button>
+    <button id="galleryNext" type="button" class="gallery-arrow gallery-arrow-next" aria-label="Next creation" title="Next creation"><img src="{{ url_for('static', path='images/buttons/Coral Arrow on Cowhide Cushion.png') }}" alt=""></button>
     <figure id="galleryIllustration" hidden><img id="galleryImage" alt="" decoding="async"></figure>
     <div class="gallery-copy">
       <p id="galleryPromoted" class="gallery-stamp" hidden>PROMOTED</p>
       <div id="galleryBody" class="gallery-body"></div>
     </div>
+    <div id="galleryFurControls" class="gallery-fur-controls" role="group" aria-label="Creation controls">
+      <button id="galleryMusic" type="button" class="gallery-fur-control gallery-fur-music" aria-label="Play music" title="Play music" aria-pressed="false"><img src="{{ url_for('static', path='images/buttons/Rustic Cowhide Volume Icon.png') }}" alt=""></button>
+      <button id="galleryPromote" type="button" class="gallery-fur-control gallery-fur-promote" aria-label="Promote creation" title="Promote this creation" disabled><img src="{{ url_for('static', path='images/buttons/Furry Cowhide Megaphone Emblem.png') }}" alt=""></button>
+      <a id="galleryEdit" class="gallery-fur-control gallery-fur-edit" href="{{ creation_url }}" aria-label="Edit creation" title="Edit this creation"><img src="{{ url_for('static', path='images/buttons/Furry Cowhide Pencil Badge.png') }}" alt=""></a>
+      <button id="galleryComplete" type="button" class="gallery-fur-control gallery-fur-complete" aria-label="ENHANCE" title="ENHANCE"><img src="{{ url_for('static', path='images/buttons/Magical Cowhide Wand Emblem.png') }}" alt=""></button>
+    </div>
+    <p id="galleryCompletionStatus" class="gallery-completion-status" role="status" aria-live="polite" hidden></p>
   </article>
-  <div id="galleryAudio" class="gallery-audio" role="group" aria-label="Saved audio playback" hidden>
-    <span id="galleryAudioStatus" role="status" aria-live="polite"></span>
-    <button id="galleryPlayAudio" type="button" class="funky-button" hidden>PLAY AUDIO</button>
-    <button id="galleryStopAudio" type="button" class="funky-button">STOP AUDIO</button>
-  </div>
-  <div class="gallery-controls" role="group" aria-label="Review and page navigation">
-    <a id="galleryEdit" class="funky-button" href="{{ creation_url }}" hidden>EDIT</a>
-    <button id="galleryPromote" type="button" class="funky-button" disabled>PROMOTE</button>
-    <button id="galleryNext" type="button" class="funky-button">NEXT CREATION <span aria-hidden="true">→</span></button>
-  </div>
+  <dialog id="galleryImageRetryDialog" class="creation-delete-dialog" aria-labelledby="galleryImageRetryTitle">
+    <h2 id="galleryImageRetryTitle">Previous image generation had an uncertain outcome.</h2>
+    <p>The previous image request may have reached the provider. Retrying could create and charge for another image. Retry anyway?</p>
+    <div class="creation-delete-dialog-actions">
+      <button type="button" id="galleryConfirmImageRetry" class="funky-button">RETRY</button>
+      <button type="button" id="galleryCancelImageRetry" class="funky-button">CANCEL</button>
+    </div>
+  </dialog>
+  <dialog id="galleryEndImageRetryDialog" class="creation-delete-dialog" aria-labelledby="galleryEndImageRetryTitle">
+    <h2 id="galleryEndImageRetryTitle">Previous end-image generation had an uncertain outcome.</h2>
+    <p>The previous end-image request may have reached the provider. Retrying could create and charge for another image. Retry anyway?</p>
+    <div class="creation-delete-dialog-actions">
+      <button type="button" id="galleryConfirmEndImageRetry" class="funky-button">RETRY</button>
+      <button type="button" id="galleryCancelEndImageRetry" class="funky-button">CANCEL</button>
+    </div>
+  </dialog>
   <noscript><p>Enable JavaScript to turn through the collection. No content is generated here.</p></noscript>
   {% else %}
   <div class="gallery-page gallery-signin">
@@ -40,4 +55,4 @@
 </section>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}{% if signed_in %}<script src="{{ url_for('static', path='promotion-gallery.js') }}" defer></script>{% endif %}{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='mode-nav.js') }}" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='promotion-gallery.js') }}?v=gallery-hover-voices-1" defer></script>{% endif %}{% endblock %}

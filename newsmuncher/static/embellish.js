@@ -12,7 +12,7 @@
             this.data = data;
             this.running = false;
             this.imageDisplayed = false;
-            this.render({available:!!(data?.nominated && data?.image_url), message:''});
+            this.render({available:!!(data?.nominated && (data?.image_url || data?.image_outcome_uncertain)), message:''});
         }
         terminal(state, kind) {
             if (state?.[kind + '_url']) return true;
