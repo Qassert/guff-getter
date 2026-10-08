@@ -113,7 +113,7 @@ available without `sys.path` workarounds.
 To reset an adopted pet's password, substitute its exact name:
 
 ```sh
-python -B -m scripts.reset_pet_password Andy
+python -B -m scripts.maintenance.reset_pet_password Andy
 ```
 
 Enter and repeat the new password in the terminal; input is hidden. This command
@@ -124,7 +124,7 @@ are preserved. Existing login cookies are not revoked.
 To check database connectivity:
 
 ```sh
-python -B -m scripts.check_database
+python -B -m scripts.maintenance.check_database
 ```
 
 This command contacts MongoDB and sends a ping. Its existing code also executes
@@ -312,7 +312,7 @@ listening review, not asserted by automated tests.
 
     .venv/bin/python -B -m unittest discover -s tests -q
     node tests/frontend/jingles.test.js
-    .venv/bin/python -m scripts.benchmark_jingle
+    .venv/bin/python -m scripts.diagnostics.benchmark_jingle
 
 The benchmark defaults to dry-run. --generate is a LIVE cost-incurring request.
 Existing attempt markers prevent reruns. Never use another attempt identifier

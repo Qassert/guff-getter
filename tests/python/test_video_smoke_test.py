@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 import requests
-from scripts import video_smoke_test as video
+from scripts.diagnostics import video_smoke_test as video
 
 PNG = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aF1kAAAAASUVORK5CYII=')
 MP4 = b'\x00\x00\x00\x18ftypmp42' + b'fixture'

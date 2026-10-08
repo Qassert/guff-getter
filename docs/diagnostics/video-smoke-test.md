@@ -12,7 +12,7 @@ The script does not read `.env`. Never put key values in commands or this docume
 Dry run (no uploads, requests or output files; keys are not needed):
 
 ```sh
-./.venv/bin/python scripts/video_smoke_test.py \
+./.venv/bin/python scripts/diagnostics/video_smoke_test.py \
   --image /absolute/path/to/image.png \
   --prompt "Preserve the scene. Add restrained movement and gentle camera drift. No new text or objects." \
   --providers wan,svd
@@ -21,7 +21,7 @@ Dry run (no uploads, requests or output files; keys are not needed):
 After supplying both keys securely in the environment, one explicitly paid comparison:
 
 ```sh
-./.venv/bin/python scripts/video_smoke_test.py \
+./.venv/bin/python scripts/diagnostics/video_smoke_test.py \
   --image /absolute/path/to/image.png \
   --prompt "Preserve the scene. Add restrained movement and gentle camera drift. No new text or objects." \
   --providers wan,svd \
@@ -84,7 +84,7 @@ actual provider responses and video quality remain unverified until an authorize
 ## Offline validation
 
 ```sh
-./.venv/bin/python -m py_compile scripts/video_smoke_test.py
+./.venv/bin/python -m py_compile scripts/diagnostics/video_smoke_test.py
 ./.venv/bin/python -m pytest tests/python/test_video_smoke_test.py -q
 ```
 
@@ -112,7 +112,7 @@ an automatic retry, and failure stops the next provider from starting.
 Offline diagnostics (no HTTP, no output files, even if spend flags are also supplied):
 
 ```sh
-./.venv/bin/python scripts/video_smoke_test.py --image /absolute/path/to/image.png --diagnose-wan
+./.venv/bin/python scripts/diagnostics/video_smoke_test.py --image /absolute/path/to/image.png --diagnose-wan
 ```
 
 Checks the local image signature/size, nonempty prompt and presence of the environment

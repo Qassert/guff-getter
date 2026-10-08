@@ -165,6 +165,6 @@ not a second ANIMATE request or the standalone CLI.
 - `newsmuncher/static/js/creation/video.js`, `newsmuncher/static/js/creation/script.js`, `newsmuncher/static/css/shared/styles.css`,
   `newsmuncher/static/js/gallery/promotion-gallery.js`, `newsmuncher/static/css/gallery/promotion-gallery.css`
 - `newsmuncher/templates/pet_profile.html`, `newsmuncher/templates/promotion_gallery.html`
-- `scripts/video_smoke_test.py`, `docs/diagnostics/video-smoke-test.md`
+- `scripts/diagnostics/video_smoke_test.py`, `docs/diagnostics/video-smoke-test.md`
 - `tests/python/test_video.py`, `tests/python/test_video_prompt.py`, `tests/frontend/video.test.js`,
   `tests/python/test_promotion_gallery.py`, `tests/frontend/promotion_gallery.test.js`

@@ -139,7 +139,7 @@ class FinalWordClaimsTests(unittest.TestCase):
 
 class ResetWordClaimsTests(unittest.TestCase):
     def test_reset_targets_only_supplied_word_claim_collection(self):
-        from scripts.reset_word_claims import COLLECTION, DATABASE, reset_word_claims
+        from scripts.maintenance.reset_word_claims import COLLECTION, DATABASE, reset_word_claims
         collection = Mock()
         collection.delete_many.return_value.deleted_count = 5
         self.assertEqual(reset_word_claims(collection), 5)
@@ -147,8 +147,8 @@ class ResetWordClaimsTests(unittest.TestCase):
         self.assertEqual((DATABASE, COLLECTION), ('funny_json_db', 'word_shuffle_bags'))
 
     def test_command_refuses_non_development_environment_before_connecting(self):
-        from scripts.reset_word_claims import main
-        with patch.dict('os.environ', {}, clear=True), patch('scripts.reset_word_claims.MongoClient') as client:
+        from scripts.maintenance.reset_word_claims import main
+        with patch.dict('os.environ', {}, clear=True), patch('scripts.maintenance.reset_word_claims.MongoClient') as client:
             with self.assertRaises(SystemExit):
                 main(['--confirm', 'RESET-WORD-CLAIMS'])
         client.assert_not_called()

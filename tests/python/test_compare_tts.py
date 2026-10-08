@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from scripts import compare_tts as tts
+from scripts.diagnostics import compare_tts as tts
 
 
 class ComparisonTests(unittest.TestCase):
@@ -20,7 +20,7 @@ class ComparisonTests(unittest.TestCase):
             ('requests.post', {}),
         ):
             p = patch.object(tts, target, **kwargs) if '.' not in target else patch(
-                'scripts.compare_tts.' + target, **kwargs)
+                'scripts.diagnostics.compare_tts.' + target, **kwargs)
             mock = p.start()
             self.addCleanup(p.stop)
             setattr(self, target.replace('.', '_'), mock)
@@ -71,7 +71,7 @@ class ComparisonTests(unittest.TestCase):
 
     def test_default_output_is_project_relative(self):
         self.assertEqual(self.original_output,
-                         Path(tts.__file__).resolve().parents[1] / 'data/tts-comparison')
+                         Path(tts.__file__).resolve().parents[2] / 'data/tts-comparison')
 
     def test_same_input_and_provider_contracts(self):
         self.assertEqual(tts.main(['--provider', 'all']), 0)

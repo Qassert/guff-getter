@@ -57,7 +57,7 @@ No live MongoDB writes or live browser-generated jingle during implementation.
 - .gitignore, .env.example, README.md, docs/status/jingle-implementation.md
 - data/generated_audio/.gitkeep
 - jingle_service/__init__.py, contract.py, modal_app.py, requirements-dev.txt
-- scripts/benchmark_jingle.py
+- scripts/diagnostics/benchmark_jingle.py
 - newsmuncher/config.py, main.py
 - newsmuncher/api/jingles.py
 - newsmuncher/services/jingle_brief.py, jingles.py

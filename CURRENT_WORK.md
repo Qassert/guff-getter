@@ -16,7 +16,7 @@ HANDOVER: README.md
 CURRENT_TASK: Remaining repository reorganisation and baseline test repair in progress on `feature/video-animation`.
 APPROVAL: Batch C committed locally as `e2ebb1a`; autonomous low-risk completion of Batches D–F and test repair is approved. No push or merge.
 NEXT_STEP: Organise tests and operational scripts, then repair stale baseline assertions without changing approved application behavior.
-VALIDATION: Batch E retains the exact baseline after the test-directory split: Node 63 passed / 19 failed; Python 280 passed / 11 failed / 105 subtests. No provider calls.
+VALIDATION: Batch F focused operational-script validation passes 92 tests plus 99 subtests. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
@@ -35,6 +35,13 @@ EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `
 - Updated only structural module paths, repository-root calculations, cross-runner commands and documentation references.
 - Full Node validation: 63 passed / 19 known failures. Full Python validation: 280 passed / 11 known failures / 105 subtests. Results exactly match Batch D.
 - No provider call, database access, generated-media mutation, push or merge.
+
+## Repository reorganisation Batch F — 2026-10-08
+
+- Moved four administrative tools to `scripts/maintenance/` and four opt-in provider/media diagnostics to `scripts/diagnostics/`.
+- Updated package imports, mocks, repository-root calculations and documented CLI commands. Added subpackage markers so module invocation remains available.
+- Historical recovery and comparison tools remain present; paid diagnostic paths retain their explicit opt-in safeguards.
+- Focused script validation: 92 passed plus 99 subtests. No provider call, database access, generated-media mutation, push or merge.
 
 ## Repository reorganisation Batch C — 2026-10-08
 
@@ -71,7 +78,7 @@ EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `
   - `scripts/video_smoke_test.md` → `docs/diagnostics/video-smoke-test.md`
 - Updated only documentation references, the smoke-test module docstring and README structure listing. Script module paths and behavior are unchanged.
 - Maintenance/diagnostic script moves were deliberately deferred because their module paths are referenced by tests, documentation and operational commands.
-- Targeted offline validation: `tests/test_video_smoke_test.py` 29/29 passed; `scripts/video_smoke_test.py` compiles; no stale old documentation references remain outside the historical mapping/audit record.
+- Targeted offline validation: `tests/test_video_smoke_test.py` 29/29 passed; `scripts/diagnostics/video_smoke_test.py` compiles; no stale old documentation references remain outside the historical mapping/audit record.
 - No new failure, provider call, production database access, generated-media mutation, deletion, commit, push or merge.
 
 ## Pre-cleanup audit — 2026-10-07
@@ -94,7 +101,7 @@ EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `
   - `newsmuncher/static/images/udder/cow-body.png`, `full-udder.png`, `master_udder.png`, `udder-body.png`, `udder-source.png`
   - `newsmuncher/static/images/udder/teat-1.png` through `teat-5.png`
 - `newsmuncher/static/profile-editing.js`: no template loads it; tests explicitly assert the retired controller is absent from Creation.
-- Unused imports: `Response` in `api/pets.py`; `Body` in `api/previews.py`; `clean_data` in `jobs/fetch_people.py`; `os` in `jobs/fetch_poem.py` and `jobs/fetch_wikipedia.py`; `json` in `jobs/process_data.py`; `Path` in `scripts/benchmark_jingle.py`; `math` and `Path` in `scripts/clean_word_banks.py`.
+- Unused imports: `Response` in `api/pets.py`; `Body` in `api/previews.py`; `clean_data` in `jobs/fetch_people.py`; `os` in `jobs/fetch_poem.py` and `jobs/fetch_wikipedia.py`; `json` in `jobs/process_data.py`; `Path` in `scripts/diagnostics/benchmark_jingle.py`; `math` and `Path` in `scripts/maintenance/clean_word_banks.py`.
 
 ### B — probably unused or superseded; verify before removal
 
@@ -721,13 +728,13 @@ No real images or external calls. Changes intentionally uncommitted/unpushed for
 
 ## Temporary TTS comparison harness — 2026-09-15
 
-Standalone scripts/compare_tts.py only; no app integration. Curated editable voice
+Standalone scripts/diagnostics/compare_tts.py only; no app integration. Curated editable voice
 pools, one random voice/sample per selected provider, identical fixed sample text.
 OpenAI SDK plus existing requests HTTP for ElevenLabs/Cartesia; no new dependencies.
 Environment/root .env keys: OPENAI_API_KEY, ELEVENLABS_API_KEY, CARTESIA_API_KEY.
 Missing keys skip safely; --dry-run writes nothing and calls no provider. No retries.
 Unique MP3 files go to ignored data/tts-comparison/. No generated audio committed.
-Run from root using .venv/bin/python -m scripts.compare_tts --provider all --dry-run.
+Run from root using .venv/bin/python -m scripts.diagnostics.compare_tts --provider all --dry-run.
 For one live sample, replace all with openai/elevenlabs/cartesia and omit --dry-run.
 Each provider requires an API-enabled account, usable quota/credit and access to the
 configured voice IDs. Account/voice availability has not been tested live.
@@ -790,7 +797,7 @@ No dependencies added. Main untouched. REVIEW / CODEX; commit/push authorized.
 
 ## Isolated narration-reference jingle A/B — 2026-09-15
 
-scripts/compare_jingle_reference.py defaults to dry-run; --run explicitly opts into
+scripts/diagnostics/compare_jingle_reference.py defaults to dry-run; --run explicitly opts into
 at most two single-attempt Modal POSTs. No OpenAI/TTS imports or calls. Reads existing
 narration at data/generated_narration/<entry_id>.mp3 and brief from read-only SQLite
 (data/previews/jingles.sqlite3, jingles.state.brief for same entry ID). If unavailable,
@@ -821,8 +828,8 @@ pair-directory creation before requests prevents repeated/concurrent CLI runs fr
 spending again; interrupted runs require inspection, not deletion/retry guessing.
 
 Commands from repository root (replace ENTRY_ID with the same nominated item's ID):
-./.venv/bin/python -m scripts.compare_jingle_reference --entry-id ENTRY_ID --seed 1729 --dry-run
-./.venv/bin/python -m scripts.compare_jingle_reference --entry-id ENTRY_ID --seed 1729 --run
+./.venv/bin/python -m scripts.diagnostics.compare_jingle_reference --entry-id ENTRY_ID --seed 1729 --dry-run
+./.venv/bin/python -m scripts.diagnostics.compare_jingle_reference --entry-id ENTRY_ID --seed 1729 --run
 The second command is for a future explicitly authorized A/B run only. It expects
 MODAL_JINGLE_ENDPOINT, MODAL_JINGLE_KEY, MODAL_JINGLE_SECRET in environment/root .env.
 Updated jingle_service/modal_app.py must be deployed first; no deployment performed.
@@ -893,7 +900,7 @@ it cannot prove an unrecorded historical B request never occurred. Keep attempt 
 fcntl locking targets existing macOS/Linux environments. No production changes.
 
 Command from repository root (explicitly generates B; NOT executed by Codex):
-./.venv/bin/python -m scripts.compare_jingle_reference --resume data/jingle-reference-comparison/d625b73f0949f58c5f9d9435a560b3b1e9a11a37224f3fe679c12bae4b6c163a
+./.venv/bin/python -m scripts.diagnostics.compare_jingle_reference --resume data/jingle-reference-comparison/d625b73f0949f58c5f9d9435a560b3b1e9a11a37224f3fe679c12bae4b6c163a
 
 Tests: ./.venv/bin/python -m pytest tests/test_jingle_reference.py tests/test_modal_schema_diagnostic.py -q
 31 passed, all provider interactions mocked. No deployment, live service calls or
@@ -1063,14 +1070,14 @@ is completed or returned. Unused candidates and failed pass-1 generation claim n
 CSV master vocabularies remain read-only; pass-2 prompts/behaviour are unchanged.
 
 Guarded development reset (not run):
-NEWSMUNCHER_ENV=development ./.venv/bin/python -m scripts.reset_word_claims --confirm RESET-WORD-CLAIMS
+NEWSMUNCHER_ENV=development ./.venv/bin/python -m scripts.maintenance.reset_word_claims --confirm RESET-WORD-CLAIMS
 The script hard-codes funny_json_db.word_shuffle_bags and calls delete_many only on
 that collection. It refuses to connect unless both the environment guard and exact
 confirmation are supplied. It does not touch nominations, pets, users or media state.
 
 Files: newsmuncher/services/word_shuffle.py, newsmuncher/utils/clean_data.py,
 newsmuncher/api/previews.py, newsmuncher/services/image_generation.py,
-scripts/reset_word_claims.py, tests/test_permanent_word_claims.py,
+scripts/maintenance/reset_word_claims.py, tests/test_permanent_word_claims.py,
 tests/test_copy_edit_pass.py, tests/test_image_generation.py,
 WORD_SHUFFLE_STATUS.md, CURRENT_WORK.md.
 Validation: ./.venv/bin/python -m pytest tests/test_permanent_word_claims.py tests/test_copy_edit_pass.py tests/test_source_preprocessing.py tests/test_image_generation.py -q
@@ -1197,7 +1204,7 @@ No deployment or main changes. Commit/push authorized.
 ## Standalone image-to-video comparison — 2026-09-23
 
 REVIEW / CODEX. Branch experiment/video-smoke-test from f7a65da; Promotion Gallery
-branch untouched. scripts/video_smoke_test.py is standalone and uses existing requests.
+branch untouched. scripts/diagnostics/video_smoke_test.py is standalone and uses existing requests.
 Official current Wan/fal schemas, upload mechanisms, queue APIs and prices checked
 before implementation; sources and commands in scripts/video_smoke_test.md.
 Wan: supported multipart upload, 480p/5s, motion prompt and recorded random seed.

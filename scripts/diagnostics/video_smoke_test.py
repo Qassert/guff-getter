@@ -18,7 +18,7 @@ from uuid import uuid4
 
 import requests
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_ROOT = ROOT / 'tmp/video-smoke-test'
 WAN_BASE = 'https://api.wavespeed.ai/api/v3'
 FAL_BASE = 'https://queue.fal.run/fal-ai/stable-video'
@@ -37,7 +37,7 @@ POLL_SECONDS = 5
 POLL_TIMEOUT = 900
 
 
-# Allow both `python scripts/video_smoke_test.py` and module imports.
+# Allow both `python scripts/diagnostics/video_smoke_test.py` and module imports.
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 from newsmuncher.integrations.wavespeed import (

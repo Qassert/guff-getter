@@ -1,7 +1,7 @@
 """Audit CSV word banks offline with frequency-weighted English segmentation.
 
 Install the optional standalone dependency: python -m pip install 'wordfreq>=3.1,<4'
-Preview: python -m scripts.clean_word_banks
+Preview: python -m scripts.maintenance.clean_word_banks
 Only CERTAIN proposals are written with --apply; REVIEW requires human approval
 via REVIEWED_OVERRIDES. No runtime application imports beyond path configuration.
 """

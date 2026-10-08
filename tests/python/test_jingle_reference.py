@@ -17,7 +17,7 @@ import pytest
 from pydantic import ValidationError
 
 from jingle_service.contract import GenerationRequest, MusicBrief
-from scripts import compare_jingle_reference as cli
+from scripts.diagnostics import compare_jingle_reference as cli
 
 MP3 = b'ID3' + b'x' * 2000
 BRIEF = MusicBrief(music_prompt='Ska. A ferret committee.', lyrics='Ferrets vote again!', duration_seconds=25)

@@ -1,6 +1,6 @@
 """Temporary, standalone voice comparison. No website integration.
 
-Run from the repository root: python -m scripts.compare_tts --provider all --dry-run
+Run from the repository root: python -m scripts.diagnostics.compare_tts --provider all --dry-run
 Remove --dry-run only when ready for one potentially billable request per provider.
 Edit VOICE_POOLS below to curate voices available to your provider accounts.
 """

@@ -85,6 +85,13 @@ No empty `models`, `repositories`, or `migrations` package is proposed. Current 
 - Updated Node module paths, Python repository-root calculations, cross-runner invocations and documented test commands for the additional directory level.
 - Pytest discovery and Node's test runner retain the exact Batch D baseline; test behavior and assertions were not changed in this structural batch.
 
+## Batch F implementation
+
+- Moved database, password and word-bank administration into `scripts/maintenance/`.
+- Moved opt-in jingle/TTS/video diagnostics into `scripts/diagnostics/`; retained all dry-run and explicit paid-run safeguards.
+- Updated module imports, patch targets, repository-root calculations and every documented command. Added package markers so `python -m` invocation remains supported from the repository root.
+- Runtime configuration, recovery behavior, generated-media paths and provider request logic are unchanged.
+
 ## Complete tracked-file map
 
 Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
@@ -265,15 +272,15 @@ Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
 | `newsmuncher/utils/source_preprocessing.py` | KEEP | `newsmuncher/utils/source_preprocessing.py` | Already appropriate or compatibility-sensitive |
 | `requirements.txt` | KEEP | `requirements.txt` | Already appropriate or compatibility-sensitive |
 | `scripts/__init__.py` | KEEP | `scripts/__init__.py` | Already appropriate or compatibility-sensitive |
-| `scripts/benchmark_jingle.py` | MOVE | `scripts/diagnostics/benchmark_jingle.py` | Later script batch; preserve opt-in safeguards |
-| `scripts/check_database.py` | MOVE | `scripts/maintenance/check_database.py` | Later script batch; preserve admin semantics |
-| `scripts/clean_word_banks.py` | MOVE | `scripts/maintenance/clean_word_banks.py` | Later script batch; preserve admin semantics |
-| `scripts/compare_jingle_reference.py` | MOVE | `scripts/diagnostics/compare_jingle_reference.py` | Later script batch; preserve opt-in safeguards |
-| `scripts/compare_tts.py` | MOVE | `scripts/diagnostics/compare_tts.py` | Later script batch; preserve opt-in safeguards |
-| `scripts/reset_pet_password.py` | MOVE | `scripts/maintenance/reset_pet_password.py` | Later script batch; preserve admin semantics |
-| `scripts/reset_word_claims.py` | MOVE | `scripts/maintenance/reset_word_claims.py` | Later script batch; preserve admin semantics |
+| `scripts/diagnostics/benchmark_jingle.py` | MOVE | `scripts/diagnostics/benchmark_jingle.py` | Later script batch; preserve opt-in safeguards |
+| `scripts/maintenance/check_database.py` | MOVE | `scripts/maintenance/check_database.py` | Later script batch; preserve admin semantics |
+| `scripts/maintenance/clean_word_banks.py` | MOVE | `scripts/maintenance/clean_word_banks.py` | Later script batch; preserve admin semantics |
+| `scripts/diagnostics/compare_jingle_reference.py` | MOVE | `scripts/diagnostics/compare_jingle_reference.py` | Later script batch; preserve opt-in safeguards |
+| `scripts/diagnostics/compare_tts.py` | MOVE | `scripts/diagnostics/compare_tts.py` | Later script batch; preserve opt-in safeguards |
+| `scripts/maintenance/reset_pet_password.py` | MOVE | `scripts/maintenance/reset_pet_password.py` | Later script batch; preserve admin semantics |
+| `scripts/maintenance/reset_word_claims.py` | MOVE | `scripts/maintenance/reset_word_claims.py` | Later script batch; preserve admin semantics |
 | `scripts/video_smoke_test.md` | MOVE | `docs/diagnostics/video-smoke-test.md` | Batch A documentation |
-| `scripts/video_smoke_test.py` | MOVE | `scripts/diagnostics/video_smoke_test.py` | Later script batch; preserve opt-in safeguards |
+| `scripts/diagnostics/video_smoke_test.py` | MOVE | `scripts/diagnostics/video_smoke_test.py` | Later script batch; preserve opt-in safeguards |
 | `tests/creation_meta.test.js` | MOVE | `tests/frontend/creation_meta.test.js` | Batch E frontend tests |
 | `tests/creation_title_presentation.test.js` | MOVE | `tests/frontend/creation_title_presentation.test.js` | Batch E frontend tests |
 | `tests/embellish.test.js` | MOVE | `tests/frontend/embellish.test.js` | Batch E frontend tests |

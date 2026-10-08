@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from scripts import clean_word_banks as c
+from scripts.maintenance import clean_word_banks as c
 
 
 class CleanerTests(unittest.TestCase):
