@@ -49,7 +49,7 @@ No empty `models`, `repositories`, or `migrations` package is proposed. Current 
 - Static moves change public URLs. Batch B requires exhaustive template, JavaScript and CSS updates plus a decision on aliases for any stored URL.
 - Python moves affect patches/import strings in tests and scripts. Batch D must preserve import compatibility.
 - The narration API, saved jingle lookup, WaveSpeed claims, ping-pong sidecars, word claims and recovery tooling are compatibility surfaces, not cleanup targets.
-- `gallery-back.png` is referenced but missing; resolve that defect separately rather than treating the reference as dead.
+- The former `gallery-back.png` reference was resolved in final housekeeping: BACK uses the supplied cowhide arrow asset shared with NEXT and mirrors it with CSS.
 - `jingle_service.contract` and `jingle_service.genres` are active production imports, so the package remains top-level.
 
 ## Batch B implementation
@@ -97,7 +97,37 @@ No empty `models`, `repositories`, or `migrations` package is proposed. Current 
 - Removed unused imports and the unreferenced `load_json`, `save_json` and `process_batch` helpers. Compatibility-sensitive narration, Modal/ACE-Step recovery sources, generated media and persisted data remain intact.
 - Retained all audit-classified obsolete artwork, the unloaded profile-editing controller, endpoint constants and repository-root package marker because their deletion was not separately approved.
 - Repaired stale regression expectations to describe approved current behavior. Provider/network interdiction remains in place and the full offline suite now passes.
-- The missing `images/buttons/gallery-back.png` remains a separately documented visual defect; no artwork was invented during repository cleanup.
+- Final housekeeping resolved the missing BACK reference without generating artwork and removed only evidence-backed obsolete files.
+
+## Final asset housekeeping
+
+Gallery BACK now uses `images/buttons/Coral Arrow on Cowhide Cushion.png`, the same supplied artwork as NEXT, with `scaleX(-1)` applied only to BACK's image. The missing filename never existed in Git history.
+
+Deleted after source, history, runtime-path and persisted-data searches found no consumers:
+
+| Deleted path | Bytes | Classification |
+| --- | ---: | --- |
+| `newsmuncher/static/images/Furry Cow-Spot Button Sprite Sheet.png` | 2,341,083 | SAFE TO DELETE — superseded button sprite reference |
+| `newsmuncher/static/images/Whimsical Fur-Button Gallery Interface.png` | 2,577,140 | SAFE TO DELETE — superseded Gallery mock-up |
+| `newsmuncher/static/images/buttons/Furry Cow-Print Button States Spec.png` | 1,946,375 | SAFE TO DELETE — superseded states reference sheet |
+| `newsmuncher/static/images/udder/cow-body.png` | 571,835 | SAFE TO DELETE — superseded intermediate component |
+| `newsmuncher/static/images/udder/teat-1.png` | 131,635 | SAFE TO DELETE — superseded teat component |
+| `newsmuncher/static/images/udder/teat-2.png` | 130,221 | SAFE TO DELETE — superseded teat component |
+| `newsmuncher/static/images/udder/teat-3.png` | 116,479 | SAFE TO DELETE — superseded teat component |
+| `newsmuncher/static/images/udder/teat-4.png` | 125,160 | SAFE TO DELETE — superseded teat component |
+| `newsmuncher/static/images/udder/teat-5.png` | 121,928 | SAFE TO DELETE — superseded teat component |
+| `newsmuncher/static/images/udder/udder-body.png` | 1,458,859 | SAFE TO DELETE — superseded intermediate body crop |
+
+The ten raster deletions save 9,520,715 bytes. Also deleted: empty root `__init__.py` (0 bytes), unreferenced `newsmuncher/endpoints.py` (908 bytes), and unloaded `newsmuncher/static/profile-editing.js` (1,851 bytes).
+
+Retained as rebuild/reference masters despite having no runtime references:
+
+| Retained path | Bytes | Classification |
+| --- | ---: | --- |
+| `newsmuncher/static/images/munge button/Furry Cow Udder Button Asset Sheet.png` | 2,407,775 | RETAIN — source sheet for current six-part MUNGE artwork |
+| `newsmuncher/static/images/udder/full-udder.png` | 3,018,672 | RETAIN — complete assembly reference |
+| `newsmuncher/static/images/udder/master_udder.png` | 2,379,801 | RETAIN — master source for current upper udder artwork |
+| `newsmuncher/static/images/udder/udder-source.png` | 1,998,685 | RETAIN — original extraction source |
 
 ## Complete tracked-file map
 

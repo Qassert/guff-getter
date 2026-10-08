@@ -15,8 +15,8 @@ HANDOVER: README.md
 
 CURRENT_TASK: Repository reorganisation, low-risk cleanup and baseline test repair completed for final manual review on `feature/video-animation`.
 APPROVAL: Batches A–F, test repair and non-destructive cleanup are committed locally through `ff58399`. No push or merge.
-NEXT_STEP: Andy performs final manual review. The known missing Gallery BACK artwork remains a separate visual asset decision.
-VALIDATION: Node 82 passed / 0 failed; Python 291 passed / 0 failed / 105 subtests. Python and JavaScript syntax checks and `git diff --check` pass. Static audit has no newly missing assets. No provider calls.
+NEXT_STEP: Andy performs final manual review. No known missing active static asset remains.
+VALIDATION: Node 82 passed / 0 failed; Python 291 passed / 0 failed / 105 subtests. Python/JavaScript syntax and `git diff --check` pass. Static audit has no missing literal asset; its sole report is the expected dynamically constructed MUNGE teat path. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
@@ -56,6 +56,13 @@ EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `
 - Retained all audit-classified obsolete artwork/code pending explicit deletion approval.
 - Static reference audit reports only the previously documented missing Gallery BACK image and the expected runtime-composed MUNGE teat path false positive.
 - Full offline validation remains green: Node 82/82; Python 291/291 plus 105 subtests. No provider call, production database access, generated-media mutation, push or merge.
+
+## Final asset housekeeping — 2026-10-08
+
+- Confirmed `gallery-back.png` never existed in Git. BACK now uses the supplied NEXT cowhide-arrow PNG with a BACK-only horizontal mirror; routes, sounds, animation and navigation logic are unchanged.
+- Deleted ten unreferenced, superseded raster assets (9,520,715 bytes) plus three conclusively inactive OBSOLETE code candidates (2,759 bytes).
+- Retained the MUNGE source sheet, complete udder reference, master udder and original udder source because they remain the only rebuild/reference masters for current raster artwork.
+- Full validation passed: Node 82/82; Python 291/291 plus 105 subtests; Python/JavaScript syntax and diff checks clean. Creation/Gallery route coverage passes, and the static audit has no missing literal asset.
 
 ## Repository reorganisation Batch C — 2026-10-08
 
