@@ -1,7 +1,7 @@
 from newsmuncher.utils.source_preprocessing import log_overlap
 from newsmuncher.config import (PROJECT_ROOT, PROMPT_FILE, TEMP_FILE, TEMP_SHIZZ_FILE,
     GENERATED_NARRATION_DIR)
-from fastapi import APIRouter, HTTPException, Request, Cookie, Body
+from fastapi import APIRouter, HTTPException, Request, Cookie
 from pydantic import BaseModel, Field
 from openai import BadRequestError
 import json

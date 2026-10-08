@@ -169,39 +169,6 @@ def claim_used_words(contenders, result):
     )
 
 
-# --------------
-
-def process_batch(data, generate_replacements, flag_name, batch_size):
-    """Process a batch of entries and update them."""
-    skipped_entries = []
-    processed_count = 0
-
-    for key, entry in data.items():  # Iterate through dictionary items
-        # Check if entry is a dictionary
-        if not isinstance(entry, dict):
-            print(f"Skipping invalid entry with key {key}: {entry}")
-            skipped_entries.append(key)
-            continue
-
-        # Skip entries already processed
-        if entry.get(flag_name, False):
-            continue
-
-        # Generate replacements for the entry
-        replacements = generate_replacements(entry)
-        if replacements:
-            # Update the entry in the original dictionary
-            data[key].update(replacements)
-            processed_count += 1
-        else:
-            # Add to skipped entries if generation failed
-            skipped_entries.append(key)
-
-        # Stop after processing the batch size
-        if processed_count >= batch_size:
-            break
-
-    return skipped_entries
 
 
 # --------------

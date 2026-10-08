@@ -2,7 +2,6 @@
 import argparse
 import json
 import os
-from pathlib import Path
 import time
 import subprocess
 from email.parser import Parser

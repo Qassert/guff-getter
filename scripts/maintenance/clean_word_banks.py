@@ -9,12 +9,10 @@ import argparse
 import csv
 import io
 import json
-import math
 import re
 from collections import Counter
 from datetime import datetime, timezone
 from functools import lru_cache
-from pathlib import Path
 from newsmuncher.config import WORDS_DIR
 
 # Exceptions, not the segmentation dictionary. A reviewed mapping authorizes apply.

@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Remaining repository reorganisation and baseline test repair in progress on `feature/video-animation`.
+CURRENT_TASK: Repository reorganisation, low-risk cleanup and baseline test repair completed for final manual review on `feature/video-animation`.
 APPROVAL: Batch C committed locally as `e2ebb1a`; autonomous low-risk completion of Batches D–F and test repair is approved. No push or merge.
-NEXT_STEP: Organise tests and operational scripts, then repair stale baseline assertions without changing approved application behavior.
-VALIDATION: Stale baseline tests have been repaired against approved behavior: Node 82 passed / 0 failed; Python 291 passed / 0 failed / 105 subtests. No provider calls.
+NEXT_STEP: Andy performs final manual review. The known missing Gallery BACK artwork remains a separate visual asset decision.
+VALIDATION: Node 82 passed / 0 failed; Python 291 passed / 0 failed / 105 subtests. Python and JavaScript syntax checks and `git diff --check` pass. Static audit has no newly missing assets. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
@@ -49,6 +49,13 @@ EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `
 - Browser mocks now implement only the DOM methods used by the approved current code. Provider and socket guards remain active; no assertion was weakened to permit external calls.
 - Full Node validation: 82 passed / 0 failed. Full Python validation: 291 passed / 0 failed / 105 subtests.
 - No application behavior, provider request, database state or generated media changed.
+
+## Low-risk cleanup — 2026-10-08
+
+- Removed nine unused imports and three unreferenced utility functions. Active prompts, word banks, generated media, persistence paths and historical recovery/compatibility code remain untouched.
+- Retained all audit-classified obsolete artwork/code pending explicit deletion approval.
+- Static reference audit reports only the previously documented missing Gallery BACK image and the expected runtime-composed MUNGE teat path false positive.
+- Full offline validation remains green: Node 82/82; Python 291/291 plus 105 subtests. No provider call, production database access, generated-media mutation, push or merge.
 
 ## Repository reorganisation Batch C — 2026-10-08
 

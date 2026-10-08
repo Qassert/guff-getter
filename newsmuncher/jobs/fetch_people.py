@@ -9,7 +9,6 @@ from urllib.parse import quote
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 
-from newsmuncher.utils.clean_data import clean_data
 
 API_URL = "https://en.wikipedia.org/w/api.php"
 SUMMARY_URL = "https://en.wikipedia.org/api/rest_v1/page/summary/"

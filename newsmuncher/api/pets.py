@@ -1,5 +1,5 @@
 from newsmuncher.config import AVATARS_DIR, TEMPLATES_DIR
-from fastapi import APIRouter, HTTPException, Request, Form, UploadFile, File, Response
+from fastapi import APIRouter, HTTPException, Request, Form, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from motor.motor_asyncio import AsyncIOMotorClient

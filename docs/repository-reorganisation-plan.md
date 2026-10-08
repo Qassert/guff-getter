@@ -92,6 +92,13 @@ No empty `models`, `repositories`, or `migrations` package is proposed. Current 
 - Updated module imports, patch targets, repository-root calculations and every documented command. Added package markers so `python -m` invocation remains supported from the repository root.
 - Runtime configuration, recovery behavior, generated-media paths and provider request logic are unchanged.
 
+## Low-risk cleanup and test repair
+
+- Removed unused imports and the unreferenced `load_json`, `save_json` and `process_batch` helpers. Compatibility-sensitive narration, Modal/ACE-Step recovery sources, generated media and persisted data remain intact.
+- Retained all audit-classified obsolete artwork, the unloaded profile-editing controller, endpoint constants and repository-root package marker because their deletion was not separately approved.
+- Repaired stale regression expectations to describe approved current behavior. Provider/network interdiction remains in place and the full offline suite now passes.
+- The missing `images/buttons/gallery-back.png` remains a separately documented visual defect; no artwork was invented during repository cleanup.
+
 ## Complete tracked-file map
 
 Summary: **115 MOVE, 86 KEEP, 6 REVIEW, 17 OBSOLETE** across 224 tracked files.
