@@ -2,7 +2,7 @@ STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: Singable headlines, versioned ElevenLabs jingles, independent frame styles and saved-audio compatibility
-LAST_COMPLETED_COMMIT: ff58399 chore: remove confirmed dead imports and helpers
+LAST_COMPLETED_COMMIT: 9791a90 chore: remove verified obsolete assets
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -14,7 +14,7 @@ HANDOVER: README.md
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
 CURRENT_TASK: Repository reorganisation, low-risk cleanup and baseline test repair completed for final manual review on `feature/video-animation`.
-APPROVAL: Batches A–F, test repair and non-destructive cleanup are committed locally through `ff58399`. No push or merge.
+APPROVAL: Batches A–F, test repair, BACK repair and approved obsolete-asset cleanup are committed locally through `9791a90`. No push or merge.
 NEXT_STEP: Andy performs final manual review. No known missing active static asset remains.
 VALIDATION: Node 82 passed / 0 failed; Python 291 passed / 0 failed / 105 subtests. Python/JavaScript syntax and `git diff --check` pass. Static audit has no missing literal asset; its sole report is the expected dynamically constructed MUNGE teat path. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
