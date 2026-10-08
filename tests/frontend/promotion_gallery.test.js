@@ -6,7 +6,7 @@ const response = data => ({ok:true, json:async () => data});
 const item = id => ({id,title:'Title '+id,body:'Body '+id,promoted:false});
 function setup(fetcher, afterDisplay) {
     const shown=[], errors=[];
-    const view = {loading(){}, empty(){shown.push(null);}, show(i){shown.push(i);}, error(e){errors.push(e);}, promoting(){}, promoted(){}};
+    const view = {loading(){}, empty(){shown.push(null);}, show(i){shown.push(i);}, error(e){errors.push(e);}, promoting(){}, promoted(){}, completing(){}, progress(){}};
     return {gallery:new PromotionGallery({view,fetcher,afterDisplay}),shown,errors};
 }
 test('loads one creation and acknowledges only after display; promotion is idempotent', async () => {
@@ -82,20 +82,20 @@ function mediaSetup(starts=[]) {
 test('gallery plays only the jingle and ignores historical narration', async()=>{
     const {media,players}=mediaSetup();
     await media.activate({jingle_url:'/music',narration_url:'/historical-voice'});
-    assert.equal(players.length,1); assert.equal(players[0].src,'/music'); assert(players[0].playing);
+    assert.equal(players.length,2); assert.equal(players[0].src,'/music'); assert(players[0].playing);
 });
 test('jingle-only starts immediately and narration-only pages are silent', async()=>{
     const {media,players,states}=mediaSetup();
     await media.activate({jingle_url:'/music'}); assert(players[0].playing);
     await media.activate({narration_url:'/historical-voice'});
-    assert(!players[0].playing); assert.equal(players.length,1);
-    assert.deepEqual(states.at(-1),{available:false,blocked:false});
+    assert(!players.some(player=>player.playing)); assert.equal(players.length,2);
+    assert.deepEqual(states.at(-1),{available:false,blocked:false,playing:false});
 });
 test('page turn stops and unloads old jingle with no overlap', async()=>{
     const {media,players}=mediaSetup();
     await media.activate({jingle_url:'/old'});
     await media.activate({jingle_url:'/new'});
-    assert(!players[0].playing && players[0].src===''); assert(players[1].playing);
+    assert(!players[0].playing && players[0].src===''); assert(players[2].playing);
 });
 test('autoplay fallback retries the active jingle sensibly', async()=>{
     let blocked=true; const {media,players,states}=mediaSetup([()=>blocked ? Promise.reject({name:'NotAllowedError'}) : Promise.resolve()]);
@@ -105,7 +105,7 @@ test('autoplay fallback retries the active jingle sensibly', async()=>{
 test('STOP cancels pending playback and permits deliberate restart',async()=>{
     const old=deferred(); const {media,players}=mediaSetup([()=>old.promise]);
     const pending=media.activate({jingle_url:'/old'}); media.pause(); old.resolve(); await pending;
-    assert(!players[0].playing); await media.play(); assert(players[1].playing);
+    assert(!players[0].playing); await media.play(); assert(players[2].playing);
 });
 test('next stops current audio before waiting on retrieval and page exit stops playback',async()=>{
     const pending=deferred(); const {media,players}=mediaSetup();
@@ -135,7 +135,8 @@ test('default fetch adapter does not bind native fetch to the gallery instance',
         };
         let empty = false;
         const gallery = new PromotionGallery({view: {
-            loading() {}, empty() { empty = true; }, error(message) { assert.fail(message); }
+            loading() {}, empty() { empty = true; }, error(message) { assert.fail(message); },
+            completing() {}, progress() {}
         }});
         await gallery.next();
         assert(empty);
@@ -192,11 +193,11 @@ test('autoplay rejection or media error retains the still; reduced motion rechec
 });
 test('gallery navigation and leave stop visuals before retrieval, independent of audio', async()=>{
     const calls=[]; const wait=deferred();
-    const gallery=new PromotionGallery({view:{loading(){calls.push('loading');},empty(){}},
-        media:{stop(){calls.push('audio-stop');}},visual:{stop(){calls.push('video-stop');}},
+    const gallery=new PromotionGallery({view:{loading(){calls.push('loading');},empty(){},completing(){},progress(){}},
+        media:{stop(){calls.push('audio-stop');}},visual:{stop(){calls.push('video-stop');}},backdrop:{stop(){calls.push('backdrop-stop');}},
         fetcher:()=>wait.promise});
-    const next=gallery.next(); assert.deepEqual(calls,['audio-stop','video-stop','loading']);
-    gallery.leave(); assert.deepEqual(calls.slice(-2),['audio-stop','video-stop']);
+    const next=gallery.next(); assert.deepEqual(calls,['audio-stop','video-stop','backdrop-stop','loading']);
+    gallery.leave(); assert.deepEqual(calls.slice(-3),['audio-stop','video-stop','backdrop-stop']);
     wait.resolve(response({item:null})); await next;
 });
 

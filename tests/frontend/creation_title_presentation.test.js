@@ -22,9 +22,9 @@ test('Creator retains source and generated titles as hidden data and renders bod
 
 test('distinctive source heading follows the real loader into hidden metadata while body remains visible',async()=>{
  const nodes=new Map();
- const get=id=>{if(!nodes.has(id))nodes.set(id,{value:'',type:id==='sourceTitleDraft'?'hidden':'textarea',style:{},scrollHeight:24,classList:{add(){},remove(){}}});return nodes.get(id);};
+ const get=id=>{if(!nodes.has(id))nodes.set(id,{value:'',type:id==='sourceTitleDraft'?'hidden':'textarea',style:{},scrollHeight:24,classList:{add(){},remove(){}},addEventListener(){}});return nodes.get(id);};
  const heading='DEAD FUNNY - 1994 AMERICAN FILM',body='The body remains readable.';
- const context={console,document:{getElementById:get,querySelectorAll:()=>[]},window:{},sessionStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout,clearTimeout,requestAnimationFrame:fn=>fn(),fetch:async()=>({ok:true,json:async()=>({title:'DEAD FUNNY',description:'1994 AMERICAN FILM',extract:body})})};
+ const context={console,document:{getElementById:get,querySelectorAll:()=>[]},window:{addEventListener(){}},sessionStorage:{getItem:()=>null,setItem(){},removeItem(){}},setTimeout,clearTimeout,requestAnimationFrame:fn=>fn(),fetch:async()=>({ok:true,json:async()=>({title:'DEAD FUNNY',description:'1994 AMERICAN FILM',extract:body})})};
  vm.createContext(context);vm.runInContext(creatorJs,context);context.populateTempData();
  for(let i=0;i<6;i++)await Promise.resolve();
  assert.equal(get('sourceTitleDraft').value,heading);assert.equal(get('sourceTitleDraft').type,'hidden');

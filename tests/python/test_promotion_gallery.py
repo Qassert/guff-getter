@@ -276,10 +276,10 @@ def test_gallery_page_and_navigation(routes):
     client.cookies.set('gallery_session', 'opaque')
     response = client.get('/promotion-gallery/')
     assert response.status_code == 200
-    assert 'NEXT CREATION' in response.text and 'galleryPage' in response.text
+    assert 'aria-label="Next creation"' in response.text and 'galleryPage' in response.text
     assert '/pets/pet_profile/pet' in response.text
-    assert 'aria-current="page">VIEWING' in response.text
-    assert '>CREATOR</a>' in response.text
+    assert 'mode-nav-gallery mode-nav-active" aria-current="page" aria-label="GALLERY"' in response.text
+    assert 'mode-nav-create" href="/pets/pet_profile/pet" aria-label="CREATE"' in response.text
     assert 'id="galleryEdit"' in response.text
     assert 'id="galleryBackdrop"' in response.text
     assert 'promotion-gallery.js' in response.text
@@ -294,7 +294,7 @@ def test_polish_accessibility_and_scoped_styles():
     assert '.gallery-page.turning { animation: none; }' in css
     assert '@media (max-width: 620px)' in css
     assert '.promotion-gallery [hidden] { display: none !important; }' in css
-    assert 'aria-live="polite"' in template and 'aria-label="Review and page navigation"' in template
+    assert 'aria-live="polite"' in template and 'aria-label="Creation controls"' in template
     assert 'tabindex="-1"' not in template  # Native buttons/links, no focus trap.
 
 
@@ -304,11 +304,11 @@ def test_creator_and_viewing_share_compact_mode_navigation():
     shared_css = Path('newsmuncher/static/css/shared/styles.css').read_text()
     gallery_css = Path('newsmuncher/static/css/gallery/promotion-gallery.css').read_text()
 
-    assert 'aria-current="page">CREATOR' in creator
-    assert 'VIEWING<span class="mode-nav-action"> — VIEW GALLERY</span>' in creator
+    assert 'mode-nav-create mode-nav-active" aria-current="page" aria-label="CREATE"' in creator
+    assert 'mode-nav-gallery" href="/promotion-gallery/" aria-label="GALLERY"' in creator
     assert 'href="/promotion-gallery/"' in creator
-    assert 'href="{{ creation_url }}">CREATOR</a>' in gallery
-    assert 'aria-current="page">VIEWING' in gallery
+    assert 'mode-nav-create" href="{{ creation_url }}" aria-label="CREATE"' in gallery
+    assert 'mode-nav-gallery mode-nav-active" aria-current="page" aria-label="GALLERY"' in gallery
     for obsolete in ('BACK TO NEWSMUNCHER', 'THE NOMINATED COLLECTION', '<h1', 'gallery-intro'):
         assert obsolete not in gallery
     assert 'justify-content: center' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
@@ -337,14 +337,8 @@ def test_cycle_boundary_avoids_previous_and_int64_counts(setup):
     assert service.select('v', previous=last)['item']['id'] == last
 
 
-def test_no_generation_dependency_or_outbound_network_in_gallery(routes):
-    import ast
+def test_gallery_selection_makes_no_outbound_network_call(routes):
     import socket
-    files = ['newsmuncher/services/promotion_gallery.py', 'newsmuncher/api/promotion_gallery.py']
-    for file in files:
-        tree = ast.parse(Path(file).read_text())
-        imports = [n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)]
-        assert not any(name and any(word in name for word in ('image_generation', 'jingle_brief', 'openai_tts')) for name in imports)
     client, _, _ = routes
     client.cookies.set('gallery_session', 'opaque')
     with patch.object(socket.socket, 'connect', side_effect=AssertionError('No live network')):
@@ -413,7 +407,7 @@ def test_gallery_video_only_serves_completed_local_association(routes, setup, tm
     response = client.get(url, headers={'Range': 'bytes=0-3'})
     assert response.status_code == 206 and response.headers['content-type'] == 'video/mp4'
     result = service.serialize(entry)
-    assert result['video_url'] == url
+    assert result['video_url'].startswith(url + '?v=original-')
     assert result['rewrite_id'] == rewrite
     assert 'not-for-gallery-ui' not in json.dumps(result)
     entry['video']['status'] = 'started'

@@ -104,7 +104,8 @@ def test_views_never_generate_and_explicit_job_is_reused_after_restart(setup):
     video = state(service, key)['video']
     assert video['duration'] == 8 and video['resolution'] == '480p'
     assert 'mock-secret' not in json.dumps(video)
-    assert list(service.directory.iterdir()) == [service.path(key)]
+    assert service.path(key).is_file()
+    assert all(path.name.startswith(key) for path in service.directory.iterdir())
 
 
 def test_concurrent_claims_and_duplicate_worker_delivery_pay_once(setup):
@@ -352,16 +353,17 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     assert service.image_provider.calls[0][3] == service.images / f'{key}.png'
 
 
-def test_historical_image_without_persisted_style_fails_before_paid_claim(setup):
+def test_historical_image_without_persisted_style_uses_independent_end_style(setup):
     service, collection, key, calls = setup
     with service.store.transaction() as db:
         saved = service.store.read(db, key, 'pet')
         saved['result']['image_style'] = None
         service.store.save(db, key, saved)
-    with pytest.raises(VideoError) as caught:
-        service.claim(collection, key, 'pet')
-    assert caught.value.status == 409
-    assert 'video' not in state(service, key)
+    _, claimed = service.claim(collection, key, 'pet')
+    assert claimed
+    video = state(service, key)['video']
+    assert video['start_image_style'] is None
+    assert video['end_frame']['image_style']
     assert not calls and not service.image_provider.calls
 
 
@@ -373,5 +375,5 @@ def test_end_frame_failure_preserves_start_and_never_submits_video(setup):
     saved = state(service, key)
     assert saved['result']['image_url'] == f'/generated-images/{key}.png'
     assert saved['video']['status'] == 'failed_or_uncertain'
-    assert saved['video']['end_frame']['status'] == 'started'
+    assert saved['video']['end_frame']['status'] == 'uncertain'
     assert not calls

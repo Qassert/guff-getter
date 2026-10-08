@@ -48,7 +48,7 @@ class CopyEditPassTests(unittest.TestCase):
             self.assertIsNotNone(result)
             # Verify the call arguments
             call_args = mock_client.responses.create.call_args
-            self.assertEqual(call_args.kwargs['model'], 'gpt-5.6-luna')
+            self.assertEqual(call_args.kwargs['model'], 'gpt-6-sol')
             input_messages = call_args.kwargs['input']
             # System prompt should mention preserving absurdity
             system_content = input_messages[0]['content']

@@ -16,7 +16,7 @@ HANDOVER: README.md
 CURRENT_TASK: Remaining repository reorganisation and baseline test repair in progress on `feature/video-animation`.
 APPROVAL: Batch C committed locally as `e2ebb1a`; autonomous low-risk completion of Batches D–F and test repair is approved. No push or merge.
 NEXT_STEP: Organise tests and operational scripts, then repair stale baseline assertions without changing approved application behavior.
-VALIDATION: Batch F focused operational-script validation passes 92 tests plus 99 subtests. No provider calls.
+VALIDATION: Stale baseline tests have been repaired against approved behavior: Node 82 passed / 0 failed; Python 291 passed / 0 failed / 105 subtests. No provider calls.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 
@@ -42,6 +42,13 @@ EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `
 - Updated package imports, mocks, repository-root calculations and documented CLI commands. Added subpackage markers so module invocation remains available.
 - Historical recovery and comparison tools remain present; paid diagnostic paths retain their explicit opt-in safeguards.
 - Focused script validation: 92 passed plus 99 subtests. No provider call, database access, generated-media mutation, push or merge.
+
+## Baseline test repair — 2026-10-08
+
+- Updated stale tests for the current `gpt-6-sol` rewrite experiment, five source controls, Creator confirmation UI, MUNGE geometry, canvas teat effects, two-play Gallery jingles, Gallery progress/backdrop behavior, current furry navigation, local ping-pong media versions and independent end-frame styles.
+- Browser mocks now implement only the DOM methods used by the approved current code. Provider and socket guards remain active; no assertion was weakened to permit external calls.
+- Full Node validation: 82 passed / 0 failed. Full Python validation: 291 passed / 0 failed / 105 subtests.
+- No application behavior, provider request, database state or generated media changed.
 
 ## Repository reorganisation Batch C — 2026-10-08
 

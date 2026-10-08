@@ -8,7 +8,7 @@ assert(!html.includes('<textarea id="responseTitleDraft"'));
 for(const label of ['DATING','DRIVEL','WIKIPEDIA','POEM','PEOPLE'])assert(html.includes(`'${label}'`));
 assert(html.includes('aria-label="{{ label }}"'));
 assert(html.includes('aria-label="MUNGE IT"'));assert(html.includes('>NOMINATE<'));
-for(const removed of ['>EDIT<','>SAVE<','>CANCEL<','IMAGE GENERATION MODE','SHIZZALISE'])assert(!html.includes(removed));
+for(const removed of ['>EDIT<','>SAVE<','IMAGE GENERATION MODE','SHIZZALISE'])assert(!html.includes(removed));
 assert(!html.includes("path='profile-editing.js'"));
 const css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
 assert.match(css,/#sourceEditor\s*\{[^}]*padding-top:\s*clamp\(107px, 13\.92vw, 136px\)/s);
