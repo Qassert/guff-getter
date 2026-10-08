@@ -282,6 +282,7 @@ def test_gallery_page_and_navigation(routes):
     assert 'mode-nav-create" href="/pets/pet_profile/pet" aria-label="CREATE"' in response.text
     assert 'id="galleryEdit"' in response.text
     assert 'id="galleryBackdrop"' in response.text
+    assert response.text.count('images/buttons/Coral Arrow on Cowhide Cushion.png') == 2
     assert 'promotion-gallery.js' in response.text
     assert 'script.js' not in response.text and 'MAKE JINGLE' not in response.text
     assert '/promotion-gallery/' in Path('newsmuncher/templates/pet_profile.html').read_text()
