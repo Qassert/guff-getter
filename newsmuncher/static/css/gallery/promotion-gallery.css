@@ -46,24 +46,32 @@
 .promotion-gallery-page .site-main { width: min(960px, calc(100% - 64px)); padding-top: 24px; }
 .promotion-gallery-page .mode-nav { z-index: 5; margin-bottom: 14px; }
 .gallery-page {
+  --gallery-control-size: clamp(70px, 9.75vw, 101px);
   position: relative; isolation: isolate; transform-origin: left center;
-  border: 24px solid transparent; border-image: url('../../images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  border: 24px solid transparent; border-image: url('../../images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 stretch;
   padding: clamp(12px, 2.8vw, 36px); background-clip: padding-box;
   box-shadow: none; min-height: 310px; overflow: visible;
 }
 #galleryPage { margin-top: -136px; }
 .gallery-arrow {
   --arrow-direction: 1;
-  position: absolute; z-index: 6; top: 155px; width: clamp(70px, 9.75vw, 101px); aspect-ratio: 1.1;
+  --gallery-arrow-art-size: 68%;
+  position: absolute; z-index: 6; top: 155px;
+  width: var(--gallery-control-size); height: var(--gallery-control-size); aspect-ratio: 1;
   min-width: 0; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 50%;
   background: transparent; box-shadow: none; overflow: visible; transform-origin: center;
 }
-.gallery-arrow img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
-.gallery-arrow-back img { transform: scaleX(-1); }
+.gallery-arrow img {
+  position: absolute; left: 16%; top: 16%; display: block;
+  width: var(--gallery-arrow-art-size); height: var(--gallery-arrow-art-size);
+  border-radius: 50%; clip-path: circle(50%); object-fit: cover; object-position: center;
+  pointer-events: none; user-select: none;
+}
+.gallery-arrow-next img { transform: scaleX(.75); }
+.gallery-arrow-back img { transform: scaleX(-.75); }
 .gallery-arrow-back { --arrow-direction: -1; left: 0; transform: translate(-50%,-50%); }
 .gallery-arrow-next {
-  right: 0; width: clamp(57.27px, 7.977vw, 82.64px); height: clamp(63.64px, 8.864vw, 91.82px);
-  aspect-ratio: auto; transform: translate(50%,-50%);
+  right: 0; transform: translate(50%,-50%);
 }
 .gallery-arrow-next:hover { animation: gallery-next-hover 460ms ease-in-out infinite alternate; }
 .gallery-arrow-next.is-pressed { animation: gallery-next-press 620ms cubic-bezier(.2,.8,.25,1) both; }
@@ -95,10 +103,6 @@
   92% { transform: translate(50%,-50%) rotate(.35deg) scaleX(.99) scaleY(1.01); }
   100% { transform: translate(50%,-50%) rotate(0) scaleX(1) scaleY(1); }
 }
-.gallery-page::after {
-  content: ''; position: absolute; inset: 0 auto 0 0; width: 22px; z-index: -1;
-  background: linear-gradient(90deg, #5e472514, transparent); pointer-events: none;
-}
 .gallery-page.turning { animation: gallery-turn 360ms ease-out both; }
 @keyframes gallery-turn {
   from { opacity: .35; transform: perspective(1600px) rotateY(-7deg) translateX(8px); }
@@ -108,7 +112,6 @@
 .gallery-status { color: var(--muted); }
 .gallery-stamp { display: inline-block; border: 2px solid currentColor; padding: 4px 10px; transform: rotate(-3deg); }
 .gallery-fur-controls {
-  --gallery-control-size: clamp(70px, 9.75vw, 101px);
   position: absolute; z-index: 8; left: var(--gallery-image-centre-x, 50%); bottom: -12px;
   display: flex; align-items: center; justify-content: center; gap: 10px;
   transform: translate(-50%, 50%); white-space: nowrap;
@@ -207,13 +210,11 @@
 }
 @media (max-width: 620px) {
   .promotion-gallery-page .site-main { width: calc(100% - 24px); padding-top: 20px; }
-  .gallery-page { border-width: 14px; padding: 14px 10px; }
+  .gallery-page { --gallery-control-size: 62px; border-width: 14px; padding: 14px 10px; }
   .gallery-page figure { margin-bottom: 24px; }
   .gallery-page img { max-height: 48vh; }
   .gallery-controls { gap: 12px; }
-  .gallery-arrow { width: 62px; }
-  .gallery-arrow-next { width: 50.73px; height: 56.36px; }
-  .gallery-fur-controls { --gallery-control-size: 62px; gap: 10px; }
+  .gallery-fur-controls { gap: 10px; }
   .gallery-body { line-height: 1.65; }
 }
 @media (prefers-reduced-motion: reduce) {

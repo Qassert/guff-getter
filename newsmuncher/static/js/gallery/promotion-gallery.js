@@ -210,6 +210,7 @@
             this.afterDisplay = afterDisplay;
             this.sequence = 0;
             this.current = null;
+            this.history = [];
             this.receipt = null;
             this.acknowledging = null;
         }
@@ -282,6 +283,7 @@
         }
         async next() {
             const sequence = ++this.sequence;
+            const previousItem = this.current;
             this.stopPingPongPoll();
             if (this.completionAbort) this.completionAbort.abort();
             this.completing = false;
@@ -300,9 +302,11 @@
                 const previous = this.current ? '?previous=' + encodeURIComponent(this.current.id) : '';
                 const data = await this.request('/next' + previous, {signal: this.abort.signal});
                 if (sequence !== this.sequence) return;
-                this.current = data.item;
                 if (!data.item) { this.view.empty(); return; }
+                if (previousItem && previousItem.id !== data.item.id) this.history.push(previousItem);
+                this.current = data.item;
                 this.view.show(data.item);
+                this.view.backAvailable?.(this.history.length > 0);
                 this.backdrop.activate(data.item);
                 await this.afterDisplay();
                 if (sequence !== this.sequence) return;
@@ -314,6 +318,30 @@
             } catch (error) {
                 if (sequence === this.sequence && error.name !== 'AbortError') this.view.error(error.message);
             }
+        }
+        async previous() {
+            if (!this.history.length) return;
+            const sequence = ++this.sequence;
+            this.stopPingPongPoll();
+            if (this.completionAbort) this.completionAbort.abort();
+            this.completing = false;
+            this.view.completing(false);
+            this.view.progress('');
+            this.media.stop();
+            this.visual.stop();
+            this.backdrop.stop();
+            if (this.abort) this.abort.abort();
+            this.receipt = null;
+            const item = this.history.pop();
+            this.current = item;
+            this.view.show(item);
+            this.view.backAvailable?.(this.history.length > 0);
+            this.backdrop.activate(item);
+            await this.afterDisplay();
+            if (sequence !== this.sequence || this.current?.id !== item.id) return;
+            this.media.activate(item);
+            this.visual.activate(item, this.view.imageReady);
+            this.watchForPingPong(item, sequence);
         }
         async promote() {
             const item = this.current, sequence = this.sequence;
@@ -662,6 +690,7 @@
             page.setAttribute('aria-busy', 'false');
             status.textContent = '';
         },
+        backAvailable(available) { get('galleryBack').hidden = !available; },
         error(message) { status.textContent = message; page.setAttribute('aria-busy', 'false'); },
         promoting(busy) { promote.disabled = busy || !!gallery.current?.promoted; },
         promoted() {
@@ -729,9 +758,15 @@
     const gallery = new PromotionGallery({view, afterDisplay, media, visual, backdrop});
     const galleryRoot = document.querySelector('.promotion-gallery');
     const universalClickSound = galleryRoot.dataset.clickSound;
+    const arrowClickPlayer = new Audio(galleryRoot.dataset.arrowClickSound);
     const playUiSound = url => {
         const sound = new Audio(url);
         sound.play().catch(() => {});
+    };
+    const playArrowClickSound = () => {
+        arrowClickPlayer.pause();
+        try { arrowClickPlayer.currentTime = 0; } catch (_) {}
+        arrowClickPlayer.play().catch(() => {});
     };
     const hoverVoicePlayers = new Map();
     const playHoverVoice = url => {
@@ -742,8 +777,11 @@
         try { sound.currentTime = 0; } catch (_) {}
         sound.play().catch(() => {});
     };
-    [music, promote, edit, complete, get('galleryNext'), get('galleryBack')].forEach(control => {
+    [music, promote, edit, complete].forEach(control => {
         control.addEventListener('click', () => playUiSound(universalClickSound));
+    });
+    [get('galleryNext'), get('galleryBack')].forEach(control => {
+        control.addEventListener('click', playArrowClickSound);
     });
     const hoverSounds = new Map([
         [get('galleryNext'), '/static/audio/effects/ui/farty_button_squelch.wav'],
@@ -815,7 +853,7 @@
         const target = edit.href;
         editTimer = setTimeout(() => { window.location.href = target; }, motionPreference.matches ? 0 : 560);
     });
-    get('galleryBack').addEventListener('click', () => gallery.stopPingPongPoll());
+    get('galleryBack').addEventListener('click', () => gallery.previous());
     complete.addEventListener('click', () => {
         if (complete.disabled) return;
         animateControl(complete);

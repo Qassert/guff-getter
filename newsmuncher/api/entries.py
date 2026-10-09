@@ -22,6 +22,7 @@ collection = db["entries"]
 router = APIRouter()
 
 from newsmuncher.services.moderation import nomination_state
+from newsmuncher.services.promotion_gallery import minimum_seen_count
 
 
 class ImageMetadata(BaseModel):
@@ -90,11 +91,14 @@ def create_entry(post: Post, request: Request):
         # Stable Mongo identity makes retry after an uncertain insert safe, including
         # across workers, without requiring a live index migration.
         inserted_id = ObjectId(hashlib.sha256(f'{creation_user}:{post.rewrite_id}'.encode()).hexdigest()[:24])
+        new_entry['promotion_gallery_seen_count'] = minimum_seen_count(collection, exclude=inserted_id)
         response_fields = {key: new_entry.pop(key) for key in
                            ('crazyReplacement1Title', 'crazyReplacement1Extract')}
         collection.update_one({'_id': inserted_id},
                               {'$setOnInsert': new_entry, '$set': response_fields}, upsert=True)
     else:
+        # This document is not in Mongo yet, so it is inherently excluded from the floor.
+        new_entry['promotion_gallery_seen_count'] = minimum_seen_count(collection)
         inserted_id = collection.insert_one(new_entry).inserted_id
 
     return {

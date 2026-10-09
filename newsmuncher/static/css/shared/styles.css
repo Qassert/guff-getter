@@ -60,12 +60,13 @@ button, .funky-button { display: inline-block; background: var(--button-backgrou
 button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
 button:active { transform: translate(2px, 2px); box-shadow: none; }
 :focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
-.mode-nav { position: relative; top: -60px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+.mode-nav { --mode-nav-button-width: clamp(133px, 20.3vw, 210px);
+  position: relative; top: -30px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
   gap: 8px 69px; margin: 0 auto 18px; text-align: center; }
 .mode-nav-button {
   --fur-tilt: -.45deg;
   position: relative; display: inline-flex; align-items: center; justify-content: center;
-  width: clamp(190px, 29vw, 300px); aspect-ratio: 3 / 1; min-height: 0; padding: 0; overflow: visible;
+  width: var(--mode-nav-button-width); aspect-ratio: 3 / 1; min-height: 0; padding: 0; overflow: visible;
   border: 0; border-radius: 0; background: transparent; box-shadow: none; text-decoration: none;
   transform: rotate(var(--fur-tilt)); transform-origin: 50% 58%;
   animation: mode-fur-breathe 5.8s ease-in-out infinite;
@@ -95,8 +96,7 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
   100% { transform: rotate(var(--fur-tilt)) scale(1); }
 }
 @media (max-width: 620px) {
-  .mode-nav { flex-wrap: nowrap; gap: 59px; }
-  .mode-nav-button { width: min(47vw, 230px); }
+  .mode-nav { --mode-nav-button-width: min(32.9vw, 161px); flex-wrap: nowrap; gap: 59px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .mode-nav-button, .mode-nav-button:hover, .mode-nav-button:active, .mode-nav-button.mode-nav-clicked {
@@ -214,7 +214,7 @@ body { isolation: isolate; }
 /* Creator and Viewing begin at the same shell inset. */
 .profile-page .workshop { position: relative; padding-top: 0; }
 .profile-page .mode-nav {
-  position: absolute; z-index: 5; top: -60px; left: 50%; width: 100%;
+  position: absolute; z-index: 5; top: -30px; left: 50%; width: 100%;
   transform: translateX(-50%); margin-bottom: 0;
 }
 .profile-page .nonsense-container { min-height: 0; margin-bottom: 0;

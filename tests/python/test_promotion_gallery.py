@@ -17,7 +17,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 import pytest
 
-from newsmuncher.services.promotion_gallery import PromotionGallery
+from newsmuncher.services.promotion_gallery import PromotionGallery, minimum_seen_count
 from newsmuncher.services.gallery_sessions import authenticate, issue_session, digest
 
 MISSING = object()
@@ -125,8 +125,70 @@ def test_rotation_counts_only_display_and_promotion_stays(setup):
     assert service.promote(order[0]) == result
     assert len(entries.docs) == 3
     assert service.serialize(service.entry(order[0]))['promoted']
-    entries.docs.append(dict(_id=ObjectId(), nominated=True))
-    assert service.select('viewer')['item']['id'] == str(entries.docs[-1]['_id'])
+    entries.docs.append(dict(_id=ObjectId(), nominated=True,
+                             promotion_gallery_seen_count=minimum_seen_count(entries)))
+    assert entries.docs[-1]['promotion_gallery_seen_count'] == min(
+        d['promotion_gallery_seen_count'] for d in entries.docs[:-1])
+
+
+def test_new_nomination_starts_at_existing_gallery_floor_without_changing_history():
+    db = Database()
+    original = [dict(_id=ObjectId(), nominated=True, promotion_gallery_seen_count=count)
+                for count in (6, 8, 12)]
+    entries = Collection(db, copy.deepcopy(original))
+
+    count = minimum_seen_count(entries)
+    entries.docs.append(dict(_id=ObjectId(), nominated=True,
+                             promotion_gallery_seen_count=count))
+
+    assert count == 6
+    assert [entry['promotion_gallery_seen_count'] for entry in entries.docs[:-1]] == [6, 8, 12]
+
+
+def test_new_nomination_in_empty_gallery_starts_at_zero():
+    db = Database()
+    assert minimum_seen_count(Collection(db)) == 0
+
+
+def test_new_nomination_preserves_shared_minimum_and_excludes_itself():
+    db = Database()
+    entries = Collection(db, [
+        dict(_id=ObjectId(), nominated=True, promotion_gallery_seen_count=4),
+        dict(_id=ObjectId(), nominated=True, promotion_gallery_seen_count=4),
+        dict(_id=ObjectId(), nominated=True, promotion_gallery_seen_count=9),
+    ])
+    new_id = ObjectId()
+    entries.docs.append(dict(_id=new_id, nominated=True, promotion_gallery_seen_count=99))
+
+    assert minimum_seen_count(entries, exclude=new_id) == 4
+
+
+def test_rotation_keeps_every_creation_at_the_shared_minimum_eligible(setup):
+    service, entries, _ = setup
+    for entry, count in zip(entries.docs, (4, 4, 9)):
+        entry['promotion_gallery_seen_count'] = count
+    eligible_ids = []
+    service.choose = lambda candidates: eligible_ids.extend(str(item['_id']) for item in candidates) or candidates[0]
+
+    selected = service.select('viewer')
+
+    expected = [str(entries.docs[0]['_id']), str(entries.docs[1]['_id'])]
+    assert eligible_ids == expected
+    assert selected['item']['id'] in expected
+    assert [entry['promotion_gallery_seen_count'] for entry in entries.docs] == [4, 4, 9]
+
+
+def test_next_avoids_current_even_when_it_is_the_only_minimum(setup):
+    service, entries, _ = setup
+    current = entries.docs[0]
+    current['promotion_gallery_seen_count'] = 0
+    entries.docs[1]['promotion_gallery_seen_count'] = 6
+    entries.docs[2]['promotion_gallery_seen_count'] = 8
+
+    selected = service.select('viewer', previous=str(current['_id']))
+
+    assert selected['item']['id'] == str(entries.docs[1]['_id'])
+    assert [entry['promotion_gallery_seen_count'] for entry in entries.docs] == [0, 6, 8]
 
 
 def test_legacy_and_exclusions(setup):
@@ -283,6 +345,14 @@ def test_gallery_page_and_navigation(routes):
     assert 'id="galleryEdit"' in response.text
     assert 'id="galleryBackdrop"' in response.text
     assert response.text.count('images/buttons/Coral Arrow on Cowhide Cushion.png') == 2
+    assert 'data-arrow-click-sound="http://testserver/static/audio/effects/ui/cartoon-double-boing-pop.wav"' in response.text
+    arrow_sound = client.get('/static/audio/effects/ui/cartoon-double-boing-pop.wav')
+    assert arrow_sound.status_code == 200 and arrow_sound.headers['content-type'] == 'audio/x-wav'
+    assert len(arrow_sound.content) > 44
+    arrow = client.get('/static/images/buttons/Coral%20Arrow%20on%20Cowhide%20Cushion.png')
+    assert arrow.status_code == 200
+    assert arrow.headers['content-type'] == 'image/png'
+    assert len(arrow.content) > 0
     assert 'promotion-gallery.js' in response.text
     assert 'script.js' not in response.text and 'MAKE JINGLE' not in response.text
     assert '/promotion-gallery/' in Path('newsmuncher/templates/pet_profile.html').read_text()
@@ -297,6 +367,44 @@ def test_polish_accessibility_and_scoped_styles():
     assert '.promotion-gallery [hidden] { display: none !important; }' in css
     assert 'aria-live="polite"' in template and 'aria-label="Creation controls"' in template
     assert 'tabindex="-1"' not in template  # Native buttons/links, no focus trap.
+    script = Path('newsmuncher/static/js/gallery/promotion-gallery.js').read_text()
+    assert "[music, promote, edit, complete].forEach" in script
+    assert "[get('galleryNext'), get('galleryBack')].forEach" in script
+    assert 'control.addEventListener(\'click\', playArrowClickSound)' in script
+    assert 'arrowClickPlayer.pause()' in script and 'arrowClickPlayer.currentTime = 0' in script
+
+
+def test_gallery_arrows_share_the_action_button_diameter_and_circular_crop():
+    css = Path('newsmuncher/static/css/gallery/promotion-gallery.css').read_text()
+    arrow = css.split('.gallery-arrow {', 1)[1].split('}', 1)[0]
+    arrow_image = css.split('.gallery-arrow img {', 1)[1].split('}', 1)[0]
+    next_arrow = css.split('.gallery-arrow-next {', 1)[1].split('}', 1)[0]
+    mobile = css.split('@media (max-width: 620px)', 1)[1]
+
+    assert '--gallery-control-size: clamp(70px, 9.75vw, 101px)' in css
+    assert 'width: var(--gallery-control-size)' in arrow
+    assert 'height: var(--gallery-control-size)' in arrow
+    assert 'aspect-ratio: 1' in arrow and 'border-radius: 50%' in arrow
+    assert '--gallery-arrow-art-size: 68%' in arrow
+    assert 'overflow: visible' in arrow
+    assert 'object-fit: cover' in arrow_image and 'object-position: center' in arrow_image
+    assert 'width: var(--gallery-arrow-art-size)' in arrow_image
+    assert 'height: var(--gallery-arrow-art-size)' in arrow_image
+    assert 'border-radius: 50%' in arrow_image and 'clip-path: circle(50%)' in arrow_image
+    assert '.gallery-arrow-next img { transform: scaleX(.75); }' in css
+    assert '.gallery-arrow-back img { transform: scaleX(-.75); }' in css
+    assert 'width:' not in next_arrow and 'height:' not in next_arrow
+    assert '--gallery-control-size: 62px' in mobile
+    assert '.gallery-arrow-next {' not in mobile.split('@media (prefers-reduced-motion: reduce)', 1)[0]
+
+
+def test_gallery_parchment_uses_one_seamless_stretched_nine_slice():
+    css = Path('newsmuncher/static/css/gallery/promotion-gallery.css').read_text()
+    gallery_page = css.split('.gallery-page {', 2)[2].split('}', 1)[0]
+
+    assert "border-image: url('../../images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 stretch" in gallery_page
+    assert '.gallery-page::before' not in css
+    assert '.gallery-page::after' not in css
 
 
 def test_creator_and_viewing_share_compact_mode_navigation():
@@ -314,6 +422,9 @@ def test_creator_and_viewing_share_compact_mode_navigation():
         assert obsolete not in gallery
     assert 'justify-content: center' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
     assert 'flex-wrap: wrap' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
+    assert '--mode-nav-button-width: clamp(133px, 20.3vw, 210px)' in shared_css
+    assert 'width: var(--mode-nav-button-width)' in shared_css.split('.mode-nav-button {', 1)[1].split('}', 1)[0]
+    assert '--mode-nav-button-width: min(32.9vw, 161px)' in shared_css
     assert '.workshop { max-width: 960px; margin-inline: auto; }' in shared_css
     creator_workshop = shared_css.split('.profile-page .workshop {', 1)[1].split('}', 1)[0]
     assert 'padding-top: 0' in creator_workshop

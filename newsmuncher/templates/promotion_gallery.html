@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Gallery · NewsMuncher{% endblock %}
-{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=gallery-back-1">{% endblock %}
+{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=gallery-parchment-seams-1">{% endblock %}
 {% block body_attributes %} class="promotion-gallery-page"{% endblock %}
 {% block header %}{% endblock %}
 {% block background %}<div id="galleryBackdrop" class="gallery-backdrop" aria-hidden="true"><img id="galleryBackdropImage" alt=""></div>{% endblock %}
 {% block content %}
-<section class="promotion-gallery" aria-label="Nominated creations" data-creation-url="{{ creation_url }}" data-click-sound="{{ url_for('static', path='audio/effects/munge/hello meme funny - QuickSounds.com.mp3') }}" data-enhance-hover="{{ url_for('static', path='audio/voices/Enhance_Shout.mp3') }}" data-edit-hover="{{ url_for('static', path='audio/voices/NewsMuncher_Edit_Shout.mp3') }}" data-promote-hover="{{ url_for('static', path='audio/voices/NewsMuncher_Promote_Shout.mp3') }}" data-play-hover="{{ url_for('static', path='audio/voices/Play_Shout.mp3') }}" data-mute-hover="{{ url_for('static', path='audio/voices/Mute_Shout.mp3') }}">
+<section class="promotion-gallery" aria-label="Nominated creations" data-creation-url="{{ creation_url }}" data-click-sound="{{ url_for('static', path='audio/effects/munge/hello meme funny - QuickSounds.com.mp3') }}" data-arrow-click-sound="{{ url_for('static', path='audio/effects/ui/cartoon-double-boing-pop.wav') }}" data-enhance-hover="{{ url_for('static', path='audio/voices/Enhance_Shout.mp3') }}" data-edit-hover="{{ url_for('static', path='audio/voices/NewsMuncher_Edit_Shout.mp3') }}" data-promote-hover="{{ url_for('static', path='audio/voices/NewsMuncher_Promote_Shout.mp3') }}" data-play-hover="{{ url_for('static', path='audio/voices/Play_Shout.mp3') }}" data-mute-hover="{{ url_for('static', path='audio/voices/Mute_Shout.mp3') }}">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
     <a class="mode-nav-button mode-nav-create" href="{{ creation_url }}" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/voices/Create_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></a>
     <span class="mode-nav-button mode-nav-gallery mode-nav-active" aria-current="page" aria-label="GALLERY" data-hover-voice="{{ url_for('static', path='audio/voices/Gallery_Shout.mp3') }}"><img src="{{ url_for('static', path='images/buttons/gallery-idle.png') }}" alt=""></span>
@@ -55,4 +55,4 @@
 </section>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=frontend-c1" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=frontend-c1" defer></script>{% endif %}{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=frontend-c1" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=gallery-arrow-sound-1" defer></script>{% endif %}{% endblock %}

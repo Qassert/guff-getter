@@ -5,9 +5,9 @@ const deferred = () => { let resolve, reject; const promise = new Promise((a,b) 
 const response = data => ({ok:true, json:async () => data});
 const item = id => ({id,title:'Title '+id,body:'Body '+id,promoted:false});
 function setup(fetcher, afterDisplay) {
-    const shown=[], errors=[];
-    const view = {loading(){}, empty(){shown.push(null);}, show(i){shown.push(i);}, error(e){errors.push(e);}, promoting(){}, promoted(){}, completing(){}, progress(){}};
-    return {gallery:new PromotionGallery({view,fetcher,afterDisplay}),shown,errors};
+    const shown=[], errors=[], backStates=[];
+    const view = {loading(){}, empty(){shown.push(null);}, show(i){shown.push(i);}, error(e){errors.push(e);}, promoting(){}, promoted(){}, completing(){}, progress(){}, backAvailable(available){backStates.push(available);}};
+    return {gallery:new PromotionGallery({view,fetcher,afterDisplay}),shown,errors,backStates};
 }
 test('loads one creation and acknowledges only after display; promotion is idempotent', async () => {
     const calls=[], painted=deferred();
@@ -34,6 +34,28 @@ test('rapid turns discard late requests without counting or replacing the active
     const first=gallery.next(); await new Promise(setImmediate);
     await gallery.next(); old.resolve(response({item:item('old'),view_token:'old'})); await first;
     assert.deepEqual(shown.map(x=>x.id),['new']); assert.deepEqual(acks,['new']);
+});
+test('BACK becomes visibly available with history and restores the previous creation', async () => {
+    let selected=0;
+    const backButton={hidden:true};
+    const shown=[];
+    const view={loading(){},empty(){},show(i){shown.push(i.id);},error(message){assert.fail(message);},
+        completing(){},progress(){},backAvailable(available){backButton.hidden=!available;}};
+    const gallery=new PromotionGallery({view,afterDisplay:()=>Promise.resolve(),fetcher:async url => {
+        if (url.endsWith('/displayed')) return response({recorded:true});
+        return response({item:item(++selected === 1 ? 'first' : 'second'),view_token:'token-'+selected});
+    }});
+
+    await gallery.next();
+    assert.equal(backButton.hidden,true, 'first creation has no backward history');
+    await gallery.next();
+    assert.equal(backButton.hidden,false, 'second creation visibly exposes BACK');
+    await gallery.previous();
+    assert.equal(gallery.current.id,'first');
+    assert.equal(backButton.hidden,true, 'returning to the first creation exhausts history');
+    assert.deepEqual(shown,['first','second','first']);
+    await gallery.next();
+    assert.equal(gallery.current.id,'second', 'NEXT remains functional after BACK');
 });
 test('failed count is retried before another selection; empty collection is valid', async () => {
     let nexts=0, acks=0;

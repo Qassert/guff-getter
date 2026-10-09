@@ -28,6 +28,15 @@ def seen(entry):
     return count if isinstance(count, int) and not isinstance(count, bool) and count >= 0 else 0
 
 
+def minimum_seen_count(entries, exclude=None):
+    """Return the current Gallery floor without changing any existing entry."""
+    query = dict(NOMINATED)
+    if exclude is not None:
+        query['_id'] = {'$ne': exclude}
+    candidates = entries.find(query, {'promotion_gallery_seen_count': 1})
+    return min((seen(entry) for entry in candidates), default=0)
+
+
 class PromotionGallery:
     def __init__(self, entries, receipts, images=GENERATED_IMAGES_DIR,
                  narration=GENERATED_NARRATION_DIR, audio=GENERATED_AUDIO_DIR,
@@ -164,11 +173,12 @@ class PromotionGallery:
         candidates = list(self.entries.find(NOMINATED, {'promotion_gallery_seen_count': 1}))
         if not candidates:
             return {'item': None}
-        minimum = min(map(seen, candidates))
-        eligible = [e for e in candidates if seen(e) == minimum]
-        # At a cycle boundary, avoid immediately repeating the page just left.
-        alternatives = [e for e in eligible if str(e['_id']) != previous]
-        selected = self.choose(alternatives or eligible)
+        # Never repeat the page just left while any other nomination is available.
+        pool = [entry for entry in candidates if str(entry['_id']) != previous]
+        pool = pool or candidates
+        minimum = min(map(seen, pool))
+        eligible = [entry for entry in pool if seen(entry) == minimum]
+        selected = self.choose(eligible)
         entry = self.entry(str(selected['_id']))
         token = str(uuid4())
         self.receipts.create_index('expires_at', expireAfterSeconds=0)
