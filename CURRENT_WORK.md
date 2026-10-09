@@ -1,8 +1,8 @@
-STATUS: REVIEW
+STATUS: READY
 OWNER: CODEX
 BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: Singable headlines, versioned ElevenLabs jingles, independent frame styles and saved-audio compatibility
-LAST_COMPLETED_COMMIT: 9791a90 chore: remove verified obsolete assets
+LAST_COMPLETED_COMMIT: 3e07e12 fix: refine Gallery navigation and rotation
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,12 +13,20 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Repository reorganisation, low-risk cleanup and baseline test repair completed for final manual review on `feature/video-animation`.
-APPROVAL: Batches A–F, test repair, BACK repair and approved obsolete-asset cleanup are committed locally through `9791a90`. No push or merge.
-NEXT_STEP: Andy performs final manual review. No known missing active static asset remains.
-VALIDATION: Node 82 passed / 0 failed; Python 291 passed / 0 failed / 105 subtests. Python/JavaScript syntax and `git diff --check` pass. Static audit has no missing literal asset; its sole report is the expected dynamically constructed MUNGE teat path. No provider calls.
+CURRENT_TASK: Final NewsMuncher check-in completed on `feature/video-animation` after successful manual review.
+APPROVAL: Repository reorganisation, cleanup and the final Gallery navigation, presentation, rotation and sound work are approved for commit and push. Do not merge `main`.
+NEXT_STEP: No active implementation task. Begin future work from this clean synchronized feature-branch handover.
+VALIDATION: Node 83 passed / 0 failed; Python 298 passed / 0 failed / 105 subtests. Python compilation, all production JavaScript syntax checks and `git diff --check` pass. Static audit has no missing literal asset; its sole raw-regex report is the expected dynamically constructed MUNGE teat path, whose six concrete files exist. Direct offline startup was blocked before connection because the configured MongoDB SRV host cannot resolve in the sandbox; isolated route/startup tests pass. No provider calls or production writes.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+## Final Gallery check-in — 2026-10-09
+
+- Restored functional client-side BACK history while preserving NEXT selection, progressive media playback and navigation cleanup.
+- Made BACK/NEXT a matched cowhide pair, removed parchment seams, reduced and aligned shared CREATE/GALLERY navigation, and advanced static cache tokens.
+- New nominated entries start at the current Gallery display-count floor; NEXT excludes the current creation whenever another eligible creation exists.
+- Added the original local `cartoon-double-boing-pop.wav` click effect for BACK/NEXT with one shared non-overlapping player; existing hover effects remain unchanged.
+- Full offline validation: Node 83/83; Python 298/298 plus 105 subtests; Python/JavaScript syntax and diff checks clean. No paid provider call, production database write, merge or deployment.
 
 EXPERIMENT: Rewrite quality comparison: `gpt-5.6-luna` → `gpt-5.6-terra` → `gpt-6-luna` → `gpt-6-sol`. Prompts and all other rewrite settings remain unchanged.
 
