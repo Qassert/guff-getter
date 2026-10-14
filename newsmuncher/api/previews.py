@@ -1,6 +1,7 @@
 from newsmuncher.utils.source_preprocessing import log_overlap
-from newsmuncher.config import (PROJECT_ROOT, PROMPT_FILE, TEMP_FILE, TEMP_SHIZZ_FILE,
-    GENERATED_NARRATION_DIR)
+from newsmuncher.config import (PROJECT_ROOT, TEMP_FILE, TEMP_SHIZZ_FILE,
+    GENERATED_NARRATION_DIR, first_pass_prompt_file, comedy_editor_enabled,
+    comedy_editor_model)
 from fastapi import APIRouter, HTTPException, Request, Cookie
 from pydantic import BaseModel, Field
 from openai import BadRequestError
@@ -9,13 +10,59 @@ import requests
 import subprocess
 import sys
 import os
+import re
+from time import monotonic
+from collections import Counter
 from datetime import datetime, timezone
 from uuid import uuid4, UUID
 from bson import ObjectId
-from newsmuncher.utils.clean_data import prepare_prompt, send_prompt, format_shizzalise_result, copy_edit_pass, claim_used_words
+from newsmuncher.utils.clean_data import (prepare_prompt, send_prompt,
+    format_shizzalise_result, copy_edit_pass, comedy_editor_pass,
+    comedy_editor_word_target, claim_used_words,
+    RewriteProviderQuotaExhausted)
 from newsmuncher.utils.file_handler import load_prompt
 from newsmuncher.services.word_shuffle import WordClaimConflict
 from newsmuncher.services.rewrite_title import final_title
+from newsmuncher.services.name_selection import (
+    INVENTED_NAME_GUIDANCE, InventedNameRegistry, NameSelectionConfig,
+    NameSelectionExhausted,
+)
+from newsmuncher.services.concept_selection import (
+    CONCEPT_GUIDANCE, ConceptRegistry, ConceptSelectionConfig, ConceptSelectionExhausted,
+)
+from newsmuncher.services.descriptor_selection import (
+    DESCRIPTOR_GUIDANCE, DescriptorRegistry, DescriptorSelectionConfig,
+    DescriptorSelectionExhausted, prompt_descriptor,
+)
+from newsmuncher.services.final_joke_memory import (
+    FinalJokeMemory, FinalJokeMemoryConfig,
+)
+from newsmuncher.services.comedy_audit import (
+    ComedyAuditConfig, ComedyAuditLogger, build_audit_record,
+)
+from newsmuncher.services.topic_memory import (
+    TopicMemory, TopicMemoryConfig, build_topic_event,
+)
+from newsmuncher.services.comedy_variants import ComedyVariantConfig, build_variant
+from newsmuncher.services.lexical_exposure import (
+    LexicalExposureConfig, LexicalExposureMemory, build_lexical_event, text_penalty,
+)
+from newsmuncher.services.thematic_diversity import (
+    ThematicDiversityConfig, ThematicDiversityMemory, thematic_event,
+)
+from newsmuncher.services.thematic_ingredients import (
+    ThemeIngredientConfig, ThemeIngredientMemory, ThemeSparkConfig,
+    ThematicIngredientBuilder, partition_theme_sparks, theme_ingredient_event,
+)
+from newsmuncher.services.repetition_replacement import (
+    PhraseReplacementConfig, RepetitionReplacementConfig, build_repetition_replacement,
+    finish_repetition_diagnostic,
+)
+from newsmuncher.services.noun_exclusion import (
+    NounExclusionConfig, NounExclusionMemory, blocked_entries,
+    NounExclusionExhausted, attribute_violations, extract_final_entries, identity_entries,
+    ingredient_texts, protected_words,
+)
 
 
 from newsmuncher.services.image_generation import store, choose_image_style, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path, DefinitiveImageFailure
@@ -45,6 +92,43 @@ def safe_provider_failure(exc):
 def entries_collection():
     from newsmuncher.api.entries import collection
     return collection
+
+
+def invented_name_collection():
+    from newsmuncher.api.entries import db
+    return db["invented_name_usage"]
+
+def generated_concept_collection():
+    from newsmuncher.api.entries import db
+    return db["generated_concept_usage"]
+
+def generated_descriptor_collection():
+    from newsmuncher.api.entries import db
+    return db["generated_descriptor_usage"]
+
+def final_joke_memory_collection():
+    from newsmuncher.api.entries import db
+    return db["final_joke_memory"]
+
+def comedy_topic_memory_collection():
+    from newsmuncher.api.entries import db
+    return db["comedy_topic_memory"]
+
+def comedy_lexical_exposure_collection():
+    from newsmuncher.api.entries import db
+    return db["comedy_lexical_exposure"]
+
+def comedy_thematic_diversity_collection():
+    from newsmuncher.api.entries import db
+    return db["comedy_thematic_diversity"]
+
+def comedy_theme_ingredient_collection():
+    from newsmuncher.api.entries import db
+    return db["comedy_theme_ingredients"]
+
+def comedy_noun_exclusion_collection():
+    from newsmuncher.api.entries import db
+    return db["comedy_noun_exclusion"]
 
 
 # ✅ 1. TEMP GET
@@ -117,6 +201,15 @@ class ShizzRequest(BaseModel):
 
 @router.post("/shizzalise_data")
 def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), active_pet: str = Cookie(None)):
+    request_started = monotonic()
+    timings = {}
+    def elapsed(stage, started):
+        timings[stage] = round((monotonic() - started) * 1000, 2)
+    def log_timings(status):
+        timings["total_request_ms"] = round((monotonic() - request_started) * 1000, 2)
+        timings["status"] = status
+        print("[munge-timing] " + json.dumps(timings, sort_keys=True))
+
     if not active_pet:
         raise HTTPException(status_code=401, detail="No active pet selected.")
     source = payload.model_dump(exclude={'generate_images', 'draft_session'})
@@ -124,52 +217,638 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     with open(TEMP_FILE, "w") as f:
         json.dump({**source, "creationUser": creationUser}, f)
 
-    prompt_template = prepare_prompt(source, 10, load_prompt(PROMPT_FILE))
-    if not prompt_template:
-        raise HTTPException(status_code=400, detail="Prompt preparation failed.")
-
-    initial_response = send_prompt(prompt_template["full_prompt"])
-    if not initial_response:
-        raise HTTPException(status_code=500, detail="OpenAI generation failed.")
-
-    log_overlap(prompt_template["preprocessing"], initial_response)
-
-    result = format_shizzalise_result(initial_response)
-    if not result:
-        raise HTTPException(status_code=500, detail="Generated title or extract is invalid.")
-
-    # Pass 2: copy-editing.  Receives only pass-1 output — never source text.
-    # Falls back to the pass-1 result on any failure.
-    polished = copy_edit_pass(result)
-    if polished:
-        result = polished
-
-    result = dict(result)
-    result['crazyReplacement1Title'] = final_title(
-        result['crazyReplacement1Extract'],
-        result['crazyReplacement1Title'],
-    )
-
-    full_result = {
-        **source,
-        **result,
-        "creationUser": creationUser,
-        "contenders": prompt_template.get("contenders", {})
-    }
+    name_config = NameSelectionConfig.from_environment()
+    # A rewrite UUID identifies one attempt. New MUNGEs from the same browser
+    # draft receive fresh deterministic candidates; a genuine registry retry
+    # with this identity retains its slate.
+    name_selection_key = f"{active_pet}:{rewrite_id}"
+    # A browser session is a durable draft slot, not a rewrite attempt.  Use the
+    # newly allocated rewrite identity so a second MUNGE from the same source gets
+    # a fresh deterministic concept slate. Retrying that attempt with its key is
+    # still stable at the registry layer.
+    concept_selection_key = f"{active_pet}:{rewrite_id}"
+    name_registry = None
+    invented_names = None
+    concept_config = ConceptSelectionConfig.from_environment()
+    concept_registry = None
+    offered_concepts = None
+    concept_overrides = None
+    descriptor_config = DescriptorSelectionConfig.from_environment()
+    descriptor_registry = None
+    offered_descriptors = None
+    leased_descriptors = None
+    descriptor_overrides = None
+    descriptor_selection_key = f"{active_pet}:{rewrite_id}"
+    final_joke_config = FinalJokeMemoryConfig.from_environment()
+    final_joke_memory = None
+    final_joke_guidance = ""
+    topic_memory = None
+    topic_guidance = ""
+    topic_config = TopicMemoryConfig.from_environment()
+    lexical_config = LexicalExposureConfig.from_environment()
+    lexical_memory = None
+    lexical_penalties = None
+    lexical_guidance = ""
+    lexical_snapshot = {}
+    thematic_config = ThematicDiversityConfig.from_environment()
+    thematic_memory = None
+    thematic_domains = []
+    thematic_guidance = ""
+    thematic_snapshot = {}
+    theme_ingredient_config = ThemeIngredientConfig.from_environment()
+    theme_spark_config = ThemeSparkConfig.from_environment()
+    theme_ingredient_memory = None
+    theme_ingredient_builder = None
+    theme_ingredient_snapshot = {}
+    theme_sparks = []
+    repetition_config = RepetitionReplacementConfig.from_environment()
+    phrase_replacement_config = PhraseReplacementConfig.from_environment()
+    repetition_plan = None
+    repetition_snapshot = {"enabled": repetition_config.enabled}
+    audit_logger = None
+    variant_config = ComedyVariantConfig.from_environment()
+    variant_plan = None
+    noun_exclusion_config = NounExclusionConfig.from_environment()
+    noun_exclusion_memory = None
+    noun_exclusions = set()
+    noun_exclusion_snapshot = {"enabled": noun_exclusion_config.enabled}
+    source_text = "\n".join(str(source.get(key, ""))
+                            for key in ("title", "description", "extract"))
+    try:
+        audit_config = ComedyAuditConfig.from_environment()
+        if audit_config.enabled:
+            audit_logger = ComedyAuditLogger(audit_config)
+    except Exception as audit_exc:
+        print("[comedy-audit] disabled after configuration failure: "
+              f"{type(audit_exc).__name__}")
+    try:
+        if noun_exclusion_config.enabled:
+            noun_exclusion_memory = NounExclusionMemory(
+                comedy_noun_exclusion_collection(), active_pet, noun_exclusion_config)
+            noun_exclusion_memory.load()
+            noun_exclusions = noun_exclusion_memory.exclusions(rewrite_id)
+            noun_exclusion_snapshot["excluded_before"] = len(noun_exclusions)
+        if thematic_config.enabled or theme_ingredient_config.enabled:
+            try:
+                domain_config = (thematic_config if thematic_config.enabled else
+                                 ThematicDiversityConfig("evaluation"))
+                domain_scope = (active_pet if thematic_config.enabled else
+                                f"{active_pet}:theme-ingredients")
+                thematic_memory = ThematicDiversityMemory(
+                    comedy_thematic_diversity_collection(), domain_scope, domain_config)
+                thematic_memory.load()
+                thematic_domains = thematic_memory.select(rewrite_id)
+                if thematic_config.enabled:
+                    thematic_guidance = thematic_memory.guidance(thematic_domains)
+                thematic_snapshot = {
+                    "recent_events": len(thematic_memory.events),
+                    "selected_domains": thematic_domains,
+                    "selection_penalties": thematic_memory.last_metrics.get(
+                        "selected_penalties", {}),
+                }
+                timings["thematic_diversity"] = thematic_memory.last_metrics
+            except Exception as thematic_exc:
+                print("[comedy-themes] memory unavailable; continuing without guidance: "
+                      f"{type(thematic_exc).__name__}")
+                thematic_memory = None
+        if lexical_config.enabled:
+            try:
+                lexical_memory = LexicalExposureMemory(
+                    comedy_lexical_exposure_collection(), active_pet, lexical_config)
+                lexical_memory.load()
+                source_text_for_lexical = "\n".join(
+                    str(source.get(key, "")) for key in ("title", "description", "extract"))
+                lexical_penalties = lexical_memory.penalties(source_text_for_lexical)
+                lexical_guidance = lexical_memory.guidance(source_text_for_lexical)
+                lexical_snapshot = {
+                    "recent_events": len(lexical_memory.events),
+                    "penalties": dict(lexical_penalties.most_common(80)),
+                }
+                timings["lexical_exposure"] = lexical_memory.last_metrics
+            except Exception as lexical_exc:
+                print("[comedy-lexical] memory unavailable; continuing without lexical ranking: "
+                      f"{type(lexical_exc).__name__}")
+                lexical_memory = None
+                lexical_penalties = None
+        if theme_ingredient_config.enabled and thematic_domains:
+            try:
+                theme_ingredient_memory = ThemeIngredientMemory(
+                    comedy_theme_ingredient_collection(), active_pet,
+                    theme_ingredient_config)
+                theme_ingredient_memory.load()
+                ingredient_penalties = theme_ingredient_memory.penalties()
+                theme_ingredient_builder = ThematicIngredientBuilder(
+                    thematic_domains, rewrite_id, theme_ingredient_config,
+                    ingredient_penalties, lexical_penalties,
+                    noun_exclusions, source_text)
+                theme_ingredient_snapshot = {
+                    "recent_events": len(theme_ingredient_memory.events),
+                    "selection_penalties": dict(ingredient_penalties),
+                }
+                timings["theme_ingredient_memory"] = (
+                    theme_ingredient_memory.last_metrics)
+            except Exception as theme_ingredient_exc:
+                print("[theme-ingredients] memory unavailable; continuing without "
+                      "thematic ingredients: "
+                      f"{type(theme_ingredient_exc).__name__}")
+                theme_ingredient_memory = None
+                theme_ingredient_builder = None
+        if topic_config.enabled:
+            try:
+                topic_memory = TopicMemory(comedy_topic_memory_collection(), topic_config)
+                topic_memory.load()
+                topic_guidance = topic_memory.guidance()
+                timings["topic_memory"] = topic_memory.last_metrics
+            except Exception as topic_exc:
+                print("[comedy-topics] memory unavailable; continuing without topic ranking: "
+                      f"{type(topic_exc).__name__}")
+                topic_memory = None
+        if name_config.mode == "invented":
+            name_registry = InventedNameRegistry(invented_name_collection(), name_config)
+            stage = monotonic()
+            invented_names = name_registry.offer(
+                name_selection_key,
+                topic_memory.recent_name_families() if topic_memory else None,
+            )
+            elapsed("invented_name_selection_ms", stage)
+            timings["invented_name_selection"] = getattr(name_registry, "last_metrics", {})
+        if concept_config.mode == "generated":
+            concept_registry = ConceptRegistry(generated_concept_collection(), concept_config)
+            concept_recent = None
+            if topic_memory:
+                concept_recent = sum((topic_memory.penalties(field, prefix) for field, prefix in (
+                    ("concept_phrases", "phrase:"), ("concept_premises", "premise:"),
+                    ("concept_bases", "base:"))), Counter())
+            offered_concepts = concept_registry.offer(
+                concept_selection_key, concept_recent, lexical_penalties,
+                noun_exclusions, source_text)
+            timings["concept_selection"] = getattr(concept_registry, "last_metrics", {})
+            variant_plan = build_variant(
+                variant_config.label, offered_concepts, concept_selection_key,
+                getattr(concept_config, "vocabulary_mode", "off"),
+                lexical_penalties=lexical_penalties,
+                noun_exclusions=noun_exclusions,
+                source_text=source_text,
+            )
+            if theme_ingredient_builder:
+                variant_plan = theme_ingredient_builder.apply_concepts(variant_plan)
+            timings["comedy_variant"] = variant_plan["counts"]
+        if descriptor_config.mode == "generated":
+            descriptor_registry = DescriptorRegistry(generated_descriptor_collection(), descriptor_config)
+            # Prefer descriptor mechanisms that are not already dominating the
+            # twenty-concept slate. This is a soft ordering preference: grammar
+            # and exact category/intensity quotas remain hard requirements.
+            theme_counts = Counter(item["semantic_theme"] for item in (offered_concepts or []))
+            concept_themes = [theme for theme, count in theme_counts.items() if count >= 3]
+            descriptor_recent = None
+            if topic_memory:
+                descriptor_recent = sum((topic_memory.penalties(field, prefix) for field, prefix in (
+                    ("descriptor_phrases", "offered:"),
+                    ("descriptor_premises", "offered-premise:"))), Counter())
+            offered_descriptors = descriptor_registry.offer(
+                descriptor_selection_key, avoid_themes=concept_themes,
+                recent_offers=descriptor_recent,
+                lexical_penalties=lexical_penalties,
+                noun_exclusions=noun_exclusions,
+                source_text=source_text,
+            )
+            leased_descriptors = offered_descriptors
+            if theme_ingredient_builder:
+                offered_descriptors, _ = theme_ingredient_builder.apply_descriptors(
+                    offered_descriptors)
+            timings["descriptor_selection"] = getattr(descriptor_registry, "last_metrics", {})
+            descriptor_overrides = [prompt_descriptor(item) for item in offered_descriptors]
+        if variant_plan:
+            spark_enabled = bool(theme_ingredient_builder and theme_spark_config.enabled)
+            concept_overrides, _, theme_sparks = partition_theme_sparks(
+                variant_plan["prompt"], offered_descriptors, spark_enabled)
+            if offered_descriptors is not None:
+                if spark_enabled:
+                    spark_descriptor_prompts = {
+                        item["phrase"]: prompt_descriptor(item) for item in offered_descriptors
+                        if item.get("source") == "thematic_seed_catalogue"
+                    }
+                    for spark in theme_sparks:
+                        if spark["kind"] == "descriptor":
+                            spark["text"] = spark_descriptor_prompts[spark["text"]]
+                descriptor_overrides = [prompt_descriptor(item) for item in offered_descriptors
+                                        if not (spark_enabled and item.get("source") ==
+                                                "thematic_seed_catalogue")]
+            if theme_ingredient_builder:
+                theme_ingredient_snapshot.update({
+                    "theme_sparks_enabled": spark_enabled,
+                    "prompt_placement": ("adjacent_before_source" if spark_enabled
+                                         else "ordinary_ingredient_banks"),
+                    "selected": theme_ingredient_builder.selected,
+                    "selection_metrics": theme_ingredient_builder.last_metrics,
+                })
+        if final_joke_config.enabled:
+            try:
+                final_joke_memory = FinalJokeMemory(
+                    final_joke_memory_collection(), final_joke_config)
+                stage = monotonic()
+                final_joke_guidance = final_joke_memory.guidance()
+                elapsed("final_joke_memory_read_ms", stage)
+                timings["final_joke_memory"] = final_joke_memory.last_metrics
+            except Exception as memory_exc:
+                # Variety memory is advisory. Missing or unavailable history
+                # must never block a rewrite or trigger another provider call.
+                print("[final-jokes] memory unavailable; continuing without guidance: "
+                      f"{type(memory_exc).__name__}")
+                final_joke_memory = None
+    except Exception as exc:
+        if name_registry:
+            name_registry.release(name_selection_key)
+        if concept_registry:
+            concept_registry.release(concept_selection_key)
+        if descriptor_registry:
+            descriptor_registry.release(descriptor_selection_key)
+        if noun_exclusion_memory:
+            noun_exclusion_memory.release(rewrite_id)
+        if isinstance(exc, (NameSelectionExhausted, ConceptSelectionExhausted,
+                            DescriptorSelectionExhausted, NounExclusionExhausted)):
+            if noun_exclusion_config.enabled:
+                print("[selection-diagnostic] " + json.dumps({
+                    "status": "selection_exhausted",
+                    "exception": type(exc).__name__,
+                    "rewrite_id": str(rewrite_id),
+                    "noun_exclusions": len(noun_exclusions),
+                    "noun_reservations": len(
+                        getattr(noun_exclusion_memory, "reservations", ()) or ()),
+                    "name": getattr(name_registry, "last_metrics", None),
+                    "concept": getattr(concept_registry, "last_metrics", None),
+                    "descriptor": getattr(descriptor_registry, "last_metrics", None),
+                }, sort_keys=True, default=str))
+            log_timings("selection_exhausted")
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        log_timings("selection_error")
+        raise
 
     try:
-        full_result = store.complete_draft(
-            rewrite_id,
-            active_pet,
-            full_result,
-            before_save=lambda: claim_used_words(prompt_template.get('contenders', {}), result),
+        stage = monotonic()
+        prompt_template = prepare_prompt(
+            source, name_config.slate_size, load_prompt(first_pass_prompt_file()),
+            names_override=invented_names,
+            name_guidance=INVENTED_NAME_GUIDANCE if invented_names is not None else "",
+            concept_overrides=concept_overrides,
+            concept_guidance=(CONCEPT_GUIDANCE + ("\n\n" + variant_plan["guidance"]
+                              if variant_plan and variant_plan["guidance"] else ""))
+                             if offered_concepts is not None else "",
+            descriptor_overrides=descriptor_overrides,
+            descriptor_guidance=DESCRIPTOR_GUIDANCE if offered_descriptors is not None else "",
+            final_joke_guidance=final_joke_guidance,
+            topic_guidance="\n\n".join(
+                value for value in (topic_guidance, lexical_guidance, thematic_guidance) if value),
+            theme_sparks=theme_sparks,
+            diagnostics=timings,
+            noun_exclusions=noun_exclusions,
         )
-    except WordClaimConflict as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
-    if full_result is None:
-        raise HTTPException(status_code=409, detail='Draft superseded by a newer rewrite.')
+        elapsed("prompt_preparation_total_ms", stage)
+        if not prompt_template:
+            raise HTTPException(status_code=400, detail="Prompt preparation failed.")
+
+        if noun_exclusion_memory:
+            reserved_entries = set()
+            reserve_concepts = (variant_plan or {}).get("prompt") or offered_concepts or ()
+            reserve_raw = list((variant_plan or {}).get("raw") or ())
+            for text in ingredient_texts(
+                    reserve_concepts, offered_descriptors or (), reserve_raw,
+                    prompt_template.get("contenders", {})):
+                reserved_entries.update(identity_entries(text))
+            source_protected = protected_words(source_text)
+            reserved_entries = {entry for entry in reserved_entries
+                                if not any(word in source_protected
+                                           for word in entry.split(":", 1)[1].split())}
+            if not noun_exclusion_memory.reserve(rewrite_id, reserved_entries):
+                raise HTTPException(
+                    status_code=409,
+                    detail="Comic noun choices collided with another active MUNGE. Please try again.")
+            noun_exclusion_snapshot["reserved_ingredients"] = len(reserved_entries)
+
+        stage = monotonic()
+        initial_response = send_prompt(prompt_template["full_prompt"])
+        elapsed("first_rewrite_provider_ms", stage)
+        if not initial_response:
+            raise HTTPException(status_code=500, detail="OpenAI generation failed.")
+
+        log_overlap(prompt_template["preprocessing"], initial_response)
+
+        result = format_shizzalise_result(initial_response)
+        if not result:
+            raise HTTPException(status_code=500, detail="Generated title or extract is invalid.")
+        first_pass_result = dict(result)
+
+        # Pass 2: copy-editing.  Receives only pass-1 output — never source text.
+        # Falls back to the pass-1 result on any failure.
+        if repetition_config.enabled:
+            source_text_for_replacement = "\n".join(
+                str(source.get(key, "")) for key in ("title", "description", "extract"))
+            if lexical_memory is None:
+                try:
+                    # Phase 4T reuses the same bounded per-pet ledger without enabling
+                    # Phase 4M's ingredient ranking or first-pass guidance.
+                    lexical_memory = LexicalExposureMemory(
+                        comedy_lexical_exposure_collection(), active_pet,
+                        LexicalExposureConfig("evaluation"))
+                    lexical_memory.load()
+                    lexical_penalties = lexical_memory.penalties(
+                        source_text_for_replacement)
+                    lexical_snapshot = {
+                        "recent_events": len(lexical_memory.events),
+                        "penalties": dict(lexical_penalties.most_common(80)),
+                    }
+                except Exception as lexical_exc:
+                    print("[repetition-replacement] lexical history unavailable; "
+                          "continuing with ordinary copy edit: "
+                          f"{type(lexical_exc).__name__}")
+                    lexical_memory = None
+                    lexical_penalties = None
+            current_raw = list((variant_plan or {}).get("raw") or ())
+            for ingredient in ((theme_ingredient_builder.selected
+                                if theme_ingredient_builder else ())):
+                if ingredient not in current_raw:
+                    current_raw.append(ingredient)
+            repetition_plan, repetition_snapshot = build_repetition_replacement(
+                first_pass=first_pass_result,
+                source_text=source_text_for_replacement,
+                lexical_penalties=lexical_penalties or {},
+                concepts=(variant_plan or {}).get("generated") or offered_concepts or (),
+                descriptors=offered_descriptors or (),
+                raw_ingredients=current_raw,
+                thematic_ingredients=(theme_ingredient_builder.selected
+                                      if theme_ingredient_builder else ()),
+                names=invented_names or (),
+                places=prompt_template.get("contenders", {}).get("places", ()),
+                config=repetition_config,
+                phrase_config=phrase_replacement_config,
+            )
+            repetition_snapshot["recent_exposure_signals"] = dict(
+                (lexical_penalties or {}).most_common(80)
+                if hasattr(lexical_penalties, "most_common") else
+                list((lexical_penalties or {}).items())[:80])
+        stage = monotonic()
+        editor_enabled = comedy_editor_enabled()
+        editor_target = comedy_editor_word_target(
+            first_pass_result.get("crazyReplacement1Extract", ""))
+        first_pass_word_count = editor_target["first_pass_word_count"]
+        comedy_editor_snapshot = {
+            "enabled": editor_enabled,
+            "invoked": False,
+            "model": comedy_editor_model() if editor_enabled else "",
+            "succeeded": False,
+            "fell_back": False,
+            "first_pass_word_count": first_pass_word_count,
+            "target_word_count": editor_target["target_word_count"],
+            "target_min_word_count": editor_target["target_min_word_count"],
+            "target_max_word_count": editor_target["target_max_word_count"],
+        }
+        if editor_enabled:
+            comedy_editor_snapshot["invoked"] = True
+            polished = comedy_editor_pass(source, result, editor_target)
+            comedy_editor_snapshot["succeeded"] = bool(polished)
+            comedy_editor_snapshot["fell_back"] = not bool(polished)
+        else:
+            polished = (copy_edit_pass(result, repetition_replacement=repetition_plan)
+                        if repetition_plan else copy_edit_pass(result))
+        elapsed("copy_edit_provider_ms", stage)
+        if polished:
+            result = polished
+
+        final_word_count = comedy_editor_word_target(
+            result.get("crazyReplacement1Extract", ""))["first_pass_word_count"]
+        comedy_editor_snapshot["final_word_count"] = final_word_count
+        comedy_editor_snapshot["achieved_word_count"] = final_word_count
+        comedy_editor_snapshot["percentage_reduction"] = (
+            round((first_pass_word_count - final_word_count) * 100 / first_pass_word_count, 1)
+            if first_pass_word_count else None)
+
+        finish_repetition_diagnostic(
+            repetition_snapshot, first_pass_result, result, fell_back=not bool(polished))
+
+        result = dict(result)
+        result['crazyReplacement1Title'] = final_title(
+            result['crazyReplacement1Extract'],
+            result['crazyReplacement1Title'],
+        )
+
+        full_result = {
+            **source,
+            **result,
+            "creationUser": creationUser,
+            "contenders": prompt_template.get("contenders", {})
+        }
+
+        try:
+            stage = monotonic()
+            full_result = store.complete_draft(
+                rewrite_id,
+                active_pet,
+                full_result,
+                before_save=lambda: claim_used_words(prompt_template.get('contenders', {}), result),
+            )
+            elapsed("persistence_and_word_claim_ms", stage)
+        except WordClaimConflict as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        if full_result is None:
+            raise HTTPException(status_code=409, detail='Draft superseded by a newer rewrite.')
+    except Exception as exc:
+        if name_registry:
+            name_registry.release(name_selection_key)
+        if concept_registry:
+            concept_registry.release(concept_selection_key)
+        if descriptor_registry:
+            descriptor_registry.release(descriptor_selection_key)
+        if noun_exclusion_memory:
+            noun_exclusion_memory.release(rewrite_id)
+        log_timings("rewrite_error")
+        if isinstance(exc, RewriteProviderQuotaExhausted):
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        if isinstance(exc, NounExclusionExhausted):
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        raise
+
+    tracking_started = monotonic()
+    raw_ingredients = list((variant_plan or {}).get("raw") or ())
+    for ingredient in ((theme_ingredient_builder.selected
+                        if theme_ingredient_builder else ())):
+        if ingredient not in raw_ingredients:
+            raw_ingredients.append(ingredient)
+    topic_event = None
+    if topic_memory:
+        topic_event = build_topic_event(
+            rewrite_id, result, source, invented_names or (),
+            name_registry.offered_family_map(name_selection_key) if name_registry else {},
+            ((variant_plan or {}).get("generated") or offered_concepts or ()),
+            offered_descriptors or (),
+        )
+    if final_joke_memory:
+        try:
+            final_joke_memory.accept(
+                rewrite_id, result['crazyReplacement1Title'],
+                result['crazyReplacement1Extract'], source_text,
+            )
+            timings["final_joke_accept"] = final_joke_memory.last_metrics
+        except Exception as exc:
+            print("[final-jokes] accepted rewrite saved; memory update failed: "
+                  f"{type(exc).__name__}")
+    if name_registry:
+        try:
+            name_registry.accept(
+                name_selection_key, rewrite_id, invented_names,
+                result['crazyReplacement1Title'], result['crazyReplacement1Extract'],
+            )
+        except Exception as exc:
+            # A tracking outage must not discard a successfully paid-for rewrite.
+            print(f"[invented-names] accepted rewrite saved; cooldown update failed: {type(exc).__name__}")
+            name_registry.release(name_selection_key)
+    if concept_registry:
+        try:
+            concept_registry.accept(
+                concept_selection_key, rewrite_id,
+                (variant_plan or {}).get("generated") or offered_concepts,
+                result['crazyReplacement1Title'], result['crazyReplacement1Extract'], source_text,
+            )
+            timings["concept_accept"] = getattr(concept_registry, "last_accept_metrics", {})
+        except Exception as exc:
+            print(f"[concepts] accepted rewrite saved; cooldown update failed: {type(exc).__name__}")
+            concept_registry.release(concept_selection_key)
+    if descriptor_registry:
+        try:
+            descriptor_registry.accept(
+                descriptor_selection_key, rewrite_id,
+                leased_descriptors or offered_descriptors,
+                result['crazyReplacement1Title'], result['crazyReplacement1Extract'], source_text,
+            )
+            timings["descriptor_accept"] = getattr(descriptor_registry, "last_accept_metrics", {})
+        except Exception as exc:
+            print(f"[descriptors] accepted rewrite saved; cooldown update failed: {type(exc).__name__}")
+            descriptor_registry.release(descriptor_selection_key)
+    elapsed("accepted_use_and_cooldown_ms", tracking_started)
+    if topic_memory and topic_event:
+        try:
+            topic_memory.record(topic_event)
+            timings["topic_memory_update"] = topic_memory.last_metrics
+        except Exception as topic_exc:
+            print("[comedy-topics] persisted rewrite saved; memory update failed: "
+                  f"{type(topic_exc).__name__}")
+    if lexical_memory:
+        try:
+            lexical_event = build_lexical_event(
+                rewrite_id, source_text,
+                first_pass_result.get('crazyReplacement1Title', ''),
+                first_pass_result.get('crazyReplacement1Extract', ''),
+                result['crazyReplacement1Title'], result['crazyReplacement1Extract'],
+                (variant_plan or {}).get("generated") or offered_concepts or (),
+                offered_descriptors or (), raw_ingredients,
+            )
+            lexical_memory.record(lexical_event)
+            timings["lexical_exposure_update"] = lexical_memory.last_metrics
+        except Exception as lexical_exc:
+            print("[comedy-lexical] persisted rewrite saved; memory update failed: "
+                  f"{type(lexical_exc).__name__}")
+    if thematic_memory and (thematic_config.enabled or
+                            (theme_ingredient_builder and
+                             theme_ingredient_builder.selected)):
+        try:
+            theme_event = thematic_event(
+                rewrite_id, thematic_domains,
+                f"{result['crazyReplacement1Title']}\n{result['crazyReplacement1Extract']}",
+                source_text,
+            )
+            thematic_memory.record(theme_event)
+            thematic_snapshot["influenced_domains"] = theme_event["influenced"]
+            timings["thematic_diversity_update"] = thematic_memory.last_metrics
+        except Exception as thematic_exc:
+            print("[comedy-themes] persisted rewrite saved; memory update failed: "
+                  f"{type(thematic_exc).__name__}")
+    if theme_ingredient_memory and theme_ingredient_builder:
+        try:
+            ingredient_event = theme_ingredient_event(
+                rewrite_id, theme_ingredient_builder.selected)
+            theme_ingredient_memory.record(ingredient_event)
+            timings["theme_ingredient_memory_update"] = (
+                theme_ingredient_memory.last_metrics)
+        except Exception as theme_ingredient_exc:
+            print("[theme-ingredients] persisted rewrite saved; memory update failed: "
+                  f"{type(theme_ingredient_exc).__name__}")
+    if noun_exclusion_memory:
+        try:
+            final_text = f"{result['crazyReplacement1Title']}\n{result['crazyReplacement1Extract']}"
+            selected_texts = list(ingredient_texts(
+                (variant_plan or {}).get("prompt") or offered_concepts or (),
+                offered_descriptors or (), raw_ingredients,
+                prompt_template.get("contenders", {})))
+            violation_attribution = attribute_violations(
+                final_text, noun_exclusions, selected_texts, source_text)
+            new_entries = extract_final_entries(
+                title=result['crazyReplacement1Title'],
+                body=result['crazyReplacement1Extract'], source_text=source_text,
+                concepts=(variant_plan or {}).get("prompt") or offered_concepts or (),
+                descriptors=offered_descriptors or (), raw=raw_ingredients,
+                contenders=prompt_template.get("contenders", {}),
+                names=invented_names or (),
+                places=prompt_template.get("contenders", {}).get("places", ()),
+            )
+            noun_exclusion_memory.complete(rewrite_id, new_entries)
+            noun_exclusion_snapshot.update({
+                **violation_attribution,
+                "newly_extracted": sorted(new_entries),
+                "prevented_ingredient_candidates": sum(
+                    int(metrics.get("noun_exclusion_rejected", 0))
+                    for metrics in (
+                        getattr(concept_registry, "last_metrics", {}),
+                        getattr(descriptor_registry, "last_metrics", {}),
+                    )) + int(timings.get("noun_exclusion_legacy_rejected", 0)) +
+                    int((theme_ingredient_builder.last_metrics.get("rejected", {})
+                         if theme_ingredient_builder else {}).get("noun_exclusion", 0)),
+            })
+        except Exception as noun_exc:
+            noun_exclusion_memory.release(rewrite_id)
+            print("[noun-exclusion] persisted rewrite saved; memory update failed: "
+                  f"{type(noun_exc).__name__}")
+    if audit_logger:
+        try:
+            if lexical_penalties:
+                influenced = []
+                for kind, items, field in (
+                    ("concept", (variant_plan or {}).get("generated") or offered_concepts or (), "phrase"),
+                    ("descriptor", offered_descriptors or (), "phrase"),
+                    ("raw", raw_ingredients, "text"),
+                ):
+                    for item in items:
+                        score = text_penalty(item.get(field, ""), lexical_penalties)
+                        if score:
+                            influenced.append({"kind": kind, "text": item.get(field, ""),
+                                               "penalty": score})
+                lexical_snapshot["selected_with_penalty"] = influenced
+            timings["audit_snapshot_total_ms"] = round(
+                (monotonic() - request_started) * 1000, 2)
+            audit_logger.append(build_audit_record(
+                rewrite_id=rewrite_id,
+                source=source,
+                result=result,
+                names=invented_names,
+                concepts=(variant_plan or {}).get("generated") or offered_concepts,
+                descriptors=offered_descriptors,
+                contenders=prompt_template.get("contenders", {}),
+                timings=timings,
+                raw_ingredients=raw_ingredients,
+                comparison_variant=variant_config.label,
+                first_pass=first_pass_result,
+                lexical_context=lexical_snapshot,
+                thematic_context=thematic_snapshot,
+                theme_ingredient_context=theme_ingredient_snapshot,
+                repetition_replacement_context=repetition_snapshot,
+                noun_exclusion_context=noun_exclusion_snapshot,
+                comedy_editor_context=comedy_editor_snapshot,
+            ))
+        except Exception as audit_exc:
+            # The local audit is diagnostic and cannot invalidate persisted work.
+            print("[comedy-audit] persisted rewrite was not logged: "
+                  f"{type(audit_exc).__name__}")
     # New drafts live only in the session's SQLite slot. Legacy JSON is not an archive.
 
+    log_timings("completed")
     return full_result
 
 # ✅ 5. GET SHIZZALISED RESULT
@@ -686,19 +1365,63 @@ def bank_image_rewrite(request, rewrite_id, payload=None):
             store.save(db, rewrite_id, state)
     with store.transaction() as db:
         state = read_image_rewrite(db, rewrite_id, owner)
+        payload_data = payload.model_dump() if payload is not None else None
+        if payload_data is not None:
+            saved_title = str(state['result'].get('crazyReplacement1Title') or '')
+            saved_body = str(state['result'].get('crazyReplacement1Extract') or '')
+            submitted_title = str(payload_data.get('crazyReplacement1Title') or '')
+            submitted_body = str(payload_data.get('crazyReplacement1Extract') or '')
+            text_changed = submitted_title != saved_title or submitted_body != saved_body
+            # The title field is hidden in the Creator UI. If the user edits the
+            # article while leaving that generated title untouched, refresh a
+            # title whose words no longer occur in the edited article. An
+            # explicitly changed title always takes precedence.
+            if submitted_title == saved_title and submitted_body != saved_body:
+                title_words = {
+                    word.rstrip('s') for word in re.findall(r"[a-z0-9']+", submitted_title.lower())
+                    if len(word) > 3 and word not in {
+                        'about', 'after', 'again', 'from', 'into', 'over', 'that',
+                        'their', 'there', 'these', 'this', 'with', 'while',
+                    }
+                }
+                body_words = {
+                    word.rstrip('s') for word in re.findall(r"[a-z0-9']+", submitted_body.lower())
+                }
+                if title_words - body_words:
+                    first_sentence = re.split(
+                        r"(?<=[.!?])\s+", submitted_body.strip(), maxsplit=1)[0]
+                    if first_sentence:
+                        payload_data['crazyReplacement1Title'] = final_title(
+                            submitted_body, first_sentence)
+            if text_changed and (state['result'].get('image_url') or
+                                 (state.get('image_attempt') or {}).get('status') == 'complete'):
+                previous_attempt = state.pop('image_attempt', None)
+                if previous_attempt:
+                    state.setdefault('image_attempt_history', []).append({
+                        **previous_attempt, 'status': 'invalidated_by_text_edit'})
+                for field in IMAGE_FIELDS:
+                    state['result'].pop(field, None)
+                state['image_synced'] = False
+                for image_id in {rewrite_id,
+                                 str((previous_attempt or {}).get('image_id') or '')}:
+                    if image_id:
+                        try:
+                            image_path(image_id).unlink(missing_ok=True)
+                        except (ValueError, OSError):
+                            pass
         if state['entry_id'] and payload is not None and any(
-                state['result'].get(key) != value for key, value in payload.model_dump().items()):
+                state['result'].get(key) != value for key, value in payload_data.items()):
             try:
                 response = requests.put(f"{ENTRIES_API_BASE_URL}/entry/{state['entry_id']}",
-                    params=payload.model_dump(), cookies={'active_pet': owner}, timeout=15)
+                    params=payload_data, cookies={'active_pet': owner}, timeout=15)
                 response.raise_for_status()
-                state['result'].update(payload.model_dump())
+                state['result'].update(payload_data)
                 store.save(db, rewrite_id, state)
             except requests.RequestException as exc:
                 raise HTTPException(status_code=502, detail='Could not update nominated response.') from exc
         if not state['entry_id']:
             if payload is not None:
-                state['result'].update(payload.model_dump())
+                state['result'].update(payload_data)
             try:
                 response = requests.post(f'{ENTRIES_API_BASE_URL}/create/',
                     json={**state['result'], 'image_owner': owner},
@@ -726,4 +1449,8 @@ def bank_image_rewrite(request, rewrite_id, payload=None):
             os.remove(TEMP_SHIZZ_FILE)
             if os.path.exists(TEMP_FILE):
                 os.remove(TEMP_FILE)
-    return {'message': 'Data banked successfully!', 'nominated': True, 'rewrite_id': rewrite_id}
+    return {'message': 'Data banked successfully!', 'nominated': True,
+            'rewrite_id': rewrite_id,
+            'crazyReplacement1Title': state['result'].get('crazyReplacement1Title', ''),
+            'crazyReplacement1Extract': state['result'].get('crazyReplacement1Extract', ''),
+            'image_url': state['result'].get('image_url')}

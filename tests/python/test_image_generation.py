@@ -40,7 +40,7 @@ class ImageTests(unittest.TestCase):
     def test_prompt_and_stub(self):
         prompt = build_image_prompt(self.result)
         self.assertNotIn('SECRET SOURCE', prompt)
-        self.assertNotIn('Moon soup', prompt)
+        self.assertIn('Article title inspiration: Moon soup', prompt)
         self.assertNotIn('Scene title:', prompt)
         self.assertIn('A cat paints the moon.', prompt)
         image = LocalStubProvider().generate_image(prompt)
@@ -142,8 +142,18 @@ class ImageTests(unittest.TestCase):
     def previews(self):
         # Import route definitions without importing text generation/OpenAI at all.
         clean = types.ModuleType('newsmuncher.utils.clean_data')
-        for name in ('prepare_prompt','send_prompt','format_shizzalise_result','copy_edit_pass','claim_used_words'):
+        for name in ('prepare_prompt','send_prompt','format_shizzalise_result','copy_edit_pass',
+                     'comedy_editor_pass','claim_used_words'):
             setattr(clean, name, MagicMock())
+        clean.comedy_editor_word_target = lambda text: {
+            'first_pass_word_count': len(str(text or '').split()),
+            'target_word_count': max(1, round(len(str(text or '').split()) * .5)),
+            'target_min_word_count': max(1, round(len(str(text or '').split()) * .45)),
+            'target_max_word_count': max(1, round(len(str(text or '').split()) * .55)),
+        }
+        class RewriteProviderQuotaExhausted(RuntimeError):
+            pass
+        clean.RewriteProviderQuotaExhausted = RewriteProviderQuotaExhausted
         source = types.ModuleType('newsmuncher.utils.source_preprocessing')
         source.log_overlap = MagicMock()
         with patch.dict(sys.modules, {'newsmuncher.utils.clean_data': clean,
@@ -152,6 +162,18 @@ class ImageTests(unittest.TestCase):
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
         module.store = self.store
+        module.NameSelectionConfig = MagicMock()
+        module.NameSelectionConfig.from_environment.return_value = types.SimpleNamespace(
+            mode='legacy', slate_size=10,
+        )
+        module.ConceptSelectionConfig = MagicMock()
+        module.ConceptSelectionConfig.from_environment.return_value = types.SimpleNamespace(
+            mode='legacy',
+        )
+        module.DescriptorSelectionConfig = MagicMock()
+        module.DescriptorSelectionConfig.from_environment.return_value = types.SimpleNamespace(
+            mode='legacy',
+        )
         module.TEMP_SHIZZ_FILE = Path(self.tmp.name) / 'shizz.json'
         module.TEMP_FILE = Path(self.tmp.name) / 'temp.json'
         return module
@@ -425,6 +447,73 @@ class ImageTests(unittest.TestCase):
                         with self.store.transaction() as db:
                             saved = self.store.read(db, result['rewrite_id'], 'alice')['result']
                             self.assertEqual(saved['crazyReplacement1Title'], payload['crazyReplacement1Title'])
+
+    def test_nomination_removes_stale_hidden_title_from_downstream_inputs(self):
+        from newsmuncher.services.image_generation import build_image_prompt
+        from newsmuncher.services.jingle_brief import create_jingle_brief
+        routes = self.previews()
+        generated = {**self.result,
+                     'crazyReplacement1Title': 'Toucan disrupts the municipal kettle',
+                     'crazyReplacement1Extract': 'A toucan disrupts the municipal kettle.'}
+        result = self.store.create(generated, 'alice')
+        rewrite_id = result['rewrite_id']
+        stale_path = self.images / f'{rewrite_id}.png'
+        stale_path.parent.mkdir(parents=True, exist_ok=True)
+        stale_path.write_bytes(self.png)
+        with self.store.transaction() as db:
+            state = self.store.read(db, rewrite_id, 'alice')
+            state['result'].update(
+                image_url=f'/generated-images/{rewrite_id}.png',
+                image_prompt='Stale toucan visual brief', image_model='mock',
+                image_provider='mock', image_generated_at='now', image_style='Editorial')
+            state['image_attempt'] = {'image_id': rewrite_id, 'status': 'complete',
+                                      'prompt': 'Stale toucan visual brief'}
+            self.store.save(db, rewrite_id, state)
+        payload = routes.NominationResponse(
+            crazyReplacement1Title=generated['crazyReplacement1Title'],
+            crazyReplacement1Extract='A furious badger reorganises the lunar pantry.')
+        response = MagicMock(); response.json.return_value = {'id': 'saved-id'}
+        request = types.SimpleNamespace(cookies={'active_pet': 'alice'})
+        with patch.object(routes.requests, 'post', return_value=response) as post:
+            nominated = routes.bank_image_rewrite(request, result['rewrite_id'], payload)
+        saved = post.call_args.kwargs['json']
+        self.assertNotIn('toucan', saved['crazyReplacement1Title'].lower())
+        self.assertNotIn('toucan', saved['crazyReplacement1Extract'].lower())
+        self.assertEqual(nominated['crazyReplacement1Title'], saved['crazyReplacement1Title'])
+        self.assertIsNone(nominated['image_url'])
+        self.assertFalse(stale_path.exists())
+        self.assertNotIn('image_prompt', saved)
+        provider = MagicMock()
+        provider.generate_image.return_value = {
+            'image_url': f'/generated-images/{rewrite_id}.png',
+            'image_prompt': 'provider result', 'image_model': 'mock',
+            'image_provider': 'mock', 'image_generated_at': 'now'}
+        routes.get_provider = MagicMock(return_value=provider)
+        routes.sync_image_metadata = MagicMock()
+        routes.generate_image(routes.ImageRequest(rewrite_id=rewrite_id), 'alice')
+        image_prompt = provider.generate_image.call_args.args[0]
+        self.assertNotIn('toucan', image_prompt.lower())
+        self.assertIn('badger', image_prompt.lower())
+        with patch('newsmuncher.services.jingle_brief.random.choice', return_value='Funk'):
+            brief, _ = create_jingle_brief({**saved, 'nominated': True})
+        self.assertNotIn('toucan', brief.lyrics.lower())
+        self.assertNotIn('toucan', str(brief.model_dump()).lower())
+
+    def test_nomination_preserves_explicitly_edited_title_precedence(self):
+        routes = self.previews()
+        generated = {**self.result,
+                     'crazyReplacement1Title': 'Toucan disrupts the municipal kettle',
+                     'crazyReplacement1Extract': 'A toucan disrupts the municipal kettle.'}
+        result = self.store.create(generated, 'alice')
+        payload = routes.NominationResponse(
+            crazyReplacement1Title='Badger triumphs over the lunar pantry',
+            crazyReplacement1Extract='A furious badger reorganises the lunar pantry.')
+        response = MagicMock(); response.json.return_value = {'id': 'saved-id'}
+        request = types.SimpleNamespace(cookies={'active_pet': 'alice'})
+        with patch.object(routes.requests, 'post', return_value=response) as post:
+            routes.bank_image_rewrite(request, result['rewrite_id'], payload)
+        self.assertEqual(post.call_args.kwargs['json']['crazyReplacement1Title'],
+                         'Badger triumphs over the lunar pantry')
 
     def test_renomination_updates_existing_entry_without_duplicate_insert(self):
         routes = self.previews()

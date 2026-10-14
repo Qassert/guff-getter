@@ -1,0 +1,84 @@
+NEWSMUNCHER COMEDY DESCRIPTORS — PHASE 3D LIVE INTEGRATION
+Date: 2026-10-09
+
+INTEGRATION DESIGN
+- Generated mode replaces all ten legacy adverbs.csv prompt candidates with ten deterministic comedy descriptors. No CSV descriptor is drawn or permanently claimed in this mode.
+- The slate has exact 7/3 cheeky-British/broader-absurdity and 3/5/2 mild/properly-absurd/unhinged allocations, all six grammatical roles, ten distinct phrases and ten distinct joke subjects. Selection also favours concise forms and varied comic mechanisms.
+- Each value keeps the existing ten-slot prompt interface but is formatted as `phrase [ROLE]`. A single shared rule block explains PRE, PRED, POST, ADV, BEHAV and CLAUSE and asks for roughly two to four natural uses.
+- Generated descriptors are excluded from direct DESCRIPTION-placeholder assignment because predicate, behavioural and clause forms are not interchangeable adjectives. The model may restructure surrounding grammar instead.
+- The two provider passes are unchanged. Pass one receives the role-aware candidates. Pass two still copy-edits only pass one's title/body and does not receive source text or add a request.
+
+FILES CHANGED FOR PHASE 3D
+- newsmuncher/services/comedy_descriptors.py — reusable exact-quota, role-complete slate construction.
+- newsmuncher/services/descriptor_selection.py — production Mongo leases, cooldowns, formatting and typed exhaustion.
+- newsmuncher/services/descriptor_shadow.py — reuses the shared slate builder rather than retaining a shadow-only duplicate.
+- newsmuncher/utils/clean_data.py — descriptor override/guidance injection and generated-mode exclusion from CSV claims/direct DESCRIPTION assignment.
+- newsmuncher/api/previews.py — generated/legacy switch and rewrite lifecycle integration.
+- tests/python/test_descriptor_selection.py — registry, prompt and route regressions.
+- tests/python/test_image_generation.py — isolates unrelated route tests in legacy descriptor mode.
+- tests/python/test_source_preprocessing.py — keeps its isolated loader double compatible with optional bank exclusion.
+- README.md and CURRENT_WORK.md — configuration and handover.
+
+CONFIGURATION AND ROLLBACK
+- Default: NEWSMUNCHER_DESCRIPTOR_MODE=generated
+- Rollback: NEWSMUNCHER_DESCRIPTOR_MODE=legacy
+- Optional: NEWSMUNCHER_DESCRIPTOR_COOLDOWN_DAYS (default 30)
+- Optional: NEWSMUNCHER_DESCRIPTOR_OFFER_MINUTES (default 15)
+- adverbs.csv, historical creations and legacy permanent claims are unchanged. There is no mixed mode and no migration.
+
+EXAMPLE TEN-DESCRIPTOR SLATE
+Seed: phase3d-report
+1. operating under an assumed bus timetable to evade the municipal whispering board [BEHAV]
+2. meteorologically meticulously buttered [PRE]
+3. delighted about competitive curtain twitching [PRED]
+4. constitutionally doormat-accredited [PRE]
+5. the emergency barber has specifically forbidden unsupervised crouching [CLAUSE]
+6. to avoid making small talk against medical advice [ADV]
+7. legally required to wear slippers by a cross-party sandwich group [PRED]
+8. constitutionally incapable of accepting standard biscuits during applause [PRED]
+9. bows to domestic appliances under questioning [CLAUSE]
+10. secretly funded by three anonymous greengrocers to avoid making small talk [POST]
+
+This slate contains seven cheeky and three broader-absurd descriptors, intensities 3/5/2, all six roles, ten phrases and ten subjects.
+
+ACTUAL PROMPT FORMATTING
+The existing `Adverbs/absurd descriptors` line receives the ten values above, split across its three existing placeholders. Each phrase carries only its short role tag. The following shared block is added once:
+
+GENERATED-DESCRIPTOR RULES:
+- These are optional: use roughly two to four where they fit naturally; never force all ten.
+- Respect role tags: PRE before a noun or after a linking verb; PRED after a linking verb; POST after a noun; ADV after an action; BEHAV as an ongoing comma-delimited behaviour; CLAUSE as a clause.
+- Rewrite surrounding grammar to fit one selected descriptor. Never stack several descriptors or obscure the source event.
+
+PROMPT SIZE AND PERFORMANCE
+- For the integrated example, the ten formatted generated candidates contain 664 characters, versus 88 characters for a representative ten-value legacy CSV slate. The one shared guidance block contains 441 characters.
+- Net integrated input increase: 1,017 characters. The repository has no compatible local tokenizer, so the same documented UTF-8-character/4 method used in Phase 3C estimates this as approximately 254 input tokens. This replaces the earlier verbose shadow estimate of about 430 tokens.
+- No provider call is added. The copy-edit pass and output limits are unchanged.
+- Ten offline slate builds averaged 172 ms (maximum 175 ms) on the development machine. Mongo/network latency is expected to dominate in normal operation.
+
+LEASES, COOLDOWNS AND DATABASE OPERATIONS
+- Collection: generated_descriptor_usage. Phrase and normalized joke subject use separate records so concurrent slates cannot collide through alternate wording.
+- Attempt identity is `<active-pet>:<rewrite-uuid>`, never the durable browser draft session. Reusing the same attempt identity regenerates the same candidates and reacquires its own active records; every new MUNGE receives a new rewrite UUID and new deterministic search space.
+- An uncontended offer performs 20 atomic update-one operations (ten phrase and ten subject leases). Accepted-use processing performs ten update-many operations, each updating or releasing the phrase/subject pair. Collision retries add bounded lease attempts and keyed bulk releases.
+- If phrase acquisition succeeds but subject acquisition fails, a selection-key bulk release removes the partial lease before the next bounded slate.
+- After the accepted rewrite is persisted, exact case-insensitive phrase matches cool both phrase and subject records. Unused pairs are released. Any failure before persistence releases all descriptor leases.
+- Expired offers and cooldowns become eligible naturally. Existing records require no migration.
+- Bounded local/generator exhaustion is converted to DescriptorSelectionExhausted, releases partial leases and returns HTTP 409 before a provider call. The Creator's existing error/wind-down path displays the server detail and restores MUNGE.
+
+ACCEPTED-USE LIMITATION
+Matching is deliberately conservative: surrounding punctuation and case are ignored, but inflections and paraphrases are not guessed. This may under-count transformed descriptors, but it avoids cooling an unused phrase because common words happened to appear. Improving that attribution would require structured provider output or a separately validated local matcher.
+
+TEST COVERAGE
+- Exact ten-value 7/3 and 3/5/2 slates, all roles, phrase/subject uniqueness and deterministic retry.
+- Concurrent disjoint offers, partial-acquisition rollback, lease/cooldown expiry, exact matching, unused release and six consecutive fresh rewrite identities.
+- Generated prompt contains all role tags, uses zero CSV descriptors and adds no legacy adverb claim/direct assignment.
+- Legacy mode retains original CSV contenders and claims.
+- Route tests cover fresh rewrite UUIDs, two-pass compatibility, tracking after persistence and controlled 409 exhaustion before provider invocation.
+- Existing invented-name, concept, image and historical paths remain covered by their existing suites.
+
+MANUAL TEST
+1. Restart NewsMuncher without NEWSMUNCHER_DESCRIPTOR_MODE (generated is the default).
+2. MUNGE a source and inspect the local `[descriptors] offered ... [ROLE]` line; confirm ten values and all six role tags.
+3. Confirm the final article uses descriptors naturally and does not force all ten.
+4. Nominate it, then MUNGE the same source again; confirm a fresh slate is offered and the Creator winds down normally.
+5. Set NEWSMUNCHER_DESCRIPTOR_MODE=legacy, restart, and confirm the original adverbs.csv path still works.
+6. No database migration, historical-content change or media regeneration is required.

@@ -1,7 +1,7 @@
 STATUS: READY
 OWNER: CODEX
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Singable headlines, versioned ElevenLabs jingles, independent frame styles and saved-audio compatibility
+LAST_COMPLETED_FEATURE: Phase 4X verified noun-identity exclusion correction
 LAST_COMPLETED_COMMIT: 3e07e12 fix: refine Gallery navigation and rotation
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,12 +13,617 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Final NewsMuncher check-in completed on `feature/video-animation` after successful manual review.
+CURRENT_TASK: Completed comedy generation, exclusion-aware selection, concise editing and latest-edit media propagation are ready on `feature/video-animation`.
 APPROVAL: Repository reorganisation, cleanup and the final Gallery navigation, presentation, rotation and sound work are approved for commit and push. Do not merge `main`.
-NEXT_STEP: No active implementation task. Begin future work from this clean synchronized feature-branch handover.
-VALIDATION: Node 83 passed / 0 failed; Python 298 passed / 0 failed / 105 subtests. Python compilation, all production JavaScript syntax checks and `git diff --check` pass. Static audit has no missing literal asset; its sole raw-regex report is the expected dynamically constructed MUNGE teat path, whose six concrete files exist. Direct offline startup was blocked before connection because the configured MongoDB SRV host cannot resolve in the sandbox; isolated route/startup tests pass. No provider calls or production writes.
+NEXT_STEP: Continue manual evaluation from this checked-in feature-branch handover; do not merge `main` without approval.
+VALIDATION: Relevant Python integration tests: 92 passed / 0 failed / 6 subtests. Frontend: 84 passed / 0 failed. Python compilation, production JavaScript syntax checks and `git diff --check` pass. A broader Python run reached 408 passes / 105 subtests before its long diagnostic tail was interrupted after identifying one stale image-title assertion; the affected integration set was rerun successfully. No provider calls or production database writes.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+## Phase 4X noun-identity correction — 2026-10-13
+
+- Noun anchors now come from explicit concept base/topic slots, reviewed noun
+  catalogues, thematic entities and legacy noun-bank heads. Template modifiers,
+  actions and grammar no longer become hard noun exclusions.
+- New entries use `noun_identity:`. Ambiguous historical `noun:` entries remain
+  active only when an accepted phrase supports them at a compound boundary;
+  phrase and premise history is retained unchanged.
+- On the current 694-entry ledger, the same 1,500-candidate production pool rose
+  from 113 eligible candidates under the immediately preceding classifier to
+  351. Ten sequential selections completed while exclusions accumulated from
+  694 to 826 entries. Gravy compounds and the ceremonial-dignity premise stayed
+  blocked.
+
+## Phase 4X persistent live 409 diagnosis — 2026-10-13
+
+- Failed requests are absent from the success-only audit, and the route formerly
+  collapsed four typed selection failures into `selection_exhausted`; the exact
+  selector for the latest request therefore cannot be proved retrospectively.
+- The last success shows concept selection closest to exhaustion: 1,455 hard
+  candidate rejections from 1,500 generated candidates and category slack 2.
+  Descriptor selection completed without relaxation. Current noun, concept,
+  descriptor and name collections contain no active reservations.
+- Added evaluation-only structured failure output identifying the exception,
+  selector metrics, per-batch eligibility, hard rejection kinds, cooldown
+  losses, category counts, required quotas and reservation count. It contains
+  no prompt or source content and does not alter selection.
+- Current extraction still labels many modifiers and verbs as nouns. At 694
+  ledger entries the finite preconstructed concept space is already nearly
+  depleted, so this architecture cannot realistically reach 5,000 hard entries.
+- The local audit contains one completed Winifred article. A separate record
+  merely offered a different Winifred name that was not used; no final article
+  hash is duplicated.
+
+## Phase 4X recurring candidate exhaustion correction — 2026-10-13
+
+- Reproduced the live 409 from temporary copies of the 391-entry noun ledger
+  and 4,591 concept records. The first batch looked quota-complete before the
+  availability read, but exact phrase cooldown then left the two-slot animal
+  cheeky-object category with one candidate. Later sequential failures also
+  exposed template grammar such as `powered`, `with` and `insisting` being
+  persisted as nouns.
+- Phase 4X now builds all five bounded deterministic candidate batches before
+  availability filtering, excludes template grammar from noun anchors, and
+  progressively relaxes only category allocation after a demonstrated
+  exclusion shortage. Total 10+10 counts, phrase cooldowns, leases, unique
+  bases/premises and every genuine noun/phrase/premise exclusion stay hard.
+- A ten-selection production-path replay used temporary copies only, simulated
+  seven exact concept uses per completed article, grew the ledger from 391 to
+  812 entries, committed and cleared every reservation, and selected zero
+  blocked ingredients. Category slack was 0 for runs 1–7, then 1, 1 and 2.
+- Focused validation: 39 tests pass; full suites intentionally not run.
+
+## Phase 4X candidate exhaustion correction — 2026-10-13
+
+- The 5,000-entry FIFO was only 328 entries and had no live reservations. The
+  first 30-item category batch was the bottleneck: hard filtering sometimes
+  left only one or two of the three required noun/bureaucratic candidates.
+- Concept selection now adds up to four deterministic refill batches only when
+  the filtered candidates cannot meet existing quotas, stopping as soon as the
+  slate is feasible. Noun exclusions, premise exclusions and quotas remain hard.
+- The first post-fix ceremonial-dignity reuse was permitted because its older
+  occurrence predated premise recording. That successful article added the
+  premise key; neither of the following two articles offered it.
+- Focused tests: 37 passed. A current-ledger replay selected 20 concepts in two
+  batches with no excluded phrase admitted.
+
+## Phase 4X targeted exclusion correction — 2026-10-13
+
+- Filters and reserves complete rendered phrases as well as their bases and
+  subjects; all four audited gravy constructions now expose `noun:gravy`.
+- Hyphens are component boundaries for filtering and final-output auditing.
+- Offered construction matching ignores inserted `a`, `an` and `the`, and
+  accepted premise keys enter the same bounded FIFO so cross-base repeats are
+  excluded even when ordinary premise cooldowns relax.
+- Audit output separates selected/offered exclusion violations from independent
+  model introductions. Focused validation passes: 79 tests.
+
+## Universal Comedy Vocabulary Phase 4X — 2026-10-13
+
+- Added default-off `NEWSMUNCHER_NOUN_EXCLUSION=evaluation` with a persistent,
+  per-pet 5,000-entry FIFO and atomic short-lived generation reservations.
+- Filters singular/plural and compound anchors from generated, legacy, raw and
+  thematic ingredient candidates, refilling from existing bounded pools. A real
+  shortage returns a controlled 409 rather than bypassing exclusions.
+- Commits exact provenance-backed final uses only after successful persistence;
+  failed generations release reservations. Source words, names, locations and
+  generic compound heads remain protected.
+- Optional local audit records separately report prevented candidates,
+  independently model-introduced violations and newly extracted entries. No
+  provider call was added and final-output enforcement is not claimed.
+- Focused tests and compilation pass; full suites were intentionally not run.
+
+## Universal Comedy Vocabulary Phase 4W — 2026-10-13
+
+- Added an isolated provider-free diagnostic for exact provenance-backed comic
+  noun and phrase extraction, per-pet FIFO exclusion, candidate refill and
+  concurrent temporary reservations.
+- A 28-article local sample produced 559 entries, about 20 per article, implying
+  roughly 250 articles before a 5,000-entry FIFO releases its oldest entries.
+- Exact local scanning detects an already-excluded noun reintroduced by the
+  model, but conservative extraction will miss some wholly new model inventions.
+- Focused validation passes: 8 tests. Full suites were intentionally not run.
+- Findings and the smallest recommended persistent design are in
+  `docs/comedy-vocabulary-phase4w-report.md`. Production behavior is unchanged.
+
+## Universal Comedy Vocabulary Phase 4V — 2026-10-13
+
+- Traced the complete source, selection, quota, ranking, prompt, first-pass,
+  copy-edit, persistence and memory pipeline without changing runtime behavior.
+- Confirmed the main remaining constraint is architectural: Phase 4P supplies
+  only three of thirty prompt ingredients, leaving about 90% governed by the
+  existing fixed quotas and preconstructed mechanisms.
+- Reconciled the Phase 4U `butter paddle` exposure of 98. It is a decaying,
+  stage-weighted key score rather than an appearance count; alternative scores
+  add component and identity penalties while target scores take their maximum,
+  so the displayed values are not directly comparable. Role compatibility is
+  ranked before freshness and no maximum alternative score is enforced.
+- Consolidated evidence that exact phrase/base/premise controls work, Phase 4M
+  lowers short-window word repetition, and recurring food, machinery,
+  bureaucracy, official-animal and aristocratic motifs persist through fixed
+  quotas, overlapping resource routes and independent model invention.
+- Compared strengthening, simplifying and replacing the selection strategy.
+  Recommended one bounded premise-to-spark experiment with explicit objective
+  thresholds and a stopping rule; no recommendation was implemented.
+- Full evidence, architecture diagram, quantitative tables, ranked bottlenecks,
+  trade-offs and experiment design are in
+  `docs/comedy-vocabulary-phase4v-investigation.md`.
+- No paid call, production write, runtime change, commit or push occurred.
+
+## Universal Comedy Vocabulary Phase 4U — 2026-10-13
+
+- Added separate default-off `NEWSMUNCHER_PHRASE_REPLACEMENT=evaluation`.
+  Phase 4T must also be enabled; with Phase 4U off, Phase 4T behavior is
+  unchanged.
+- Phase 4U treats provenance-backed concept bases, descriptor subjects and raw
+  identities as atomic phrases. Component exposure can qualify the complete
+  identity, while nested words are suppressed and logged as overlap exclusions.
+- Offers short current Phase 4P bases/subjects instead of requiring the editor
+  to insert complete cross-domain constructions. Exact role/bank compatibility
+  and lower recent exposure rank first; full construction and domain provenance
+  remain available in the audit.
+- If current Phase 4P material exists but no insertable compatible alternative
+  remains, the existing editor receives one explicit auditable fallback to
+  invent an equally absurd local replacement using current domain cues.
+- Strengthened the two-substitution instruction while preserving surrounding
+  sentences, source sequence, events, relationships, British absurdity,
+  profanity, innuendo, density and timing. No name or protected source detail
+  may change, and no provider call was added.
+- Provider-free replay changed the three manual target sets from nine component
+  opportunities to six non-overlapping identities: `rescue wheelbarrow`,
+  `sandwich press`, `jelly mould`, `licensing authority`, `trouser press` and
+  `gravy boat`. It removed every observed nested component target and offered a
+  zero-exposure first alternative for each article.
+- Full design, replay table, audit fields, startup command and limitations are
+  in `docs/comedy-vocabulary-phase4u-report.md`.
+- Focused validation passes: 50 tests. Full Python passes with 523 tests and
+  105 subtests; JavaScript passes with 84 tests. Python compilation, production
+  JavaScript syntax and `git diff --check` pass. No paid call, production write,
+  commit or push occurred.
+
+## Universal Comedy Vocabulary Phase 4T — 2026-10-13
+
+- Added default-off `NEWSMUNCHER_REPETITION_REPLACEMENT=evaluation`. It reuses
+  the existing second-pass `gpt-6-sol` call and never adds a third provider call.
+- Selects at most three exact first-pass targets from confirmed ingredient
+  bases/subjects using bounded per-pet Phase 4M exposure. Source words, known
+  names/places, narrative/reporting verbs, absent terms and weak exposure are
+  rejected. Multiword targets require their own identity evidence.
+- Offers at most two unused current Phase 4P ingredients, with broad role
+  compatibility and lower exposure preferred. Without reliable targets and
+  alternatives, the existing copy-edit call remains unchanged.
+- The appended instruction permits at most two optional substitutions and
+  explicitly preserves sequence, events, relationships, density, profanity,
+  innuendo, surreal intensity, humour and timing. Existing model, timeout,
+  schema, token cap and pass-one fallback remain unchanged.
+- Phase 4T can read/update the Phase 4M ledger without activating Phase 4M's
+  ingredient ranking or first-pass guidance. Phase 4P is the practical source
+  of controlled alternatives; Phase 4N and 4R remain compatible.
+- Extended optional local audit output with eligible/rejected evidence,
+  exposure signals, exact before/after counts, exact additions/removals, new
+  already-exposed terms and fallback state. It makes no semantic-success claim.
+- Implementation, exact startup command, manual review method and limitations
+  are in `docs/comedy-vocabulary-phase4t-report.md`.
+- Focused validation passes: 44 tests. Full Python passes with 517 tests and
+  105 subtests; JavaScript passes with 84 tests. Python compilation, production
+  JavaScript syntax and `git diff --check` pass. No paid call, production write,
+  commit or push occurred.
+
+## Universal Comedy Vocabulary Phase 4S — 2026-10-13
+
+- Confirmed the `gpt-6-sol` copy editor receives only the first-pass extract. It
+  receives no source, ingredient slate, lexical history or thematic alternatives
+  and is explicitly limited to grammar, structure, agreement, flow and
+  readability while preserving every strange detail.
+- Phase 4M supplies bounded, persistent, per-pet exact-word evidence, but its
+  current top-word guidance is unsafe as a replacement list: the reviewed
+  records were led by narrative terms such as `working`, `raced`, `entered`,
+  `arranged` and `candidacy`. Final-text noun phrases and within-article counts
+  are not currently retained.
+- High-confidence topic regexes can identify a small fixed set of subjects and
+  constructions. Broader semantic motifs cannot be inferred reliably from the
+  existing ledger, and the current topic/final-joke stores do not share Phase
+  4M's per-pet scope.
+- In the three recent same-source articles, the prominent gravy-name,
+  marmalade, crumpet, milk-float, teapot, bureaucratic, occupation and powered
+  motifs overwhelmingly had confirmed slate origins. They were already in pass
+  one. The copy editor mostly repaired grammar, removed two redundant
+  `hand-cranked-powered` forms and otherwise preserved or headlined them.
+- All nine Phase 4P sparks were unused exactly. The smallest alternative pool
+  is therefore at most two unused current-slate sparks, with no new selection
+  path. Their usefulness for replacement still requires live evidence.
+- Recommended for review: a default-off Option A prototype that gives the
+  existing copy-edit call at most three source-exempt, repeated, pass-one-present
+  noun/identity targets and at most two unused compatible Phase 4P suggestions,
+  permits no more than two substitutions and explicitly preserves narrative
+  sequence, joke density, profanity, innuendo and surreal intensity.
+- Rejected local string replacement as grammatically and comedically unsafe.
+  A third inexpensive model pass is technically possible but adds latency,
+  drift and failure surface without evidence that the existing call is
+  insufficient.
+- Full provenance, architecture, option analysis, risks and provider-free test
+  plan are in `docs/comedy-vocabulary-phase4s-investigation.md`. No runtime
+  implementation, paid call, production write, commit or push occurred.
+
+## Universal Comedy Vocabulary Phase 4R — 2026-10-13
+
+- Added independent, default-off `NEWSMUNCHER_THEME_SPARKS=evaluation`. With
+  Phase 4P enabled, it moves the same two thematic concepts and one thematic
+  descriptor from anonymous ingredient banks into one compact optional block
+  immediately before the source. It does not select, add, remove or rerank any
+  ingredient and has no effect when Phase 4P is off.
+- Preserved descriptor role tags, the 20/10 totals, core comedy instructions,
+  source handling, Phase 4M/4N compatibility, memory behavior and the existing
+  two-call rewrite/copy-edit path. Each spark occurs once in the prompt.
+- Extended optional local audit records with spark state, prompt placement and
+  separate conservative exact-match evidence for first pass and final text.
+- Across 500 provider-free equivalent-slate pairs, all 500 combined ingredient
+  sets were identical and every enabled prompt contained three sparks. The net
+  presentation overhead averaged 138 characters, about 34.5 estimated input
+  tokens. Offline checks cannot establish uptake or humour.
+- Corrected Phase 4P documentation: code provides nine possible construction
+  IDs (three concept plus six descriptor-role patterns); the earlier seven was
+  the number of additional identities observed in that sample.
+- Proposed the smallest useful live check: three fixed neutral sources, one
+  paired off/on output each, six finished articles and twelve existing two-pass
+  calls. Recent actual workload implies roughly 23,000–28,000 input and
+  2,500–5,000 output tokens; exact billing is unavailable, so the suggested
+  separate approval cap is USD $0.50.
+- Full implementation, configuration, audit fields, validation, experiment
+  design and limitations are in `docs/comedy-vocabulary-phase4r-report.md`.
+  No paid call, production write, commit or push occurred.
+
+## Universal Comedy Vocabulary Phase 4Q — 2026-10-13
+
+- Matched Hattie Hobbleham, Nora Squeezemouth and Doctor Philomena Fustianholme to exact rewrite UUIDs using their unique Phase 4M lexical signatures, Phase 4N/4P memory events and local preview records. Phase 4I JSONL logging was not enabled for these runs; A/B previews are deliberate tombstones and C retains complete source/final text.
+- Reconstructed the nine exact prompt-visible Phase 4P ingredients from persisted seeds/constructions, recorded offered vocabulary and checked-in generic formulas. All nine reached the prompt: two of twenty concepts and one of ten descriptors in each article.
+- Only three of nine Phase 4P ingredients were recognisable in first-pass output, one per article. The same three survived the copy edit. Six losses therefore occurred before first-pass output, and there is no evidence of copy-edit removal.
+- Confirmed low representation and anonymous prompt dilution as the strongest structural explanations. Model preference is supported but cannot be separated cleanly from dilution. Existing quality ranking did not suppress the selected winners because Phase 4P replaces slate positions after ordinary ranking.
+- Found five Phase 4P construction IDs across the three articles. `process_adapted_base` appeared three times and supplied two recognisable finals; the sample is too small to call it a new cliché. Also identified a documentation discrepancy: code defines nine possible generic IDs, while Phase 4P prose described seven observed patterns.
+- Recommended a single-variable next experiment: keep the same three Phase 4P items and all selection behaviour, but present them once in a compact adjacent optional theme-spark block instead of anonymous bank positions. Measure first/final uptake with Phase 4I enabled before changing counts or constructions.
+- Full per-article provenance, stage table, evidence ranking, limitations and recommendation are in `docs/comedy-vocabulary-phase4q-investigation.md`. No runtime code, prompt, production default, provider call, database write, commit or push occurred.
+
+## Universal Comedy Vocabulary Phase 4P — 2026-10-12
+
+- Added a versioned 1,600-seed companion catalogue covering entities, processes, properties and relationships across all 100 Phase 4N domains, with grammar, provenance, licence, review and safety metadata plus a reproducible builder.
+- Added independent, default-off `NEWSMUNCHER_THEME_INGREDIENTS=evaluation`. It replaces at most one noun concept, one animal-bank concept and one role-preserving descriptor using nine possible generic construction IDs: three concept patterns and six role-preserving descriptor patterns. The 20/10 counts, existing objects and creatures, registries and provider-call count remain unchanged.
+- Phase 4P reuses Phase 4N's selected domains when both are enabled. Alone, it uses the same selector under an isolated per-pet scope. Phase 4M lexical penalties can influence seed choice; all three feature flags remain independently configurable.
+- Added bounded per-pet seed/construction memory with decaying weighted penalties and a 12% exploration floor. It persists across restart, isolates pets, handles duplicate/concurrent writes and updates only after successful persistence. Failures remain advisory.
+- Expanded the Phase 4I local audit with selected seed/domain/construction provenance, active penalties and candidate-stage metrics. No audit data is exposed to website users.
+- Across 500 equivalent-seed generations per configuration, Phase 4P raised unique ingredient phrases from 10,420 to 11,110 and meaningful vocabulary from 2,323 to 3,480, covered all 100 domains, and lowered rolling-five/ten phrase reuse from 0.300/0.624 to 0.238/0.498. Familiar-word share fell from 1.908% to 1.741%.
+- Rolling-five construction overlap rose from 15.540 to 16.250. The first experiment observed seven additional construction identities from nine available generic IDs; offline metrics cannot establish finished-article humour or uptake.
+- Full architecture, configuration, measurements, examples and limitations are in `docs/comedy-vocabulary-phase4p-report.md`; machine-readable measurements are in `docs/comedy-vocabulary-phase4p-results.json`. No live provider experiment, production write, commit or push occurred.
+- Full validation: Python 502 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused Phase 4P/audit tests 19 passed; compilation and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4O — 2026-10-12
+
+- Confirmed Phase 4N domains currently affect only optional first-pass guidance. They do not influence concepts, descriptors, names, raw ingredients, component sampling, quality scores, quotas or ranking. Existing local Phase 4I/4K/4M audits contain no Phase 4N records, so real theme uptake has not yet been measured.
+- Traced the complete source, ingredient, ranking, prompt, first-pass, copy-edit and persistence path. Large base banks are narrowed by hard category/role quotas, compactness bonuses, explicit proven-mechanism bonuses and small curated modifier banks. Literal familiar anchors also occur independently in concept, descriptor and name resources.
+- In 100 provider-free slates, the leading concept templates were strong compact creatures (344/2,000), self-acting devices (209), cheeky modifier objects (201), powered devices (169), official documents (153) and official bodies (147). Production-shaped descriptor assembly was broader, but still ranged from 93 class/etiquette selections to one mistaken-relationship selection across 1,000 outputs.
+- Compared tagged catalogues, domain-specific seeds, hybrid selection and prompt-only guidance. Recommended a default-off hybrid: typed domain entities/processes/properties/relationships combined by generic cross-domain recipes with a small bounded share of the existing slate. Current ingredients remain reachable and no theme becomes a mandatory final-text quota.
+- Designed a four-way, equivalent-seed, 500-generation provider-free evaluation with candidate-stage loss accounting, domain influence before/after ranking, construction concentration, cross-domain coverage, hard-quota parity, Phase 4M compatibility and prompt/runtime costs. Proposed a later 12-article blind check only after separate spend approval.
+- Full evidence, code locations, safeguards, trade-offs and implementation sequence are in `docs/comedy-vocabulary-phase4o-investigation.md`. No generator, selector, prompt, production default or runtime behaviour changed.
+
+## Universal Comedy Vocabulary Phase 4N — 2026-10-12
+
+- Confirmed that the core prompt contains no fixed examples of the recurring food, household or institutional vocabulary. The large CSV/catalogue pools are narrowed by generated-concept category quotas, descriptor category/role quotas, quality ranking and small joke-bearing modifier banks; the first-pass model also independently supplies familiar British-surreal material.
+- Added a curated catalogue of exactly 100 domains across 11 natural, scientific, historical, cultural, built, medical, technological, artistic, craft and field-practice families.
+- Added independent, default-off `NEWSMUNCHER_THEMATIC_DIVERSITY=evaluation`. It selects four optional domains by recency- and family-aware weighted sampling, retains a 12% exploration floor and appends concise creative springboards to the existing first-pass guidance without changing the core prompt or provider-call count.
+- The anonymized per-pet memory persists in a separate bounded Mongo-shaped record, appends only after successful draft persistence, handles concurrent first writes, rejects duplicate rewrite UUIDs and cannot block a successful rewrite if unavailable.
+- Phase 4I audit records can now distinguish domains offered to the model, selection penalties and conservative source-exempt keyword evidence in final text. Phase 4M remains independently configurable and compatible.
+- In 500 provider-free generations, all 100 domains appeared. The largest domain share was 1.65%, largest family share 9.95%, and a four-domain slate averaged 3.504 families. Rolling-five domain overlap fell from 0.782 under equivalent uniform sampling to 0.710; rolling-ten fell from 1.398 to 1.296. Memory stayed bounded at 20 events.
+- Findings and limitations are in `docs/comedy-vocabulary-phase4n-investigation.md`; implementation, configuration and measurements are in `docs/comedy-vocabulary-phase4n-results.md`. No paid experiment, production write, commit or push occurred.
+- Full validation: Python 493 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; Python compilation, production JavaScript syntax and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4M — 2026-10-12
+
+- Completed the approved six-source × three-repetition × off/on live experiment: 36 finished articles and 72 existing two-pass `gpt-6-sol` calls. All outputs succeeded without retries or substitutions; group memories remained isolated and accumulated sequentially.
+- Blind articles, the separate answer key, complete JSONL and machine-readable measurements are under ignored `local_audits/phase4m_live_experiment/20261012T_phase4m_live_ab_network/`. The main report does not map individual versions to configurations.
+- Final unique meaningful words per 1,000 rose 641.86→654.45; rolling-five repeated words fell 16.28→13.50, rolling-ten 28.78→25.11 and top-15 share 6.34%→5.41%. Offered-word breadth improved more strongly, confirming partial rather than complete transmission into final copy.
+- Gravy and custard article counts were unchanged; marmalade fell while cucumber slicer, crumpet and milk float rose. Copy editing introduced none of these terms. Model-side first-pass invention remained material, so Phase 4M is suitable for broader opt-in review but not default promotion from this sample.
+- Full design, provenance, aggregate results and limitations are in `docs/comedy-vocabulary-phase4m-live-results.md`.
+- Full post-run validation: Python 484 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; Python compilation, JavaScript syntax and `git diff --check` pass.
+
+- Added default-off `NEWSMUNCHER_LEXICAL_DIVERSITY=evaluation`. A bounded Mongo event stream is isolated by an anonymized active-pet scope, shared across workers, persistent across restart and appended atomically only after successful draft persistence.
+- Meaningful words and compact identities from offers, first-pass text and final text receive frequency/recency exposure weights. Source-required vocabulary is exempt. Final use weighs more than an unused offer; events decay out after ten articles by default.
+- Concept components, descriptor components, Phase 4K generated downsampling and raw CSV/catalogue identities use nonzero weighted sampling. Existing safety, grammar, quality, quota, lease, cooldown, semantic/topic memory and default paths remain intact.
+- Added bounded soft prompt guidance for recently prominent model-invented words without substitutions, bans or another provider call. Local audit records can now distinguish first-pass/final text and record active lexical penalties and affected selected ingredients.
+- Live preflight exposed deterministic candidate-pool collapse after accumulated penalties. Added an 8% exploration floor; this keeps recently exposed words less likely while preventing finite-pool exhaustion.
+- Across the corrected 250 provider-free rewrites, meaningful word breadth rose 1,431→1,466; rolling-five repetition fell 83.70→57.95 and rolling-ten 276.33→188.37. Category counts were identical, quality changed 7.311→7.304, and no selection exhausted. Complete-phrase breadth rose 4,367→4,374.
+- Configuration, architecture, metrics, test commands and limitations are in `docs/comedy-vocabulary-phase4m-results.md`. No Phase 4K variant was promoted. Changes remain uncommitted and unpushed.
+- Full safe validation: Python 481 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; compilation, JavaScript syntax and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4L — 2026-10-12
+
+- Traced gravy, custard, marmalade, cucumber slicer, crumpet and milk float through all 28 Phase 4K records. None came from the seven sources. Cucumber slicer, crumpet and milk float were fully explained by same-article offers; four gravy articles and four marmalade articles had no same-article recorded offer, confirming a material model-side contribution. The audit did not retain pass one, so first-pass versus copy-edit attribution remains unknown.
+- Confirmed that exact diversity is working: A offered 140 unique concept phrases and 138 bases; all variants had unique generated concept phrases; 279/280 descriptors were unique. Reader-visible repetition persists because there is no general word/head memory and the same editorial anchors occur across concept, descriptor, name and catalogue resources.
+- The large raw pools contain 2,331 unique noun texts and 2,575 unique historical-animal-bank texts, but hard quotas and compact quality scoring narrow effective generated diversity. In A, institutional control, impossible technology, innuendo and unexpected behaviour formed 101/140 concept offers.
+- Length-normalized cross-article recurring-word excess was 75.0/50.3/42.9/40.3 per 1,000 final tokens for A/B/C/D. This supports a premise-density effect but does not rank humour or justify promoting a variant.
+- Recommended for review: a soft, decaying, source-exempt lexical-exposure ledger across offers/finals plus exposure-aware component sampling. Every word retains nonzero future probability. Prompt changes, bans, coherence filters and implementation were explicitly excluded.
+- Full evidence, limitations, control audit and ranked remedies are in `docs/comedy-vocabulary-phase4l-investigation.md`. Changes remain uncommitted and unpushed.
+
+## Universal Comedy Vocabulary Phase 4K — 2026-10-12
+
+- Completed the explicitly approved automated real-provider comparison: seven fixed neutral sources × four variants, using the authentic two-pass `gpt-6-sol` rewrite/copy-edit path. All 28 outputs succeeded; there were no retries, substitutions or error records. Each variant used fresh isolated memory while its seven articles shared that variant's sequential memory.
+- The ignored run directory is `local_audits/phase4k_experiment/20261012T_phase4k_abcd/`. Read `blind_comparison.md` and fill `scorecard.md` before opening `answer_key.csv`; complete JSONL records and objective metrics remain in the same directory.
+- Objective observations only: A/B/C/D averaged 164.57/140/138/132 article words; offered 140/70/70/42 generated premises; offered 0/70/0/70 raw identities; and recorded 19/9/9/7 repeated detected-topic occurrences. These figures cannot determine funniness, coherence or preference.
+- Added the reproducible experiment runner, fixed source fixture, source-grouped blind exporter and focused regression coverage. Hybrid raw offers and exact-final matches retain separate provenance. Default live behavior remains variant A.
+- Full post-run validation: Python 472 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; Python compilation and JavaScript syntax pass. No production database or media operation occurred. Changes and local results remain uncommitted and unpushed.
+
+- Analysed the ignored twelve-MUNGE audit. Powered constructions appeared in 8/12 articles, parliament in 7/12, and royal/crumpet wording in 5/12. The offered slate concentrated 99/240 concepts in institutional-control or impossible-technology themes despite exact phrase uniqueness.
+- Confirmed that historical `animals` is a prompt bank containing animals and objects, while machine taxonomy also creates false species such as hood, game and survivor. Hybrid metadata calls the CSV source `legacy_mixed_identity`, invents no species, and admits only reviewed catalogue identities.
+- Added default-preserving `NEWSMUNCHER_COMEDY_VARIANT=A|B|C|D`: A is exact Phase 4J; B is 10 generated + 10 raw; C is 10 generated; D is 6 generated + 10 raw. Provider count, default path, registries, two-pass rewrite and permanent memories remain intact.
+- Audit records now distinguish hybrid raw offers from exact final matches and retain provenance plus comparison labels. Added an offline blind Markdown exporter with a separate key file.
+- Across 250 provider-free prompts, hybrids roughly doubled unique word breadth and added eight raw domains; C and D cut concept text by about half. Exact ingredient reuse did not uniformly improve, and offline proxies cannot decide humour, coherence or source relevance.
+- Full evidence, measurements, commands, limitations and human-review procedure are in `docs/comedy-vocabulary-phase4k-report.txt`. Changes remain uncommitted and unpushed.
+- Full safe validation: Python 469 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused Phase 4K tests 56 passed; compilation, JavaScript syntax, ignore checks and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4J — 2026-10-12
+
+- Analysed the ignored twenty-MUNGE Phase 4I audit locally. Confirmed that unused offers are correctly released but never influence accepted memory, allowing quality-ranked descriptors and bounded concept modifiers to recur. Only 2/200 descriptors were exact-final matches, so Phase 4G had almost no accepted descriptor signal.
+- Added independent `NEWSMUNCHER_COMEDY_TOPIC_MEMORY=evaluation` mode with one bounded history read and one atomic post-persistence event update. Completed offers remain separate from accepted use and final detections.
+- Recent completed concept phrases/premises/bases, descriptor phrases/premises and name families receive soft ordering penalties. Hard leases, exact accepted cooldowns, retry identity, grammar/category/intensity quotas, quality floors and exhaustion behavior are unchanged.
+- Added evidence-led source-exempt detection for gravy, desserts, tea equipment, allotments, milk floats, queueing, municipal authority, powered constructions, tribunal self-representation, illegal raffles, neighbour-started-it, unauthorised swelling and floorboards-framed-it. Audit records include the exact matched evidence.
+- Prompt guidance appears only after a family occurs twice in five articles, contains at most four labels and adds no provider call. In the 250-MUNGE fixture, rolling-ten exact-offer repetition fell 260.27→40.00, final-subject repetition 11.42→0.99 and final-construction repetition 9.00→1.36. Quality moved 8.271→8.161 within the 0.15 gate; average prompt overhead was 2.94 estimated tokens; no exhaustion occurred.
+- Full findings, source-concentration caveat, metrics, quality risks and command are in `docs/comedy-vocabulary-phase4j-report.txt`. Changes remain uncommitted and unpushed.
+- Full safe validation: Python 464 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused Phase 4J tests 95 passed; compilation, JavaScript syntax and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4I — 2026-10-12
+
+- Added default-off `NEWSMUNCHER_COMEDY_AUDIT_LOG=on` diagnostics after successful rewrite persistence. Generation prompts, selection, semantic memory and final-joke memory are unchanged.
+- Each fixed-schema JSONL record preserves complete source/final text, offered generated and legacy ingredients, exact final-text matches, premise and canonical joke-family metadata, allowlisted feature modes and existing numeric timing data. Unknown or unavailable metadata is not invented.
+- The local writer uses owner-only creation modes, an exclusive file lock, an in-lock rewrite UUID check, UTF-8 append, flush and `fsync`. Failed or abandoned rewrites add nothing; logging failures only emit a concise exception-class warning.
+- Added Markdown and CSV export preserving full article text and provenance. Both the default `local_audits/comedy_audit.jsonl` and exported reports are covered by the ignored `local_audits/` directory and are never uploaded automatically.
+- Full commands, schema, sharing warning, file list and limitations are in `docs/comedy-vocabulary-phase4i-report.txt`. Changes remain uncommitted and unpushed.
+- Full safe validation: Python 455 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused Phase 4I tests 27 passed; compilation, JavaScript syntax, `git diff --check` and ignore checks pass.
+
+## Universal Comedy Vocabulary Phase 4H — 2026-10-12
+
+- Traced "seventeen accountants" and "queue containment" to generated concept components and recorded Phase 2C prompt offers. Neither is a hardcoded rewrite example. Existing accepted matching can miss the memorable fragment when the provider shortens or paraphrases the complete offered phrase.
+- Added independent `NEWSMUNCHER_FINAL_JOKE_MEMORY=evaluation` mode. It recognizes narrow accepted-output constructions, exempts source facts and supplies at most four recent avoid labels without banning broad subjects or adding a provider call.
+- History updates occur only after successful draft persistence. Atomic article sequencing provides a ten-article cooldown; failed rewrites add nothing, concurrent updates remain safe, and read/write failures cannot block a rewrite.
+- In the 250-rewrite equivalent fixture, repeated exact final jokes fell from 244 to 65 and repeated canonical constructions from 248 to 40. Rolling-five canonical repeats fell from 3.00 to zero; ingredient/premise diversity remained identical and neither path exhausted.
+- Average prompt overhead was 237.58 characters (estimated 59.39 tokens), with 542 local memory operations across 250 rewrites. The report clearly identifies the synthetic-provider-compliance limitation.
+- Full findings, metrics, trade-offs and manual commands are in `docs/comedy-vocabulary-phase4h-report.txt`. Changes remain uncommitted and unpushed.
+- Full safe validation: Python 445 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused Phase 4H tests 25 passed; compilation, JavaScript syntax and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4G — 2026-10-12
+
+- Confirmed that exact phrase cooldowns were functioning while descriptor mechanisms, close subject paraphrases and name sound families remained repetitive. Existing concept base/premise/animal memory was already stronger.
+- Added independent `NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY=evaluation` mode. It records only accepted semantic families and applies bounded soft ranking penalties; defaults and Phase 4D/4F modes are unchanged.
+- Close descriptor wording such as competitive/professional queueing now shares an explicit theme-plus-anchor family. Source-story mentions are exempt. No embeddings, fuzzy service or model call was added.
+- Rejected concept mechanism ranking after it worsened prompt premise/object diversity. Reordered descriptor penalties behind grammar, quotas, within-slate mechanism balance and short-form preference after an early family-first version reduced quality and lengthened phrases.
+- In the 250-rewrite fixture, Phase 4G improved rolling-ten accepted ingredient repetition from 4.78 to 3.90, accepted premise repetition from 5.49 to 4.57 and structure repetition from 41.17 to 38.09 versus Phase 4F. Exact descriptor offers were less diverse, which is documented rather than hidden.
+- Full findings, fair metrics, quality trade-offs, commands and rollout recommendation are in `docs/comedy-vocabulary-phase4g-report.txt`. Changes remain uncommitted and unpushed.
+- Full safe validation: Python 434 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused Phase 4G/rewrite tests 76 passed; 250-MUNGE audit completed without exhaustion.
+
+## MUNGE rewrite credit-exhaustion correction — 2026-10-11
+
+- The running terminal showed the rewrite provider returning HTTP 429 with `insufficient_quota` / `credit_balance_exhausted`; concept, name and descriptor selection had all succeeded. The generic 500 came from `send_prompt()` collapsing every provider exception to `None`.
+- Credit exhaustion is now preserved as a typed failure and returned as an actionable HTTP 503. Existing frontend handling displays the detail, hides the loader and restores MUNGE controls. No automatic provider retry was added.
+- Failure cleanup still releases all temporary name, concept and descriptor leases. A successful rewrite still requires OpenAI API credits; code cannot bypass account billing.
+- Corrected the Phase 4F live descriptor registry to apply diversified assembly in evaluation mode during both viability and final selection.
+- Full safe validation: Python 427 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused tests 32 passed; compilation, JavaScript syntax and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4F — 2026-10-11
+
+- Corrected the Phase 4E comparison to use identical seeds, quotas and mocked uptake for live, Phase 4E and Phase 4F configurations. Confirmed that descriptor ranking, small fixed expression spaces and equal template selection caused the disappointing results.
+- Descriptor evaluation now samples across the complete quality-filtered compatible stratum. Unique offers improved from 888 live / 817 Phase 4E to 1,178 Phase 4F; rolling-ten repeats fell to 8.39 from 13.00 live, with 202 premises, 24 mechanisms and no exhaustion.
+- Retained the Phase 4E name algorithm after a recipe-balancing experiment reduced diversity. Equivalent-seed results show modest exact/root improvement but no phonetic-pattern improvement, so names remain evaluation-only.
+- Added structurally distinct offline slang and place constructions with bounded capacity-aware selection. Slang remains inferior to live. Places exceed live lifetime uniqueness but retain worse short-window repetition. Both remain offline.
+- Full measurements, performance, acceptance decisions, trade-offs and 200 labelled examples are in `docs/comedy-vocabulary-phase4f-report.txt`.
+- Full safe validation: Python 424 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused Phase 4F 63 passed; compilation, JavaScript syntax and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4E — 2026-10-11
+
+- Added independently gated, machine-checked descriptor and invented-name expansions. `NEWSMUNCHER_EXPANDED_DESCRIPTORS` and `NEWSMUNCHER_EXPANDED_NAMES` default to `off`; `reviewed` also preserves current behaviour because no Phase 4E item has been promoted by a human.
+- Added 12 descriptor mechanisms across all six grammatical roles and expanded the existing cheeky/absurd component families without changing live quotas, registry semantics, accepted-use cooldowns, retry identity or provider calls.
+- Added deterministic typed slang and fictional-place generators for offline evaluation only. Their 250-MUNGE results repeat substantially more than the live CSV baselines, so neither is wired into the rewrite path.
+- The 250-MUNGE audit found broader descriptor mechanism coverage (12 to 17 observed) and modest name lifetime diversity improvement (2,243 to 2,254 unique offers), but descriptor exact diversity and rolling-window name repetition did not improve. Both expansions remain local evaluation material.
+- Full metrics, licensing/editorial state, weak examples, manual commands and 200 labelled outputs are in `docs/comedy-vocabulary-phase4e-report.txt`.
+- Full safe validation: Python 422 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; compilation, production JavaScript syntax, resource rebuilding and `git diff --check` pass.
+
+## Universal Comedy Vocabulary Phase 4D — 2026-10-10
+
+- Added an explicit `NEWSMUNCHER_EXPANDED_VOCABULARY` switch: `off` remains the default, `reviewed` admits only prior human-reviewed animal/object entries, and `evaluation` deliberately exposes compatible machine-checked entries for local editorial testing without relabelling them.
+- Integrated catalogue bases into the existing concept generator only. Existing templates, quotas, prompt size, leases, cooldowns, accepted-use memory, provider count and historical behaviour remain intact. Cheeky, emergency and ceremonial identity banks stay curated rather than inferring comic purpose from taxonomy.
+- Added a cached validation/eligibility gate for grammar, familiarity, classification, safety flags and sensitive definitions. The review path admits 560 total animal and 928 total object identities while excluding 979 and 2,981 machine entries respectively; all machine entries remain unapproved.
+- The 250-rewrite comparison increased unique offered bases from 276 to 1,223. Average local generation changed from 9.94 ms to 14.66 ms, while average concept-prompt characters changed from 761.58 to 739.42 and the number of prompt concepts stayed at twenty.
+- Added expanded-mode determinism, concurrency, failure cleanup, accepted-animal memory and offer/prompt/mock-final accounting coverage. Full findings, weak combinations, licensing, descriptor/name investigation and manual instructions are in `docs/comedy-vocabulary-phase4d-report.txt`.
+
+## Universal Comedy Vocabulary Phase 4C — 2026-10-10
+
+- Expanded the offline typed catalogue from 1,932 to 9,980 entries: animals 1,539; objects 3,909; descriptors 2,948; names 915; slang 128; fictional-place ingredients 541.
+- Added a reproducible Open English WordNet 2025 CC BY 4.0 importer retaining synset IDs, definitions, release URL and attribution. The raw archive remains under `/tmp` and is not part of the repository. All 7,046 OEWN-derived entries remain machine-checked/needs-review.
+- Added original safe, role-labelled slang and fictional construction components. Unsafe legacy slang and factual place/name banks were not bulk-imported. Names and slang remain below their aspirational lower targets rather than being padded with weak or unsafe variants.
+- Expanded validation/safety filtering and optimized near-duplicate detection from quadratic scanning to indexed lookup. The 9,980-entry catalogue has zero validation errors, two near-duplicate warnings and five honest semantic-concentration warnings.
+- The 250-MUNGE audit distinguishes offers from simulated accepted use. Unique offered identities rose from 133→518 animals, 506→1,462 objects, 30→128 slang and 58→467 places. Descriptor diversity remained flat because lexical adjectives do not supply genuinely new comic situations; name-root improvement was modest.
+- Full source/licensing inventory, editorial status, measurements, 100 examples, weak/rejected material, gaps and staged integration plan are in `docs/comedy-vocabulary-phase4c-report.txt`. Live MUNGE behavior and all existing registries remain unchanged. No production write, paid provider call, commit or push.
+
+## Universal Comedy Vocabulary Phase 4B — 2026-10-10
+
+- Added a versioned typed JSON catalogue and schema covering animals, objects, descriptors, names, slang and fictional-place ingredients. Stable identities, grammar, semantics, mechanisms, familiarity, provenance/licensing, editorial flags and approval status are explicit.
+- The reproducible local build contains 1,932 ingredients: 1,438 previously reviewed and 494 machine-checked/needs-review. All source records honestly remain `INTERNAL-UNVERIFIED`; no external dataset was copied or scraped.
+- Added build-time validation for duplicate/near-duplicate identities, malformed content, grammatical roles, provenance/licences, discriminatory and identity risks, unsupported obscurity and semantic concentration. The snapshot has zero errors and three retained concentration/classification warnings.
+- Added a deterministic offline selector with recent-ID avoidance, semantic/familiarity balance and role/mechanism compatibility. It is not imported by the live rewrite pipeline and does not replace any lease, cooldown or claim registry.
+- The 250-MUNGE comparison uses production suggestion volumes and includes 100 labelled examples. It shows zero rolling-ten reuse in the four broad reviewed families while honestly exposing that the 30-item slang and 58-item place samples are far too small for integration.
+- Full architecture, licensing inventory, counts, measurements, gaps, risks, examples and staged integration plan are in `docs/comedy-vocabulary-phase4b-report.txt`. No live behavior, database, provider, commit or push.
+
+## Universal Comedy Vocabulary Phase 4A — 2026-10-10
+
+- Audited all six legacy CSVs and the structured concept, descriptor and invented-name resources. Raw string capacity is high, but meaningful humour remains bounded by small base, mechanism and modifier banks.
+- Identified suitable source families: Wikidata CC0, Open English WordNet CC BY 4.0 plus Princeton notice, licence-filtered GBIF datasets, OS Open Names/OGL, GeoNames CC BY 4.0 and ONS/OGL. Wiktionary requires a separate CC BY-SA/GFDL decision.
+- Added an offline-only deterministic catalogue prototype. It is not imported by live code and changes no existing resource. Its 100-rewrite comparison demonstrates lower short-window identity reuse while exposing unsafe, malformed and grammatically incompatible legacy candidates rather than hiding them.
+- Recommended versioned typed catalogues, build-time normalization, one batched history read, final atomic leases, identity/premise cooldown keys and explicit compatibility/quality review.
+- Full inventory, 50 examples, measurements, licensing notes, risks and staged implementation are in `docs/comedy-vocabulary-phase4a-report.txt`. No live integration, provider call, production write, commit or push.
+- Full safe validation: Python 407 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; compilation and diff checks pass.
+
+## Comedy Selection Reliability Phase 3G — 2026-10-10
+
+- Confirmed invented-name failure was artificial candidate-pool exhaustion: new rewrites reused `active_pet:draft_session`, repeatedly searching the same 100 candidates per style while accepted names accumulated exact cooldowns.
+- Names now use the fresh rewrite UUID, generate 300 deterministic candidates per style, perform one batched availability read, and atomically lease only the final 7 cheeky / 3 absurd slate. Exact-name cooldown and active leases never relax.
+- Added typed `NameSelectionExhausted`; partial leases are released and the route returns an actionable HTTP 409 before either provider pass. Existing Creator error handling displays it and restores MUNGE after wind-down.
+- Audited concepts and descriptors: both already follow the bounded/batched/typed reliability pattern, with only documented soft ingredient diversity relaxation. Phase 3F memory and timing behavior remains intact.
+- A combined in-memory audit completed 10, 25, 50, 100 and 250 consecutive production-quota selections. At 250: 2,368 unique names among 2,500 offers, zero failure, average local selection 600.20 ms, maximum 868.71 ms.
+- Full findings and operation counts are in `docs/comedy-selection-reliability-phase3g-report.txt`. Changes remain uncommitted and unpushed.
+- Full safe validation: Python 406 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; compilation, JavaScript syntax and diff checks pass.
+
+## Comedy Ingredient Memory Phase 3F — 2026-10-09
+
+- Confirmed that animals embedded in power sources, repelling behaviors, bureaucracy and emergencies bypassed creature-base cooldown. Full-phrase-only accepted matching also missed paraphrased species and animals independently introduced by the rewrite.
+- Added conservative 60-species accepted-text detection with singular/plural and multiword handling, source-fact exemption, persistent animal records, object-base memory and descriptor subject/premise memory. Only successfully persisted accepted output updates history.
+- Selection now uses one batched availability read and an in-memory quota viability check before atomically leasing the final slate. A reconstructed 100-rewrite Phase 3E path made 24,161 atomic writes and 7,050 cleanup writes; Phase 3F made 6,409 and 301 respectively, despite adding animal leases.
+- Added safe structured `[munge-timing]` diagnostics for local selection stages, database operation counts, prompt construction, each provider pass, persistence, accepted matching/cooldowns and total duration. No source text, prompt, response or credential is logged.
+- The 100-rewrite audit improved average unique species per rolling ten from 7.77 to 10.00 and reduced simulated hamster use from seven to two. Accepted object identity improved from 52 to 100 unique; descriptor subjects from 63 to 100; combined premise keys from 107 to 162 of 200.
+- Full findings and manual timing instructions are in `docs/comedy-ingredient-memory-phase3f-report.txt`. Changes remain uncommitted and unpushed.
+- Full safe validation: Python 400 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; focused post-validation 48 passed; compilation, JavaScript syntax and diff checks pass.
+
+## Comedy Diversity Phase 3E — 2026-10-09
+
+- Confirmed that phrase uniqueness concealed repeated structures and premises: concept/descriptor quality ranking repeatedly favored a limited set of mechanisms, while old cooldown keys represented bases or subjects rather than the underlying joke.
+- Added deterministic `semantic_theme` and `premise_key` metadata. Concepts now lease and cool exact phrase, base and premise records; descriptors assemble from an availability-filtered broad pool and protect exact phrases plus subjects.
+- Exact phrase cooldown and active concurrency leases remain hard. Base/premise or subject cooldown alone can relax after demonstrated saturation, preserving completion without disabling cooldowns or falling back to CSV banks.
+- Added seven concept and eight descriptor comic mechanisms, bringing both resources to 24 templates. Cross-generator assembly softly deprioritizes descriptor themes already dominant in the 20-concept slate without changing prompt length or provider count.
+- A production-shaped 100-rewrite simulation completed all rewrites; the old descriptor path exhausted after only 4–6. The final 2,000 concept offers contained 1,828 unique phrases and 19 mechanisms; 1,000 descriptor offers contained 796 unique phrases and 20 mechanisms.
+- Full findings, measurements, 30 examples, trade-offs and manual steps are in `docs/comedy-diversity-phase3e-report.txt`. Changes remain uncommitted and unpushed for review.
+- Full safe validation: Python 393 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; Python compilation, production JavaScript syntax and `git diff --check` pass.
+- Manual testing exposed PyMongo's default naive-UTC BSON decoding in the new descriptor availability prefilter. Persisted `last_used_at` and `offer_until` values are now normalized to aware UTC before Python comparisons, eliminating the pre-provider 500 without changing cooldown semantics. Regression coverage uses naive Mongo-shaped timestamps; final validation is Python 394 passed and Node 84 passed.
+
+## Comedy Descriptors Phase 3D — 2026-10-09
+
+- New rewrites default to ten generated descriptors and zero `adverbs.csv` candidates. `NEWSMUNCHER_DESCRIPTOR_MODE=legacy` restores the original CSV and permanent-claim behavior without changing historical creations.
+- Production slates preserve exact 7/3 cheeky/absurd and 3/5/2 intensity allocations, all six grammatical roles, unique phrases and unique joke subjects. Compact role tags plus one shared rule block ask for roughly two to four natural uses.
+- Generated descriptors are excluded from permanent CSV claims and direct DESCRIPTION-placeholder assignment. The existing two-pass rewrite/copy-edit provider architecture is unchanged.
+- Added a dedicated `generated_descriptor_usage` registry with phrase and subject records, rewrite-UUID attempt identities, stable deterministic retries, atomic leases, partial-acquisition rollback, expiry, conservative exact-use cooldowns and unused/failure release.
+- Bounded selection exhaustion is now a controlled HTTP 409 before any rewrite request. Existing Creator error handling displays the detail and completes its normal loading wind-down.
+- The integrated example adds 1,017 characters versus a representative legacy slate, approximately 254 input tokens using the repository's documented character/4 estimate. It adds no provider request. Ten local slate builds averaged 172 ms.
+- Full safe validation: Python 390 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; compilation, JavaScript syntax and diff checks pass. No provider call, production database write, commit or push.
+
+## Comedy Descriptors Phase 3C — 2026-10-09
+
+- Traced the live descriptor path: ten unclaimed `adverbs.csv` values are source-filtered, split across three flat prompt placeholders, treated as interchangeable adjective/adverb ingredients and permanently claimed only for exact accepted final uses after copy-editing.
+- Added an offline-only shadow module comparing ten generated descriptors, seven generated plus three legacy, and six generated plus four legacy while preserving the existing ten prompt slots.
+- Full-replacement slates use exact 7/3 categories and 3/5/2 intensities, prioritize all six grammatical roles, unique mechanisms and short forms, and prevent repeated joke subjects. Ten reviewed Strategy A slates each covered all six roles with no repeated subject.
+- Added role-labelled mock prompt previews and concise guidance to use roughly two to four descriptors naturally rather than forcing predicate/clause forms into adjective positions.
+- Modelled a future separate descriptor lease/cooldown lifecycle using rewrite-attempt identities, expanded deterministic pools, stable retries, concurrent phrase/subject exclusion, failure release, expiry and exact accepted-use matching. Eight saturated rounds followed by a ninth fresh selection successfully.
+- Strategy A is recommended for Phase 3D behind generated/legacy configuration. Average estimated prompt increase was 430 tokens, with no extra provider request; legacy `adverbs.csv` remains the fallback.
+- Full safe validation: Python 377 passed, 0 failed, 105 subtests; focused descriptor/shadow tests 21 passed. Live prompts, CSVs, permanent claims and runtime behavior are unchanged. No provider call, production write, commit or push.
+
+## Comedy Descriptors Phase 3B — 2026-10-09
+
+- Raised the humour floor by replacing generic competence adjectives with concise comic contradictions, removing ordinary grievance subjects and giving inappropriate-confidence descriptions an explicit absurd basis.
+- Added deterministic insertion rules and usage examples to every generated descriptor. The six roles now explicitly distinguish attributive pre-noun phrases, linking-verb predicates, post-noun modifiers, action adverbials, ongoing behaviours and complete/partial short clauses.
+- Reworked longer templates so their second clause supplies a causal payoff or limitation instead of unrelated padding. Short forms remain common; length earns no automatic score advantage and outputs over ten words are flagged.
+- Corrected audit accounting: proposed candidates now reconcile exactly into explicit rejections and eligible candidates, while eligible candidates reconcile into emitted results and valid alternatives not selected from ranking pools.
+- Seeded audit: 5,000 unique, zero duplicates, exact 3,500/1,500 category and 1,500/2,250/1,250 intensity allocations, all roles/templates/mechanisms represented, 100,481 proposals, 60,481 rejections, 40,000 eligible candidates and no exhaustion. Proposal volume fell 67% versus Phase 3A.
+- Full safe validation: Python 368 passed, 0 failed, 105 subtests; focused descriptor tests 12 passed. The generator remains offline. No provider call, production database write, commit or push.
+
+## Comedy Descriptors Phase 3A — 2026-10-09
+
+- Audited the three remaining live CSV banks. Adverbs has 1,954 cells / 1,683 unique values and is predominantly an adjective/participle descriptor bank; slang has 2,277 / 2,142 and mixes several incompatible grammatical/safety roles; places has 1,005 / 997 and mixes real geography with fictional locations and institutions.
+- Confirmed all three still use ten unclaimed legacy candidates, exact accepted-use detection and permanent transactional claims. There is no cooldown or recycling. Phase 2 generated concepts and invented names do not change these paths.
+- Added a standalone deterministic comedy-descriptor generator with 70/30 cheeky/absurd categories, three intensities, six grammatical roles, sixteen compatible templates, thirteen comic mechanisms, diversity caps, safety/grammar filters, bounded generation, quality scores and editorial warnings.
+- The seeded 5,000 audit produced 5,000 unique outputs, zero duplicates, exact 3,500/1,500 category and 1,500/2,250/1,250 intensity allocations, all roles/templates represented, 304,575 proposals and 224,575 explicit rejections without exhaustion.
+- Added an offline diagnostic command and a 150-item categorized editorial sample plus weakest-30 audit at `docs/comedy-descriptors-phase3a-review.txt`. The report also proposes role-aware future slang generation and source-geography-preserving place generation.
+- Full safe validation: Python 365 passed, 0 failed, 105 subtests; focused descriptor tests 9 passed; compilation and diff checks passed. Live prompts, CSVs, claims, names, concepts and media behavior remain unchanged. No provider call, production write, commit or push.
+
+## Phase 2E repeated-MUNGE fix — 2026-10-09
+
+- Confirmed the browser's durable draft-session identifier was also being used as the deterministic concept seed. Consecutive MUNGEs therefore revisited the same 60-item mixed pool; accepted base objects entered cooldown until a category quota became impossible, even though unused leases were correctly released.
+- Each newly allocated rewrite UUID now provides the concept-attempt identity. Separate rewrites from the same source receive fresh deterministic pools; retrying the same registry attempt key remains stable.
+- Replaced the mixed 60-item candidate pool with bounded category-and-target-specific pools of 30 candidates. This gives scarce categories independent collision/cooldown headroom while retaining the exact 10+10 semantic quotas, base uniqueness and atomic Mongo leases.
+- Genuine bounded exhaustion now becomes a controlled HTTP 409 before either rewrite provider call. Creator displays the server detail, stops loading and restores MUNGE availability instead of failing silently.
+- Existing records require no migration: unused leases were already released, active leases expire after 15 minutes, and accepted cooldowns naturally expire under their configured period.
+- Full safe validation: Python 356 passed, 0 failed, 105 subtests; Node 84 passed, 0 failed; Python compilation, JavaScript syntax and `git diff --check` passed. No provider call, production write, commit or push.
+
+## Comedy Concepts Generator Phase 2E — 2026-10-09
+
+- Generated mode now supplies ten generated noun concepts and ten generated animal/object concepts. It does not draw from `nouns.csv` or `animalsAndObjects.csv`, and generated concepts never enter permanent CSV claims.
+- The semantically constrained slate uses this combined category allocation: three everyday British, four cheeky objects, four absurd inventions, four ridiculous creatures, three bureaucratic concepts, one emergency item and one ceremonial object. Creatures remain confined to the animal/object bank; bureaucracy remains confined to nouns.
+- The existing concise guidance continues to make concepts optional and asks for roughly two to four natural uses. Provider count and the two-pass rewrite/title flow are unchanged.
+- Twenty concepts use base-keyed atomic leases with deterministic retries, concurrent-session exclusion, exact accepted-use cooldowns, expired-offer recovery and bulk release for unused or failed offers. Legacy mode restores the original ten CSV nouns plus ten CSV animals/objects and their permanent-claim behavior.
+- Full safe validation: Python 351 passed, 0 failed, 105 subtests; Node 83 passed, 0 failed; Python compilation, JavaScript syntax and `git diff --check` passed. No provider call, production database write, commit or push.
+
+## Comedy Concepts Generator Phase 2D — 2026-10-09
+
+- Strategy C is now the default for new Creation rewrites: seven ordinary plus three generated noun candidates, and seven ordinary plus three generated animal/object candidates. Legacy mode restores the original ten-plus-ten CSV behavior.
+- Added a separate `generated_concept_usage` Mongo collection with base-keyed atomic temporary leases, exact accepted-phrase cooldown tracking, deterministic retries, expiry, failure release, generator metadata and no permanent exhaustion.
+- Generated concepts are removed from permanent claim contenders; only the seven ordinary values in each modified bank remain eligible for the existing transactional word claims.
+- Added concise optional-ingredient guidance without another provider call or any change to the two-pass rewrite/title architecture. Tracking failures after a successful paid rewrite are logged safely and cannot discard the saved rewrite.
+- Full safe validation: Python 350 passed, 0 failed, 105 subtests; Node 83 passed, 0 failed. Focused concept/name/shadow selection: 38 passed. No provider call or production database write.
+
+## Comedy Concepts Generator Phase 2C — 2026-10-09
+
+- Added a standalone offline shadow-selection and prompt-preview module; neither `previews.py` nor `clean_data.py` imports it, so normal Creation behavior cannot change.
+- Confirmed the live pipeline draws ten candidates from each of nouns, animals/objects, descriptors, slang and places, plus ten invented names. It splits each bank across the three existing placeholders and permanently claims only exact accepted uses from the five legacy claim banks.
+- Compared three strategies across ten deterministic mock slates: A replaces ten nouns, B replaces all twenty noun/animal slots, and C retains fourteen ordinary anchors while adding three concepts to each bank.
+- Candidate-only estimated token increase averaged 37 for A, 95 for B and 27 for C. The proposed optional-use guidance adds an estimated 84 tokens in all previews. Estimates use UTF-8 length divided by four because the project has no local tokenizer dependency.
+- Added an in-memory lease/cooldown simulation covering stable retries, concurrent phrase and base exclusion, failed-rewrite release, exact accepted-use tracking, version metadata and reuse after cooldown. It never accesses MongoDB.
+- Recommendation for Phase 2D: Strategy C behind a disabled-by-default switch, with six concepts treated as optional ingredients and tracked separately from permanent CSV claims.
+- Full safe validation: 344 passed, 0 failed, 105 subtests passed, including 23 focused concept/shadow tests. No provider call, production write, prompt activation, commit or push.
+
+## Comedy Concepts Generator Phase 2B.1 — 2026-10-09
+
+- Recast creature, emergency, ceremonial and bureaucratic templates around their recognisable head noun: animals now act, possess histories or work in roles; equipment and ceremonial objects state their purpose; commissions and documents regulate a clear absurd responsibility.
+- Added an editorially controlled compact-creature template and a 10% batch cap. Strong short premises such as `filibustering mackerel` remain possible without dominating developed animal-first stories.
+- Added regressions for the reviewed awkward constructions and retained the Phase 2B metadata, warnings, mechanism labels and deterministic category/intensity allocation.
+- Seeded audit: 5,000 unique phrases, zero duplicates, all 17 templates represented, 86,611 candidates attempted, 16,611 rejected and no exhaustion. This is 618 additional attempts/rejections versus Phase 2B, reflecting the deliberate compact-creature cap rather than reduced construction capacity.
+- Full safe validation: 338 passed, 0 failed, 105 subtests passed, including 17 focused concept tests. No provider call, production write, integration change, commit or push.
+
+## Comedy Concepts Generator Phase 2B — 2026-10-09
+
+- Corrected modifier placement using separate pre-noun and post-noun templates. Post-noun histories and capabilities no longer produce constructions such as `trained in close combat stepladder`; repeated emergency terms are structurally excluded.
+- Ridiculous creatures now normally receive a developed occupation, scandal, impossible ability or institutional responsibility. Strong compact jokes remain supported through an explicit two-word exception list rather than a general short-form template.
+- Ceremonial objects now receive a ridiculous ceremonial purpose or inappropriate symbolic importance. Emergency equipment now combines a recognisable device with a grammatical absurd emergency purpose.
+- Template metadata now identifies the comic mechanism. Results additionally record editorial warnings and word count; the CLI prints all review metadata and reports short-form rates, grammatical validation and the weakest 30 accepted concepts.
+- Seeded audit: 5,000 unique phrases, zero emitted duplicates, exact category/intensity allocations, all 15 templates represented, 85,993 candidates considered, 15,993 rejected and no category exhausted. Ridiculous creatures and ceremonial objects produced zero two-word outputs in this seed; explicit tests prove strong two-word creature exceptions remain available.
+- Compared with Phase 2A, rejection volume fell from 35,657 to 15,993 because templates now form compatible grammatical premises more reliably. The stronger structures retain sufficient variety and did not exhaust any category.
+- Full safe Python validation: 338 passed, 0 failed, 105 subtests passed, including 17 focused concept tests. No provider call, production write, live integration, source-bank modification, commit or push.
+
+## Comedy Concepts Generator Phase 2A — 2026-10-09
+
+- Added a standalone deterministic offline generator for seven configurable concept categories and three configurable comedy-intensity levels. It uses structured component banks, compatible templates, bounded candidate ranking and explicit rejection reasons.
+- Every accepted concept records phrase, category, visible base subject, template, intensity, visual suitability, number/countability, article, generator version and quality score.
+- Added `python -m scripts.diagnostics.generate_comedy_concepts` for the approved 135-item editorial sample and a seeded 5,000-item audit. It has no database, network, provider or live-application dependency.
+- Seeded audit: 5,000 unique phrases, zero emitted duplicates, exact 15/20/20/20/15/5/5 category allocation, exact 30/45/25 intensity allocation, 105,622 candidates considered, 35,657 rejected, and no category exhausted. Monitored biscuit/sausage/custard/trouser/council themes each remained below 1%.
+- Full safe Python validation: 335 passed, 0 failed, 105 subtests passed, including 14 focused concept-generator tests. No provider call, production database write, live prompt change, word-claim change or source-bank modification.
+- Work remains uncommitted and unpushed for editorial review.
+
+## Invented Comedy Names Phase 2 — 2026-10-09
+
+- New Creation rewrites now default to an exact ten-name invented slate: seven approved cheeky names and three approved absurd names. The phonetic category is excluded from live selection.
+- `NEWSMUNCHER_NAME_MODE=legacy` restores the original `names.csv` prompt behavior; the legacy bank and implementation remain present and historical creations require no migration.
+- Added Mongo-backed temporary name leases keyed by active pet/draft session. Deterministic slates make retries consistent, `_id`-guarded atomic leases keep concurrent sessions disjoint, and failed rewrites release their offers.
+- Only supplied names found literally in the accepted final title/body receive a configurable recent-use timestamp. Unused prompt candidates are released, cooldowns expire, and invented names are never added to permanent word claims.
+- Added concise invented-name rewrite guidance to favor supplied identities, retain character-name consistency, avoid real celebrity replacements and avoid forcing all ten names into a story. The existing two-pass provider flow is unchanged.
+- Added environment configuration for mode, weights, slate size, cooldown days and offer duration. Default behavior remains 70/30 with ten names.
+- Cost impact: no additional provider calls. Prompt input grows by roughly 70–130 tokens from the name-specific rules and potentially longer invented names. A new rewrite normally performs ten atomic lease writes, up to ten accepted-use updates and one unused-offer release against the dedicated Mongo collection.
+- Full safe validation: Python 321/321 plus 105 subtests; Node 83/83; syntax and diff checks clean. No external provider call or production database write. Work remains uncommitted and unpushed for manual review.
+
+## Comedy Name Generator Phase 1C — 2026-10-09
+
+- Replaced the shuffled fixed phonetic-name list with 16 deterministic editorial joke families that combine compatible name-like openings and spoken punchline components.
+- Every phonetic result now records its intended spoken reading, construction technique and component family. Family-balanced selection prevents a single productive pattern from dominating a review batch.
+- Added 32 explicit familiar internet joke-name exclusions, including the reviewed Ben Dover / Phil McCracken / Drew Peacock class. No output is labelled a spoonerism because the current approved construction families do not perform a genuine sound exchange.
+- The present editorial construction space contains 102 candidates. The fixed-seed review evaluated all 102 and selected 50 distinct meanings; no candidate from the curated component space failed the general safety/pronunciation filter. The bounded space is deliberately honest and fails on exhaustion rather than padding output.
+- Cheeky and absurd component banks, templates, weights and construction methods remain unchanged from approved Phase 1B.
+- Full offline validation: Python 312/312 plus 105 subtests, including 14 focused generator tests. No provider call, production database write, live rewrite change, reservation/cooldown or permanent claim change. Work remains uncommitted for editorial review.
+
+## Comedy Name Generator Phase 1B — 2026-10-09
+
+- Expanded the isolated component banks and construction grammar across six cheeky and seven absurd templates, plus a larger hand-curated phonetic set and explicit source-phrase spoonerisms.
+- Candidate generation now chooses among multiple candidates within the selected weighted template, scores spoken shape and structural interest, rejects weak/safety failures, and applies first-name and surname-family diversity caps. The configured 70/30 style mixture remains unchanged.
+- Seeded 5,000-name audit: 5,000 unique; zero exact duplicates; 3,500 cheeky / 1,500 absurd; 12 templates; 65,004 candidates considered; 7,160 duplicate candidates rejected; five quality/safety candidates rejected; no category exhausted. The most reused first component appeared 53 times and the most reused surname component 17 times.
+- Review CLI now defaults to 100 cheeky, 50 absurd and 50 phonetic/spoonerism names and prints the construction recipe plus detailed audit diagnostics.
+- Full offline validation: Python 310/310 plus 105 subtests, including 12 focused generator tests. No provider call, production database write, live rewrite change, reservation/cooldown or permanent claim change. Work remains uncommitted for editorial review.
+
+## Comedy Name Generator Phase 1 — 2026-10-09
+
+- Added an isolated deterministic generator with reusable cheeky/absurd component banks, curated phonetic jokes, configurable seeds, exact default 70/30 invented-style batching and reserved future real-name category weights.
+- Filtering rejects normalized duplicates, legacy-bank collisions, blocked terms/pairs, overlong names and basic unpronounceable consonant/vowel forms. Gender-compatible honorific and ceremonial-epithet banks prevent accidental mismatches.
+- Added `python -m scripts.diagnostics.generate_comedy_names` for local review samples. It has no database, network, provider or live application dependency.
+- The live `names.csv`, rewrite prompt, name sampling, word claims and all downstream media behavior remain byte-for-byte untouched.
+- Full offline validation: Python 308/308 plus 105 subtests; syntax and diff checks clean. Changes remain uncommitted for review and have not been pushed.
 
 ## Final Gallery check-in — 2026-10-09
 

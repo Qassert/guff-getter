@@ -1,0 +1,202 @@
+NewsMuncher Phase 4D — controlled vocabulary integration and editorial quality
+Date: 2026-10-10
+
+Scope and safety
+================
+
+This phase adds a reversible animal/object catalogue seam to the existing
+generated-concept path. The flag is off by default. No historical creation,
+Gallery record, usage history, prompt slot, provider count, media path, CSV or
+production database was changed. All evaluation used deterministic local data,
+in-memory Mongo-shaped collections and mocked final text.
+
+Live-readiness assessment
+=========================
+
+Animals (1,539 total)
+---------------------
+
+The 60 previously reviewed creature identities are suitable for normal
+selection. The local evaluation gate admits a further 500 machine-checked
+identities and rejects 979 machine entries for coarse classification, grammar,
+obscurity, excessive length or safety/definition rules. Several admitted OEWN
+labels remain editorially weak or ambiguous (for example game, head, young,
+baby, kill, host), so machine entries are evaluation-only. Strong review
+candidates include aye-aye, shoebill, goblin shark, quokka, pangolin and okapi,
+but they still require an explicit human status change before normal use.
+
+Objects (3,909 total)
+---------------------
+
+The 200 previously reviewed physical identities are suitable. The evaluation
+gate admits 728 machine entries and rejects 2,981 machine entries, including
+unclassified objects, generic physical-object parents, architecture, historical
+objects, obscure/long labels and specified sensitive definitions. Remaining
+ambiguous labels such as first, number, high, body, style and pocket demonstrate
+that taxonomy validation is not editorial approval. No machine object is ready
+for automatic normal production selection yet.
+
+Descriptors (2,948), names (915), slang (128), places (541)
+------------------------------------------------------------
+
+These remain offline. Descriptor growth supplied lexical alternatives but no
+demonstrated increase in comic situations. Invented names gained too little
+phonetic-root diversity. Slang and fictional-place banks remain too small and
+under-reviewed for activation. Real locations remain separate from fictional
+place ingredients.
+
+Exact eligibility policy
+========================
+
+Both live-test modes require: animal/object family; singular countable grammar;
+one to five words; non-obscure familiarity; no rejected status; and no
+trademark, real-person or discriminatory risk flag. Objects marked
+unclassified are excluded.
+
+`reviewed` additionally requires `approval_status=editorially_reviewed`.
+`evaluation` may also admit `machine_checked` entries. Machine OEWN animals
+must have a concrete taxonomic class rather than the coarse animal/other-animal
+parent. Machine objects cannot be generic physical-object parents,
+architecture or historical-object labels. Entries whose definitions indicate
+execution, forced labour, torture, concentration camps, sexual devices or dead
+bodies are excluded. These automated rules are safety and compatibility gates,
+not human comedy approval.
+
+The generator uses catalogue animals for creature templates and compatible
+physical objects for domestic/invention templates. Multiword identities remain
+atomic. Cheeky, emergency and ceremonial banks retain the proven curated lists:
+taxonomy must not infer innuendo or a comic social purpose.
+
+Feature flag and failure behaviour
+==================================
+
+  NEWSMUNCHER_EXPANDED_VOCABULARY=off         existing default behaviour
+  NEWSMUNCHER_EXPANDED_VOCABULARY=reviewed    prior reviewed entries only
+  NEWSMUNCHER_EXPANDED_VOCABULARY=evaluation  local machine-entry review
+
+The catalogue is lazily loaded, validated once and cached per process. With the
+flag off it is not loaded. An invalid mode fails configuration explicitly. A
+load, validation or bounded generation failure becomes the existing typed
+concept-selection exhaustion response before a provider call; the route releases
+name, concept and descriptor leases and returns its actionable 409. Programming
+errors are not silently hidden by a legacy fallback.
+
+Integration and lifecycle
+=========================
+
+All existing concept templates, category/intensity allocation, ten noun plus
+ten animal/object prompt slots, deterministic rewrite-UUID seeds, semantic
+rules, exact phrase cooldown, base/premise/animal memory, active leases,
+saturation policy and accepted-use cleanup remain. Expanded animals are now
+recognised directly from their offered identity during acceptance even when
+they are outside the original 60-species detector; a same-species source fact
+is exempt. Genuine retries keep their slate and fresh rewrite UUIDs generate a
+fresh slate.
+
+250-rewrite comparison
+======================
+
+Command:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_vocabulary_phase4d.py --rewrites 250
+
+The audit uses the real concept generator and production 20-concept category
+distribution. Registry and route tests separately exercise the actual lease and
+preview path. Mock final text deterministically selects three offered phrases;
+those measurements show accounting only and make no claim about model uptake or
+article humour.
+
+                            Existing       Expanded evaluation
+Offers / prompt concepts       5,000                  5,000
+Unique offered bases             276                  1,223
+Duplicate occurrences          4,724                  3,777
+Mock-final appearances           750                    750
+Unique mock-final bases           247                    442
+Average selection time         9.94 ms               14.66 ms
+Maximum selection time        30.87 ms               28.41 ms
+Average concept prompt size   761.58 chars           739.42 chars
+Maximum concept prompt size       848 chars               835 chars
+
+Every offered concept is passed to the same existing prompt slot, hence offer
+and prompt figures match. The prompt still contains twenty concepts and there
+is no additional provider request. The measured average local cost is +4.72 ms.
+The static 7.9 MB catalogue is loaded once only when enabled. Registry behaviour
+still uses one batched availability read followed by bounded atomic leases.
+
+Editorial review findings
+=========================
+
+Strong existing identities include badger, ferret, pigeon, wheelie bin, tea
+cosy, garden shed, lampshade and dustpan. Promising unreviewed animals include
+blue-footed booby, naked mole-rat, leafy seadragon, shoebill and goblin shark.
+
+Awkward or weak machine combinations observed during deliberate evaluation
+included “quietly rotating eight”, “style with diplomatic immunity”, “shoulder
+with a suspicious alibi”, “blackmailing fang”, and “parliament-storming green
+algae”. Coarse-class filtering removes several of these, but examples such as
+“politely squeaky field hospital” and “goose-powered first gear” show that a
+valid object can still be a weak comic fit. Human review should approve identity
+and template-family compatibility separately.
+
+Catalogue validation retains the Phase 4C near-duplicate warnings. Mechanism
+compatibility failures are kept out of the special cheeky/emergency/ceremonial
+banks rather than guessed. Open English WordNet entries retain upstream synset
+IDs, the 2025 Edition attribution, CC BY 4.0 licence, and the derived-from-
+Princeton notice in the packaged catalogue and snapshot.
+
+Descriptor and invented-name investigation
+===========================================
+
+The limiting unit for descriptors is a comic relationship, not an adjective.
+Promising offline mechanism families are procedural authority (“temporarily
+deputised by a vending machine”), adversarial relationships (“in a custody
+dispute with a gazebo”), persistent consequences (“followed by ceremonial fog”),
+and absurd resources (“running entirely on borrowed indignation”). Each needs
+role-specific grammar, subjects, causes and payoffs plus editorial sampling;
+the lexical catalogue should supply compatible nouns only after the mechanism
+has established the joke.
+
+Name variety is limited by repeated root sounds and recipe contours. A next
+offline experiment should label syllables by stress, onset/coda compatibility,
+spoken ambiguity and name plausibility, then test new phonetic payloads against
+the familiar-joke exclusion list. Representative target forms are restrained
+two-beat surnames, title-plus-territory rhythm, and occasional three-part names;
+quantity alone must not dilute the approved Phase 1B humour. Neither live
+generator changed in this phase because there is no comparative evidence yet.
+
+Slang and fictional-place investigation
+========================================
+
+Slang needs original role-labelled constructions (exclamation, insult,
+intensifier, verb and noun), explicitness/target metadata and spoken examples.
+Fictional places need compatible stem/feature/institution templates, for example
+settlement morphology separate from shops and public bodies. Both require larger
+reviewed banks before a feature flag would be honest. Real geography must only
+be preserved as source fact, never silently converted into fictional locations.
+
+Manual local testing
+====================
+
+1. Leave the flag unset, restart, and confirm ordinary MUNGE behaviour.
+2. Set `NEWSMUNCHER_EXPANDED_VOCABULARY=reviewed`, restart, and create several
+   MUNGEs. This tests the catalogue seam using prior reviewed entries only.
+3. For editorial review on isolated local data, set the value to `evaluation`,
+   restart, and inspect at least ten MUNGEs for recognisability, grammar and
+   comic fit. Machine entries remain labelled `machine_checked` in the resource.
+4. Test a genuine retry, a fresh MUNGE, simultaneous browser sessions and a
+   nominate-then-MUNGE-again sequence. Check `[munge-timing]` output.
+5. Unset the flag and restart for immediate rollback.
+
+No command automatically invokes a provider. A real provider comparison, if
+Andy chooses to make one, should use separate local drafts with `off` and
+`evaluation`, record offered/prompt/final identities, and avoid production data.
+
+Recommended next stage
+======================
+
+Human-review a stratified animal set first and record explicit template-family
+approval. Review concrete object classes in smaller affordance-specific batches;
+reject ambiguous lemma labels rather than growing exception lists. After that,
+promote only reviewed records and compare real manually authorised rewrite output.
+Keep descriptors, names, slang and places offline until mechanism-level audits
+show an improvement rather than merely more strings.

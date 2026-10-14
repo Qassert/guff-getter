@@ -165,6 +165,7 @@ def update_crazy_fields(
     request: Request = None
 ):
     update_fields = {}
+    existing_entry = collection.find_one({"_id": ObjectId(id)})
     if crazyReplacement1Title is not None:
         update_fields["crazyReplacement1Title"] = crazyReplacement1Title
         update_fields["crazyReplacement1Extract"] = crazyReplacement1Extract
@@ -175,11 +176,15 @@ def update_crazy_fields(
     creation_user = request.cookies.get("active_pet")
     if creation_user:
         # Only set creationUser if it doesn't already exist
-        existing_entry = collection.find_one({"_id": ObjectId(id)})
         if existing_entry and not existing_entry.get("creationUser"):
             update_fields["creationUser"] = creation_user
 
-    result = collection.update_one({"_id": ObjectId(id)}, {"$set": update_fields})
+    update = {"$set": update_fields}
+    if existing_entry and any(
+            existing_entry.get(field) != update_fields.get(field)
+            for field in ("crazyReplacement1Title", "crazyReplacement1Extract")):
+        update["$unset"] = {field: "" for field in ImageMetadata.model_fields}
+    result = collection.update_one({"_id": ObjectId(id)}, update)
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Post not found or nothing to update")
     return {"message": "Post updated successfully", "creationDate": update_fields.get("creationDate")}

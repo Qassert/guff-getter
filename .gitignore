@@ -45,6 +45,7 @@ dist/
 /data/tts-comparison/
 /data/jingle-reference-comparison/
 /tmp/
+/local_audits/
 
 # Local Modal/ACE-Step downloads and model/runtime caches
 .modal/

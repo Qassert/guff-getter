@@ -33,7 +33,7 @@ def test_replacement_persistence_identity_replay_and_bank(setup):
         choose.assert_called_once_with(exclude=old['image_style'])
     assert new['image_url'] != old['image_url']
     assert new['image_style'] == 'Futuristic'
-    assert 'Moon soup' not in new['image_prompt']
+    assert 'Moon soup' in new['image_prompt']
     assert 'A cat paints the moon.' in new['image_prompt']
     assert f.api.call_count == 2
     assert (f.images / (rid + '.png')).exists()  # Superseded output retained.

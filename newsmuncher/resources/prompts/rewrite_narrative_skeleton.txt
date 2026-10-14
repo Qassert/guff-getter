@@ -1,0 +1,83 @@
+Transform the source text into an outrageously surreal, profane, irreverent and densely descriptive comedy version.
+
+NARRATIVE SKELETON — HARD RULE:
+- Preserve the source's sequence of events, actions, causal links and relationships.
+- Every event in the rewrite must correspond to an event already present in the source.
+- Do not invent additional events, careers, transactions, schemes, meetings, journeys, conflicts, consequences, backstories or subplots.
+- Keep who did what to whom, and in what order, recognisable beneath the transformed language.
+- Preserve quantities, negation and the source's central outcome.
+
+TRANSFORMATION METHOD:
+- Replace most significant nouns with supplied comedy ingredients or bizarre inventions.
+- Replace names and places with supplied alternatives where practical.
+- Embellish the replacement nouns with wildly excessive, surreal and unpredictable descriptions.
+- Aim for roughly 1.0–1.15 times the source article's word count. Treat this as guidance, not a strict limit.
+- Keep the comedy dense: cut padding, repeated explanations and redundant elaboration before cutting bizarre noun collisions, profanity or extravagant compound descriptions.
+- Descriptions may make the article longer, but must describe an existing person, object, place, action or relationship rather than create a new event or paragraph solely to accommodate an ingredient.
+- Transform adjectives, adverbs, imagery and comparisons aggressively.
+- Change sentence structures and phrasing substantially while retaining the source's principal events, relationships, chronology and sentence sequence; occasional absurd deviations are welcome when they do not create a new storyline.
+- Never reduce absurdity, profanity, innuendo or descriptive density for the sake of realism or conventional coherence.
+- Gloriously nonsensical combinations are desirable.
+
+COMEDY STYLE:
+- Use deadpan delivery and treat every grotesque impossibility as fact.
+- Use bizarre specificity, British irreverence, sharp innuendo and excessive descriptive detail.
+- Prefer unpredictable collisions and repeated “what the fuck?” moments.
+- Never explain or label a joke as absurd, crazy, surreal or ridiculous.
+- Do not make the story more sensible. Preserve only its narrative skeleton.
+
+RANDOM INGREDIENTS:
+
+Animals/objects:
+{animal_words1}, {animal_words2}, {animal_words3}
+
+Adverbs/absurd descriptors:
+{adverb_words1}, {adverb_words2}, {adverb_words3}
+
+Names:
+{name_words1}, {name_words2}, {name_words3}
+
+Places:
+{place_words1}, {place_words2}, {place_words3}
+
+Nouns:
+{noun_words1}, {noun_words2}, {noun_words3}
+
+Slang/rude words:
+{slang_words1}, {slang_words2}, {slang_words3}
+
+INGREDIENT RULES:
+- Use several supplied ingredients as replacements for nouns already doing work in the source.
+- Use at least one supplied animal/object and several supplied nouns and descriptors.
+- Use supplied names and places to replace source identities where practical.
+- Include supplied rude/slang language where it improves the joke.
+- Freely alter grammar and pluralisation.
+- Do not force every ingredient into the rewrite.
+- Do not add an event merely to accommodate an ingredient.
+
+TITLE:
+- Completely rewrite the title as a grammatical, punchy, outrageous tabloid headline.
+- Aim for 12–18 words and never exceed 18 words.
+- Summarise the transformed version of the source's actual central event.
+- Do not introduce an event absent from the source.
+
+FINAL CHECK:
+
+Before returning the result, silently verify:
+1. Each rewritten event maps to an original event in the same order.
+2. No new career, transaction, action, relationship or storyline was invented.
+3. Important nouns were replaced rather than merely decorated.
+4. The replacements are extravagantly described, surprising, profane and surreal.
+5. Any extra length comes from descriptions, not additional plot.
+6. The result is approximately 1.0–1.15 times the source length, with repetitive padding removed before any comic intensity.
+
+OUTPUT:
+
+Return ONLY valid JSON in exactly this structure:
+
+{{
+  "title": "Your transformed title",
+  "extract": "Your transformed extract"
+}}
+
+Do not include markdown, code fences, explanations or commentary outside the JSON object.

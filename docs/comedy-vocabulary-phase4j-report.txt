@@ -1,0 +1,217 @@
+NewsMuncher Phase 4J — evidence-based comedy variety improvements
+Date: 2026-10-12
+
+Scope and evidence
+==================
+
+This phase used the ignored local Phase 4I JSONL audit containing twenty real
+completed MUNGEs. The audit was read locally and was not copied into tracked
+fixtures, committed or uploaded. Tests and the 250-MUNGE evaluation use original
+synthetic sentences only. No provider request or production database write was
+made.
+
+The implementation is independently gated by:
+
+  NEWSMUNCHER_COMEDY_TOPIC_MEMORY=evaluation
+
+The default is `off`. Existing prompts and selectors retain their Phase 4I
+behavior unless that exact evaluation mode is enabled.
+
+Confirmed causes of repeated offers
+===================================
+
+1. Offered-but-unused ingredients are intentionally excluded from accepted-use
+   memory. Temporary leases are released after the completed rewrite. This is
+   correct accounting, but it means a strong unused candidate can return in the
+   next prompt.
+2. Only two of 200 offered descriptors appeared as exact complete phrases in
+   the twenty final articles, an average of 0.1 per article. Phase 4G therefore
+   received almost no accepted descriptor evidence even though the model may
+   have used fragments or paraphrases.
+3. Quality and grammar ranking repeatedly exposed a small productive stratum.
+   "Banned from speed topiary for wearing performance-enhancing brogues" was
+   offered eight times; related county whispering and full-contact croquet forms
+   were offered five and four times. Phase 4F diversification operates within
+   grammar/category/intensity constraints and did not remember completed unused
+   offers.
+4. Concept exact strings were fairly varied, but bounded modifier families
+   repeated. Premises for diplomatic immunity, tribunal self-representation,
+   intercontinental pumping clearance and neighbour-started-it each appeared in
+   six prompts. The bases ombudsman and advisory council also appeared six
+   times. This is component concentration rather than an exact-lease failure.
+5. Invented names were exact-unique in this sample, while seven final articles
+   contained a Yaffle name. Phase 4G's broad consonant/vowel skeleton does not
+   reliably isolate that memorable lexical root.
+6. Accepted final memory and offered memory were independent by design. Phase
+   4H saw only the explicit numbered-group and queue-containment rules. Only one
+   canonical match was recorded, so illegal raffles, floorboards framing things,
+   tribunal self-representation and swelling variants were invisible.
+
+The registries were scoped and retrieved correctly. The repeated offers are
+mostly an intentional memory boundary amplified by concentrated high-quality
+candidates, rather than broken persistence or stale rewrite identities.
+
+Source concentration
+====================
+
+Ten articles used the same baseball source, six the same song source, three the
+same politician and one another source. That can repeat narrative shape and
+factual vocabulary. The new final-topic detector subtracts any family already
+present in the source before recording or prompting. The audited sources do not
+by themselves explain the generated gravy, allotment, municipal, powered,
+Yaffle and listed construction concentrations, but no claim is made that every
+repeated word is generator-caused.
+
+Implementation
+==============
+
+`topic_memory.py` stores one bounded `recent` document in the existing MongoDB
+database. Each of its ten events keeps separate lists for completed offered
+concept phrases, premises and bases; descriptor phrases and premises; name
+families; and high-confidence final detections. One projected read supplies all
+three selectors and prompt guidance. One atomic `$push`/`$slice` update records
+the successful persisted rewrite. A rewrite-UUID condition prevents duplicate
+events. Missing memory degrades to Phase 4I behavior.
+
+The selection change is a soft ordering penalty:
+
+* concepts rank recent completed phrase, premise, base and animal/object
+  identities behind fresh eligible candidates;
+* descriptors rank recent completed exact phrases and premises behind fresh
+  candidates after all existing grammar, quota and eligibility checks;
+* names retain Phase 4G sound-family memory and additionally distinguish the
+  observed Yaffle root.
+
+No completed offer is called accepted or written to accepted-use fields. Hard
+exact cooldowns still apply only to accepted evidence. Active leases, atomic
+acquisition, retry identity, category/intensity quotas, six descriptor roles,
+quality floors and saturation behavior are unchanged. Recent-offer saturation
+only changes order and cannot create exhaustion.
+
+Final subject and construction recognition
+==========================================
+
+Deterministic detection now covers the evidence-led families:
+
+* gravy; pudding/dessert; tea and tea equipment; allotments; milk floats;
+  queueing; and municipal authority;
+* X-powered-Y constructions;
+* representing itself/himself/herself at a tribunal;
+* running an illegal raffle across run/runs/running/ran;
+* insisting that the neighbour started it;
+* capable of unauthorised/unauthorized swelling;
+* floorboard(s) framed it/them/him/her.
+
+Each detection records a key, label, subject/construction kind and the exact
+matched evidence. Phase 4I audits now expose these fields even when Phase 4J is
+off, improving later diagnosis. Source matches are excluded. Broad words are
+not hard-banned.
+
+Prompt guidance appears only after one high-confidence family has occurred at
+least twice within five completed articles. It contains at most four short
+labels and explicitly asks for a different specific joke only when the source
+does not require the recent subject. It preserves the same British absurdist
+tone. There is no AI checker, embedding, regeneration or extra provider call.
+
+Equivalent-seed offline evaluation
+==================================
+
+Command:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_vocabulary_phase4j.py --rewrites 250
+
+The fixture uses identical seeds, production-sized 20-concept, 10-descriptor
+and 10-name slates, audit-informed concentration and original representative
+final sentences. It models model compliance with a short avoid instruction; it
+cannot prove real provider compliance.
+
+Metric                                      Phase 4I   Phase 4J
+Exact offers: rolling five                     112.02        0.00
+Exact offers: rolling ten                      260.27       40.00
+Unique exact offers                                40         271
+Premises: rolling five                         112.02       74.61
+Premises: rolling ten                          260.27      201.59
+Unique premises                                    40         100
+Final subjects: rolling five                     3.07        0.04
+Final subjects: rolling ten                     11.42        0.99
+Final constructions: rolling five               2.00        0.00
+Final constructions: rolling ten                9.00        1.36
+Unique object identities                           30          83
+Object identities: rolling ten                  170.27      117.00
+Unique name sound/root families                    14          31
+Name families: rolling ten                       86.00       69.00
+Humour quality proxy                              8.271       8.161
+Naturalness fixture rate                          1.00        1.00
+Average prompt overhead characters                0.00       11.76
+Maximum prompt overhead characters                0          210
+Estimated average prompt tokens                   0.00        2.94
+Average local selection time, ms                  0.142       0.407
+Topic-memory database operations                    0          500
+Exhaustion events                                    0            0
+
+The 0.110 quality-proxy reduction remains within the predeclared 0.15 gate, all
+naturalness fixtures remain valid and no obscure vocabulary is introduced.
+The approach uses two database operations per completed rewrite: one bounded
+history read and one bounded event update. Local selection remains below one
+millisecond in this synthetic measurement.
+
+Humour-quality risks
+====================
+
+The principal risk is steering away from a strong callback merely because it
+appeared recently. Controls are deliberately mild: accepted material is not
+banned, penalties expire after ten articles, prompt guidance requires two
+appearances in five, source facts are exempt, and hard quality/grammar rules run
+before diversity. The broad subject groups are few and evidence-led. They should
+not be expanded from intuition alone.
+
+Repeated final words can still be harmless or source-driven. Exact phrase
+matching still misses paraphrases. The Yaffle special case is intentionally
+narrow and should be generalized only when more real audit evidence supports a
+safe name-root taxonomy.
+
+Tests
+=====
+
+Focused coverage includes:
+
+* all audited construction examples and tense/article variants;
+* broad negative cases and source exemptions;
+* gravy, dessert, tea, allotment, milk-float, queue and municipal subjects;
+* completed-offer versus accepted-final separation;
+* bounded history, duplicate rewrite identity and graceful missing memory;
+* descriptor quality-floor preservation under an offer penalty;
+* Yaffle root handling without suppressing unrelated names;
+* route integration with one unchanged rewrite/provider flow;
+* audit evidence/reason fields;
+* deterministic 250-MUNGE metrics and the quality/exhaustion gates.
+
+Full validation results are recorded in CURRENT_WORK.md.
+
+Manual evaluation command
+=========================
+
+  NEWSMUNCHER_EXPANDED_VOCABULARY=evaluation \
+  NEWSMUNCHER_EXPANDED_DESCRIPTORS=evaluation \
+  NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY=evaluation \
+  NEWSMUNCHER_FINAL_JOKE_MEMORY=evaluation \
+  NEWSMUNCHER_COMEDY_TOPIC_MEMORY=evaluation \
+  NEWSMUNCHER_COMEDY_AUDIT_LOG=on \
+  ./.venv/bin/python -m uvicorn newsmuncher.main:app --reload
+
+Collect at least twenty new MUNGEs across several different sources. Compare
+exact offers, partial uses and final topic detections separately, and read the
+articles aloud. Keep Phase 4J evaluation-only unless the real audit confirms
+that repetition falls without flattening the jokes.
+
+Known limitations
+=================
+
+The offline provider response is synthetic. Real model uptake, paraphrasing and
+humour cannot be proven without another live sample. Regex recognition favors
+precision and will miss novel wording. Topic history is a bounded advisory
+document rather than a complete analytics store; the Phase 4I JSONL remains the
+authoritative diagnostic record. The Mongo update is atomic, but a process
+crash after article persistence and before the advisory write can omit one
+event; the saved article remains valid. No migration or historical backfill is
+performed.

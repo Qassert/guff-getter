@@ -32,5 +32,15 @@ def test_generation_contract_supports_ten_second_elevenlabs_plan():
     assert request.duration_seconds == 10
 
 
+def test_latest_saved_title_is_locally_capped_at_existing_eighteen_words():
+    words = ["Main", "comic", "badger"] + [f"word{index}" for index in range(20)]
+    entry = {"nominated": True, "crazyReplacement1Title": " ".join(words)}
+    with patch('newsmuncher.services.jingle_brief.random.choice', return_value='Funk'):
+        brief, _ = create_jingle_brief(entry)
+    assert brief.lyrics.split() == words[:18]
+    assert brief.lyrics.startswith("Main comic badger")
+    assert entry["crazyReplacement1Title"] == " ".join(words)
+
+
 def test_generated_assets_ignored():
     assert '/data/generated_audio/*' in Path('.gitignore').read_text()

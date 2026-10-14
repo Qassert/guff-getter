@@ -1,0 +1,409 @@
+NewsMuncher Phase 4F — comedy diversity optimisation
+Date: 2026-10-11
+
+Scope and safety
+================
+
+This phase compares the live defaults, the exact Phase 4E experiments and the
+Phase 4F changes with identical seeds, quotas and mocked uptake over 250 MUNGEs.
+All work is local. There were no provider, network or database operations. The
+animal/object integration, historical creations, rewrite identity, leases,
+cooldowns, accepted-use memory, HTTP 409 handling and timing instrumentation are
+unchanged.
+
+Confirmed Phase 4E causes
+=========================
+
+The Phase 4E audit accidentally included the configuration label in its seed.
+Current and expanded results therefore used different random streams. The new
+audit uses `phase4f:<number>` for all three configurations. The corrected result
+still confirms the material weaknesses, but removes seed noise.
+
+Descriptors were limited by selection, not by theoretical expansion capacity.
+Assembly sorted every compatible candidate by the same quality hierarchy. The
+new mechanisms tended to be longer, while compact old phrases repeatedly won
+the quality and word-count tie-breaks. Only 17 of 36 available templates appeared
+in Phase 4E and subject/premise diversity fell to 146.
+
+Names already have large exact capacity. Recipe weights and highly productive
+constructed surnames dominate output, while the expansion adds comparatively
+few new sound shapes. An attempted per-slate recipe equaliser reduced exact and
+phonetic diversity, so it was removed. Equivalent-seed evidence shows the Phase
+4E expansion modestly improves exact names and roots, but sound patterns fall
+from 28 to 27.
+
+Phase 4E slang had five templates. Three were small fixed phrase lists and the
+two combinatorial templates had only 144 and 60 possibilities. Its 219 observed
+phrases reflect real construction-space scarcity rather than candidate
+exhaustion.
+
+Phase 4E places had seven equally selected templates. Several contained only
+six fixed phrases, while the larger settlement construction received the same
+selection probability. A few stems, suffixes and `View Estate` constructions
+therefore dominated short windows.
+
+Improvements
+============
+
+Descriptor evaluation mode now randomises within the already filtered,
+grammar-compatible, quota-compatible quality stratum. Quality thresholds,
+category/intensity quotas, six-role coverage, unique subjects and all registry
+protections remain hard. The old Phase 4E ranking remains available internally
+to the diagnostic as `phase4e`; the public `evaluation` flag exercises Phase 4F.
+
+Names retain the Phase 4E expansion unchanged. The failed recipe-equalisation
+experiment is not present in the final implementation. This is an explicit
+decision to preserve better measured behaviour rather than claim an improvement.
+
+Offline slang adds social comparisons, situational absurdity, sarcastic
+observations, euphemisms, compound put-downs and additional incompetence and
+disbelief structures. Offline places add businesses, landmarks, industrial
+parks, composed roads and districts. Selection weights construction families by
+bounded phrase capacity so tiny fixed lists cannot dominate. These remain
+offline and are not feature flags.
+
+Equivalent-seed 250-MUNGE comparison
+====================================
+
+Command:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_vocabulary_phase4f.py --rewrites 250
+
+Each configuration offers ten items per family. Mocked-final accounting takes
+two descriptors, two names, one slang expression and one place per MUNGE. It is
+an uptake model, not evidence of finished article quality.
+
+Metric                              Live       Phase 4E    Phase 4F
+Descriptor unique / 2,500          888        817         1,178
+Descriptor rolling-ten repeats     13.00      15.83       8.39
+Descriptor subjects                149        146         199
+Descriptor premises                149        146         202
+Descriptor mechanisms              12         17          24
+Descriptor templates               12         17          25
+Name unique / 2,500                2,206      2,238       2,238
+Name rolling-ten repeats           2.20       1.71        1.71
+Name surname roots                 1,496      1,561       1,561
+Name sound patterns                28         27          27
+Slang unique / 2,500               1,468      219         826
+Slang rolling-ten repeats          2.02       41.94       8.24
+Slang templates                    n/a        5           13
+Place unique / 2,500               917        514         1,221
+Place rolling-ten repeats          3.82       38.87       6.11
+Place templates                    n/a        7           12
+Mock-final unique / 1,500          1,250      971         1,270
+Mock-final rolling-ten repeats     0.98       2.33        0.61
+Average selection latency          195.84 ms  224.10 ms   225.62 ms
+Maximum selection latency          212.96 ms  269.49 ms   348.04 ms
+Four-family review characters      1,097.22   1,481.93    1,605.94
+Controlled exhaustion events       0          0           0
+Database/provider operations       0 / 0      0 / 0       0 / 0
+
+The four-family character total includes offline slang and places and is not a
+live provider prompt. For the two independently gated live families, average
+descriptor/name candidate text is 820.02 characters live, 860.47 in Phase 4E
+and 842.48 in Phase 4F. Phase 4F is 2.7% above live and 2.1% below Phase 4E;
+slot counts and provider calls are unchanged. Peak-RSS deltas were 5,537,792,
+819,200 and 606,208 bytes in the sequential macOS run; later values are only
+additional process high-water increases and are not independent comparisons.
+
+Editorial quality
+=================
+
+Strong descriptor premises include “engaged to a disputed scarecrow by mutual
+misunderstanding”, “frightened by authoritative knitwear since the disputed
+raffle” and “interviewing houseplants under light supervision”. Some repeated
+old winners remain, including variants of “banned from … for wearing
+performance-enhancing brogues” and “award-winning emergency apologiser”. The
+real registry cools accepted exact phrases and subjects; the raw audit purposely
+does not hide offered repetition.
+
+Strong names remain pronounceable and structurally varied, but new components
+do not create a broader measured consonant/vowel signature set. Names therefore
+remain evaluation-only despite improved exact/root metrics.
+
+Strong slang includes “that could sour the mood in an empty lift”, “an
+unscheduled dignity leak” and “equipped with the discretion of a village
+tannoy”. Weak material includes repeated `what in the …` forms and long compound
+put-downs whose second comparison adds bulk more often than a punchline.
+
+Strong places include “Viewing Platform of Premature Optimism”, “The Crooked
+Peacock Emporium” and “Indoor Weather Industrial Park”. Weak material includes
+ordinary stem/suffix joins such as `Ditherwick`, repeated `View Estate` forms
+and businesses whose adjective adds little. Place lifetime diversity now beats
+live, but rolling-ten repetition does not.
+
+Acceptance decision
+===================
+
+Descriptors are ready for independent local live testing through
+`NEWSMUNCHER_EXPANDED_DESCRIPTORS=evaluation`. They improve every measured
+descriptor diversity dimension, have no exhaustion, preserve grammar and add
+no prompt slots or provider call. They remain machine-checked and disabled by
+default.
+
+Names remain available through `NEWSMUNCHER_EXPANDED_NAMES=evaluation`, disabled
+by default. They improve exact/root reuse but not phonetic breadth, so Phase 4F
+does not recommend promotion.
+
+Slang remains on the existing CSV. The experiment improves greatly over Phase
+4E but is still inferior to live exact and rolling diversity. Fictional places
+remain offline: lifetime uniqueness beats live, but short-window repetition and
+editorial consistency do not. Neither experiment replaces essential factual
+story content.
+
+Quality labels and licensing
+============================
+
+All additions remain original `machine_checked` repository material under the
+existing `INTERNAL-UNVERIFIED` provenance. No output is described as human
+reviewed. Existing Open English WordNet attribution and all legacy CSV status
+remain unchanged. Editorial criteria are: a clear comic premise, natural spoken
+grammar, useful insertion role, recognisable British character, pronounceable
+names, no protected-class insult or identity collision, and no modifier that
+adds words without strengthening the joke.
+
+Recommended next steps
+======================
+
+Manually review at least ten descriptor-evaluation MUNGEs and promote individual
+mechanisms only after article-level evidence. Expand name sound families rather
+than recipes. For slang, curate more standalone mechanisms before reconsidering
+live integration. For places, introduce recent construction-family memory and
+morphology compatibility, then require both lifetime and rolling-window metrics
+to beat live. Do not activate slang or places from animal/object, descriptor or
+name flags.
+
+Validation
+==========
+
+Python: 424 passed, 0 failed, 105 subtests passed. JavaScript: 84 passed,
+0 failed. The focused Phase 4F generator and registry suite passed 63 tests.
+Python compilation, all production JavaScript syntax checks and
+`git diff --check` passed. Existing dependency and naive-datetime deprecation
+warnings remain unchanged.
+
+Manual-test correction: rewrite credit exhaustion
+=================================================
+
+A subsequent live attempt proved that local name, concept and descriptor
+selection completed, then OpenAI rejected the first rewrite request with HTTP
+429, `insufficient_quota` / `credit_balance_exhausted`. `send_prompt()` had
+collapsed every provider exception to `None`, so the route reported a generic
+500. Credit exhaustion is now a typed provider failure returned as an
+actionable HTTP 503. The existing Creator error path displays the message,
+stops the loader and restores MUNGE controls; all temporary offers are released
+and no automatic paid retry occurs. A successful rewrite still requires API
+credits. The live descriptor registry also now applies Phase 4F diversified
+assembly in evaluation mode. Final validation is Python 427 passed plus 105
+subtests and Node 84 passed.
+
+Editorial sample: 200 machine-checked outputs
+=============================================
+
+DESCRIPTORS
+01. banned from freestyle apologising for wearing performance-enhancing brogues — secret_history / post_noun
+02. medically roundabout-tested — comic_contradiction / pre_noun
+03. after Tuesday breached containment despite lacking a clipboard — cosmic_motivation / adverbial
+04. gastronomically tea-sworn — invented_ritual_status / pre_noun
+05. award-winning emergency apologiser without visible emotional support — unlikely_achievement / pre_noun
+06. practises synchronised complaining for the parish record books — unusual_hobby / behavioural
+07. curtsies before opening the post when bunting appears — class_and_etiquette / short_clause
+08. interviewing houseplants under light supervision — peculiar_habit / behavioural
+09. liable to become legally overcast during tea breaks — meteorological_affliction / predicate
+10. diplomatically tastefully padded — social_embarrassment / pre_noun
+11. breeds competitive dust to annoy a former headmaster — unusual_hobby / behavioural
+12. the duty aromatherapist has specifically forbidden competitive nodding — ridiculous_medical_advice / short_clause
+13. meteorologically shed-initiated — invented_ritual_status / pre_noun
+14. medal-winning amateur bureaucrat without professional assistance — unlikely_achievement / pre_noun
+15. administratively gloriously polished — social_embarrassment / pre_noun
+16. issues written warnings to table manners after lunch — class_and_etiquette / short_clause
+17. banned from amateur pothole naming for bringing an emotional-support foghorn — secret_history / post_noun
+18. professionally clipboard-enabled — comic_contradiction / pre_noun
+19. prone to ceremonial swelling under fluorescent lighting — questionable_condition / predicate
+20. to avoid an awkward prophecy while officially indoors — cosmic_motivation / adverbial
+21. afflicted by spontaneous committee voice on damp Thursdays — questionable_condition / predicate
+22. professionally fete-compliant — comic_contradiction / pre_noun
+23. collecting suspicious receipts during minor emergencies — peculiar_habit / behavioural
+24. to impress an indifferent constellation under disputed bunting — cosmic_motivation / adverbial
+25. addresses parking wardens as Your Grace after lunch — class_and_etiquette / short_clause
+26. architecturally elaborately fastened — social_embarrassment / pre_noun
+27. the family chiropodist has specifically forbidden advanced tutting — ridiculous_medical_advice / short_clause
+28. banned from speed topiary for wearing performance-enhancing brogues — secret_history / post_noun
+29. medal-winning amateur bureaucrat without adequate rehearsal — unlikely_achievement / pre_noun
+30. seasonally allotment-crowned — invented_ritual_status / pre_noun
+31. suffering from intermittent pageantry during applause — questionable_condition / predicate
+32. only functions as advertised on officially sanctioned Tuesdays — temporal_quirk / behavioural
+33. award-winning emergency apologiser without visible emotional support — unlikely_achievement / pre_noun
+34. bows to domestic appliances in mixed company — class_and_etiquette / short_clause
+35. after Tuesday breached containment without a pudding licence — cosmic_motivation / adverbial
+36. theatrically postbox-approved — comic_contradiction / pre_noun
+37. inappropriately thrilled about a suspiciously cheerful postbox — disproportionate_emotion / predicate
+38. rating strangers' umbrellas when authority figures blink — peculiar_habit / behavioural
+39. banned from competitive queueing for wearing performance-enhancing brogues — secret_history / post_noun
+40. liable to produce apologetic hail in mixed company — meteorological_affliction / predicate
+41. magnificently sulky about a gazebo claiming diplomatic immunity — disproportionate_emotion / predicate
+42. to avoid an awkward prophecy against medical advice — cosmic_motivation / adverbial
+43. acoustically crisply ironed — social_embarrassment / pre_noun
+44. mechanically weather-resistant — comic_contradiction / pre_noun
+45. frightened by authoritative knitwear since the disputed raffle — irrational_fear / predicate
+46. horticulturally thermos-consecrated — invented_ritual_status / pre_noun
+47. curtsies before opening the post when observed — class_and_etiquette / short_clause
+48. breeds competitive dust to impress the post office — unusual_hobby / behavioural
+49. banned from full-contact croquet for wearing performance-enhancing brogues — secret_history / post_noun
+50. engaged to a disputed scarecrow by mutual misunderstanding — romantic_complication / post_noun
+
+NAMES
+01. Lord Cuthbert Crumply-Fogge — absurd / curated
+02. Phil "Quick Fingers" Piddlechester — cheeky / given+nickname+constructed
+03. Noreen Gristlewick — cheeky / given+classic
+04. Jean Tweakham — cheeky / given+classic
+05. Mick Nuzzlebourne-Fondleby — cheeky / given+double
+06. Sheila Spankhurst — cheeky / given+classic
+07. Countess Octavia Garglebourne-Bladderwick — absurd / double+title
+08. Connie Wagglewick — cheeky / given+constructed
+09. Provisional Chancellor Cordelia Wainscot-Bumble — absurd / title+classic
+10. Eustace Quince-Duckworth, Custodian of the Ceremonial Ladle — absurd / bare+epithet
+11. Keith Tugwall — cheeky / given+constructed
+12. Vera Squeezehurst-Knickersley — cheeky / given+double
+13. The Honourable Ferdinand Flapdale-Thistlecrank — absurd / double+title
+14. Felicity Fidgetworth — cheeky / alliterative
+15. Howard Ticklehurst — cheeky / given+classic
+16. Lionel Throbdon — cheeky / given+constructed
+17. Sid Legge-Puller — cheeky / given+classic
+18. Minnie "The Parish Prong" Goosehurst — cheeky / given+nickname+constructed
+19. Hereditary Comptroller Reginald Rattlebury of Upper Fluster — absurd / title+territory
+20. Baron Percival Piffle-Bentinck — absurd / curated
+21. Jack Jostlethorpe — cheeky / alliterative
+22. Pam Poppycock — cheeky / given+classic
+23. Dickon Pokewater — cheeky / given+constructed
+24. Wally Wibblebottom — cheeky / given+classic
+25. Alfie Budgeworthy — cheeky / given+classic
+26. Horace Dangleworth — cheeky / given+constructed
+27. Gillian Gropeley — cheeky / alliterative
+28. Wendy Titternell-Nudgecombe — cheeky / given+double
+29. Cynthia Coddlevale — cheeky / given+constructed
+30. Pamela "Quick Fingers" Plumpheath — cheeky / given+nickname+constructed
+31. Sir Gideon Gravyboat — absurd / title+classic
+32. Percy Crackleminster-Fondlebury — cheeky / given+double
+33. Neville Jigglemere — cheeky / given+classic
+34. Cecil Fidgetbottom — cheeky / given+classic
+35. Beryl Quiverly — cheeky / given+classic
+36. Hattie Humpington — cheeky / curated
+37. Daphne Dimplethorpe — cheeky / curated
+38. Bob Pokehurst — cheeky / given+classic
+39. Lord-Lieutenant Emeritus Dorothea Fustianwallop — absurd / title+constructed
+40. Professor Godfrey Snoodcombe-Crumplehorn, Master of the Unscheduled Goose — absurd / elaborate
+41. Lord-Lieutenant Emeritus Ambrose Pomptruckle — absurd / title+constructed
+42. Honoria Flapworthy, Warden of the Indoor Weather — absurd / bare+epithet
+43. Linda Quiverington — cheeky / given+constructed
+44. Felicity Fumbleton — cheeky / given+classic
+45. Tristram "Saucy" Throbbleington — cheeky / given+nickname+constructed
+46. Viscount Wilberforce Biscuitbury-Pompington — absurd / double+title
+47. Canon Wilhelmina Wattle-Gascoigne — absurd / title+classic
+48. Nora "Soft Focus" Winkcombe — cheeky / given+nickname+constructed
+49. Lady Imogen Flusterplume-Flapworthy, Warden of the Indoor Weather — absurd / elaborate
+50. Stanley Strokebridge-Puddleford — cheeky / given+double
+
+SLANG
+01. what in the provisional waffle merchant — mock_disbelief / exclamation
+02. about as useful as a marzipan crowbar — comic_comparison / predicate
+03. you emotionally laminated sock magistrate — comic_identity / noun_phrase
+04. you championship-grade waffle merchant with the discretion of a village tannoy — comic_identity / noun_phrase
+05. what in the budget turnip consultant — mock_disbelief / exclamation
+06. couldn't brief a pigeon in a rumour mill with planning permission — failed_organisation / short_clause
+07. you three-piece gazebo botherer — comic_identity / noun_phrase
+08. what in the parish-certified turnip consultant — mock_disbelief / exclamation
+09. you emotionally laminated cardigan bandit with the timing of a startled undertaker — comic_identity / noun_phrase
+10. couldn't start a rumour in a scandal refinery — failed_organisation / short_clause
+11. you provisional gazebo botherer with the authority of a borrowed waistcoat — comic_identity / noun_phrase
+12. you three-piece gazebo botherer with the authority of a borrowed waistcoat — comic_identity / noun_phrase
+13. you absolute clipboard peacock with the focus of a pigeon at a buffet — comic_identity / noun_phrase
+14. what in the three-piece sock magistrate — mock_disbelief / exclamation
+15. what in the industrially confused clipboard peacock — mock_disbelief / exclamation
+16. what in the championship-grade pudding burglar — mock_disbelief / exclamation
+17. couldn't organise a scandal with the discretion of a village tannoy — failed_organisation / short_clause
+18. you aggressively decorative pudding burglar with the urgency of a council fern — comic_identity / noun_phrase
+19. as a waterproof teabag with the tact of a reversing brass band — comic_comparison / predicate
+20. couldn't invoice a gazebo with the tact of a reversing brass band — failed_organisation / short_clause
+21. you provisional gazebo botherer with the focus of a pigeon at a buffet — comic_identity / noun_phrase
+22. what in the absolute clipboard peacock — mock_disbelief / exclamation
+23. well, butter unlicensed crumpets — mock_disbelief / exclamation
+24. as a chocolate handbrake with the confidence of a wet gazebo — comic_comparison / predicate
+25. couldn't locate a doorway with the charm of an overdue rates notice — failed_organisation / short_clause
+26. that could sour the mood in an empty lift — sarcastic_observation / short_clause
+27. you free-range marmalade witness with the timing of a startled undertaker — comic_identity / noun_phrase
+28. you parish-certified pudding burglar — comic_identity / noun_phrase
+29. you deluxe waffle merchant — comic_identity / noun_phrase
+30. as a chocolate handbrake with the focus of a pigeon at a buffet — comic_comparison / predicate
+31. you aggressively decorative pudding burglar with the tact of a reversing brass band — comic_identity / noun_phrase
+32. you free-range gravy amateur — comic_identity / noun_phrase
+33. as a marzipan crowbar with the urgency of a council fern — comic_comparison / predicate
+34. you provisional pudding burglar with the discretion of a village tannoy — comic_identity / noun_phrase
+35. couldn't start a rumour with the urgency of a council fern — failed_organisation / short_clause
+36. you free-range clipboard peacock with the confidence of a wet gazebo — comic_identity / noun_phrase
+37. you deluxe gazebo botherer with the charm of an overdue rates notice — comic_identity / noun_phrase
+38. you deluxe cardigan bandit with the tact of a reversing brass band — comic_identity / noun_phrase
+39. an unscheduled dignity leak — comic_euphemism / noun_phrase
+40. you free-range pudding burglar with the confidence of a wet gazebo — comic_identity / noun_phrase
+41. what in the budget gazebo botherer — mock_disbelief / exclamation
+42. what in the three-piece marmalade witness — mock_disbelief / exclamation
+43. about as useful as an inflatable anchor — comic_comparison / predicate
+44. you free-range sock magistrate with the tact of a reversing brass band — comic_identity / noun_phrase
+45. couldn't fold a complaint with the tact of a reversing brass band — failed_organisation / short_clause
+46. you budget cardigan bandit with the timing of a startled undertaker — comic_identity / noun_phrase
+47. what in the parish-certified cardigan bandit — mock_disbelief / exclamation
+48. a minor collapse of personal government — comic_euphemism / noun_phrase
+49. as a knitted fire escape with the charm of an overdue rates notice — comic_comparison / predicate
+50. equipped with the discretion of a village tannoy — social_comparison / predicate
+
+PLACES
+01. The Provisional Clipboard Hotel — commercial_absurdity / business_or_venue
+02. Bent Spoon Parade — civic_absurdity / road
+03. Cardigan Crescent — civic_absurdity / road
+04. Crumpet View Estate — municipal_absurdity / housing_estate
+05. The Whispering Clipboard Hotel — commercial_absurdity / business_or_venue
+06. Pudding Tor — landscape_absurdity / geographical_feature
+07. The Bent Gazebo Removal Service — commercial_absurdity / business_or_venue
+08. Indoor Weather Industrial Park — industrial_absurdity / industrial_park
+09. Nettlewick — believable_morphology / settlement
+10. The Unclaimed Cardigan Tea Rooms — commercial_absurdity / business_or_venue
+11. Ganderstead — believable_morphology / settlement
+12. Gander View Estate — municipal_absurdity / housing_estate
+13. The Questionable Turnip Funeral Buffet — commercial_absurdity / business_or_venue
+14. North Ditherthorpe — believable_morphology / settlement
+15. Much Muddle District — believable_morphology / district
+16. Flustercombe — believable_morphology / settlement
+17. Clock Tower of the Pudding Settlement — commemorative_absurdity / landmark
+18. The Bent Wheelbarrow Solicitors — commercial_absurdity / business_or_venue
+19. Roundabout of the Lost Tuesday — commemorative_absurdity / landmark
+20. Nettle View Estate — municipal_absurdity / housing_estate
+21. The Mildly Alarmed Wheelbarrow Hotel — commercial_absurdity / business_or_venue
+22. The Crooked Peacock Emporium — commercial_absurdity / business_or_venue
+23. Soggy View Estate — municipal_absurdity / housing_estate
+24. Marmalade Passage — civic_absurdity / road
+25. Muddlewick — believable_morphology / settlement
+26. Much Titter District — believable_morphology / district
+27. Suspicious Avenue — civic_absurdity / road
+28. The Reluctant Clipboard Removal Service — commercial_absurdity / business_or_venue
+29. Crumpetstead — believable_morphology / settlement
+30. Muddleham — believable_morphology / settlement
+31. Marmaladebury — believable_morphology / settlement
+32. Dithercombe — believable_morphology / settlement
+33. Saint Soggy District — believable_morphology / district
+34. Viewing Platform of Premature Optimism — commemorative_absurdity / landmark
+35. Clock Tower of the Great Receipt Shortage — commemorative_absurdity / landmark
+36. Last Apology Crescent — civic_absurdity / road
+37. Ditherwick — believable_morphology / settlement
+38. Turnipford — believable_morphology / settlement
+39. The Last-Minute Ferret Garden Centre — commercial_absurdity / business_or_venue
+40. Great Puddlebury — believable_morphology / settlement
+41. North Turnipford — believable_morphology / settlement
+42. Last Apology Mews — civic_absurdity / road
+43. Bent Spoon Rise — civic_absurdity / road
+44. Titter View Estate — municipal_absurdity / housing_estate
+45. Doubtful Victory Approach — civic_absurdity / road
+46. Nether Snoringthorpe — believable_morphology / settlement
+47. Brambleleigh — believable_morphology / settlement
+48. Lady Soggycombe — believable_morphology / settlement
+49. The Last-Minute Gazebo Solicitors — commercial_absurdity / business_or_venue
+50. Saint Wobblestead — believable_morphology / settlement

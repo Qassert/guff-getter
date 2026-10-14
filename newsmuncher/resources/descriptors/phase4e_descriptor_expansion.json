@@ -1,0 +1,454 @@
+{
+  "version": "phase4e-descriptors-1",
+  "approval_status": "machine_checked",
+  "banks": {
+    "odd_habit": [
+      "alphabetising other people's lunches",
+      "apologising to automatic doors",
+      "saluting unattended luggage",
+      "interviewing houseplants",
+      "collecting suspicious receipts",
+      "rehearsing arguments with kettles",
+      "rating strangers' umbrellas",
+      "writing memoirs for garden tools",
+      "auditing the office biscuits",
+      "giving weather forecasts to pigeons",
+      "measuring applause with a ruler",
+      "sending thank-you notes to parking meters"
+    ],
+    "romantic_problem": [
+      "engaged to a disputed scarecrow",
+      "in a love triangle with two parish notices",
+      "secretly courting a rival's gazebo",
+      "emotionally entangled with a vending machine",
+      "on speaking terms with an imaginary fiancé",
+      "divorced from a ceremonial wheelbarrow",
+      "betrothed to the wrong identical beekeeper",
+      "sharing custody of a haunted fondue set",
+      "wooing a traffic warden by semaphore",
+      "romantically pursued by the village tannoy"
+    ],
+    "condition": [
+      "allergic to reasonable expectations",
+      "suffering from intermittent pageantry",
+      "prone to ceremonial swelling",
+      "medically unable to whisper convincingly",
+      "chronically overqualified for silence",
+      "experiencing acute hat awareness",
+      "liable to develop temporary heraldry",
+      "diagnosed with competitive nostalgia",
+      "recovering from administrative dizziness",
+      "afflicted by spontaneous committee voice"
+    ],
+    "qualification": [
+      "licensed in advanced curtain diplomacy",
+      "certified in emergency small talk",
+      "doctorally qualified in suspicious puddles",
+      "accredited for indoor weather",
+      "board-certified in decorative panic",
+      "trained in forensic sandwich reconstruction",
+      "qualified to inspect imaginary livestock",
+      "licensed for ceremonial reversing",
+      "diploma-holding in applied awkwardness",
+      "fellowship-trained in municipal romance"
+    ],
+    "work_failure": [
+      "once lost an entire department behind a filing cabinet",
+      "has been demoted by three photocopiers",
+      "mistakes every fire drill for a promotion",
+      "cannot operate a stapler without witnesses",
+      "has missed fourteen deadlines in chronological order",
+      "accidentally outsourced their own lunch break",
+      "keeps submitting expenses to the weather",
+      "was dismissed for excessive competence claims",
+      "runs meetings entirely by nervous coughing",
+      "has never located the office they manage"
+    ],
+    "fear": [
+      "terrified of confidently folded maps",
+      "frightened by authoritative knitwear",
+      "unable to face a strongly worded teapot",
+      "haunted by the possibility of adequate parking",
+      "alarmed by fruit with paperwork",
+      "fearful of unlicensed bunting",
+      "panicked by unexpectedly formal ducks",
+      "suspicious of chairs facing north",
+      "dreading the return of competitive mime",
+      "afraid of being recognised by a turnip"
+    ],
+    "ambition": [
+      "to become regional champion of indoor thunder",
+      "to inherit a moderately important roundabout",
+      "to open Britain's first apology museum",
+      "to be crowned custodian of the emergency spoon",
+      "to achieve diplomatic status for their shed",
+      "to make competitive sighing an Olympic event",
+      "to replace all paperwork with interpretive dance",
+      "to become mayor of a moving vehicle",
+      "to patent the authoritative cardigan",
+      "to discover a legally binding pudding"
+    ],
+    "scandal": [
+      "whose controversial past involves a rented peacock",
+      "still answering questions about the mayoral hot tub",
+      "implicated in the great gazebo substitution",
+      "named in the confidential marrow report",
+      "formerly banned from three model villages",
+      "linked to an offshore jumble sale",
+      "wanted for questioning over counterfeit applause",
+      "whose allotment years remain heavily redacted",
+      "under inquiry for impersonating a minor tradition",
+      "associated with an unlicensed victory parade"
+    ],
+    "hobby": [
+      "breeds competitive dust",
+      "restores emotionally damaged bollards",
+      "performs close-up magic for livestock",
+      "collects first editions of instruction leaflets",
+      "races antique office chairs",
+      "paints miniature portraits of large car parks",
+      "teaches etiquette to feral wheelie bins",
+      "practises synchronised complaining",
+      "constructs scale models of awkward silences",
+      "trains moths for amateur dramatics"
+    ],
+    "rivalry": [
+      "is locked in a feud with the deputy lollipop person",
+      "refuses to acknowledge the reigning pie marshal",
+      "has challenged the village hypnotist to a recount",
+      "is boycotting a neighbour's superior gravel",
+      "maintains a vendetta against the county mime",
+      "has not forgiven the library's new fern",
+      "is competing with a toddler for civic office",
+      "considers the postbox a professional rival",
+      "is suing a cousin over inherited charisma",
+      "has declared cold war on the leisure centre"
+    ],
+    "restriction": [
+      "legally barred from unsupervised confidence",
+      "forbidden to enter a raffle under their own eyebrows",
+      "restricted to one dramatic entrance per parish",
+      "prohibited from handling ceremonial gravy",
+      "required to surrender all motivational trumpets",
+      "banned from voting in competitive picnics",
+      "licensed only for provisional outrage",
+      "under injunction not to reorganise the horizon",
+      "forbidden to address furniture after dusk",
+      "limited to recreational statesmanship"
+    ],
+    "achievement": [
+      "award-winning emergency apologiser",
+      "three-time county champion of avoidable confusion",
+      "record-holding indoor mountaineer",
+      "decorated veteran of the stationery crisis",
+      "internationally ranked competitive loiterer",
+      "Britain's youngest retired village elder",
+      "undefeated regional whispering finalist",
+      "medal-winning amateur bureaucrat",
+      "former world record holder for delayed entrances",
+      "prize-winning interpreter of vague notices"
+    ],
+    "habit_context": [
+      "whenever applause starts",
+      "during formal introductions",
+      "after the second cup of tea",
+      "when left near stationery",
+      "on unofficial Tuesdays",
+      "at family occasions",
+      "under light supervision",
+      "during minor emergencies",
+      "when authority figures blink",
+      "before anyone can object"
+    ],
+    "romantic_authority": [
+      "according to the parish newsletter",
+      "under disputed gazebo law",
+      "by order of the village florist",
+      "according to three reliable aunties",
+      "under an unsigned engagement notice",
+      "by decree of the leisure centre",
+      "according to the shared allotment diary",
+      "under provisional courtship rules",
+      "by mutual misunderstanding",
+      "according to local semaphore"
+    ],
+    "condition_context": [
+      "during applause",
+      "after moderate cheese",
+      "near official stationery",
+      "on damp Thursdays",
+      "under fluorescent lighting",
+      "during budget discussions",
+      "when addressed formally",
+      "after hearing a whistle",
+      "near ceremonial fabric",
+      "during unexpected competence"
+    ],
+    "qualification_minor": [
+      "applied bunting",
+      "indoor weather",
+      "forensic chutney",
+      "ceremonial reversing",
+      "comparative puddles",
+      "administrative mime",
+      "gazebo ethics",
+      "advanced small talk",
+      "municipal romance",
+      "emergency upholstery"
+    ],
+    "failure_blame": [
+      "the office fern",
+      "a misleading biscuit",
+      "seasonal gravity",
+      "the deputy stapler",
+      "continental drift",
+      "an unauthorised cardigan",
+      "the concept of Tuesday",
+      "a nervous photocopier",
+      "the building's aura",
+      "poorly briefed weather"
+    ],
+    "fear_origin": [
+      "the incident at the fête",
+      "a difficult harvest festival",
+      "the disputed raffle",
+      "an unfortunate parish meeting",
+      "the indoor regatta",
+      "a childhood encounter with bunting",
+      "the ceremonial spoon inquiry",
+      "the winter of three gazebos",
+      "a tense village picnic",
+      "the great cardigan recall"
+    ],
+    "ambition_deadline": [
+      "before the next bank holiday",
+      "by close of play",
+      "before the parish notices",
+      "within one financial year",
+      "before the weather changes its mind",
+      "by the annual apology",
+      "before anyone checks the paperwork",
+      "during their natural lifetime",
+      "before the gazebo hearing",
+      "by teatime on Thursday"
+    ],
+    "scandal_alibi": [
+      "a watertight pudding alibi",
+      "several character references from ducks",
+      "the support of the indoor bowls team",
+      "a receipt from the wrong decade",
+      "a strongly worded denial from a kettle",
+      "an affidavit signed by a turnip",
+      "the complete absence of trousers",
+      "a provisional royal pardon",
+      "two witnesses and a garden hose",
+      "the mayor's selective amnesia"
+    ],
+    "hobby_motive": [
+      "to impress the post office",
+      "for tax purposes",
+      "in pursuit of minor glory",
+      "to annoy a former headmaster",
+      "under a false sense of duty",
+      "for the parish record books",
+      "to settle an old wager",
+      "in preparation for public office",
+      "for reasons of indoor security",
+      "to win back a disputed hamper"
+    ],
+    "rivalry_topic": [
+      "a disputed parking cone",
+      "the pronunciation of scone",
+      "custody of the parish whistle",
+      "an inherited folding chair",
+      "regional gazebo precedence",
+      "a missing ceremonial receipt",
+      "the correct height of bunting",
+      "ownership of Tuesday",
+      "an insulting marrow",
+      "the last respectable cardigan"
+    ],
+    "restriction_hearing": [
+      "a tribunal of concerned aunties",
+      "the annual gazebo hearing",
+      "a review by the pudding inspector",
+      "a parish risk assessment",
+      "the outcome of the bunting inquiry",
+      "an appeal to the deputy mayor",
+      "a hearing before three ferrets",
+      "the leisure centre's final decision",
+      "a formal sandwich inspection",
+      "the return of sensible weather"
+    ],
+    "achievement_aid": [
+      "using their hands",
+      "adequate rehearsal",
+      "a valid permit",
+      "once consulting a map",
+      "disturbing the neighbours",
+      "professional assistance",
+      "removing their ceremonial hat",
+      "understanding the rules",
+      "visible emotional support",
+      "leaving the refreshments"
+    ]
+  },
+  "templates": [
+    {
+      "id": "peculiar_habit",
+      "category": "cheeky_british",
+      "role": "behavioural",
+      "mechanism": "peculiar_habit",
+      "pattern": "{odd_habit} {habit_context}",
+      "slots": {
+        "odd_habit": "odd_habit",
+        "habit_context": "habit_context"
+      },
+      "subject_slot": "odd_habit",
+      "weight": 1
+    },
+    {
+      "id": "romantic_complication",
+      "category": "broader_absurdity",
+      "role": "post_noun",
+      "mechanism": "romantic_complication",
+      "pattern": "{romantic_problem} {romantic_authority}",
+      "slots": {
+        "romantic_problem": "romantic_problem",
+        "romantic_authority": "romantic_authority"
+      },
+      "subject_slot": "romantic_problem",
+      "weight": 1
+    },
+    {
+      "id": "questionable_condition",
+      "category": "cheeky_british",
+      "role": "predicate",
+      "mechanism": "questionable_condition",
+      "pattern": "{condition} {condition_context}",
+      "slots": {
+        "condition": "condition",
+        "condition_context": "condition_context"
+      },
+      "subject_slot": "condition",
+      "weight": 1
+    },
+    {
+      "id": "bizarre_qualification",
+      "category": "broader_absurdity",
+      "role": "pre_noun",
+      "mechanism": "bizarre_qualification",
+      "pattern": "{qualification} with a minor in {qualification_minor}",
+      "slots": {
+        "qualification": "qualification",
+        "qualification_minor": "qualification_minor"
+      },
+      "subject_slot": "qualification",
+      "weight": 1
+    },
+    {
+      "id": "workplace_incompetence",
+      "category": "cheeky_british",
+      "role": "short_clause",
+      "mechanism": "workplace_incompetence",
+      "pattern": "{work_failure} and blamed {failure_blame}",
+      "slots": {
+        "work_failure": "work_failure",
+        "failure_blame": "failure_blame"
+      },
+      "subject_slot": "work_failure",
+      "weight": 1
+    },
+    {
+      "id": "irrational_fear",
+      "category": "broader_absurdity",
+      "role": "predicate",
+      "mechanism": "irrational_fear",
+      "pattern": "{fear} since {fear_origin}",
+      "slots": {
+        "fear": "fear",
+        "fear_origin": "fear_origin"
+      },
+      "subject_slot": "fear",
+      "weight": 1
+    },
+    {
+      "id": "peculiar_ambition",
+      "category": "cheeky_british",
+      "role": "adverbial",
+      "mechanism": "peculiar_ambition",
+      "pattern": "{ambition} {ambition_deadline}",
+      "slots": {
+        "ambition": "ambition",
+        "ambition_deadline": "ambition_deadline"
+      },
+      "subject_slot": "ambition",
+      "weight": 1
+    },
+    {
+      "id": "personal_scandal",
+      "category": "broader_absurdity",
+      "role": "post_noun",
+      "mechanism": "personal_scandal",
+      "pattern": "{scandal} despite {scandal_alibi}",
+      "slots": {
+        "scandal": "scandal",
+        "scandal_alibi": "scandal_alibi"
+      },
+      "subject_slot": "scandal",
+      "weight": 1
+    },
+    {
+      "id": "unusual_hobby",
+      "category": "cheeky_british",
+      "role": "behavioural",
+      "mechanism": "unusual_hobby",
+      "pattern": "{hobby} {hobby_motive}",
+      "slots": {
+        "hobby": "hobby",
+        "hobby_motive": "hobby_motive"
+      },
+      "subject_slot": "hobby",
+      "weight": 1
+    },
+    {
+      "id": "social_rivalry",
+      "category": "broader_absurdity",
+      "role": "short_clause",
+      "mechanism": "social_rivalry",
+      "pattern": "{rivalry} over {rivalry_topic}",
+      "slots": {
+        "rivalry": "rivalry",
+        "rivalry_topic": "rivalry_topic"
+      },
+      "subject_slot": "rivalry",
+      "weight": 1
+    },
+    {
+      "id": "new_legal_restriction",
+      "category": "cheeky_british",
+      "role": "predicate",
+      "mechanism": "personal_legal_restriction",
+      "pattern": "{restriction} pending {restriction_hearing}",
+      "slots": {
+        "restriction": "restriction",
+        "restriction_hearing": "restriction_hearing"
+      },
+      "subject_slot": "restriction",
+      "weight": 1
+    },
+    {
+      "id": "unlikely_achievement",
+      "category": "broader_absurdity",
+      "role": "pre_noun",
+      "mechanism": "unlikely_achievement",
+      "pattern": "{achievement} without {achievement_aid}",
+      "slots": {
+        "achievement": "achievement",
+        "achievement_aid": "achievement_aid"
+      },
+      "subject_slot": "achievement",
+      "weight": 1
+    }
+  ]
+}

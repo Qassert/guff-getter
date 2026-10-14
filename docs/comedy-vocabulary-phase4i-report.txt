@@ -1,0 +1,136 @@
+NewsMuncher Phase 4I — local comedy audit logging
+Date: 2026-10-12
+
+Purpose and scope
+=================
+
+Phase 4I records real completed MUNGEs for later editorial and statistical
+analysis. It is diagnostic only. It changes no prompt, vocabulary selection,
+semantic memory, final-joke memory, generation quota or provider behavior. It
+adds no provider call and makes no MongoDB query or write.
+
+The logger is disabled by default and enabled only with:
+
+  NEWSMUNCHER_COMEDY_AUDIT_LOG=on
+
+Local record format
+===================
+
+After a rewrite has been successfully persisted, the server appends one JSON
+object to:
+
+  local_audits/comedy_audit.jsonl
+
+`NEWSMUNCHER_COMEDY_AUDIT_PATH` can select another local path. Relative paths
+resolve beneath the project root. The `local_audits/` directory is excluded by
+`.gitignore`; the application never uploads the log.
+
+Each record contains only an explicit schema:
+
+* UTC timestamp and rewrite UUID;
+* original headline, description and complete source article text;
+* final rewritten headline and complete article text;
+* offered generated names, concepts and descriptors with their available
+  provenance, premise and mechanism metadata;
+* offered legacy noun, animal/object, descriptor, slang, place and name values;
+* a separate list of offered values found exactly in the final headline/body;
+* offered and exact-found semantic premise identifiers;
+* recognized final-joke family keys from the existing Phase 4H detector;
+* allowlisted NewsMuncher feature-mode environment values;
+* numeric timing and prompt-character metrics already collected by the route.
+
+Unavailable information is omitted or represented by an empty collection. No
+inference claims that a paraphrased ingredient was accepted. Actual token usage
+is not currently exposed by the provider wrapper, so the audit records the
+existing prompt-character measurement rather than inventing a token count.
+
+The schema has no field for API keys, cookies, authentication tokens, MongoDB
+URIs, arbitrary environment variables, provider requests or raw provider
+response metadata. Source and final articles are intentionally complete and may
+contain private or copyrighted material. Review the export before uploading it
+to ChatGPT or sharing it elsewhere.
+
+Reliability
+===========
+
+The logging call occurs after `complete_draft` and the accepted-use updates.
+Failed, abandoned, conflicted or superseded MUNGEs never reach it. A logging
+configuration, filesystem, serialization or disk failure produces a concise
+exception-class warning and cannot fail or roll back the persisted MUNGE.
+
+The logger creates its directory and file with owner-only modes where supported.
+It takes an exclusive operating-system file lock, scans rewrite UUIDs while
+holding that lock, appends one UTF-8 JSON line, flushes and calls `fsync` before
+unlocking. Repeated or concurrent attempts for one rewrite UUID therefore write
+one record. Distinct concurrent records remain complete JSON lines.
+
+This local UUID scan is intentionally simple and reliable for a human-scale
+diagnostic file. Very large long-running logs should be archived between review
+batches rather than treated as an application database.
+
+Offline export
+==============
+
+Generate the single Markdown file intended for review or upload with:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/export_comedy_audit.py \
+    --input local_audits/comedy_audit.jsonl \
+    --output local_audits/comedy_audit_report.md
+
+The resulting file is:
+
+  local_audits/comedy_audit_report.md
+
+It contains total MUNGEs, date range, observed feature flags, complete source
+and final articles, ingredient provenance and semantic metadata. Nothing is
+sent externally. CSV is also available while preserving full text:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/export_comedy_audit.py \
+    --format csv --output local_audits/comedy_audit_report.csv
+
+Local server command
+====================
+
+Run the existing successful evaluation configuration plus Phase 4I with:
+
+  NEWSMUNCHER_EXPANDED_VOCABULARY=evaluation \
+  NEWSMUNCHER_EXPANDED_DESCRIPTORS=evaluation \
+  NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY=evaluation \
+  NEWSMUNCHER_FINAL_JOKE_MEMORY=evaluation \
+  NEWSMUNCHER_COMEDY_AUDIT_LOG=on \
+  ./.venv/bin/python -m uvicorn newsmuncher.main:app --reload
+
+Tests
+=====
+
+Focused tests cover default-off and enabled configuration, configurable paths,
+successful persistence, failed rewrites, duplicate UUIDs, concurrent duplicate
+and distinct writes, UTF-8 punctuation, missing optional metadata, exact-found
+separation, Markdown and CSV export accuracy, complete article preservation,
+environment-secret exclusion and non-fatal logging failure.
+
+Final Python, JavaScript, compilation, syntax and diff-check results are recorded
+in CURRENT_WORK.md after validation. Tests use temporary local files and mocked
+rewrite providers. No paid provider or production database operation is made.
+
+Files changed
+=============
+
+* `newsmuncher/services/comedy_audit.py` — fixed-schema local writer;
+* `newsmuncher/api/previews.py` — post-persistence, best-effort integration;
+* `scripts/diagnostics/export_comedy_audit.py` — Markdown/CSV exporter;
+* `tests/python/test_comedy_audit.py` — file, concurrency and export tests;
+* `tests/python/test_copy_edit_pass.py` — rewrite lifecycle integration tests;
+* `.gitignore` — excludes `local_audits/`;
+* `README.md`, this report and `CURRENT_WORK.md` — configuration and handover.
+
+Limitations
+===========
+
+"Found in final" means a case-insensitive exact phrase boundary match. It does
+not infer paraphrases, which is the point of collecting real articles for later
+human or ChatGPT analysis. Phase 4H currently recognizes only its explicit
+numbered-group and queue-containment families; Phase 4I does not expand those
+rules. Legacy contenders provide their bank labels but lack the rich structured
+metadata of generated ingredients. Filesystem locking uses the Unix `flock`
+facility supported by the current macOS/Linux deployment environment.

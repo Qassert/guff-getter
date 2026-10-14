@@ -3,6 +3,7 @@ import ast
 import contextlib
 import io
 import json
+from time import monotonic
 import random
 import re
 import unittest
@@ -44,9 +45,9 @@ class SourceTests(unittest.TestCase):
         nodes = [n for n in ast.parse(path.read_text()).body if isinstance(n, ast.FunctionDef)
                  and n.name == 'prepare_prompt']
         ns = local_word_helpers()
-        ns.update(json=json, preserve_source_text=preserve_source_text, preprocess_source=preprocess_source,
+        ns.update(json=json, monotonic=monotonic, preserve_source_text=preserve_source_text, preprocess_source=preprocess_source,
                   replacement_guidance=replacement_guidance, filter_word_banks=filter_word_banks,
-                  load_random_words=lambda count: {'names': ['Alice', 'Zelda'], 'places': ['London', 'Mars'],
+                  load_random_words=lambda count, excluded=(): {'names': ['Alice', 'Zelda'], 'places': ['London', 'Mars'],
                       'animals': ['fake dog poop', 'jump-rope', 'bananaslicer'], 'nouns': ['teapot'], 'adverbs': ['loudly'], 'slang': ['blimey']})
         exec(compile(ast.Module(body=nodes, type_ignores=[]), str(path), 'exec'), ns)
         template = (path.parents[1] / 'resources/prompts/rewrite.txt').read_text()

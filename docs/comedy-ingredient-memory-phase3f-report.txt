@@ -1,0 +1,223 @@
+NewsMuncher Phase 3F — ingredient memory, animal repetition and MUNGE performance
+Date: 2026-10-09
+
+Scope and safety
+================
+
+All investigation and automated measurement used deterministic generators,
+in-memory Mongo-shaped collections and mocked providers. No provider request or
+production database write was made. Existing usage records are untouched; new
+ingredient records accumulate only after future successfully persisted rewrites.
+
+Confirmed performance findings
+==============================
+
+The request remains dominated by two sequential provider operations in normal
+use. Their real latency cannot be measured offline, so a reported 60-second
+request must not be attributed to MongoDB without the new live timing log.
+
+One confirmed local regression risk did exist in concept selection. The Phase
+3E implementation attempted atomic phrase/base/premise leases while walking as
+many as 300 candidates. On cooldown saturation it could perform another full
+walk. These are synchronous Mongo calls in a synchronous FastAPI worker and
+therefore accumulate network round-trip latency.
+
+A reconstructed 100-rewrite Phase 3E selection made 24,161 update-one calls and
+7,050 update-many calls. The Phase 3F path performs one batched availability
+read, checks quota viability in memory, and leases only the final slate. Even
+after adding animal-species records it made 6,409 update-one calls, 301
+update-many calls and 100 reads: 73% fewer atomic writes and 96% fewer bulk
+cleanup writes in this saturated audit.
+
+On an in-memory collection, a first-ten comparison averaged 155.83 ms for the
+old sequential concept selector and 157.48 ms for the batched selector because
+in-memory calls have no network cost. With an artificial 2 ms operation delay,
+the same comparison was 342.21 ms versus 326.83 ms before heavy saturation.
+The advantage grows materially under saturation, as the 100-rewrite operation
+counts show.
+
+The final offline production-shaped concept-plus-descriptor selection and
+accepted-use update averaged 388.83 ms per rewrite, maximum 496.03 ms. A normal
+fresh slate uses one concept availability read, normally 64–68 concept lease
+writes, one descriptor read and 30 descriptor lease writes. All lookups use
+MongoDB `_id`, which already has the built-in unique index; no missing secondary
+index was found on this path.
+
+Structured timing
+-----------------
+
+Every live MUNGE now emits one safe `[munge-timing]` JSON object. It records:
+
+* invented-name generation/lease time and write count;
+* concept candidate generation, filtering, availability reads, lease writes
+  and lease time;
+* descriptor generation, filtering, reads, writes and lease time;
+* source preprocessing, other CSV selection and prompt construction;
+* prompt character count;
+* first rewrite provider time and copy-edit provider time separately;
+* persistence and permanent-word claims;
+* accepted-use matching plus cooldown/release work; and
+* total request duration/status.
+
+It logs no source text, full prompt, credential or provider response. A manual
+request is still needed to determine whether the observed 60 seconds is local
+selection, Mongo network latency, first-provider latency or copy-edit latency.
+Legacy debug prints that exposed the full prompt and provider output were
+removed as part of this safe instrumentation pass.
+
+Confirmed animal repetition causes
+==================================
+
+Animal species were only structurally represented when they were the base of a
+`ridiculous_creature` concept. Animals also occur inside other components:
+`hamster-powered`, `ferret-powered`, `pigeon-repelling`, pigeon bureaucracy,
+and badger/pigeon emergency scenarios. Those appearances belonged to a device,
+document or emergency base and therefore bypassed animal-level cooldown.
+
+Long-term base and premise cooldowns were updated only when the complete
+offered phrase appeared verbatim. If the model retained “hamster” but
+paraphrased the surrounding concept, no animal memory was updated. An animal
+introduced independently by the rewrite was likewise invisible.
+
+The deterministic candidate ordering and small animal-bearing modifier banks
+amplified this. In the unremembered 100-rewrite simulation, goose appeared 18
+times, moth 12, pigeon 10, badger 8 and hamster 7 among the sampled accepted
+animal ingredients. Expanding the medium-intensity animal power/behaviour
+components reduced reliance on hamster, ferret and pigeon while retaining the
+successful animal-powered/animal-repelling jokes.
+
+Ingredient-memory design
+========================
+
+Concept metadata now records `animal_species` for every known local species in
+a phrase, whether it is the creature base or embedded in another component.
+The vocabulary is the generator's curated 60-species bank. Detection uses one
+cached, word-bounded regular expression with conservative singular/plural rules
+and longest-form precedence, so `guinea pigs` does not also count as `pig`.
+
+Selection uses records in the existing generated-concept usage collection:
+
+* `phrase:<key>` — exact phrase protection;
+* `base:<key>` — recognisable object identity;
+* `premise:<key>` — structured semantic premise; and
+* `animal:<species>` — species identity across all templates.
+
+Descriptor selection similarly leases phrase, subject and premise records.
+One batched read fetches all relevant history. Unseen and older ingredients are
+preferred. Active leases and exact phrase cooldowns remain strict. Historical
+base/premise/animal or subject/premise preferences may relax only after a
+bounded viability check proves the hard slate quotas otherwise impossible.
+Relaxation remains visible in logs and never disables concurrency protection.
+
+Accepted-use rules
+==================
+
+Only a successfully persisted rewrite invokes accepted-use tracking.
+
+* An exact concept cools its phrase and premise.
+* A recognisable offered base appearing independently in the accepted text
+  cools that object identity even when the full phrase was paraphrased.
+* Any curated animal species found in the accepted title/body cools its animal
+  record, including a species introduced independently by the model.
+* Animals already present in the source are excluded from animal-memory
+  updates, preserving essential factual subjects.
+* A descriptor phrase cools its phrase, subject and premise. A reliably matched
+  offered subject can cool subject/premise after paraphrasing, unless that
+  subject was already in the source.
+* Unused offers are released and do not update long-term history. Failed
+  rewrites release all leases.
+
+This is deterministic structured matching, not fuzzy similarity. It does not
+add an AI call.
+
+Before/after 100-rewrite simulation
+===================================
+
+The simulation accepts one species mention, one object base and one descriptor
+subject per rewrite. Species-only wording deliberately models a paraphrase.
+This is a controlled selection audit, not a prediction of what the rewrite
+model will choose.
+
+Animal species
+--------------
+
+                                    Before       After
+Average unique species per ten        7.77       10.00
+Least unique species per ten             5          10
+Most frequent in 100       goose 18 times  several at 2
+Hamster frequency                         7           2
+
+Object and descriptor ingredients
+---------------------------------
+
+                                    Before       After
+Unique accepted object bases          52/100     100/100
+Repeated object occurrences               48           0
+Unique descriptor subjects            63/100     100/100
+Repeated descriptor occurrences           37           0
+Unique combined premise keys          107/200    162/200
+Repeated premise occurrences               93          38
+
+The strict 100/100 object and subject result reflects a fixed 30-day test clock
+and one accepted ingredient of each kind per rewrite. Real use can legitimately
+relax sooner when hard category/grammar quotas require it.
+
+Preserved behavior
+==================
+
+The live prompt remains 20 concepts and 10 descriptors with the established
+category, intensity and grammatical-role quotas. Invented names, legacy modes,
+fresh rewrite UUIDs, stable retries, concurrent atomic leases, expiry, failure
+cleanup, controlled 409 behavior, two provider passes, nomination, Gallery and
+historical creations are unchanged. Ingredient metadata remains server-side,
+so prompt size and provider request count do not increase.
+
+Limitations
+===========
+
+* A local vocabulary detects only curated generator species. A model-invented
+  animal outside that list is not tracked until editorially added.
+* Conservative matching cannot reliably identify all inflections, nicknames or
+  semantic paraphrases. This avoids false cooldowns.
+* Source exclusion is textual. If a source contains “hamster” incidentally,
+  accepted hamster use is exempt even if the rewrite changes its role.
+* A phrase containing more than one known species stores one primary species in
+  generator metadata, while accepted-text detection records every actual
+  species mention.
+* Provider latency remains unknown offline. The new timing line must be
+  collected during normal manual use before tuning provider timeouts or model
+  behavior.
+* Mongo operation counts come from a faithful in-memory implementation. Actual
+  latency depends on deployment/network conditions.
+
+Manual testing
+==============
+
+1. Restart NewsMuncher so cached component data and code reload.
+2. Run ten normal MUNGEs and retain each `[munge-timing]` line. Compare
+   `first_rewrite_provider_ms`, `copy_edit_provider_ms`, concept/descriptor
+   selection totals and `total_request_ms` before drawing a bottleneck
+   conclusion.
+3. Record every animal actually present in the accepted articles. Confirm that
+   hamster, pigeon, badger and other embedded component animals do not dominate
+   a rolling ten.
+4. Use a source whose essential subject is an animal and confirm that animal is
+   preserved without being treated as an invented repeated ingredient.
+5. Nominate and MUNGE the same source again; verify a fresh rewrite receives a
+   fresh slate while a genuine same-attempt retry remains stable.
+6. Run two browser sessions concurrently and confirm no overlapping active
+   leases or stuck MUNGE control.
+7. If a relaxation log appears, confirm the request completes and the timing
+   record shows only diversity preference relaxation, never exact phrase or
+   active-lease relaxation.
+
+Validation
+==========
+
+* Focused Phase 3F generator/selection/rewrite-path tests: 88 passed plus six
+  subtests.
+* Full Python suite: 400 passed, zero failed, 105 subtests.
+* Full frontend suite: 84 passed, zero failed.
+* Python compilation, production JavaScript syntax and `git diff --check`
+  passed.
+* No provider call, production database write, commit or push occurred.

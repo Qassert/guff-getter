@@ -123,6 +123,29 @@ class DraftLifecycleTests(unittest.TestCase):
         self.assertEqual(update['$set']['crazyReplacement1Title'],'edited')
         self.assertTrue(routes.collection.update_one.call_args.kwargs['upsert'])
 
+    def test_text_update_unsets_stale_persisted_image_metadata(self):
+        import importlib.util
+        client = MagicMock()
+        with patch('pymongo.MongoClient', return_value=client), patch('dotenv.load_dotenv'):
+            spec = importlib.util.spec_from_file_location(
+                'edited_lifecycle_entries', 'newsmuncher/api/entries.py')
+            routes = importlib.util.module_from_spec(spec); spec.loader.exec_module(routes)
+        routes.collection = MagicMock()
+        routes.collection.find_one.return_value = {
+            'crazyReplacement1Title': 'Toucan title',
+            'crazyReplacement1Extract': 'Toucan body',
+            'image_url': '/generated-images/stale.png',
+            'image_prompt': 'Toucan visual brief',
+            'creationUser': 'alice',
+        }
+        routes.collection.update_one.return_value.modified_count = 1
+        request = SimpleNamespace(cookies={'active_pet': 'alice'})
+        routes.update_crazy_fields(
+            'a' * 24, 'Badger title', 'Badger body', request)
+        update = routes.collection.update_one.call_args.args[1]
+        self.assertEqual(set(update['$unset']), set(routes.ImageMetadata.model_fields))
+        self.assertNotIn('toucan', str(update['$set']).lower())
+
     def test_superseded_text_completion_cannot_restore_draft(self):
         a=self.store.begin_draft(self.result,'alice','browser')
         b=self.new('B')

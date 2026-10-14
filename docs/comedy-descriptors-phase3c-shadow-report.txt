@@ -1,0 +1,362 @@
+NEWSMUNCHER COMEDY DESCRIPTORS — PHASE 3C SHADOW INTEGRATION
+Generated entirely offline with seed: phase3c-shadow
+
+LIVE PIPELINE FINDINGS
+1. `load_random_words(10)` draws ten unclaimed values from `adverbs.csv` through the existing shared word-bag system. Source filtering then removes literal source collisions.
+2. The ten values are shuffled and split across `{adverb_words1}`, `{adverb_words2}` and `{adverb_words3}`. The rewrite prompt labels the bank “Adverbs/absurd descriptors” and says grammar/pluralisation may be altered.
+3. Source DESCRIPTION placeholders are currently assigned from `adverbs` and adjective/adverb-shaped `slang`. The replacement guidance describes every descriptor as needing adjective/adverb inflection; it has no representation for predicate, post-noun, behavioural or clause forms.
+4. The first rewrite call receives all banks. The second copy-edit call receives only pass-one title/body, so it cannot see candidate metadata. Exact supplied values found in the final accepted title/body are permanently claimed from the five legacy claim banks.
+5. Generated comedy concepts and invented names are supplied as overrides before this prompt is built. Concepts use a separate lease/cooldown collection and are excluded from permanent CSV claims; invented names also have their own temporary lease/cooldown lifecycle.
+6. Source masking protects entities, objects, phrases and descriptions before the prompt. Full generated-descriptor replacement can fit safely at the existing ten-value override point, but role-aware assignment should not pretend every generated phrase can directly replace a DESCRIPTION placeholder.
+
+SHADOW DESIGN
+- The live code and prompt are unchanged. The shadow module fills the existing ten descriptor slots only in an offline prompt preview.
+- Generated values carry phrase, role, insertion rule, category, intensity, mechanism, word count, subject and generator version.
+- The preview annotates every generated value with role and insertion guidance, then adds four concise optional-use rules: use roughly two to four; respect roles; mix short/developed forms and mechanisms; never concatenate descriptors.
+- Full ten-item slates retain exact 7/3 cheeky/absurd and 3/5/2 mild/properly-absurd/unhinged allocations. Slate selection prefers new roles first, then new mechanisms and short forms. Across the ten reviewed full slates, every slate contained all six roles, no repeated subject, and normally eight or nine descriptors of eight words or fewer.
+- The metadata is guidance for sentence restructuring, not a demand that every descriptor fill a masked adjective slot. A future live integration should allow the model to select a fitting descriptor elsewhere in the same sentence when a direct placeholder replacement would be ungrammatical.
+
+STRATEGY COMPARISON
+A — ten generated, zero CSV
+- Best grammatical information and comic variety; exact ten-slot replacement; no permanent descriptor claims.
+- Ten-slate average estimated prompt increase: +430 tokens. A representative split is +307 tokens from annotated candidates and +119 from optional-use guidance (character-count / 4 estimate).
+- All six roles appeared in every audited slate. Mechanism repetition was normally limited to the two `secret_history` forms needed to cover behavioural and post-noun roles.
+- Main risk: the live prompt already contains twenty concepts, ten names, slang and places. The 2–4 optional-use rule and short-form preference are necessary to prevent joke congestion.
+
+B — seven generated, three CSV
+- Lower average increase: +337 estimated tokens. Retains permanent-claim complexity for three legacy values and mixes role-aware phrases with untyped CSV material.
+- Provides less clean grammar semantics and two tracking systems for one visible bank. It is useful as a rollback experiment, not the clearest destination.
+
+C — six generated, four CSV
+- Lowest average increase: +315 estimated tokens and least risk of descriptor density.
+- Often covers five or six roles but sacrifices mechanism breadth. It retains the same mixed tracking and grammatical ambiguity as B.
+
+RECOMMENDATION FOR PHASE 3D
+Use Strategy A behind a configuration switch with legacy mode preserving the original CSV path. Full replacement is viable because each slate is role-diverse, subject-diverse and mostly concise, while the prompt explicitly requests only two to four natural uses. Do not assign generated predicate/clause forms directly to DESCRIPTION placeholders. Supply them as role-labelled optional ingredients and let surrounding sentence structure change naturally. Keep the guidance concise in production; the verbose annotation used here is deliberately audit-friendly and can be compressed to role tags plus one shared role key.
+
+USAGE TRACKING / COOLDOWN DESIGN
+- Use a dedicated generated-descriptor usage collection; do not alter existing permanent word claims or `adverbs.csv`.
+- Key deterministic selection and leases with the newly allocated rewrite UUID (plus pet/owner scope where appropriate), never the durable browser draft session. A genuine retry returns its saved slate; a new MUNGE from the same source gets a fresh expanded generator seed.
+- Generate a bounded rewrite-specific queue of at least 500 candidates, rather than revisiting a small global fixed pool. Select ten unique phrases and subjects while excluding active leases and cooldown records.
+- Store normalized phrase, subject, grammatical role, generator version, offered-by attempt, offer expiry, last-used timestamp, use count and accepted rewrite ID.
+- Use atomic phrase leases and also exclude subjects held by concurrent live leases. Release unused offers after successful completion and all offers after failed rewriting. Expired leases become naturally eligible.
+- Apply cooldown only to exact phrase matches in the final accepted title/body. Exact matching is conservative and misses inflections or paraphrases; it is preferable to false claims. A later structured provider response or carefully tested local lemma matcher could improve attribution without another provider call.
+- Tracking failure after a successfully persisted paid rewrite should be logged and released without discarding the creation, matching existing name/concept safety behaviour.
+- The offline registry successfully handled stable retries, two concurrent disjoint slates, failure release, expiry, exact-use cooldown, paraphrase non-claiming, and eight fully accepted ten-item rounds followed by a ninth fresh rewrite-specific slate.
+
+COST / COMPATIBILITY
+- No additional provider request is required. Strategy A increases prompt input only; the representative estimate is about 426 tokens, while the ten-slate average is 430.
+- Historical creations need no migration. Legacy mode continues to load and permanently claim `adverbs.csv` exactly as today.
+- The existing copy-edit pass, concepts, invented names, source masking, titles and downstream media remain compatible because descriptors affect only first-pass prompt ingredients.
+
+RISKS TO CARRY INTO PHASE 3D
+- Exact accepted-use matching misses inflected or paraphrased phrases.
+- Audit annotations are verbose; production formatting should be compressed without losing role semantics.
+- Full replacement increases an already rich prompt. Manual mocked/live editorial review should confirm that the 2–4-use rule is obeyed before making generated mode the default.
+- A predicate or clause must never be forced into an adjective-only placeholder. Integration tests must inspect the final prompt and tracking contenders, not merely the generated slate.
+
+TEN REALISTIC SLATES, METRICS AND MOCK PREVIEW FOLLOW
+
+## REALISTIC SLATE 1
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={3: 2, 2: 5, 1: 3} roles={'behavioural': 1, 'pre_noun': 2, 'adverbial': 1, 'predicate': 3, 'short_clause': 2, 'post_noun': 1} mechanisms={'secret_history': 2, 'comic_contradiction': 1, 'ridiculous_motivation': 1, 'disproportionate_emotion': 1, 'social_embarrassment': 1, 'ridiculous_medical_advice': 1, 'impossible_ability': 1, 'impossible_inability': 1, 'class_and_etiquette': 1} repeated_subjects=0 short=9 approx_token_delta=+432
+- "operating under an assumed allotment to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 3; secret_history; 10 words
+- "municipally applause-insured" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "to impress a driving examiner while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 8 words
+- "personally offended about poorly supervised topiary" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; disproportionate_emotion; 6 words
+- "acoustically meticulously buttered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "the duty aromatherapist has specifically forbidden competitive murmuring" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "able to translate regional sighing under controlled conditions" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 1; impossible_ability; 8 words
+- "constitutionally incapable of recognising Tuesdays before witnesses" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 7 words
+- "banned from freestyle apologising for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 3; secret_history; 8 words
+- "announces puddings by rank within council limits" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 7 words
+Strategy B: generated=7 legacy=3 categories={'broader_absurdity': 2, 'cheeky_british': 5} intensities={1: 2, 3: 2, 2: 3} roles={'predicate': 2, 'post_noun': 1, 'behavioural': 1, 'adverbial': 1, 'pre_noun': 1, 'short_clause': 1} mechanisms={'impossible_ability': 1, 'secret_history': 2, 'impossible_inability': 1, 'ridiculous_motivation': 1, 'comic_contradiction': 1, 'class_and_etiquette': 1} repeated_subjects=0 short=6 approx_token_delta=+342
+- "able to smell administrative weakness using borrowed stationery" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 1; impossible_ability; 8 words
+- "banned from full-contact croquet for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 1; secret_history; 8 words
+- "operating under an assumed emergency cravat to evade a cross-party sandwich group" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 3; secret_history; 12 words
+- "constitutionally incapable of whispering when observed" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 6 words
+- "to impress a driving examiner while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 2; ridiculous_motivation; 8 words
+- "spiritually teaspoon-positive" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; comic_contradiction; 2 words
+- "bows to domestic appliances when issued a lanyard" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 8 words
+Strategy C: generated=6 legacy=4 categories={'broader_absurdity': 2, 'cheeky_british': 4} intensities={2: 3, 1: 2, 3: 1} roles={'short_clause': 1, 'predicate': 1, 'post_noun': 1, 'pre_noun': 1, 'adverbial': 1, 'behavioural': 1} mechanisms={'ridiculous_medical_advice': 1, 'impossible_inability': 1, 'secret_history': 2, 'comic_contradiction': 1, 'ridiculous_motivation': 1} repeated_subjects=0 short=4 approx_token_delta=+318
+- "a disgraced orthodontist has specifically forbidden competitive nodding" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "constitutionally incapable of recognising Tuesdays within council limits" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 8 words
+- "banned from county-level whispering for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "emotionally bunting-sensitive" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "because Tuesdays had become too powerful without consulting an aunt" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 3; ridiculous_motivation; 10 words
+- "operating under an assumed cardigan to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 10 words
+
+## REALISTIC SLATE 2
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={1: 3, 3: 2, 2: 5} roles={'predicate': 3, 'short_clause': 2, 'pre_noun': 2, 'post_noun': 1, 'behavioural': 1, 'adverbial': 1} mechanisms={'impossible_inability': 1, 'disproportionate_emotion': 1, 'class_and_etiquette': 1, 'social_embarrassment': 1, 'comic_contradiction': 1, 'impossible_ability': 1, 'secret_history': 2, 'ridiculous_medical_advice': 1, 'ridiculous_motivation': 1} repeated_subjects=0 short=9 approx_token_delta=+430
+- "constitutionally incapable of whispering when observed" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 6 words
+- "chronically disappointed about the decline of formal slippers" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; disproportionate_emotion; 8 words
+- "files complaints on embossed stationery after minor setbacks" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 8 words
+- "financially professionally fluffed" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "hereditarily postbox-approved" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "able to smell administrative weakness but only indoors" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 3; impossible_ability; 8 words
+- "banned from speed topiary for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 1; secret_history; 8 words
+- "operating under an assumed clipboard to evade the village ombudsman" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 1; secret_history; 10 words
+- "the emergency barber has specifically forbidden heavy-duty politeness" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "to avoid making small talk while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 2; ridiculous_motivation; 8 words
+Strategy B: generated=7 legacy=3 categories={'cheeky_british': 5, 'broader_absurdity': 2} intensities={3: 2, 1: 2, 2: 3} roles={'predicate': 1, 'adverbial': 1, 'pre_noun': 2, 'short_clause': 1, 'post_noun': 1, 'behavioural': 1} mechanisms={'impossible_inability': 1, 'ridiculous_motivation': 1, 'comic_contradiction': 1, 'ridiculous_medical_advice': 1, 'secret_history': 2, 'social_embarrassment': 1} repeated_subjects=0 short=6 approx_token_delta=+341
+- "constitutionally incapable of whispering during official visits" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; impossible_inability; 7 words
+- "to avoid making small talk while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 8 words
+- "horticulturally umbrella-certified" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "the emergency barber has specifically forbidden high-speed queuing" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "banned from county-level whispering for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "operating under an assumed family motto to evade the civic posture authority" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 1; secret_history; 12 words
+- "financially meticulously buttered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; social_embarrassment; 3 words
+Strategy C: generated=6 legacy=4 categories={'broader_absurdity': 2, 'cheeky_british': 4} intensities={2: 3, 3: 1, 1: 2} roles={'short_clause': 1, 'adverbial': 1, 'behavioural': 1, 'pre_noun': 1, 'predicate': 1, 'post_noun': 1} mechanisms={'ridiculous_medical_advice': 1, 'ridiculous_motivation': 1, 'secret_history': 2, 'comic_contradiction': 1, 'impossible_inability': 1} repeated_subjects=0 short=4 approx_token_delta=+314
+- "a veterinary receptionist has specifically forbidden competitive nodding" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "to avoid making small talk under disputed bunting" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 3; ridiculous_motivation; 8 words
+- "operating under an assumed waistcoat to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 10 words
+- "municipally shed-trained" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "constitutionally incapable of resisting commemorative crockery under questioning" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 8 words
+- "banned from regional spoon balancing for misplacing the official silence" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 1; secret_history; 10 words
+
+## REALISTIC SLATE 3
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={1: 3, 2: 5, 3: 2} roles={'behavioural': 1, 'short_clause': 2, 'predicate': 3, 'pre_noun': 2, 'adverbial': 1, 'post_noun': 1} mechanisms={'secret_history': 2, 'class_and_etiquette': 1, 'impossible_ability': 1, 'ridiculous_medical_advice': 1, 'social_embarrassment': 1, 'ridiculous_motivation': 1, 'comic_contradiction': 1, 'disproportionate_emotion': 1, 'impossible_inability': 1} repeated_subjects=0 short=8 approx_token_delta=+426
+- "operating under an assumed cardigan to evade the village ombudsman" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 1; secret_history; 10 words
+- "files complaints on embossed stationery in polite society" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 8 words
+- "able to smell administrative weakness under controlled conditions" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 2; impossible_ability; 8 words
+- "the emergency barber has specifically forbidden experimental loafing" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 1; ridiculous_medical_advice; 8 words
+- "legally well-moisturised" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 2 words
+- "to avoid making small talk while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 3; ridiculous_motivation; 8 words
+- "socially postbox-approved" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "delighted about poorly supervised topiary" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; disproportionate_emotion; 5 words
+- "banned from underground cake judging for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 3; secret_history; 9 words
+- "constitutionally incapable of ignoring a raffle when observed" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 8 words
+Strategy B: generated=7 legacy=3 categories={'cheeky_british': 5, 'broader_absurdity': 2} intensities={3: 2, 1: 2, 2: 3} roles={'short_clause': 1, 'predicate': 2, 'post_noun': 1, 'adverbial': 1, 'behavioural': 1, 'pre_noun': 1} mechanisms={'class_and_etiquette': 1, 'impossible_inability': 1, 'secret_history': 2, 'ridiculous_motivation': 1, 'impossible_ability': 1, 'comic_contradiction': 1} repeated_subjects=0 short=6 approx_token_delta=+340
+- "travels with a ceremonial butter knife when observed" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 3; class_and_etiquette; 8 words
+- "constitutionally incapable of accepting standard biscuits when observed" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 8 words
+- "banned from full-contact croquet for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "to impress a driving examiner under disputed bunting" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 3; ridiculous_motivation; 8 words
+- "able to forecast ceremonial damp pending committee approval" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 1; impossible_ability; 8 words
+- "operating under an assumed waistcoat to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 10 words
+- "morally teaspoon-positive" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+Strategy C: generated=6 legacy=4 categories={'cheeky_british': 4, 'broader_absurdity': 2} intensities={2: 3, 1: 2, 3: 1} roles={'predicate': 1, 'pre_noun': 2, 'post_noun': 2, 'short_clause': 1} mechanisms={'impossible_inability': 1, 'social_embarrassment': 1, 'institutional_interference': 1, 'comic_contradiction': 1, 'secret_history': 1, 'ridiculous_medical_advice': 1} repeated_subjects=0 short=5 approx_token_delta=+307
+- "constitutionally incapable of whispering at village level" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 7 words
+- "acoustically impeccably trousered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; social_embarrassment; 3 words
+- "under permanent supervision by the national queue inspectorate over a rogue pedestrian crossing" — post_noun; place after the noun as a comma-delimited postmodifier; broader_absurdity; intensity 1; institutional_interference; 13 words
+- "acoustically shed-trained" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "banned from county-level whispering for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 3; secret_history; 8 words
+- "a disgraced orthodontist has specifically forbidden unsupervised crouching" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+
+## REALISTIC SLATE 4
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={3: 2, 2: 5, 1: 3} roles={'short_clause': 2, 'post_noun': 1, 'predicate': 3, 'adverbial': 1, 'pre_noun': 2, 'behavioural': 1} mechanisms={'class_and_etiquette': 1, 'secret_history': 2, 'impossible_ability': 1, 'ridiculous_motivation': 1, 'ridiculous_medical_advice': 1, 'social_embarrassment': 1, 'disproportionate_emotion': 1, 'impossible_inability': 1, 'comic_contradiction': 1} repeated_subjects=0 short=8 approx_token_delta=+433
+- "announces puddings by rank during official visits" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 3; class_and_etiquette; 7 words
+- "banned from amateur weather forecasting for misplacing the official silence" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 10 words
+- "able to hypnotise garden furniture under controlled conditions" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 2; impossible_ability; 8 words
+- "to avoid making small talk against medical advice" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 8 words
+- "the family chiropodist has specifically forbidden unsupervised crouching" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 1; ridiculous_medical_advice; 8 words
+- "financially crisply ironed" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; social_embarrassment; 3 words
+- "heartbroken about poorly supervised topiary" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; disproportionate_emotion; 5 words
+- "operating under an assumed minor title to evade the public decency subcommittee" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 12 words
+- "constitutionally incapable of recognising Tuesdays during official visits" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 8 words
+- "meteorologically etiquette-powered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; comic_contradiction; 2 words
+Strategy B: generated=7 legacy=3 categories={'cheeky_british': 5, 'broader_absurdity': 2} intensities={3: 2, 2: 3, 1: 2} roles={'predicate': 2, 'adverbial': 1, 'short_clause': 1, 'pre_noun': 2, 'post_noun': 1} mechanisms={'impossible_inability': 1, 'ridiculous_motivation': 1, 'class_and_etiquette': 1, 'comic_contradiction': 1, 'social_embarrassment': 1, 'secret_history': 1, 'impossible_ability': 1} repeated_subjects=0 short=6 approx_token_delta=+326
+- "constitutionally incapable of whispering in polite society" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; impossible_inability; 7 words
+- "to impress a driving examiner while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 2; ridiculous_motivation; 8 words
+- "issues written warnings to table manners under questioning" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 1; class_and_etiquette; 8 words
+- "romantically postbox-approved" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "diplomatically gloriously polished" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; social_embarrassment; 3 words
+- "banned from precision sandwich measuring for bringing an emotional-support foghorn" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 3; secret_history; 10 words
+- "able to forecast ceremonial damp but only indoors" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 2; impossible_ability; 8 words
+Strategy C: generated=6 legacy=4 categories={'cheeky_british': 4, 'broader_absurdity': 2} intensities={3: 1, 2: 3, 1: 2} roles={'pre_noun': 2, 'predicate': 1, 'post_noun': 1, 'behavioural': 1, 'short_clause': 1} mechanisms={'comic_contradiction': 1, 'impossible_inability': 1, 'social_embarrassment': 1, 'institutional_interference': 1, 'secret_history': 1, 'ridiculous_medical_advice': 1} repeated_subjects=0 short=4 approx_token_delta=+315
+- "academically queue-compatible" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; comic_contradiction; 2 words
+- "constitutionally incapable of recognising Tuesdays during official visits" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 8 words
+- "athletically gloriously polished" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; social_embarrassment; 3 words
+- "under permanent supervision by the allotment standards office over a disputed parking cone" — post_noun; place after the noun as a comma-delimited postmodifier; broader_absurdity; intensity 2; institutional_interference; 13 words
+- "operating under an assumed set of sideburns to evade the public decency subcommittee" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 13 words
+- "a disgraced orthodontist has specifically forbidden emotional upholstery" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 1; ridiculous_medical_advice; 8 words
+
+## REALISTIC SLATE 5
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={2: 5, 1: 3, 3: 2} roles={'pre_noun': 2, 'adverbial': 1, 'short_clause': 2, 'predicate': 3, 'behavioural': 1, 'post_noun': 1} mechanisms={'comic_contradiction': 1, 'social_embarrassment': 1, 'ridiculous_motivation': 1, 'class_and_etiquette': 1, 'impossible_inability': 1, 'ridiculous_medical_advice': 1, 'disproportionate_emotion': 1, 'secret_history': 2, 'impossible_ability': 1} repeated_subjects=0 short=9 approx_token_delta=+428
+- "architecturally roundabout-tested" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "professionally freshly upholstered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; social_embarrassment; 3 words
+- "to impress a driving examiner under disputed bunting" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 8 words
+- "apologises in the third person under questioning" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 7 words
+- "constitutionally incapable of accepting standard biscuits when observed" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 8 words
+- "the duty aromatherapist has specifically forbidden rhythmic filing" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 3; ridiculous_medical_advice; 8 words
+- "furious about poorly supervised topiary" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; disproportionate_emotion; 5 words
+- "operating under an assumed allotment to evade the village ombudsman" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 10 words
+- "banned from county-level whispering for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 1; secret_history; 8 words
+- "able to forecast ceremonial damp during moderate drizzle" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 3; impossible_ability; 8 words
+Strategy B: generated=7 legacy=3 categories={'broader_absurdity': 2, 'cheeky_british': 5} intensities={2: 3, 3: 2, 1: 2} roles={'short_clause': 1, 'predicate': 2, 'pre_noun': 2, 'behavioural': 1, 'post_noun': 1} mechanisms={'ridiculous_medical_advice': 1, 'impossible_inability': 1, 'social_embarrassment': 1, 'secret_history': 1, 'institutional_interference': 1, 'disproportionate_emotion': 1, 'comic_contradiction': 1} repeated_subjects=0 short=5 approx_token_delta=+342
+- "the emergency barber has specifically forbidden ceremonial lunging" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "constitutionally incapable of accepting standard biscuits under questioning" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; impossible_inability; 8 words
+- "horticulturally elaborately fastened" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "operating under an assumed regional accent to evade the Office of Minor Regrets" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 1; secret_history; 13 words
+- "secretly funded by the provisional gravy council following advice from a talking satnav" — post_noun; place after the noun as a comma-delimited postmodifier; broader_absurdity; intensity 3; institutional_interference; 13 words
+- "terrified about overconfident garden centres" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; disproportionate_emotion; 5 words
+- "professionally umbrella-certified" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+Strategy C: generated=6 legacy=4 categories={'broader_absurdity': 2, 'cheeky_british': 4} intensities={2: 3, 3: 1, 1: 2} roles={'short_clause': 1, 'predicate': 2, 'pre_noun': 1, 'behavioural': 1, 'post_noun': 1} mechanisms={'ridiculous_medical_advice': 1, 'impossible_ability': 1, 'impossible_inability': 1, 'comic_contradiction': 1, 'secret_history': 2} repeated_subjects=0 short=5 approx_token_delta=+313
+- "the family chiropodist has specifically forbidden ceremonial lunging" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "able to hypnotise garden furniture using borrowed stationery" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 3; impossible_ability; 8 words
+- "constitutionally incapable of recognising Tuesdays after lunch" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 7 words
+- "professionally etiquette-powered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "operating under an assumed cardigan to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 10 words
+- "banned from competitive queueing for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+
+## REALISTIC SLATE 6
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={2: 5, 1: 3, 3: 2} roles={'predicate': 3, 'post_noun': 1, 'adverbial': 1, 'pre_noun': 2, 'short_clause': 2, 'behavioural': 1} mechanisms={'impossible_inability': 1, 'secret_history': 2, 'disproportionate_emotion': 1, 'ridiculous_motivation': 1, 'comic_contradiction': 1, 'social_embarrassment': 1, 'ridiculous_medical_advice': 1, 'impossible_ability': 1, 'class_and_etiquette': 1} repeated_subjects=0 short=8 approx_token_delta=+430
+- "constitutionally incapable of whispering under light drizzle" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 7 words
+- "banned from freestyle apologising for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "furious about poorly supervised topiary" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; disproportionate_emotion; 5 words
+- "because Tuesdays had become too powerful under disputed bunting" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 9 words
+- "theatrically cardigan-dependent" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "hereditarily delicately varnished" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "a disgraced orthodontist has specifically forbidden unsupervised crouching" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 1; ridiculous_medical_advice; 8 words
+- "able to locate disputed teaspoons pending committee approval" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 3; impossible_ability; 8 words
+- "apologises in the third person after lunch" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 7 words
+- "operating under an assumed clipboard to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 3; secret_history; 10 words
+Strategy B: generated=7 legacy=3 categories={'broader_absurdity': 2, 'cheeky_british': 5} intensities={3: 2, 2: 3, 1: 2} roles={'adverbial': 1, 'post_noun': 1, 'pre_noun': 2, 'predicate': 1, 'short_clause': 2} mechanisms={'ridiculous_motivation': 1, 'secret_history': 1, 'comic_contradiction': 1, 'impossible_inability': 1, 'social_embarrassment': 1, 'class_and_etiquette': 1, 'ridiculous_medical_advice': 1} repeated_subjects=0 short=7 approx_token_delta=+338
+- "to impress a driving examiner against medical advice" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 3; ridiculous_motivation; 8 words
+- "banned from freestyle apologising for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "romantically postbox-approved" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "constitutionally incapable of accepting standard biscuits under questioning" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 8 words
+- "romantically tastefully padded" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "keeps emergency cufflinks in the freezer during applause" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 8 words
+- "the emergency barber has specifically forbidden competitive nodding" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 3; ridiculous_medical_advice; 8 words
+Strategy C: generated=6 legacy=4 categories={'cheeky_british': 4, 'broader_absurdity': 2} intensities={2: 3, 1: 2, 3: 1} roles={'predicate': 1, 'pre_noun': 1, 'short_clause': 2, 'post_noun': 1, 'behavioural': 1} mechanisms={'impossible_inability': 1, 'comic_contradiction': 1, 'class_and_etiquette': 1, 'institutional_interference': 1, 'ridiculous_medical_advice': 1, 'secret_history': 1} repeated_subjects=0 short=4 approx_token_delta=+324
+- "constitutionally incapable of ignoring a raffle when observed" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 8 words
+- "socially queue-compatible" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "keeps emergency cufflinks in the freezer before witnesses" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 1; class_and_etiquette; 8 words
+- "under permanent supervision by the travelling manners commission over a suspiciously cheerful postbox" — post_noun; place after the noun as a comma-delimited postmodifier; broader_absurdity; intensity 2; institutional_interference; 13 words
+- "a disgraced orthodontist has specifically forbidden heavy-duty politeness" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 3; ridiculous_medical_advice; 8 words
+- "operating under an assumed allotment to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 10 words
+
+## REALISTIC SLATE 7
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={1: 3, 2: 5, 3: 2} roles={'pre_noun': 2, 'short_clause': 2, 'predicate': 2, 'adverbial': 1, 'behavioural': 1, 'post_noun': 2} mechanisms={'social_embarrassment': 1, 'ridiculous_medical_advice': 1, 'disproportionate_emotion': 1, 'ridiculous_motivation': 1, 'class_and_etiquette': 1, 'comic_contradiction': 1, 'secret_history': 2, 'impossible_inability': 1, 'institutional_interference': 1} repeated_subjects=0 short=7 approx_token_delta=+441
+- "spiritually immaculately laminated" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; social_embarrassment; 3 words
+- "a disgraced orthodontist has specifically forbidden amateur diplomacy" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "terrified about competitive curtain twitching" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; disproportionate_emotion; 5 words
+- "to impress a driving examiner while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 2; ridiculous_motivation; 8 words
+- "curtsies before opening the post when bunting appears" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 1; class_and_etiquette; 8 words
+- "administratively tea-licensed" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "operating under an assumed pair of eyebrows to evade the civic posture authority" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 13 words
+- "constitutionally incapable of handling ordinary cutlery under questioning" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; impossible_inability; 8 words
+- "secretly funded by an offshore tea room following advice from a talking satnav" — post_noun; place after the noun as a comma-delimited postmodifier; broader_absurdity; intensity 2; institutional_interference; 13 words
+- "banned from extreme napkin folding for insulting a commemorative hedge" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 1; secret_history; 10 words
+Strategy B: generated=7 legacy=3 categories={'cheeky_british': 5, 'broader_absurdity': 2} intensities={1: 2, 2: 3, 3: 2} roles={'pre_noun': 2, 'predicate': 2, 'adverbial': 1, 'short_clause': 1, 'post_noun': 1} mechanisms={'comic_contradiction': 1, 'impossible_inability': 1, 'social_embarrassment': 1, 'ridiculous_motivation': 1, 'ridiculous_medical_advice': 1, 'disproportionate_emotion': 1, 'secret_history': 1} repeated_subjects=0 short=6 approx_token_delta=+334
+- "administratively aunt-supervised" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "constitutionally incapable of whispering when observed" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 6 words
+- "hereditarily professionally fluffed" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "because Tuesdays had become too powerful despite lacking a clipboard" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 10 words
+- "the duty aromatherapist has specifically forbidden emotional upholstery" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "furious about poorly supervised topiary" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; disproportionate_emotion; 5 words
+- "banned from freestyle apologising for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 3; secret_history; 8 words
+Strategy C: generated=6 legacy=4 categories={'cheeky_british': 4, 'broader_absurdity': 2} intensities={3: 1, 2: 3, 1: 2} roles={'short_clause': 2, 'post_noun': 1, 'pre_noun': 1, 'predicate': 1, 'adverbial': 1} mechanisms={'class_and_etiquette': 1, 'secret_history': 1, 'comic_contradiction': 1, 'impossible_inability': 1, 'ridiculous_motivation': 1, 'ridiculous_medical_advice': 1} repeated_subjects=0 short=5 approx_token_delta=+322
+- "stands for the national weather forecast under questioning" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 3; class_and_etiquette; 8 words
+- "banned from freestyle apologising for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "romantically gazebo-adjacent" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "constitutionally incapable of accepting standard biscuits after lunch" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 8 words
+- "following advice from a talking satnav without waking the subcommittee" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 10 words
+- "a veterinary receptionist has specifically forbidden competitive nodding" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 1; ridiculous_medical_advice; 8 words
+
+## REALISTIC SLATE 8
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={1: 3, 2: 5, 3: 2} roles={'behavioural': 1, 'post_noun': 1, 'short_clause': 2, 'adverbial': 1, 'pre_noun': 2, 'predicate': 3} mechanisms={'secret_history': 2, 'class_and_etiquette': 1, 'ridiculous_motivation': 1, 'ridiculous_medical_advice': 1, 'social_embarrassment': 1, 'comic_contradiction': 1, 'disproportionate_emotion': 1, 'impossible_ability': 1, 'impossible_inability': 1} repeated_subjects=0 short=9 approx_token_delta=+427
+- "operating under an assumed cardigan to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 1; secret_history; 10 words
+- "banned from county-level whispering for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "issues written warnings to table manners before witnesses" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 3; class_and_etiquette; 8 words
+- "to avoid making small talk while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 8 words
+- "a veterinary receptionist has specifically forbidden emotional upholstery" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "meteorologically impeccably trousered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "municipally tea-licensed" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "delighted about competitive curtain twitching" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; disproportionate_emotion; 5 words
+- "able to smell administrative weakness within shouting distance" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 3; impossible_ability; 8 words
+- "constitutionally incapable of whispering after lunch" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 6 words
+Strategy B: generated=7 legacy=3 categories={'cheeky_british': 5, 'broader_absurdity': 2} intensities={1: 2, 2: 3, 3: 2} roles={'behavioural': 1, 'post_noun': 1, 'predicate': 2, 'pre_noun': 1, 'adverbial': 1, 'short_clause': 1} mechanisms={'secret_history': 2, 'impossible_inability': 1, 'comic_contradiction': 1, 'ridiculous_motivation': 1, 'disproportionate_emotion': 1, 'ridiculous_medical_advice': 1} repeated_subjects=0 short=6 approx_token_delta=+338
+- "operating under an assumed clipboard to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 1; secret_history; 10 words
+- "banned from competitive queueing for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "constitutionally incapable of recognising Tuesdays near a gazebo" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 8 words
+- "ceremonially postbox-approved" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "to avoid making small talk while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 3; ridiculous_motivation; 8 words
+- "terrified about overconfident garden centres" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; disproportionate_emotion; 5 words
+- "a veterinary receptionist has specifically forbidden high-speed queuing" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 3; ridiculous_medical_advice; 8 words
+Strategy C: generated=6 legacy=4 categories={'broader_absurdity': 2, 'cheeky_british': 4} intensities={1: 2, 2: 3, 3: 1} roles={'predicate': 2, 'behavioural': 1, 'post_noun': 1, 'short_clause': 1, 'pre_noun': 1} mechanisms={'impossible_ability': 1, 'secret_history': 2, 'impossible_inability': 1, 'ridiculous_medical_advice': 1, 'comic_contradiction': 1} repeated_subjects=0 short=5 approx_token_delta=+315
+- "able to levitate modest stationery under controlled conditions" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 1; impossible_ability; 8 words
+- "operating under an assumed waistcoat to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 10 words
+- "banned from full-contact croquet for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "constitutionally incapable of recognising Tuesdays during official visits" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 8 words
+- "the duty aromatherapist has specifically forbidden high-speed queuing" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "medically small-talk-resistant" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; comic_contradiction; 3 words
+
+## REALISTIC SLATE 9
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={3: 2, 1: 3, 2: 5} roles={'pre_noun': 2, 'adverbial': 1, 'behavioural': 1, 'short_clause': 2, 'predicate': 3, 'post_noun': 1} mechanisms={'comic_contradiction': 1, 'ridiculous_motivation': 1, 'secret_history': 2, 'ridiculous_medical_advice': 1, 'impossible_inability': 1, 'class_and_etiquette': 1, 'disproportionate_emotion': 1, 'impossible_ability': 1, 'social_embarrassment': 1} repeated_subjects=0 short=9 approx_token_delta=+428
+- "meteorologically bunting-sensitive" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; comic_contradiction; 2 words
+- "to impress a driving examiner while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 8 words
+- "operating under an assumed cardigan to evade the village ombudsman" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 3; secret_history; 10 words
+- "a disgraced orthodontist has specifically forbidden vigorous pointing" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 1; ridiculous_medical_advice; 8 words
+- "constitutionally incapable of ignoring a raffle when observed" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 8 words
+- "bows to domestic appliances during official visits" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 7 words
+- "furious about overconfident garden centres" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; disproportionate_emotion; 5 words
+- "able to translate regional sighing using borrowed stationery" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 1; impossible_ability; 8 words
+- "banned from speed topiary for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "spiritually meticulously buttered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+Strategy B: generated=7 legacy=3 categories={'broader_absurdity': 2, 'cheeky_british': 5} intensities={2: 3, 1: 2, 3: 2} roles={'adverbial': 1, 'behavioural': 1, 'pre_noun': 1, 'predicate': 2, 'short_clause': 1, 'post_noun': 1} mechanisms={'ridiculous_motivation': 1, 'secret_history': 2, 'comic_contradiction': 1, 'impossible_inability': 1, 'class_and_etiquette': 1, 'impossible_ability': 1} repeated_subjects=0 short=6 approx_token_delta=+343
+- "to avoid making small talk while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 2; ridiculous_motivation; 8 words
+- "operating under an assumed moustache to evade the village ombudsman" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 1; secret_history; 10 words
+- "diplomatically bunting-sensitive" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "constitutionally incapable of handling ordinary cutlery before witnesses" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; impossible_inability; 8 words
+- "sends formal invitations to neighbours' cats during applause" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 8 words
+- "able to identify counterfeit gravy but only indoors" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 3; impossible_ability; 8 words
+- "banned from freestyle apologising for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 1; secret_history; 8 words
+Strategy C: generated=6 legacy=4 categories={'broader_absurdity': 2, 'cheeky_british': 4} intensities={2: 3, 1: 2, 3: 1} roles={'short_clause': 1, 'behavioural': 1, 'adverbial': 1, 'predicate': 1, 'post_noun': 1, 'pre_noun': 1} mechanisms={'ridiculous_medical_advice': 1, 'secret_history': 2, 'ridiculous_motivation': 1, 'impossible_inability': 1, 'comic_contradiction': 1} repeated_subjects=0 short=5 approx_token_delta=+313
+- "the emergency barber has specifically forbidden ceremonial lunging" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "operating under an assumed clipboard to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 1; secret_history; 10 words
+- "to impress a driving examiner under disputed bunting" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 8 words
+- "constitutionally incapable of whispering when the kettle boils" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 8 words
+- "banned from competitive queueing for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "athletically etiquette-powered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; comic_contradiction; 2 words
+
+## REALISTIC SLATE 10
+Strategy A: generated=10 legacy=0 categories={'cheeky_british': 7, 'broader_absurdity': 3} intensities={2: 5, 1: 3, 3: 2} roles={'behavioural': 1, 'post_noun': 1, 'pre_noun': 2, 'short_clause': 2, 'predicate': 3, 'adverbial': 1} mechanisms={'secret_history': 2, 'social_embarrassment': 1, 'class_and_etiquette': 1, 'comic_contradiction': 1, 'disproportionate_emotion': 1, 'impossible_inability': 1, 'ridiculous_medical_advice': 1, 'impossible_ability': 1, 'ridiculous_motivation': 1} repeated_subjects=0 short=9 approx_token_delta=+428
+- "operating under an assumed allotment to evade a retired magistrate" — behavioural; attach after the noun as a comma-delimited ongoing behaviour; cheeky_british; intensity 2; secret_history; 10 words
+- "banned from competitive queueing for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 1; secret_history; 8 words
+- "theatrically oddly symmetrical" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "wears evening gloves at breakfast when observed" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 7 words
+- "meteorologically doormat-accredited" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "heartbroken about overconfident garden centres" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; disproportionate_emotion; 5 words
+- "constitutionally incapable of whispering during applause" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 6 words
+- "the family chiropodist has specifically forbidden ceremonial lunging" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "able to smell administrative weakness within parish boundaries" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 3; impossible_ability; 8 words
+- "to impress a driving examiner under disputed bunting" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 8 words
+Strategy B: generated=7 legacy=3 categories={'cheeky_british': 5, 'broader_absurdity': 2} intensities={2: 3, 1: 2, 3: 2} roles={'post_noun': 1, 'short_clause': 1, 'predicate': 2, 'pre_noun': 2, 'adverbial': 1} mechanisms={'secret_history': 1, 'ridiculous_medical_advice': 1, 'impossible_inability': 1, 'social_embarrassment': 1, 'ridiculous_motivation': 1, 'comic_contradiction': 1, 'disproportionate_emotion': 1} repeated_subjects=0 short=7 approx_token_delta=+330
+- "banned from freestyle apologising for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "the emergency barber has specifically forbidden amateur diplomacy" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+- "constitutionally incapable of sitting without ceremony before witnesses" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 8 words
+- "mechanically delicately varnished" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; social_embarrassment; 3 words
+- "to impress a driving examiner while officially indoors" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 3; ridiculous_motivation; 8 words
+- "athletically scandal-ready" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; comic_contradiction; 2 words
+- "heartbroken about poorly supervised topiary" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; disproportionate_emotion; 5 words
+Strategy C: generated=6 legacy=4 categories={'cheeky_british': 4, 'broader_absurdity': 2} intensities={3: 1, 1: 2, 2: 3} roles={'pre_noun': 2, 'post_noun': 1, 'adverbial': 1, 'predicate': 1, 'short_clause': 1} mechanisms={'social_embarrassment': 1, 'comic_contradiction': 1, 'secret_history': 1, 'ridiculous_motivation': 1, 'impossible_inability': 1, 'ridiculous_medical_advice': 1} repeated_subjects=0 short=5 approx_token_delta=+309
+- "architecturally professionally fluffed" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 3; social_embarrassment; 3 words
+- "ceremonially etiquette-powered" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "banned from county-level whispering for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 2; secret_history; 8 words
+- "to avoid making small talk without waking the subcommittee" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 2; ridiculous_motivation; 9 words
+- "constitutionally incapable of resisting commemorative crockery under questioning" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 1; impossible_inability; 8 words
+- "a disgraced orthodontist has specifically forbidden unsupervised crouching" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 2; ridiculous_medical_advice; 8 words
+
+## TEN-SLATE AGGREGATE
+A average_token_delta= 430 roles= {'behavioural': 10, 'pre_noun': 20, 'adverbial': 10, 'predicate': 29, 'short_clause': 20, 'post_noun': 11} mechanisms= {'secret_history': 20, 'comic_contradiction': 10, 'ridiculous_motivation': 10, 'disproportionate_emotion': 10, 'social_embarrassment': 10, 'ridiculous_medical_advice': 10, 'impossible_ability': 9, 'impossible_inability': 10, 'class_and_etiquette': 10, 'institutional_interference': 1}
+B average_token_delta= 337 roles= {'predicate': 18, 'post_noun': 10, 'behavioural': 6, 'adverbial': 9, 'pre_noun': 16, 'short_clause': 11} mechanisms= {'impossible_ability': 4, 'secret_history': 15, 'impossible_inability': 10, 'ridiculous_motivation': 9, 'comic_contradiction': 10, 'class_and_etiquette': 5, 'ridiculous_medical_advice': 6, 'social_embarrassment': 6, 'institutional_interference': 1, 'disproportionate_emotion': 4}
+C average_token_delta= 315 roles= {'short_clause': 12, 'predicate': 12, 'post_noun': 11, 'pre_noun': 13, 'adverbial': 5, 'behavioural': 7} mechanisms= {'ridiculous_medical_advice': 10, 'impossible_inability': 10, 'secret_history': 15, 'comic_contradiction': 10, 'ridiculous_motivation': 5, 'social_embarrassment': 3, 'institutional_interference': 3, 'impossible_ability': 2, 'class_and_etiquette': 2}
+
+## MOCK DESCRIPTOR PROMPT SECTION
+- "financially double-parked" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 1; comic_contradiction; 2 words
+- "architecturally tastefully reinforced" — pre_noun; place directly before a person or character noun; cheeky_british; intensity 2; social_embarrassment; 3 words
+- "constitutionally incapable of recognising Tuesdays under questioning" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; impossible_inability; 7 words
+- "able to locate disputed teaspoons while wearing brogues" — predicate; place after a linking verb such as ‘is’ or ‘was’; broader_absurdity; intensity 2; impossible_ability; 8 words
+- "banned from competitive queueing for wearing performance-enhancing brogues" — post_noun; place after the noun as a comma-delimited postmodifier; cheeky_british; intensity 1; secret_history; 8 words
+- "legally required to wear slippers by the national queue inspectorate" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 3; absurd_legal_restriction; 10 words
+- "in revenge for a badly poured lemonade under disputed bunting" — adverbial; place after an action to explain its motive or circumstances; broader_absurdity; intensity 1; ridiculous_motivation; 10 words
+- "the family chiropodist has specifically forbidden recreational saluting" — short_clause; use with the template’s supplied subject or after a named subject; broader_absurdity; intensity 3; ridiculous_medical_advice; 8 words
+- "quietly triumphant about a disputed parking cone" — predicate; place after a linking verb such as ‘is’ or ‘was’; cheeky_british; intensity 2; disproportionate_emotion; 7 words
+- "uses a monocle for online banking when observed" — short_clause; use with the template’s supplied subject or after a named subject; cheeky_british; intensity 2; class_and_etiquette; 8 words
+
+## OPTIONAL-USE GUIDANCE
+SHADOW DESCRIPTOR PREVIEW (NOT ACTIVE):
+- Descriptors are optional comic ingredients; use roughly two to four where they fit naturally.
+- Respect each descriptor's grammatical role and insertion guidance. Do not force predicate or clause forms before a noun.
+- Prefer a mixture of short and developed descriptions, and avoid repeating the same comic mechanism.
+- Do not combine several descriptors into one overloaded phrase or obscure the source event to accommodate them.

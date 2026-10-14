@@ -1,0 +1,189 @@
+NewsMuncher Phase 4H — accepted final-article joke memory
+Date: 2026-10-12
+
+Scope and safety
+================
+
+This investigation preserved all Phase 3F–4G work and default live behaviour.
+It used source inspection, deterministic synthetic final-article fixtures and
+in-memory tests. It made no provider request, MongoDB connection, production
+write, commit or push and did not inspect or alter historical creations.
+
+Root causes and evidence
+========================
+
+"Seventeen accountants" is a generated ingredient. The exact component
+"haunted by seventeen accountants" is in
+`newsmuncher/resources/concepts/comedy_concept_components.json` under the
+everyday post-modifiers. The Phase 2C recorded prompt preview contains
+"clipboard haunted by seventeen accountants". It is not a hardcoded rewrite
+prompt example, descriptor, invented-name or vocabulary-catalogue entry.
+
+"Queue containment" is also a generated ingredient family. The concept resource
+contains "minor queue containment" as an emergency purpose, alongside queue
+control and other containment variants. Phase 2C previews include "crisis
+periscope for minor queue containment" and "rescue footstool for minor queue
+containment". Descriptor resources separately contain "predict minor queue
+disputes", which reinforces the broader queue theme but is not the same gag.
+
+The repetition is therefore principally B, generated ingredients, combined
+with C, close semantic families. The provider can retain only the memorable
+fragment or paraphrase it. Existing concept accepted-use tracking cools an
+exact offered phrase and its structured premise when the full phrase survives.
+It cannot reliably credit "seventeen accountants" after "clipboard haunted by
+seventeen accountants" is shortened, or relate differently phrased queue-
+containment prose. That accepted-output gap is the material cause.
+
+No evidence showed A, a prompt example. D, independent provider invention,
+cannot be excluded for unrecorded live outputs, but neither example requires it
+to explain the observations. Phase 4G was functioning as designed: it targets
+accepted descriptor mechanisms and name sound families and deliberately leaves
+concept ordering unchanged after a broader penalty reduced quality.
+
+Implementation
+==============
+
+`final_joke_memory.py` adds an explainable, rule-based accepted-output layer.
+It currently recognizes two deliberately narrow construction families:
+
+* numbered plural groups, normalizing "seventeen accountants", "a delegation
+  of seventeen accountants" and "17 accountants" to one key;
+* queue-containment scenarios, including emergency procedures and a specialist
+  queue-containment unit.
+
+The numbered-group detector keeps number and noun in its key, so it does not
+ban accountants generally or every numbered-group joke. Queue containment has
+one explicit scenario key; ordinary queues and unrelated bureaucracy remain
+available. Constructions already present in the source article are exempt.
+
+Before rewrite generation, evaluation mode makes one projected history read and
+adds at most four recent labels to a concise `RECENT-JOKE VARIETY` instruction.
+It asks for a fresh comic idea while explicitly permitting the broad subject.
+There is no embedding, fuzzy service, extra model call, regeneration or
+post-generation rewrite.
+
+After `complete_draft` succeeds, an atomic article-sequence counter advances and
+detected keys are upserted by `_id`. Failed, superseded or unpersisted rewrites
+record nothing. The counter advances for every successful article, including
+articles with no detected gag, so a construction expires after ten accepted
+articles and can return. Concurrent increments and key updates are atomic.
+Memory is advisory: read or write failure is logged only by exception class and
+cannot block or discard a successful rewrite. Saturation changes guidance only
+and cannot exhaust a generator, lease or quota.
+
+The separate `NEWSMUNCHER_FINAL_JOKE_MEMORY` flag accepts `off` (default) or
+`evaluation`. All existing vocabulary, descriptor and semantic-memory modes
+remain independent.
+
+Equivalent-seed 250-MUNGE evaluation
+====================================
+
+Command:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_vocabulary_phase4h.py --rewrites 250
+
+Both paths receive the same deterministic candidate articles. The fixture
+reconstructs the reported three-in-five accountant recurrence, queue-
+containment variants and a large set of natural alternative jokes. Phase 4H
+models compliance with the precise avoid labels. It is a controlled behavioural
+proxy, not a claim that a language model will always obey the instruction.
+
+Metric                                      Phase 4G   Phase 4H
+Completed rewrites                                250        250
+Exact final-joke occurrences                      300        300
+Unique exact final jokes                           56        235
+Repeated exact final jokes                        244         65
+Exact rolling-five repeats                       1.20       0.00
+Exact rolling-ten repeats                        4.40       0.36
+Detected canonical constructions                  250         42
+Repeated canonical constructions                  248         40
+Canonical rolling-five repeats                   3.00       0.00
+Canonical rolling-ten repeats                    8.00       0.00
+Seventeen-accountant occurrences                  150         22
+Queue-containment occurrences                     100         20
+Unique accepted ingredient fixtures               197        197
+Unique accepted premise fixtures                  211        211
+Controlled exhaustion events                        0          0
+
+Phase 4H suppressed 128 accountant and 80 queue-containment candidates while
+allowing both families to return after cooldown. The upstream ingredient and
+premise streams are identical because this layer changes only concise rewrite
+guidance.
+
+Humour and naturalness
+======================
+
+The fixture's editorial quality proxy moves from 7.97 to 7.83 because a strong
+but recently repeated gag is replaced by a slightly lower-scored, still curated
+alternative. All fixture sentences pass the naturalness gate. These scores are
+hand-authored proxies rather than reader ratings. They demonstrate the chosen
+trade-off: stop an unmistakable gag recurring three times in five articles,
+without penalizing accountants, queues, bureaucracy or broad comic mechanisms.
+
+The implementation does not suppress every semantic similarity. New detector
+families should be added only after an observed recurring final-output problem,
+with explicit examples and source exemptions. This guards the humour loss seen
+when Phase 4G experimented with more aggressive ranking.
+
+Performance and prompt overhead
+===============================
+
+In the fixture, Phase 4H adds an average 237.58 characters, estimated at 59.39
+tokens by the repository's conservative four-characters-per-token measure; the
+maximum is 257 characters for the two active labels. It adds no provider call.
+Local detection and guidance averaged about 0.01 ms in repeated runs.
+
+The audit counts 542 final-memory operations across 250 successful rewrites:
+one batched projected history read per rewrite, one atomic article-counter
+write per persisted article and 42 detected-key upserts. That is 2.17 local
+operations per rewrite in this fixture. Existing name, concept and descriptor
+leases, cooldowns and writes are unchanged.
+
+Tests and validation
+====================
+
+Focused tests cover:
+
+* word and numeric forms of seventeen accountants;
+* delegation wording and all requested queue-containment variants;
+* broad queue references remaining unblocked;
+* source-story exemption;
+* cooldown expiry through neutral successful articles;
+* default-off and invalid configuration;
+* zero work while disabled;
+* prompt injection without another provider call;
+* recording after successful persistence only;
+* failed rewrite isolation and graceful history-read failure;
+* deterministic 250-MUNGE comparison and zero exhaustion.
+
+Final validation results are recorded in CURRENT_WORK.md after the complete
+Python, JavaScript, compilation, syntax and diff checks.
+
+Manual evaluation
+=================
+
+Run the successful local vocabulary, descriptor and semantic-memory modes with
+Phase 4H using:
+
+  NEWSMUNCHER_EXPANDED_VOCABULARY=evaluation \
+  NEWSMUNCHER_EXPANDED_DESCRIPTORS=evaluation \
+  NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY=evaluation \
+  NEWSMUNCHER_FINAL_JOKE_MEMORY=evaluation \
+  ./.venv/bin/python -m uvicorn newsmuncher.main:app --reload
+
+Create at least twenty MUNGEs, including repeated MUNGEs from one source. Label
+exact wording, close variants and broad-theme reuse separately. Confirm that a
+source article containing a numbered group or queue-containment report can
+retain that fact, failed MUNGEs do not change guidance, and both example gags
+can return after ten other successful articles.
+
+Remaining limitations
+=====================
+
+The two observed construction families are recognized with explicit rules.
+Unseen paraphrases and unrelated recurring gags are not inferred. The numbered-
+group rule may remember a mundane model-invented quantity, although source
+facts are exempt and the consequence is only a temporary targeted prompt note.
+The model can ignore negative guidance. Proving real reader-visible improvement
+therefore requires the manual local review above; doing that automatically
+would require paid calls or historical production data, neither used here.

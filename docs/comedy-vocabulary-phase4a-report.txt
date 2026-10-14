@@ -1,0 +1,388 @@
+NewsMuncher Phase 4A — universal comedy vocabulary expansion investigation
+Date: 2026-10-10
+
+Scope
+=====
+
+This phase audited the live/local vocabulary, researched redistribution-safe
+sources and built a deterministic catalogue-selection prototype. The prototype
+is `scripts/diagnostics/evaluate_vocabulary_expansion.py`; nothing imports it
+from the application. No CSV, live generator, prompt, database or provider path
+was changed.
+
+Current inventory
+=================
+
+Legacy banks (cells / normalized distinct / duplicate cells)
+-------------------------------------------------------------
+
+  adverbs.csv             1,954 / 1,683 / 271
+  animalsAndObjects.csv   2,175 / 2,119 / 56
+  names.csv                 428 /   423 / 5
+  nouns.csv               1,710 / 1,710 / 0
+  places.csv              1,005 /   997 / 8
+  slang.csv               2,277 / 2,142 / 135
+
+Quantity is misleading. `animalsAndObjects.csv` combines taxonomy with domestic
+objects and malformed compounds such as `tvremote`. `nouns.csv` is largely
+already-composed rude phrases rather than reusable object identities. `adverbs`
+mixes adjectives, participles, true adverbs and ordinary qualities. `slang`
+contains grammatical roles, spelling errors, explicit phrases and discriminatory
+slurs in one flat bank. `places` combines real geography, shops/institutions and
+invented rude places. `names.csv` contains real/famous identities and remains a
+legacy compatibility bank, not a component source.
+
+Generated concept resources
+----------------------------
+
+Recognisable base banks: 70 domestic objects, 50 devices, 50 cheeky objects,
+60 creatures, 40 bureaucratic topics, 30 equipment items, 40 ceremonial
+objects and 30 emergency devices. There are 24 templates across seven
+categories and 21 mapped comic mechanisms/themes.
+
+The raw template-product estimate is 40,236 strings:
+
+  everyday British 5,740; cheeky objects 3,900; absurd inventions 3,500;
+  creatures 6,360; bureaucracy 17,496; emergency equipment 1,080;
+  ceremonial objects 2,160.
+
+The meaningful capacity is much lower. Several joke-bearing intensity banks
+contain only 4–8 entries; most are 6–13. Thus thousands of lexical strings can
+still be another powered appliance, sanctioned creature or council document.
+Quality ranking further favours compact, visual, high-scoring mechanisms.
+
+Generated descriptors
+---------------------
+
+There are 24 templates, 20 semantic mechanisms and all six grammatical roles.
+The union of component values is 708. The raw independent slot-product is
+about 9,265 strings. Older core banks hold 15–60 values; the eight Phase 3E
+mechanisms commonly have 12. Meaningful situations are bounded more by subjects
+and mechanisms than string permutations. Ranking favours 2–8-word phrases and
+seven proven mechanisms, so high-scoring structures recur.
+
+Invented names
+--------------
+
+Cheeky: 70 given names, 50 classic surnames, 46 roots, 40 suffixes, 15
+nicknames, 32 curated names and six recipes. Absurd: 65 gendered given names,
+40 classic surnames, 36 roots, 36 suffixes, 13 titles, 22 distinct epithets,
+15 territories, 14 curated names and six non-phonetic recipes.
+
+Raw capacity is enormous: cheeky constructed surnames alone yield 128,800
+given/root/suffix strings; double barrels exceed 6.4 million. Yet spoken style
+is dominated by 46 cheeky and 36 absurd root sounds, a small title set, and the
+same recipe contours. Phase 3G fixes candidate exhaustion and exact-name reuse,
+but cannot make those root families sound less familiar.
+
+Selection and repetition
+========================
+
+Generated names, concepts and descriptors now use rewrite UUIDs, batched
+availability reads, atomic final leases, accepted-use cooldowns and active
+lease protection. Concepts remember exact phrase, base, premise and animal;
+descriptors remember phrase, subject and premise; names remember exact name.
+Unused offers are intentionally reusable. Concepts/descriptors may relax only
+soft ingredient/premise history under demonstrated saturation; exact phrase
+cooldown and active leases remain hard.
+
+Remaining repetition is primarily editorial capacity rather than a registry
+fault:
+
+1. Physical bases are much smaller than raw phrase spaces.
+2. Central joke-bearing modifier banks are smaller still.
+3. Quality scoring repeatedly promotes reliable mechanisms.
+4. Twenty concepts and ten descriptors are offered per rewrite, so even unused
+   ingredients are visibly sampled quickly during sustained use.
+5. Slang and place banks have no semantic/grammatical classification and use
+   permanent legacy claims rather than recyclable structured memory.
+6. Exact accepted matching cannot infer every model paraphrase without adding
+   false claims or another model call.
+
+Recommended catalogue sizes
+===========================
+
+These are curated post-filter targets, not raw download quotas:
+
+  Animals:              1,500–3,000 common-name identities
+  Physical objects:     6,000–10,000 classified identities
+  Descriptor subjects:  2,000–4,000 across 25–40 comic situations
+  Name given names:      800–1,500; surname/root units: 1,500–3,000
+  Safe slang units:      1,000–2,500 role-labelled entries
+  Place components:      2,000–5,000 stems/features/institutions
+
+The animal target should include class/order/family metadata, familiarity and
+novelty bands, scientific identity and one preferred English common name.
+Objects need semantic affordances (wearable, powered, handheld, edible,
+container, vehicle, ceremonial, medical, industrial). Descriptor ingredients
+need grammatical role plus situation/mechanism metadata. Counts alone should
+never be acceptance criteria.
+
+Promising sources and licensing
+===============================
+
+Wikidata
+--------
+
+Structured item/property/lexeme data is CC0. It is the strongest common source
+for taxon identities, English labels, subclass/category relations, object types,
+occupations, title concepts and geographic feature types. Use versioned SPARQL
+queries or dumps with QIDs retained for deduplication and provenance.
+Automated access is permitted subject to endpoint etiquette; production should
+consume a reviewed snapshot rather than query at runtime.
+
+  https://www.wikidata.org/wiki/Wikidata:Licensing
+  https://www.wikidata.org/wiki/Wikidata:For_developers
+
+Open English WordNet / Princeton WordNet
+----------------------------------------
+
+Open English WordNet provides noun, adjective, adverb and semantic relation
+data under CC BY 4.0, incorporating Princeton WordNet material whose notice
+must also be retained. Hypernym paths can separate artifacts, tools, clothing,
+vehicles, foods, animals, traits and actions. It is suitable for producing
+candidate lemmas, not automatic comedy approval. Preserve attribution, source
+synset IDs and modification notices.
+
+  https://github.com/globalwordnet/english-wordnet
+  https://github.com/globalwordnet/english-wordnet/blob/main/LICENSE.md
+  https://wordnet.princeton.edu/license-and-commercial-use
+
+GBIF / Catalogue-style taxonomy
+-------------------------------
+
+GBIF is valuable for accepted taxon IDs, rank and vernacular-name extensions,
+but GBIF-hosted datasets can be CC0, CC BY or CC BY-NC individually. A blanket
+redistributable import is unsafe. Only explicitly compatible datasets should be
+selected, with dataset DOI/licence provenance and common-name normalization.
+Scientific species alone are too obscure; score recognisability separately.
+
+  https://www.gbif.org/terms
+  https://docs.gbif.org/course-data-use/en/
+
+OS Open Names and GeoNames
+--------------------------
+
+OS Open Names is available under the UK Open Government Licence and is best for
+British settlement/road/feature morphology. GeoNames offers downloadable
+worldwide features under CC BY 4.0 and requires attribution. Both describe real
+places; use them to learn safe component morphology or preserve source facts,
+not to silently replace essential real geography. Retain feature codes and
+provenance.
+
+  https://www.ordnancesurvey.co.uk/documents/product-support/user-guide/os-open-names-user-guide.pdf
+  https://www.geonames.org/export/
+  https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/open-government-licence/
+
+ONS baby-name releases
+----------------------
+
+ONS publishes England/Wales names with counts below three suppressed for
+confidentiality. Government material normally uses the OGL, but each downloaded
+release should retain its explicit notice. These lists can broaden plausible
+given-name eras/frequencies. They should not supply real full identities.
+
+  https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/livebirths/methodologies/babynamesqmi
+
+Wiktionary
+----------
+
+Wiktionary can provide British usage labels and pronunciation clues, but entry
+text is CC BY-SA 4.0/GFDL and may contain third-party material. Share-alike and
+attribution make wholesale extraction less simple than CC0/CC BY sources.
+Prefer a separate attributed derived dataset reviewed for compatibility, or
+use Wikidata lexemes/OEWN first. Never ingest slang without slur, target-group,
+explicitness, grammatical-role and regional review.
+
+  https://en.wiktionary.org/wiki/Wiktionary:Copyrights
+
+Prototype experiment
+====================
+
+The offline prototype combines current structured banks with:
+
+* 74 editorial animal identities spanning mammals, birds, reptiles,
+  amphibians, fish, marine invertebrates, insects and arachnids;
+* object-like entries conservatively filtered from the existing mixed legacy
+  bank by physical suffix;
+* simple adjective/adverb candidates from the existing descriptor CSV;
+* 43 experimental British given/surname components;
+* the full existing slang and place banks, explicitly marked unreviewed.
+
+It models preloaded deterministic catalogues, recency rotation and production
+offer counts for 100 rewrites. It performs zero database operations. It does
+not claim that raw legacy additions are production quality.
+
+Catalogue sizes (current structured / prototype candidate)
+----------------------------------------------------------
+
+  animals          60 / 134
+  objects         200 / 510
+  descriptors     708 / 2,389
+  name components 471 / 495
+  slang           200 / 2,142
+  places          200 / 997
+
+Before/after selection measurements
+-----------------------------------
+
+Category       Offers  Current unique/repeats/rolling-10 reuse  Prototype unique/repeats/rolling-10 reuse
+Animals           400       60 / 340 / 2.64                      134 / 266 / 0.44
+Objects         1,600      200 / 1,400 / 15.92                   510 / 1,090 / 1.83
+Descriptors     1,000      708 / 292 / 0.47                    1,000 / 0 / 0.00
+Name components 1,000      471 / 529 / 0.44                      495 / 505 / 0.14
+Slang           1,000      200 / 800 / 3.27                    1,000 / 0 / 0.00
+Places          1,000      200 / 800 / 3.55                      997 / 3 / 0.01
+
+This is catalogue rotation, not a humour score. It proves that identity breadth
+can reduce short-window reuse without phrase-level Mongo records. Runtime was
+111.30 ms, peak traced memory 744,540 bytes and database operations zero.
+
+Fifty editorial examples
+========================
+
+Animal constructions
+--------------------
+
+ 1. hoatzin with temporary diplomatic immunity
+ 2. goose with temporary diplomatic immunity
+ 3. horseshoe crab with temporary diplomatic immunity
+ 4. lobster with temporary diplomatic immunity
+ 5. bearded vulture with temporary diplomatic immunity
+ 6. parrot with temporary diplomatic immunity
+ 7. kea with temporary diplomatic immunity
+ 8. potoo with temporary diplomatic immunity
+ 9. springhare with temporary diplomatic immunity
+10. ferret with temporary diplomatic immunity
+
+Object constructions
+--------------------
+
+11. car seat cover licensed to inspect suspicious bunting
+12. marinadingbrush licensed to inspect suspicious bunting [weak: malformed source]
+13. television stand licensed to inspect suspicious bunting
+14. digital clock licensed to inspect suspicious bunting
+15. slow cooker licensed to inspect suspicious bunting [weak: familiar appliance]
+16. containment bucket licensed to inspect suspicious bunting
+17. ball pump licensed to inspect suspicious bunting
+18. serving tray licensed to inspect suspicious bunting
+19. desk fan licensed to inspect suspicious bunting
+20. hatstand licensed to inspect suspicious bunting
+
+Descriptor candidates
+---------------------
+
+21. tender [weak: generic]
+22. christian [reject: proper/religious category ambiguity]
+23. notched [weak without compatible physical role]
+24. jittery
+25. drenched
+26. lean [ambiguous grammatical/semantic role]
+27. awful [weak: generic]
+28. chronically [reject: incomplete adverb]
+29. pompous
+30. unbriefed
+
+Name/component experiments
+--------------------------
+
+31. Yaffle-Cholmondeley Countess Araminta Wuffle-Penge [reject: component roles crossed]
+32. Winkworth ridge [reject: ordinary word used as surname]
+33. Quibble bourne [weak casing/role]
+34. Vera Wobblecock Malcolm [reject: three incompatible components]
+35. Rattle Vexborough [weak given-name plausibility]
+36. Countess Araminta Wuffle-Penge [component requiring parsing]
+37. ridge [reject as untyped component]
+38. bourne [retain only as typed surname suffix]
+39. Malcolm [plausible given name]
+40. Vexborough [promising absurd surname]
+
+Place and slang candidates
+--------------------------
+
+41. Sofology [reject: trademark/shop, not fictional geography]
+42. Highbury [real place; preserve only as source geography]
+43. Halfords [reject: trademark/shop]
+44. Shit-Gargle Gully [possible invented place; explicitness review]
+45. Co-op [reject: institution/trademark]
+46. dungflinging gorilla [phrase, not general slang]
+47. slanteye [reject: discriminatory slur]
+48. cockface [explicit insult; adult-tone review]
+49. peeshie [regional/meaning verification required]
+50. fist fucks [reject: graphic phrase and wrong grammatical role]
+
+The weak examples are the important result: flat-bank expansion produces high
+numeric diversity while damaging safety, grammar and comedy. Production import
+must classify and review before selection.
+
+Recommended architecture
+========================
+
+1. Build versioned offline catalogues, one row per identity/component with a
+   stable source ID, preferred display form, aliases, licence/provenance,
+   semantic class, grammatical metadata, recognisability, visual suitability,
+   British relevance, comedy affordances and safety flags.
+2. Compile reviewed source files into compact JSON/SQLite artifacts at build
+   time. Load immutable indices once per process; do not query public datasets
+   or Mongo per candidate.
+3. Select category/semantic buckets deterministically from the rewrite UUID,
+   then sample a broad local pool. Perform one batched usage-history read for
+   identity/premise keys and lease only the final slate atomically.
+4. Track accepted identity and premise keys, not every possible generated
+   phrase. Preserve exact-phrase cooldown where the phrase exists, active lease
+   ownership, retry stability and finite cooldown reuse.
+5. Balance familiarity bands: typically 50–60% recognisable, 25–35% unusual but
+   pronounceable, 10–15% properly obscure. Prevent taxonomic siblings or one
+   equipment class from dominating a slate.
+6. Treat template compatibility as typed constraints. Examples: a wearable can
+   be ceremonially donned; a container can leak or contain; an animal can hold
+   office; a medical device should not use food-only behavior without an
+   intentional contrast rule.
+7. Keep source places protected. Fictional place ingredients belong only in
+   optional replacement roles explicitly permitted by the prompt.
+
+Risks and limitations
+=====================
+
+* External labels contain aliases, spelling variants, taxonomic synonyms,
+  trademarks, real people and offensive terms. Automated normalization cannot
+  replace editorial review.
+* Scientific catalogues optimize taxonomic completeness, not pronounceability,
+  recognisability or comic usefulness.
+* WordNet semantic classes help compatibility but senses are ambiguous and
+  attribution must ship with derived data.
+* Wikidata is CC0 but community data quality varies; retain QIDs and query date.
+* CC BY/OGL imports require attribution; Wiktionary share-alike needs a specific
+  repository licensing decision before redistribution.
+* Bigger banks reduce lexical repetition but will not fix premise repetition
+  unless mechanism/subject metadata expands in parallel.
+* Preloading a reviewed 20,000-object catalogue is inexpensive (a few MiB), but
+  large Python object graphs can multiply memory. Prefer compact records or
+  SQLite indices and measure resident memory in the implementation phase.
+
+Recommended phases
+==================
+
+4B — schema and acquisition tooling
+  Define provenance/licence schema and deterministic import commands. Start
+  with Wikidata CC0 animals and OEWN CC BY objects. Produce reports only.
+
+4C — animal and object editorial pipeline
+  Normalize aliases/taxonomy, classify affordances, score familiarity/visual
+  value, create reject lists, and review at least 500 samples per category.
+
+4D — descriptor and name components
+  Expand joke-bearing situations and typed name components. Use ONS/OEWN only
+  as raw plausible-language inputs; retain hand-authored comic mechanisms.
+
+4E — slang and fictional places
+  Build explicit role/safety registers and generative place morphology.
+  Do not reuse the current flat CSV wholesale.
+
+4F — shadow selection
+  Run 1,000-rewrite current/expanded comparisons with rolling semantic reuse,
+  compatibility rejection, memory, latency and concurrency tests.
+
+4G — controlled live integration
+  Introduce one catalogue at a time behind legacy/generated switches. Preserve
+  provider count, prompt size, exact cooldowns, historical content and rollback.

@@ -56,7 +56,9 @@ def choose_image_style(exclude=None):
 
 
 def build_image_prompt(result, image_style=None):
-    prompt = (f'{STYLE}\nScene: {result["crazyReplacement1Extract"][:1200]}\n'
+    prompt = (f'{STYLE}\nArticle title inspiration: '
+              f'{result.get("crazyReplacement1Title", "")[:240]}\n'
+              f'Scene: {result["crazyReplacement1Extract"][:1200]}\n'
               f'{build_composition_map()}')
     return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 

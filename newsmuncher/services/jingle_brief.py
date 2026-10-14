@@ -3,6 +3,7 @@ from jingle_service.contract import MusicBrief
 import random
 
 from jingle_service.genres import GENRES, GENRE_PROFILES
+from newsmuncher.services.rewrite_title import final_title
 
 
 def create_jingle_brief(entry):
@@ -33,8 +34,12 @@ def create_jingle_brief(entry):
         "indistinct vocals",
         "extended outro",
     ]
+    # Generated rewrite titles already use this same hard 18-word cap. Apply it
+    # locally here as well for a longer user-edited persisted title, without
+    # changing the saved title or making another model call.
+    jingle_title = final_title("", title)
     brief = MusicBrief(
-        music_prompt=profile.caption(), lyrics=title.strip(), duration_seconds=10,
+        music_prompt=profile.caption(), lyrics=jingle_title, duration_seconds=10,
         genre_profile=profile, positive_styles=positive,
         negative_styles=negative, context_adherence="high")
     return brief, None

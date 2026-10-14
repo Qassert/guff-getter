@@ -74,6 +74,143 @@ its path from `newsmuncher.config`. Keep credentials out of Git. Existing
 process environment values retain precedence where `load_dotenv` is used.
 Password recovery reads the root `.env` directly.
 
+New rewrites use invented comedy names by default. Set
+`NEWSMUNCHER_NAME_MODE=legacy` to restore the original `names.csv` selection path.
+The invented slate defaults to ten names at 70% cheeky / 30% absurd; optional
+`NEWSMUNCHER_CHEEKY_NAME_WEIGHT`, `NEWSMUNCHER_ABSURD_NAME_WEIGHT`,
+`NEWSMUNCHER_NAME_COOLDOWN_DAYS` and `NEWSMUNCHER_NAME_OFFER_MINUTES` values tune
+selection without changing historical creations.
+
+New rewrites also use ten grammar-aware comedy descriptors by default. Set
+`NEWSMUNCHER_DESCRIPTOR_MODE=legacy` to restore the original `adverbs.csv`
+selection and permanent-claim path. Generated descriptor cooldown and temporary
+offer lifetimes can be tuned with `NEWSMUNCHER_DESCRIPTOR_COOLDOWN_DAYS` and
+`NEWSMUNCHER_DESCRIPTOR_OFFER_MINUTES`; historical creations are unaffected.
+
+Expanded comedy-concept vocabulary is disabled by default. Set
+`NEWSMUNCHER_EXPANDED_VOCABULARY=reviewed` to use only prior human-reviewed
+catalogue animals and objects. For deliberate local editorial testing,
+`NEWSMUNCHER_EXPANDED_VOCABULARY=evaluation` also admits machine-checked entries
+that pass the safety, grammar, familiarity and classification gate. Unset it or
+use `off` for existing production behaviour. Evaluation mode never relabels an
+entry as editorially approved and adds no prompt slots.
+
+Phase 4E descriptor and invented-name expansions are independently disabled by
+default. Use `NEWSMUNCHER_EXPANDED_DESCRIPTORS=evaluation` or
+`NEWSMUNCHER_EXPANDED_NAMES=evaluation` for deliberate local review; `off` and
+`reviewed` currently preserve the approved generators because the new material
+is machine-checked. The slang and fictional-place experiments remain offline
+and have no live feature flag.
+
+Phase 4F improves descriptor evaluation selection without changing that flag or
+its default. Names remain evaluation-only; experimental slang and fictional
+places remain offline because they have not beaten the live banks on all
+relevant short- and long-window diversity measures.
+
+Phase 4G semantic-family memory is independently disabled by default. For local
+comparison, set `NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY=evaluation` alongside the
+Phase 4F evaluation flags. It softly deprioritizes recently accepted descriptor
+mechanisms and invented-name sound families, while retaining exact cooldowns,
+active leases and all editorial eligibility rules. Unset it or use `off` to
+preserve Phase 4F selection. Slang and fictional places remain unaffected.
+
+Phase 4H accepted final-article joke memory is also independently disabled by
+default. Set `NEWSMUNCHER_FINAL_JOKE_MEMORY=evaluation` for local review. It
+adds a short prompt note for specific constructions found in recently persisted
+articles, such as the same numbered group or queue-containment scenario. It
+does not ban broad subjects, add a provider call or alter failed rewrites.
+Unset it or use `off` to preserve existing behaviour.
+
+Phase 4I local comedy audit logging is diagnostic and disabled by default. Set
+`NEWSMUNCHER_COMEDY_AUDIT_LOG=on` to append successfully persisted MUNGEs to
+`local_audits/comedy_audit.jsonl`. Override the local path with
+`NEWSMUNCHER_COMEDY_AUDIT_PATH`. The ignored JSONL file contains complete source
+and rewritten articles, so review it before sharing. Export one readable file
+with `PYTHONPATH=. .venv/bin/python scripts/diagnostics/export_comedy_audit.py`.
+No file is uploaded automatically.
+
+Phase 4J completed-offer and topic memory is independently disabled by default.
+Set `NEWSMUNCHER_COMEDY_TOPIC_MEMORY=evaluation` for local review. It reads one
+short rolling history, softly deprioritizes recently completed offers, and adds
+concise guidance only when the same high-confidence final subject or
+construction appears at least twice in five articles. Source-required matches
+are exempt. It changes no hard quota, lease, cooldown or provider-call count.
+
+Phase 4K prompt comparisons are opt-in with `NEWSMUNCHER_COMEDY_VARIANT=A|B|C|D`.
+Unset or `A` preserves Phase 4J. `B` keeps twenty concept ingredients but mixes
+ten generated premises with ten provenance-labelled raw identities; `C` uses
+ten generated premises; `D` mixes six generated premises with ten raw
+identities. These modes do not add provider calls or select a winner. Enable
+the local comedy audit when comparing them, then create the blind report with:
+
+```bash
+PYTHONPATH=. ./.venv/bin/python scripts/diagnostics/export_comedy_comparison.py
+```
+
+Phase 4M lexical diversity is independently disabled by default. Set
+`NEWSMUNCHER_LEXICAL_DIVERSITY=evaluation` to enable a bounded, per-pet,
+persistent exposure history. It softly reduces the sampling probability of
+recently offered and final-used content words while preserving a nonzero chance
+of reuse and exempting vocabulary present in the current source. It also adds a
+short soft prompt preference when recent final vocabulary is unusually
+prominent; it adds no provider call. Optional bounds are
+`NEWSMUNCHER_LEXICAL_WINDOW` (default 10) and
+`NEWSMUNCHER_LEXICAL_GUIDANCE_ITEMS` (default 4). Use `off` or unset the flag to
+retain the exact pre-Phase-4M selection path. With local audit logging enabled,
+the JSONL additionally distinguishes first-pass and final text and records the
+lexical penalties active during selection.
+
+Phase 4N thematic diversity is also independently disabled by default. Set
+`NEWSMUNCHER_THEMATIC_DIVERSITY=evaluation` to select four optional creative
+springboards from a curated 100-domain catalogue. A bounded per-pet history
+softly reduces recent domain and family exposure without banning reuse. The
+guidance is appended to the existing first-pass prompt and adds no provider
+call. Optional settings are `NEWSMUNCHER_THEMATIC_COUNT` (3–5, default 4) and
+`NEWSMUNCHER_THEMATIC_WINDOW` (10–50, default 20). It can run with Phase 4M or
+on its own. With local audit logging enabled, JSONL records include selected
+domains, their active penalties and conservatively detected final influence.
+
+Phase 4P theme-informed ingredients are separately disabled by default. Set
+`NEWSMUNCHER_THEME_INGREDIENTS=evaluation` to replace at most two of the twenty
+concepts and one of the ten descriptors with generic cross-domain combinations
+drawn from typed entity, process, property and relationship seeds. Existing
+objects, creatures, quotas and grammatical roles remain in place. A bounded
+per-pet memory gives less-recent seeds and constructions more opportunity while
+retaining a nonzero chance of reuse. Phase 4P works alone or alongside Phase 4M
+and Phase 4N and adds no provider call. Optional conservative limits are
+`NEWSMUNCHER_THEME_CONCEPT_COUNT` (0–2),
+`NEWSMUNCHER_THEME_DESCRIPTOR_COUNT` (0–1), and
+`NEWSMUNCHER_THEME_INGREDIENT_WINDOW` (10–50). Local audit records include the
+selected seeds, domains, construction IDs and active selection penalties.
+
+Phase 4R theme-spark presentation is independently disabled by default. With
+Phase 4P enabled, set `NEWSMUNCHER_THEME_SPARKS=evaluation` to move the same two
+selected thematic concepts and one selected thematic descriptor out of the
+ordinary ingredient lists and into one compact optional block immediately
+before the source text. It does not select, rank or add ingredients, and it
+adds no provider call. If Phase 4P is off, this flag has no effect. Local audit
+records identify the prompt placement and exact first-pass and final matches.
+
+Phase 4T selective repetition replacement is disabled by default. Set
+`NEWSMUNCHER_REPETITION_REPLACEMENT=evaluation` to let the existing second-pass
+copy editor consider at most three recently exposed, source-exempt ingredient
+identities and at most two unused current Phase 4P alternatives. It may perform
+no more than two substitutions and may leave every target unchanged. Phase 4T
+reuses the bounded per-pet Phase 4M ledger even when Phase 4M ingredient ranking
+is off, but it needs Phase 4P enabled to provide controlled thematic
+alternatives. It adds no provider call. Local audit records contain conservative
+exact before/after evidence and do not claim semantic replacement.
+
+Phase 4U phrase-aware replacement is a separate refinement switch. Enable both
+`NEWSMUNCHER_REPETITION_REPLACEMENT=evaluation` and
+`NEWSMUNCHER_PHRASE_REPLACEMENT=evaluation` to treat provenance-backed concept
+bases and descriptor subjects as atomic targets, suppress overlapping component
+words, and offer short Phase 4P bases/subjects instead of entire cross-domain
+constructions. With the Phase 4U flag off, Phase 4T behavior is unchanged. If no
+compatible current-slate alternative exists, Phase 4U may give the same copy
+editor one explicit, auditable fresh-replacement fallback guided only by the
+current Phase 4P domains. It adds no provider call.
+
 Use Python 3.10 or newer. `requirements.txt` lists runtime dependencies identified
 from imports and framework features, including template rendering, multipart
 forms/uploads, password hashing, and the Uvicorn launcher. It is not a tested

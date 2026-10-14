@@ -348,6 +348,8 @@ function beginNewCreation() {
 
 function confirmData() {
     if (mungeProcessing) return;
+    const mungeMessage = document.getElementById('mungeMessage');
+    if (mungeMessage) { mungeMessage.hidden = true; mungeMessage.textContent = ''; }
     if (typeof jingleUI !== "undefined") jingleUI.show({nominated: false});
     const sequence = ++rewriteSequence;
     document.getElementById('bankButton').disabled = true;
@@ -364,9 +366,10 @@ function confirmData() {
         credentials: 'include',
         body: JSON.stringify({title,description,extract,draft_session:workingSession()})
     })
-        .then(response => {
-            if (!response.ok) throw new Error("Error shizzalising data.");
-            return response.json();
+        .then(async response => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.detail || "Could not create this MUNGE. Please try again.");
+            return data;
         })
         .then(data => {
             if (sequence !== rewriteSequence) return;
@@ -392,6 +395,10 @@ function confirmData() {
         .catch(error => {
             if (sequence !== rewriteSequence) return;
             console.error("Error during shizzalise:", error);
+            if (mungeMessage) {
+                mungeMessage.textContent = error.message;
+                mungeMessage.hidden = false;
+            }
             hideLoader();
         });
 }
@@ -439,11 +446,18 @@ function bankThisBeauty() {
         .then(data => {
             if (data.nominated !== true) throw new Error('Nomination was not confirmed.');
             if (nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence) {
+                const savedText = {
+                    crazyReplacement1Title: data.crazyReplacement1Title ?? response.crazyReplacement1Title,
+                    crazyReplacement1Extract: data.crazyReplacement1Extract ?? response.crazyReplacement1Extract
+                };
+                document.getElementById('responseTitleDraft').value = savedText.crazyReplacement1Title;
+                document.getElementById('responseBodyDraft').value = savedText.crazyReplacement1Extract;
+                currentImageUrl = data.image_url || null;
                 if (typeof embellishUI !== 'undefined') embellishUI.show({nominated:true,rewrite_id:data.rewrite_id || nominatingId});
                 creationNominated = data.nominated === true;
                 renderRedoImage();
                 if (typeof videoUI !== 'undefined') videoUI.show({nominated: creationNominated, rewrite_id: data.rewrite_id || nominatingId});
-                nominatedSnapshot = snapshot;
+                nominatedSnapshot = JSON.stringify(savedText);
                 document.getElementById('bankButton').hidden=true;
                 if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
                 if(typeof embellishUI!=='undefined')embellishUI.nominate({rewrite_id:data.rewrite_id||nominatingId,sequence:nominatingSequence});
