@@ -15,6 +15,7 @@ from newsmuncher.services.semantic_memory import (
     semantic_memory_enabled,
 )
 from newsmuncher.services.topic_memory import name_topic_family
+from newsmuncher.services.noun_exclusion import blocked_entries
 
 
 INVENTED_NAME_GUIDANCE = """INVENTED-NAME RULES:
@@ -121,7 +122,8 @@ class InventedNameRegistry:
             return False
         return bool(result.matched_count or result.upserted_id is not None)
 
-    def offer(self, selection_key: str, recent_families=None) -> list[str]:
+    def offer(self, selection_key: str, recent_families=None,
+              noun_exclusions=(), source_text="") -> list[str]:
         started = monotonic()
         self.last_metrics = {"candidate_ms": 0.0, "filter_ms": 0.0,
                              "lease_ms": 0.0, "availability_reads": 0,
@@ -197,7 +199,9 @@ class InventedNameRegistry:
         eligible = {}
         for style in ("cheeky", "absurd"):
             eligible[style] = [candidate for candidate in candidates[style]
-                               if available(candidate)]
+                               if available(candidate)
+                               and not blocked_entries(
+                                   candidate.name, noun_exclusions, source_text)]
             eligible[style].sort(key=recency)
             if len(eligible[style]) < needed[style]:
                 self.release(selection_key)

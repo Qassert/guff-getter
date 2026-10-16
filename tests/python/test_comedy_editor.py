@@ -47,6 +47,9 @@ def test_editor_receives_source_and_first_pass(monkeypatch):
     assert "3-3 words" in instruction
     assert "excludes the title" in instruction
     assert "repetitive concepts, unnecessary explanations, weaker jokes" in instruction
+    assert "remove them for repetition or weakness, not to meet a category count" in instruction
+    assert "readily imaginable absurd situations" in instruction
+    assert "strongest one or two animal jokes" not in instruction
     assert "derived only from the final edited article" in instruction
     assert supplied == {
         "original_source_article": source,
@@ -57,8 +60,6 @@ def test_editor_receives_source_and_first_pass(monkeypatch):
     }
     assert client.responses.create.call_args.kwargs["model"] == "test-editor"
     assert result["crazyReplacement1Extract"] == "An otter exploded."
-
-
 def test_editor_calculates_explicit_body_target_and_short_input():
     target = comedy_editor_word_target("word " * 136)
     assert target == {

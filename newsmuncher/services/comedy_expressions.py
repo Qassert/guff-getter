@@ -84,12 +84,12 @@ class ComedyExpressionGenerator:
             bank = dict(bank)
             bank.update({
                 "business_adjectives": ["Reluctant", "Bent", "Provisional", "Whispering", "Unclaimed", "Crooked", "Deputy", "Apologetic", "Mildly Alarmed", "Overdressed", "Last-Minute", "Questionable"],
-                "business_nouns": ["Ferret", "Teaspoon", "Waistcoat", "Turnip", "Gazebo", "Peacock", "Clipboard", "Kettle", "Marmalade", "Pigeon", "Wheelbarrow", "Cardigan"],
+                "business_nouns": ["Ferret", "Teaspoon", "Waistcoat", "Turnip", "Gazebo", "Peacock", "Clipboard", "Kettle", "Pigeon", "Wheelbarrow", "Cardigan"],
                 "business_types": ["Hotel", "Tea Rooms", "Emporium", "Removal Service", "Solicitors", "Motors", "Garden Centre", "Funeral Buffet"],
                 "landmark_nouns": ["Monument", "Footbridge", "Clock Tower", "Roundabout", "Bandstand", "Underpass", "Viewing Platform", "Memorial Bench"],
                 "landmark_causes": ["Premature Optimism", "the Great Receipt Shortage", "Municipal Regret", "Unsupervised Bunting", "the Lost Tuesday", "the Indoor Storm", "the Apology Rebellion", "the Pudding Settlement"],
                 "industrial_uses": ["Advanced Loitering", "Emergency Chutney", "Indoor Weather", "Ceremonial Packaging", "Applied Gossip", "Competitive Filing", "Provisional Gravy", "Quiet Alarm"],
-                "road_heads": ["Marmalade", "Last Apology", "Bent Spoon", "Doubtful Victory", "Three Pigeons", "Indoor Rain", "Unclaimed Hat", "Deputy Mayor"],
+                "road_heads": ["Last Apology", "Bent Spoon", "Doubtful Victory", "Three Pigeons", "Indoor Rain", "Unclaimed Hat", "Deputy Mayor"],
                 "road_types": ["Lane", "Close", "Parade", "Crescent", "Mews", "Approach", "Rise", "Passage"],
             })
             templates.extend([

@@ -1,6 +1,9 @@
 import copy
 
-from newsmuncher.services.vocabulary_catalogue import OfflineVocabularySelector, VocabularyCatalogue
+from newsmuncher.services.vocabulary_catalogue import (
+    OfflineVocabularySelector, VocabularyCatalogue, eligible_concept_entries,
+)
+from newsmuncher.services.comedy_concepts import animal_vocabulary
 from scripts.diagnostics.evaluate_vocabulary_foundation import run
 from scripts.diagnostics.evaluate_vocabulary_phase4c import phase4b_catalogue, run as run_phase4c
 from scripts.diagnostics.evaluate_vocabulary_phase4d import run as run_phase4d
@@ -11,6 +14,16 @@ def test_catalogue_has_six_valid_offline_families():
     assert set(catalogue.by_family) == {"animals", "objects", "descriptors", "names", "slang", "places"}
     assert all(catalogue.by_family.values())
     assert not [issue for issue in catalogue.validate() if issue.level == "error"]
+
+
+def test_animal_selection_policy_rejects_parts_and_roles_but_keeps_species():
+    values = {item["text"] for item in
+              eligible_concept_entries("animals", "evaluation")}
+    assert not ({"ala", "pad", "paw", "dam", "egg", "pet",
+                 "work animal", "roe"} & values)
+    assert {"olm", "kea", "daw"} <= values
+    assert {"tapir", "pangolin", "gibbon", "gorilla", "capybara",
+            "wombat", "meerkat", "flamingo"} <= set(animal_vocabulary())
 
 
 def test_selection_is_deterministic_grammar_compatible_and_avoids_recent_items():
@@ -45,8 +58,8 @@ def test_small_audit_is_offline_and_covers_all_families():
 def test_phase4c_expands_every_family_without_relabelling_phase4b():
     catalogue = VocabularyCatalogue.load()
     baseline = phase4b_catalogue(catalogue)
-    expected = {"animals": 134, "objects": 508, "descriptors": 708,
-                "names": 494, "slang": 30, "places": 58}
+    expected = {"animals": 134, "objects": 508, "descriptors": 705,
+                "names": 492, "slang": 30, "places": 58}
     assert {family: len(baseline.by_family[family]) for family in expected} == expected
     assert all(len(catalogue.by_family[family]) > count for family, count in expected.items())
     assert len(catalogue.by_family["animals"]) >= 1000

@@ -11,7 +11,8 @@ import re
 import unicodedata
 from functools import lru_cache
 
-from newsmuncher.services.lexical_exposure import weighted_choice
+from newsmuncher.services.lexical_exposure import exposure_weight, text_penalty, weighted_choice
+from newsmuncher.services.noun_exclusion import short_animal_penalty
 
 
 COMPONENTS_PATH = (
@@ -173,7 +174,8 @@ class ComedyConceptGenerator:
                  components_path: Path = COMPONENTS_PATH,
                  vocabulary_mode: str = "off", lexical_penalties=None,
                  noun_exclusions=(), source_text="", target_bank=None,
-                 component_filter_cache=None, exclusion_index=None):
+                 component_filter_cache=None, exclusion_index=None,
+                 new_vocabulary=False):
         self.random = random.Random(seed)
         self.config = config or ConceptGeneratorConfig()
         self.data = _load_components(str(Path(components_path).resolve()))
@@ -188,12 +190,21 @@ class ComedyConceptGenerator:
         self.component_filter_cache = (component_filter_cache
                                        if component_filter_cache is not None else {})
         self.exclusion_index = exclusion_index
+        self.new_vocabulary = new_vocabulary
         # Hard noun exclusion needs more identities than the historical compact
         # banks provide. Reuse the locally screened evaluation catalogue on that
         # already experimental path; ordinary generation remains as configured.
         catalogue_mode = ("evaluation" if self.noun_exclusions and vocabulary_mode == "off"
                           else vocabulary_mode)
         self.catalogue_banks = self._catalogue_banks(catalogue_mode)
+        if new_vocabulary:
+            from newsmuncher.services.experimental_vocabulary import (
+                concept_banks, vocabulary_tiers)
+            self.experimental_banks = concept_banks()
+            self.vocabulary_tiers = vocabulary_tiers()
+        else:
+            self.experimental_banks = {}
+            self.vocabulary_tiers = {}
         self._eligible_bank_cache = {}
         self.last_diagnostics = ConceptDiagnostics()
 
@@ -271,7 +282,8 @@ class ComedyConceptGenerator:
         if isinstance(original, dict):
             original = original[str(intensity)]
         additions = self.catalogue_banks.get(bank_name, ())
-        bank = tuple(dict.fromkeys((*original, *additions)))
+        fallback = tuple(dict.fromkeys((*original, *additions)))
+        experimental = self.experimental_banks.get(bank_name, ())
         if self.noun_exclusions:
             from newsmuncher.services.noun_exclusion import blocked_entries
             def eligible(value):
@@ -285,15 +297,45 @@ class ComedyConceptGenerator:
                              not in self.noun_exclusions)
                     )
                 return self.component_filter_cache[key]
-            bank = tuple(value for value in bank if eligible(value))
+            experimental = tuple(value for value in experimental if eligible(value))
+            fallback = tuple(value for value in fallback if eligible(value))
+        # Blend new and reviewed production material. Tier-aware selection below
+        # controls accessibility without removing any eligible specialist term.
+        bank = tuple(dict.fromkeys((*fallback, *experimental)))
         self._eligible_bank_cache[cache_key] = bank
         return bank
 
     def _pick(self, bank_name: str, intensity: int | None = None,
-              semantic_theme: str | None = None) -> str:
+              semantic_theme: str | None = None, avoid_specialist=False) -> str:
         bank = self._bank(bank_name, intensity, semantic_theme)
         if not bank:
             raise ValueError(f"No eligible values remain in concept bank {bank_name}")
+        if self.new_vocabulary:
+            # Allocate probability mass by accessibility tier rather than raw
+            # bank size. Specialists remain available, while reviewed and
+            # immediately recognisable vocabulary regain meaningful weight.
+            tier_mass = {"production": 0.43, "familiar": 0.25,
+                         "unusual": 0.10, "specialist": 0.22}
+            counts = Counter(self.vocabulary_tiers.get(value.casefold(), "production")
+                             for value in bank)
+            weights = []
+            for value in bank:
+                tier = self.vocabulary_tiers.get(value.casefold(), "production")
+                mass = tier_mass[tier]
+                if avoid_specialist and tier == "specialist":
+                    mass *= 0.08
+                penalty = text_penalty(value, self.lexical_penalties)
+                if bank_name == "creatures":
+                    penalty += short_animal_penalty(value, self.lexical_penalties)
+                weights.append(
+                    mass / counts[tier] * exposure_weight(penalty))
+            return self.random.choices(bank, weights=weights, k=1)[0]
+        if bank_name == "creatures" and self.lexical_penalties:
+            weights = [exposure_weight(
+                text_penalty(value, self.lexical_penalties)
+                + short_animal_penalty(value, self.lexical_penalties)
+            ) for value in bank]
+            return self.random.choices(bank, weights=weights, k=1)[0]
         return weighted_choice(self.random, bank, self.lexical_penalties)
 
     def _candidate(self, category: str, intensity: int) -> tuple[GeneratedConcept, str]:
@@ -315,17 +357,18 @@ class ComedyConceptGenerator:
         base_bank = ("creatures" if self.target_bank == "animals"
                      else template["base_bank"])
         base = self._pick(base_bank)
+        specialist_base = self.vocabulary_tiers.get(base.casefold()) == "specialist"
         values = {"base": base}
         theme = ""
         if "modifier_bank" in template:
             values["modifier"] = self._pick(
                 template["modifier_bank"], intensity,
-                SEMANTIC_THEMES[template["mechanism"]])
+                SEMANTIC_THEMES[template["mechanism"]], specialist_base)
             theme = values["modifier"]
         if "topic_bank" in template:
             values["topic"] = self._pick(
                 template["topic_bank"], None,
-                SEMANTIC_THEMES[template["mechanism"]])
+                SEMANTIC_THEMES[template["mechanism"]], specialist_base)
             theme = values["topic"]
         phrase = re.sub(r"\s+", " ", template["pattern"].format(**values)).strip()
         visual = self.VISUAL_SUITABILITY[category]
@@ -410,7 +453,8 @@ class ComedyConceptGenerator:
         return None
 
     def generate(self, count: int, category: str | None = None,
-                 intensity: int | None = None) -> list[GeneratedConcept]:
+                 intensity: int | None = None,
+                 allow_partial: bool = False) -> list[GeneratedConcept]:
         if category is not None and category not in CATEGORIES:
             raise ValueError(f"Unknown category: {category}")
         if intensity is not None and intensity not in (1, 2, 3):
@@ -440,7 +484,20 @@ class ComedyConceptGenerator:
             # than declaring false exhaustion after one unlucky draw.
             attempts = self.config.candidates_per_concept * 10
             for _ in range(attempts):
-                candidate, theme = self._candidate(planned_category, planned_intensity)
+                try:
+                    candidate, theme = self._candidate(
+                        planned_category, planned_intensity)
+                except ValueError as exc:
+                    component_shortage = (
+                        str(exc).startswith("No eligible values remain in concept bank ") or
+                        str(exc).startswith(f"No {planned_category} template supports ")
+                    )
+                    if not (allow_partial and component_shortage):
+                        raise
+                    diagnostics.exhausted = True
+                    diagnostics.rejected["component_space"] += 1
+                    self.last_diagnostics = diagnostics
+                    return accepted
                 diagnostics.proposed += 1
                 fingerprint = normalised(candidate.phrase)
                 reason = self.rejection_reason(candidate)
@@ -463,6 +520,8 @@ class ComedyConceptGenerator:
             if not pool:
                 diagnostics.exhausted = True
                 self.last_diagnostics = diagnostics
+                if allow_partial:
+                    return accepted
                 raise ValueError(
                     f"Concept space exhausted for {planned_category} at intensity "
                     f"{planned_intensity} after {len(accepted)} results"
@@ -497,7 +556,10 @@ class ComedyConceptGenerator:
 def animal_vocabulary() -> tuple[str, ...]:
     """Canonical local species used for conservative accepted-text detection."""
     data = _load_components(str(COMPONENTS_PATH.resolve()))
-    return tuple(data["banks"]["creatures"])
+    from newsmuncher.services.vocabulary_catalogue import eligible_concept_entries
+    expanded = (item["text"] for item in
+                eligible_concept_entries("animals", "evaluation"))
+    return tuple(dict.fromkeys((*data["banks"]["creatures"], *expanded)))
 
 
 def animal_forms(species: str) -> tuple[str, ...]:

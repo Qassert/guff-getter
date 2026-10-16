@@ -15,6 +15,7 @@ from newsmuncher.services.name_selection import (
     INVENTED_NAME_GUIDANCE, InventedNameRegistry, NameSelectionConfig,
     NameSelectionExhausted,
 )
+from newsmuncher.services.noun_exclusion import identity_entries
 
 
 class MemoryCollection:
@@ -238,6 +239,19 @@ def test_configuration_defaults_to_invented_and_legacy_switch_remains_available(
     assert NameSelectionConfig.from_environment().vocabulary_mode == "evaluation"
     monkeypatch.setenv("NEWSMUNCHER_NAME_MODE", "legacy")
     assert NameSelectionConfig.from_environment().mode == "legacy"
+
+
+def test_name_exclusions_are_applied_before_leasing_and_refilled():
+    collection = MemoryCollection()
+    service = InventedNameRegistry(collection)
+    baseline = service.offer("same-seed")
+    blocked_name = baseline[0]
+    service.release("same-seed")
+
+    selected = service.offer(
+        "same-seed", noun_exclusions=identity_entries(blocked_name))
+    assert len(selected) == 10
+    assert blocked_name not in selected
 
 
 def test_prompt_guidance_is_specific_without_forcing_all_ten_names():

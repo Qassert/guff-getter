@@ -20,17 +20,30 @@ test('pointer motion bends along configured radial axis and touch does not hover
  const untouched=t.buttons[1];untouched.dispatch('pointerenter',{pointerType:'touch',clientX:0,clientY:0});assert.equal(t.ui.states[1].lastX,null);
 });
 
-test('template and CSS assemble one supplied body with six separately tuned teat hit areas',()=>{
+test('template restores the original bodies, animated teats and separate engine labels',()=>{
  const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
- assert(html.includes('images/udders/munge/munge-body.png'));assert.equal((html.match(/class="munge-teat munge-teat-/g)||[]).length,1);
+ assert(!html.includes('images/munge-buttons.png'));assert(html.includes('images/udders/munge/munge-body.png'));assert.equal((html.match(/class="munge-teat munge-teat-/g)||[]).length,1);
+ assert(html.includes("images/udders/munge/munge-teat-"));assert.match(html,/class="munge-teat-shape" aria-hidden="true"><img/);
+ assert(html.includes('class="munge-engine-label"'));assert(!html.includes('munge-lettering'));
  for(const name of ['upper-left','upper-right','left','right','lower-left','lower-right'])assert(html.includes(`('${name}'`)||html.includes(`, '${name}'`));
  for(let i=1;i<=6;i++)assert(html.includes(`munge-teat-' ~ image`));
- const script=fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8');assert.match(script,/querySelectorAll\?\.\('\.munge-teat, \.munge-body-button'\)\?\.forEach\(button => button\.addEventListener\('click', confirmData\)\)/);assert(!html.includes('id="mungeButton"'));
+ const script=fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8');assert.match(script,/getElementById\('mungeControls'\)\?\.querySelectorAll\?\.\('\.munge-teat, \.munge-body-button'\)/);assert(!html.includes('id="mungeButton"'));
+ const controlScript=fs.readFileSync('newsmuncher/static/js/creation/munge-control.js','utf8');assert.match(controlScript,/querySelectorAll\('\.munge-control'\)/);assert.match(controlScript,/root\.mungeControls=controls\.map/);
+ assert.match(script,/querySelectorAll\('\.munge-body-button'\)/);assert(!script.includes("querySelectorAll('.munge-body-button, .munge-teat').forEach(button => {\n            button.disabled = true"));
+ assert(html.includes("path='js/creation/munge-music.js'"));
  for(const variable of ['--x','--y','--w','--axis-x','--axis-y','--origin-x','--origin-y','--base-rotation'])assert(html.includes(variable));
  assert.match(css,/\.munge-body-button\s*\{[^}]*z-index:\s*1/s);assert.match(css,/\.munge-body\s*\{[^}]*pointer-events:\s*none/s);assert.match(css,/\.munge-teat\s*\{[^}]*z-index:\s*2/s);assert.match(css,/prefers-reduced-motion/);
+ assert.match(css,/\.munge-control\s*\{[^}]*aspect-ratio:\s*1\.18/s);
+ assert.match(css,/\.munge-body\s*\{[^}]*width:\s*100%[^}]*height:\s*auto/s);
+ assert.match(css,/\.munge-engine-label\s*\{[^}]*position:\s*absolute[^}]*pointer-events:\s*none/s);
+ assert(!css.includes('.profile-page .munge-lettering'));
  const positions={"upper-left":['calc(32% + 16px)','23%'],"upper-right":['calc(68% - 16px)','23%'],left:['calc(26% + 8px)','calc(42% - 21px)'],right:['calc(74% - 6px)','calc(42% - 22px)'],"lower-left":['calc(37% + 20px)','calc(60% - 16px)'],"lower-right":['calc(63% - 12px)','calc(60% - 16px)']};
  for(const [name,[x,y]] of Object.entries(positions))assert(html.includes(`('${name}',`)&&html.includes(`'${x}', '${y}'`));
  assert.match(css,/\.munge-generation-controls\s*\{[^}]*position:\s*absolute[^}]*bottom:\s*calc\(-1 \* var\(--paper-edge\) - var\(--paper-transition-half-gap\) - 10px\)[^}]*transform:\s*translate\(-50%, 50%\)/s);
  assert.match(css,/\.profile-page \.profile-container\s*\{[^}]*margin-bottom:\s*calc\(2 \* var\(--paper-transition-half-gap\)\)/s);
+ assert.match(css,/\.profile-page \.munge-generation-controls\s*\{[^}]*pointer-events:\s*none/s);
+ assert.match(css,/\.profile-page \.munge-rotor\s*\{[^}]*pointer-events:\s*none/s);
+ assert.match(css,/\.profile-page \.munge-body-button\s*\{[^}]*pointer-events:\s*auto/s);
+ assert.match(css,/\.profile-page \.munge-teat\s*\{[^}]*pointer-events:\s*auto/s);
  assert.match(css,/\.profile-page \.profile-container\s*\{\s*z-index:\s*2/);
 });

@@ -10,6 +10,8 @@ from newsmuncher.services.concept_selection import (
 )
 from newsmuncher.services.comedy_concepts import normalised
 from newsmuncher.services.comedy_concepts import animal_mentions
+from newsmuncher.services.lexical_exposure import meaningful_words
+from newsmuncher.services.munge_engines import modern_prompt_concepts
 
 
 def registry(collection=None, now=None):
@@ -20,11 +22,123 @@ def registry(collection=None, now=None):
 def test_default_and_legacy_configuration(monkeypatch):
     monkeypatch.delenv("NEWSMUNCHER_CONCEPT_MODE", raising=False)
     monkeypatch.delenv("NEWSMUNCHER_EXPANDED_VOCABULARY", raising=False)
+    monkeypatch.delenv("NEWSMUNCHER_NEW_VOCABULARY", raising=False)
     config = ConceptSelectionConfig.from_environment()
     assert config.mode == "generated"
     assert config.vocabulary_mode == "off"
+    assert config.new_vocabulary is True
     monkeypatch.setenv("NEWSMUNCHER_CONCEPT_MODE", "legacy")
     assert ConceptSelectionConfig.from_environment().mode == "legacy"
+
+
+def test_lexical_recency_penalty_changes_final_candidate_order():
+    baseline_service = ConceptRegistry(MemoryCollection())
+    candidates = baseline_service._candidates("final-order")
+    repeated, _ = next(
+        pair for pair in candidates
+        if pair[1] == "nouns" and pair[0].category == "everyday_british")
+    identity = meaningful_words(repeated.phrase)[0]
+
+    baseline_service.candidates = lambda key, lexical_penalties=None: candidates
+    baseline = baseline_service.offer("baseline-final-order")
+    assert repeated.phrase in {item["phrase"] for item in baseline}
+
+    penalised_service = ConceptRegistry(MemoryCollection())
+    penalised_service.candidates = lambda key, lexical_penalties=None: candidates
+    penalised = penalised_service.offer(
+        "penalised-final-order", lexical_penalties={"word:" + identity: 100})
+    assert repeated.phrase not in {item["phrase"] for item in penalised}
+    assert len(penalised) == 20
+    assert sum(item["target_bank"] == "animals" for item in penalised) == 6
+
+
+def test_short_animal_recency_penalty_changes_final_candidate_order():
+    short_animals = {"emu", "yak", "pig", "bee", "olm", "cow", "eel"}
+    for suffix in range(20):
+        candidate_service = ConceptRegistry(MemoryCollection())
+        candidates = candidate_service._candidates(f"short-animal-order:{suffix}")
+        baseline_service = ConceptRegistry(MemoryCollection())
+        baseline_service.candidates = lambda key, lexical_penalties=None: candidates
+        baseline = baseline_service.offer(f"short-animal-baseline:{suffix}")
+        repeated = next((item["animal_species"] for item in baseline
+                         if item.get("animal_species") in short_animals), None)
+        if repeated:
+            break
+    assert repeated is not None
+
+    penalised_service = ConceptRegistry(MemoryCollection())
+    penalised_service.candidates = lambda key, lexical_penalties=None: candidates
+    penalised = penalised_service.offer(
+        f"short-animal-penalised:{suffix}",
+        lexical_penalties={"word:" + repeated: 100},
+    )
+    assert repeated not in {item.get("animal_species") for item in penalised}
+    assert len(penalised) == 20
+    assert sum(item["target_bank"] == "animals" for item in penalised) == 6
+
+
+def test_hidden_prompt_animals_release_with_selection_and_do_not_gain_cooldowns():
+    collection = MemoryCollection()
+    service = registry(collection)
+    selected = service.offer("animal-projection-release")
+    presented, metrics = modern_prompt_concepts(selected)
+    hidden = [item for item in selected if item not in presented]
+    assert metrics["selected_animals"] == 6
+    assert metrics["presented_animals"] == 4
+    assert len(hidden) == 2
+
+    service.accept("animal-projection-release", "rewrite", presented,
+                   "A quiet title", "No selected creature appeared.")
+
+    assert not any(doc.get("offered_by") == "animal-projection-release"
+                   for doc in collection.docs.values())
+    for item in hidden:
+        assert collection.docs["phrase:" + normalised(item["phrase"])].get(
+            "last_rewrite_id") is None
+
+
+def test_new_vocabulary_switch_is_explicit(monkeypatch):
+    monkeypatch.delenv("NEWSMUNCHER_NEW_VOCABULARY", raising=False)
+    assert ConceptSelectionConfig.from_environment().new_vocabulary is True
+    monkeypatch.setenv("NEWSMUNCHER_NEW_VOCABULARY", "on")
+    assert ConceptSelectionConfig.from_environment().new_vocabulary is True
+    monkeypatch.setenv("NEWSMUNCHER_NEW_VOCABULARY", "off")
+    assert ConceptSelectionConfig.from_environment().new_vocabulary is False
+
+
+def test_new_vocabulary_is_blended_and_default_path_is_unchanged():
+    baseline = ConceptRegistry(MemoryCollection()).offer("new-vocab:fixed")
+    experimental = ConceptRegistry(
+        MemoryCollection(), ConceptSelectionConfig(new_vocabulary=True)
+    ).offer("new-vocab:fixed")
+    assert len(baseline) == len(experimental) == 20
+    assert [item["phrase"] for item in baseline] != [
+        item["phrase"] for item in experimental]
+    from newsmuncher.services.experimental_vocabulary import concept_banks
+    new_bases = set(concept_banks()["domestic_objects"])
+    selected_new = sum(item["base"] in new_bases for item in experimental)
+    assert 2 <= selected_new <= 8
+    assert any(item["base"] not in new_bases for item in experimental)
+
+
+def test_new_vocabulary_respects_exclusions_and_falls_back_by_category(monkeypatch):
+    from newsmuncher.services.comedy_concepts import ComedyConceptGenerator
+    from newsmuncher.services.experimental_vocabulary import concept_banks
+    banks = concept_banks()
+    blocked = banks["domestic_objects"][0]
+    monkeypatch.setenv("NEWSMUNCHER_NEW_VOCABULARY", "on")
+    excluded = {"noun_identity:" + blocked}
+    generator = ComedyConceptGenerator(
+        "new-vocab:filter", new_vocabulary=True,
+        noun_exclusions=excluded, target_bank="nouns")
+    assert blocked not in generator._bank("domestic_objects")
+    service = ConceptRegistry(
+        MemoryCollection(), ConceptSelectionConfig(new_vocabulary=True))
+    offered = service.offer("new-vocab:excluded", noun_exclusions=excluded)
+    assert len(offered) == 20
+    assert blocked not in {item["base"] for item in offered}
+    assert [item["target_bank"] for item in offered].count("animals") == 6
+    assert [item["target_bank"] for item in offered].count("nouns") == 14
 
 
 def test_expanded_vocabulary_modes_are_explicit_and_machine_review_is_local(monkeypatch):
@@ -32,8 +146,10 @@ def test_expanded_vocabulary_modes_are_explicit_and_machine_review_is_local(monk
     reviewed = eligible_concept_entries("animals", "reviewed")
     evaluation = eligible_concept_entries("animals", "evaluation")
     assert reviewed and all(x["approval_status"] == "editorially_reviewed" for x in reviewed)
-    assert len(evaluation) > len(reviewed)
-    assert any(x["approval_status"] == "machine_checked" for x in evaluation)
+    assert {x["text"] for x in evaluation} - {x["text"] for x in reviewed} == {
+        "daw", "kea", "olm"}
+    assert all(x["approval_status"] == "editorially_reviewed" or
+               x["text"] in {"daw", "kea", "olm"} for x in evaluation)
     assert all(x["familiarity"] != "obscure" for x in evaluation)
     monkeypatch.setenv("NEWSMUNCHER_EXPANDED_VOCABULARY", "evaluation")
     assert ConceptSelectionConfig.from_environment().vocabulary_mode == "evaluation"
@@ -45,9 +161,9 @@ def test_expanded_concepts_preserve_quota_determinism_and_multiword_identities()
     second = ConceptRegistry(MemoryCollection(), config=config).offer("expanded:fixed")
     assert [x["phrase"] for x in first] == [x["phrase"] for x in second]
     assert Counter(x["category"] for x in first) == {
-        "everyday_british": 3, "cheeky_object": 4, "absurd_invention": 4,
+        "everyday_british": 3, "cheeky_object": 3, "absurd_invention": 4,
         "ridiculous_creature": 4, "bureaucratic_nonsense": 3,
-        "emergency_equipment": 1, "ceremonial_object": 1,
+        "emergency_equipment": 2, "ceremonial_object": 1,
     }
     assert any(" " in x["base"] for x in first)
 
@@ -98,16 +214,16 @@ def test_offer_is_stable_twenty_way_balanced_and_semantically_targeted():
     first = service.offer("pet:session")
     second = service.offer("pet:session")
     assert [item["phrase"] for item in first] == [item["phrase"] for item in second]
-    assert [item["target_bank"] for item in first].count("nouns") == 10
-    assert [item["target_bank"] for item in first].count("animals") == 10
+    assert [item["target_bank"] for item in first].count("nouns") == 14
+    assert [item["target_bank"] for item in first].count("animals") == 6
     assert all(item["category"] != "ridiculous_creature" for item in first
                if item["target_bank"] == "nouns")
     assert all(item["category"] == "ridiculous_creature" or item["category"] in PHYSICAL_CATEGORIES
                for item in first if item["target_bank"] == "animals")
     assert Counter(item["category"] for item in first) == {
-        "everyday_british": 3, "cheeky_object": 4, "absurd_invention": 4,
+        "everyday_british": 3, "cheeky_object": 3, "absurd_invention": 4,
         "ridiculous_creature": 4, "bureaucratic_nonsense": 3,
-        "emergency_equipment": 1, "ceremonial_object": 1,
+        "emergency_equipment": 2, "ceremonial_object": 1,
     }
     assert service.last_metrics["availability_reads"] == 1
     assert service.last_metrics["lease_writes"] <= 68
@@ -127,6 +243,25 @@ def test_animal_detection_normalizes_singular_plural_and_multiword_species():
     assert animal_mentions("Hamsters met geese and two guinea pigs.") == {
         "hamster", "goose", "guinea pig",
     }
+
+
+def test_recent_species_records_do_not_force_hard_cooldown_relaxation():
+    now = datetime(2026, 10, 15, tzinfo=timezone.utc)
+    collection = MemoryCollection()
+    service = ConceptRegistry(collection, now=lambda: now)
+    for item, target in service._candidates("soft-species"):
+        if target != "animals" or not item.animal_species:
+            continue
+        for prefix, value in (("base:", item.base),
+                              ("animal:", item.animal_species)):
+            key = prefix + normalised(value)
+            collection.docs[key] = {"_id": key, "last_used_at": now,
+                                    "use_count": 1}
+    offered = service.offer("soft-species")
+    assert len(offered) == 20
+    assert Counter(item["target_bank"] for item in offered) == {
+        "nouns": 14, "animals": 6}
+    assert service.last_metrics["relaxed"] is False
 
 
 def test_accept_tracks_exact_use_only_and_release_allows_reuse():
@@ -251,6 +386,120 @@ def test_genuine_exhaustion_is_typed_and_releases_partial_offer(monkeypatch):
     assert all(doc.get("offered_by") != "pet:exhausted" for doc in collection.docs.values())
 
 
+def test_large_history_does_not_promote_soft_identities_to_hard_exclusions():
+    from newsmuncher.services.noun_exclusion import (
+        blocked_entries, recent_comic_identity_anchors, verified_noun_anchors,
+    )
+
+    soft = sorted(set(recent_comic_identity_anchors(True)) -
+                  set(verified_noun_anchors(True)))
+    exclusions = {"noun_identity:" + word for word in soft}
+    exclusions.update("phrase:historical filler %04d" % index
+                      for index in range(2379 - len(exclusions)))
+
+    service = registry(MemoryCollection())
+    offered = service.offer("pet:large-history", noun_exclusions=exclusions)
+    assert len(offered) == 20
+    assert {item["target_bank"] for item in offered} == {"nouns", "animals"}
+    assert all(not blocked_entries(item["phrase"], exclusions)
+               for item in offered)
+
+
+def test_historical_species_fifo_entries_do_not_exhaust_modern_slate():
+    from newsmuncher.services.comedy_concepts import animal_vocabulary
+    from newsmuncher.services.noun_exclusion import blocked_entries
+    exclusions = set()
+    for species in animal_vocabulary():
+        exclusions.update({f"phrase:{species}", f"noun_identity:{species}"})
+    index = 0
+    while len(exclusions) < 2860:
+        exclusions.add(f"phrase:unrelated historical premise {index}")
+        index += 1
+    collection = MemoryCollection()
+    service = ConceptRegistry(collection)
+    offered = service.offer("historical-species", noun_exclusions=exclusions)
+    assert len(offered) == 20
+    assert Counter(item["target_bank"] for item in offered) == {
+        "nouns": 14, "animals": 6}
+    assert all(not blocked_entries(item["phrase"], exclusions) for item in offered)
+    service.release("historical-species")
+    assert all(not doc.get("offered_by") for doc in collection.docs.values())
+
+
+def test_fully_exhausted_optional_category_returns_partial_pool_for_fallback():
+    from newsmuncher.services.comedy_concepts import ComedyConceptGenerator
+    from newsmuncher.services.noun_exclusion import identity_words
+
+    probe = ComedyConceptGenerator(
+        "empty-bureaucratic-probe", target_bank="nouns", new_vocabulary=True)
+    values = (*probe._bank("documents", 2, "institutional_control"),
+              *probe._bank("bureau_bodies", 2, "institutional_control"))
+    exclusions = {
+        "phrase:" + " ".join(identity_words(value))
+        for value in values if identity_words(value)
+    }
+    generator = ComedyConceptGenerator(
+        "empty-bureaucratic", noun_exclusions=exclusions,
+        target_bank="nouns", new_vocabulary=True)
+
+    assert generator.generate(
+        6, category="bureaucratic_nonsense", allow_partial=True) == []
+    assert generator.last_diagnostics.exhausted
+    assert generator.last_diagnostics.rejected["component_space"] == 1
+
+
+def test_initial_generation_failure_records_stage_and_detail(monkeypatch):
+    service = registry(MemoryCollection())
+    monkeypatch.setattr(service, "_candidates",
+                        lambda *args, **kwargs: (_ for _ in ()).throw(
+                            ValueError("No bureaucratic_nonsense template supports intensity 3")))
+    try:
+        service.offer("pet:generation-failure", noun_exclusions={"phrase:x"})
+    except ConceptSelectionExhausted:
+        pass
+    else:
+        raise AssertionError("Expected initial candidate-generation failure")
+    assert service.last_metrics["failure_stage"] == "candidate_generation"
+    assert "bureaucratic_nonsense" in service.last_metrics["generation_error"]
+
+
+def test_partial_bureaucratic_generation_uses_safe_category_fallback():
+    from newsmuncher.services.comedy_concepts import ComedyConceptGenerator
+    from newsmuncher.services.noun_exclusion import blocked_entries, identity_words
+
+    probe = ComedyConceptGenerator(
+        "bureaucratic-shortage-probe", target_bank="nouns", new_vocabulary=True)
+    documents = probe._bank("documents", 2, "institutional_control")
+    bodies = probe._bank("bureau_bodies", 2, "institutional_control")
+    exclusions = {
+        "phrase:" + " ".join(identity_words(value))
+        for value in (*bodies, *documents[1:]) if identity_words(value)
+    }
+    exclusions.update(
+        f"phrase:unrelated historical identity {index}" for index in range(3062 - len(exclusions))
+    )
+
+    collection = MemoryCollection()
+    service = ConceptRegistry(
+        collection, ConceptSelectionConfig(new_vocabulary=True))
+    selected = service.offer(
+        "large-ledger-bureaucratic-shortage", noun_exclusions=exclusions)
+
+    assert len(selected) == 20
+    assert Counter(item["target_bank"] for item in selected) == {
+        "nouns": 14, "animals": 6}
+    assert service.last_metrics["category_quota_slack"] >= 1
+    shortfalls = service.last_metrics["candidate_generation_shortfalls"]
+    assert any(item["category"] == "bureaucratic_nonsense"
+               and item["produced"] < item["requested"]
+               and item["rejected"].get("base_overuse", 0) > 0
+               for item in shortfalls)
+    assert all(not blocked_entries(item["phrase"], exclusions)
+               for item in selected)
+    service.release("large-ledger-bureaucratic-shortage")
+    assert all(not doc.get("offered_by") for doc in collection.docs.values())
+
+
 def test_expired_leases_can_be_acquired_by_another_session(monkeypatch):
     collection = MemoryCollection()
     clock = [datetime(2026, 10, 9, tzinfo=timezone.utc)]
@@ -294,6 +543,9 @@ def test_prompt_override_is_exact_ten_plus_ten_and_claims_legacy_only(monkeypatc
     assert result["contenders"]["animals"] == []
     assert all(value in result["full_prompt"] for value in ("n1","n9","a1","a9"))
     assert CONCEPT_GUIDANCE in result["full_prompt"]
+    assert "Animal and non-animal concepts are alternatives, not a checklist" in result["full_prompt"]
+    assert "readily imaginable situations" in result["full_prompt"]
+    assert "zero, one or two" not in result["full_prompt"]
 
     legacy = clean_data.prepare_prompt(
         {"title":"t","description":"d","extract":"e"}, 10, template,

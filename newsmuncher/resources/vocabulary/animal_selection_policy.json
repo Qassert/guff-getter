@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "reviewed_machine_checked_identities": [
+    "daw",
+    "kea",
+    "olm"
+  ],
+  "excluded_standalone_identities": {
+    "ala": "an anatomical wing, not an animal species",
+    "beast of burden": "a working role, not an animal species",
+    "dam": "a parental role, not an animal species",
+    "egg": "a reproductive structure, not an animal species",
+    "pad": "an anatomical structure, not an animal species",
+    "paw": "an anatomical structure, not an animal species",
+    "pet": "a relationship to an animal, not a species",
+    "roe": "fish eggs in this catalogue entry, not roe deer",
+    "work animal": "a working role, not an animal species"
+  }
+}

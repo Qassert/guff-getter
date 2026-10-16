@@ -176197,31 +176197,6 @@
       "approval_status": "editorially_reviewed"
     },
     {
-      "id": "descriptors:circumstance:since-the-great-marmalade-compromise",
-      "text": "since the great marmalade compromise",
-      "family": "descriptors",
-      "category": "circumstance",
-      "subtype": "descriptor_ingredient",
-      "grammar": {
-        "roles": [
-          "predicate"
-        ]
-      },
-      "semantic_class": "circumstance",
-      "compatible_mechanisms": [
-        "comic_contradiction"
-      ],
-      "humour": {
-        "style": "british_absurdity",
-        "comic_potential": 3
-      },
-      "familiarity": "common",
-      "source_id": "newsmuncher-curated",
-      "licence_id": "INTERNAL-UNVERIFIED",
-      "editorial_flags": [],
-      "approval_status": "editorially_reviewed"
-    },
-    {
       "id": "descriptors:circumstance:during-authorised-periods-of-whimsy",
       "text": "during authorised periods of whimsy",
       "family": "descriptors",
@@ -177449,31 +177424,6 @@
     {
       "id": "descriptors:comic_state:waistcoat-dependent",
       "text": "waistcoat-dependent",
-      "family": "descriptors",
-      "category": "comic_state",
-      "subtype": "descriptor_ingredient",
-      "grammar": {
-        "roles": [
-          "pre_noun"
-        ]
-      },
-      "semantic_class": "comic_state",
-      "compatible_mechanisms": [
-        "comic_contradiction"
-      ],
-      "humour": {
-        "style": "british_absurdity",
-        "comic_potential": 3
-      },
-      "familiarity": "common",
-      "source_id": "newsmuncher-curated",
-      "licence_id": "INTERNAL-UNVERIFIED",
-      "editorial_flags": [],
-      "approval_status": "editorially_reviewed"
-    },
-    {
-      "id": "descriptors:comic_state:marmalade-compatible",
-      "text": "marmalade-compatible",
       "family": "descriptors",
       "category": "comic_state",
       "subtype": "descriptor_ingredient",
@@ -180554,31 +180504,6 @@
     {
       "id": "descriptors:financial_scheme:an-allotment-backed-security",
       "text": "an allotment-backed security",
-      "family": "descriptors",
-      "category": "financial_scheme",
-      "subtype": "descriptor_ingredient",
-      "grammar": {
-        "roles": [
-          "post_noun"
-        ]
-      },
-      "semantic_class": "financial_scheme",
-      "compatible_mechanisms": [
-        "financial_folly"
-      ],
-      "humour": {
-        "style": "british_absurdity",
-        "comic_potential": 3
-      },
-      "familiarity": "common",
-      "source_id": "newsmuncher-curated",
-      "licence_id": "INTERNAL-UNVERIFIED",
-      "editorial_flags": [],
-      "approval_status": "editorially_reviewed"
-    },
-    {
-      "id": "descriptors:financial_scheme:a-speculative-marmalade-reserve",
-      "text": "a speculative marmalade reserve",
       "family": "descriptors",
       "category": "financial_scheme",
       "subtype": "descriptor_ingredient",
@@ -260506,29 +260431,6 @@
       "approval_status": "editorially_reviewed"
     },
     {
-      "id": "names:absurd:marmalade",
-      "text": "Marmalade",
-      "family": "names",
-      "category": "absurd",
-      "subtype": "surname_component",
-      "grammar": {
-        "role": "surname_component"
-      },
-      "semantic_class": "surname_roots",
-      "compatible_mechanisms": [
-        "absurd"
-      ],
-      "humour": {
-        "style": "british_absurdity",
-        "comic_potential": 3
-      },
-      "familiarity": "common",
-      "source_id": "newsmuncher-curated",
-      "licence_id": "INTERNAL-UNVERIFIED",
-      "editorial_flags": [],
-      "approval_status": "editorially_reviewed"
-    },
-    {
       "id": "names:absurd:mizzle",
       "text": "Mizzle",
       "family": "names",
@@ -262049,29 +261951,6 @@
     {
       "id": "names:absurd:bearer-of-the-emergency-trousers",
       "text": "Bearer of the Emergency Trousers",
-      "family": "names",
-      "category": "absurd",
-      "subtype": "epithet",
-      "grammar": {
-        "role": "epithet"
-      },
-      "semantic_class": "neutral_epithets",
-      "compatible_mechanisms": [
-        "absurd"
-      ],
-      "humour": {
-        "style": "british_absurdity",
-        "comic_potential": 3
-      },
-      "familiarity": "common",
-      "source_id": "newsmuncher-curated",
-      "licence_id": "INTERNAL-UNVERIFIED",
-      "editorial_flags": [],
-      "approval_status": "editorially_reviewed"
-    },
-    {
-      "id": "names:absurd:grand-convenor-of-the-marmalade-inquiry",
-      "text": "Grand Convenor of the Marmalade Inquiry",
       "family": "names",
       "category": "absurd",
       "subtype": "epithet",

@@ -325,6 +325,21 @@ class JingleTests(unittest.TestCase):
         self.collection.find_one.assert_not_called()
         self.provider.assert_not_called()
 
+    def test_soundtrack_library_is_read_only_and_skips_full_discovery(self):
+        expected = self.service.audio.url("a" * 24)
+        entries = [
+            {"_id": "a" * 24, "jingle_url": expected},
+            {"_id": "b" * 24, "jingle_url": "/generated-audio/stale.mp3"},
+        ]
+        self.collection.find.return_value.sort.return_value = entries
+        with patch.object(self.service, "entry_status") as status:
+            result = self.service.soundtrack_library(self.collection, "pet")
+        self.assertEqual(result, {"jingles": [{"jingle_url": expected}]})
+        status.assert_not_called()
+        self.collection.update_one.assert_not_called()
+        with self.assertRaises(JingleError):
+            self.service.soundtrack_library(self.collection, None)
+
     def test_zero_match_cleanup_failure_remains_404(self):
         self.collection.update_one.return_value.matched_count = 0
         with patch.object(self.service, "retire_deleted", side_effect=OSError("unavailable")):
@@ -374,6 +389,7 @@ class JingleRouteTests(unittest.TestCase):
         module.service = Mock()
         module.service.generate.return_value = {"jingle_status": "complete", "jingle_url": "/generated-audio/a.mp3"}
         module.service.discover.return_value = {"jingles": []}
+        module.service.soundtrack_library.return_value = {"jingles": []}
         module.service.status.return_value = {"jingle_status": "none", "can_generate": True}
         app = FastAPI()
         app.include_router(module.router)
@@ -381,6 +397,9 @@ class JingleRouteTests(unittest.TestCase):
             client.cookies.set("active_pet", "pet")
             self.assertEqual(client.get("/jingles/").json(), {"jingles": []})
             module.service.discover.assert_called_once_with(fake_entries.collection, "pet")
+            self.assertEqual(client.get("/jingles/soundtrack").json(), {"jingles": []})
+            module.service.soundtrack_library.assert_called_once_with(
+                fake_entries.collection, "pet")
             response = client.post("/jingles/rewrite", json={"nominated": True, "title": "untrusted"})
             self.assertEqual(response.status_code, 200)
             module.service.generate.assert_called_once_with(fake_entries.collection, "rewrite", "pet")

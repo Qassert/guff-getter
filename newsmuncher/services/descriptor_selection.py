@@ -17,6 +17,7 @@ from newsmuncher.services.semantic_memory import (
     recency_penalty, record_family_use, semantic_memory_enabled,
 )
 from newsmuncher.services.noun_exclusion import blocked_entries
+from newsmuncher.services.lexical_exposure import text_penalty
 
 
 DESCRIPTOR_GUIDANCE = """GENERATED-DESCRIPTOR RULES:
@@ -156,13 +157,25 @@ class DescriptorRegistry:
                 for item in generated_pool
             } if memory_enabled else {}
             family_penalties.update(recent_offers or {})
-            if memory_enabled:
+            if lexical_penalties:
                 family_penalties.update({
-                    "premise:" + item.premise_key: recency_penalty(existing.get(
-                        family_record("descriptor-premise", descriptor_premise_family(item))),
-                        now, self.config.cooldown_days)
+                    "offered:" + normalised(item.phrase): text_penalty(
+                        item.phrase, lexical_penalties)
                     for item in generated_pool
                 })
+                for item in generated_pool:
+                    key = "premise:" + item.premise_key
+                    family_penalties[key] = max(
+                        family_penalties.get(key, 0.0),
+                        float(lexical_penalties.get(key, 0.0)))
+            if memory_enabled:
+                for item in generated_pool:
+                    key = "premise:" + item.premise_key
+                    family_penalties[key] = max(
+                        family_penalties.get(key, 0.0),
+                        recency_penalty(existing.get(family_record(
+                            "descriptor-premise", descriptor_premise_family(item))),
+                            now, self.config.cooldown_days))
 
             def available(record_id, enforce_cooldown=True):
                 doc = existing.get(record_id)

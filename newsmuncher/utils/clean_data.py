@@ -248,17 +248,15 @@ def prepare_prompt(entry, NumberOfWords, prompt_template, names_override=None, n
         source_text = "\n".join(str(original_entry.get(key, ""))
                                 for key in ("title", "description", "extract"))
         rejected = 0
-        for bank in ("nouns", "animals"):
+        for bank in tuple(random_words):
             values = random_words.get(bank, [])
             eligible = [value for value in values
                         if not blocked_entries(value, noun_exclusions, source_text)]
             rejected += len(values) - len(eligible)
-            if bank not in excluded and len(eligible) < NumberOfWords:
+            if bank in {"nouns", "animals"} and bank not in excluded and len(eligible) < NumberOfWords:
                 raise NounExclusionExhausted(
                     f"Not enough eligible legacy {bank} ingredients. Please try MUNGE IT again.")
             random_words[bank] = eligible[:NumberOfWords]
-        for bank in set(random_words) - {"nouns", "animals"}:
-            random_words[bank] = random_words[bank][:NumberOfWords]
         diagnostics["noun_exclusion_legacy_rejected"] = rejected
     diagnostics["other_csv_selection_ms"] = round((monotonic() - stage) * 1000, 2)
     stage = monotonic()
@@ -569,7 +567,6 @@ def comedy_editor_pass(source, pass1_result, word_target=None):
     target = word_target["target_word_count"]
     minimum = word_target["target_min_word_count"]
     maximum = word_target["target_max_word_count"]
-
     system_prompt = (
         "You are the final editor of an outrageously surreal British comedy article. "
         f"The first-pass ARTICLE BODY contains {word_target['first_pass_word_count']} words. "
@@ -582,7 +579,12 @@ def comedy_editor_pass(source, pass1_result, word_target=None):
         "unexpected animal occupations, profanity, innuendo, irreverence, wonderfully "
         "nonsensical combinations and unpredictable humour. Improve sentence flow, "
         "comic timing and narrative continuity without rationalising the nonsense, making "
-        "it realistic, sanitising it or turning it into conventional comedy. Preserve the "
+        "it realistic, sanitising it or turning it into conventional comedy. "
+        "Preserve the strongest jokes whether they use animals, objects or stranger material; "
+        "remove them for repetition or weakness, not to meet a category count. Favour vivid, "
+        "readily imaginable absurd situations, while keeping specialist language when its "
+        "meaning or contrast is funny. Untangle excessively nested compounds without sanding "
+        "away their best collision. Preserve the "
         "source article's principal events, chronology and narrative backbone. Brief invented "
         "fictional connective humour, adjusted relationships and small additional jokes are allowed "
         "when they make the existing absurdity work better. Do not introduce major new events, "

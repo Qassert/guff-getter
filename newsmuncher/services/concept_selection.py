@@ -12,23 +12,33 @@ from newsmuncher.services.semantic_memory import (
     family_record, record_family_use, semantic_memory_enabled,
 )
 from newsmuncher.services.noun_exclusion import (
-    blocked_entries, compile_exclusion_index, phrase_found,
+    blocked_entries, compile_exclusion_index, phrase_found, short_animal_penalty,
 )
+from newsmuncher.services.lexical_exposure import text_penalty
 
 CONCEPT_GUIDANCE = """GENERATED-CONCEPT RULES:
 - Generated concepts are optional; use roughly two to four only where natural.
 - Preserve the source story's central meaning and recognisable structure.
+- Animal and non-animal concepts are alternatives, not a checklist. Use whichever
+  create the strongest, clearest jokes; never force a concept merely to cover the list.
+- Favour substitutions that form surprising, readily imaginable situations. Use
+  specialist vocabulary when its meaning or contrast lands clearly, rather than
+  packing several unrelated technical terms into one phrase.
 - Keep each concept coherent; never splice several concepts into one phrase.
 - Give creatures and objects appropriate roles and avoid repeating one joke."""
 PHYSICAL_CATEGORIES = {"everyday_british", "cheeky_object", "absurd_invention",
                        "emergency_equipment", "ceremonial_object"}
 TARGET_QUOTAS = {
-    "nouns": {"everyday_british": 1, "cheeky_object": 2, "absurd_invention": 2,
-              "bureaucratic_nonsense": 3, "emergency_equipment": 1,
+    "nouns": {"everyday_british": 2, "cheeky_object": 3, "absurd_invention": 3,
+              "bureaucratic_nonsense": 3, "emergency_equipment": 2,
               "ceremonial_object": 1},
-    "animals": {"everyday_british": 2, "cheeky_object": 2,
-                "absurd_invention": 2, "ridiculous_creature": 4},
+    "animals": {"everyday_british": 1, "absurd_invention": 1,
+                "ridiculous_creature": 4},
 }
+
+
+def target_totals():
+    return {target: sum(quotas.values()) for target, quotas in TARGET_QUOTAS.items()}
 
 
 class ConceptSelectionExhausted(RuntimeError):
@@ -41,13 +51,15 @@ class ConceptSelectionConfig:
     offer_minutes: int = 15
     vocabulary_mode: str = "off"
     semantic_memory_mode: str = "off"
+    new_vocabulary: bool = False
     @classmethod
     def from_environment(cls):
         mode = os.getenv("NEWSMUNCHER_CONCEPT_MODE", "generated").strip().lower()
         return cls(mode, int(os.getenv("NEWSMUNCHER_CONCEPT_COOLDOWN_DAYS", "30")),
                    int(os.getenv("NEWSMUNCHER_CONCEPT_OFFER_MINUTES", "15")),
                    os.getenv("NEWSMUNCHER_EXPANDED_VOCABULARY", "off").strip().lower(),
-                   os.getenv("NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY", "off").strip().lower())
+                   os.getenv("NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY", "off").strip().lower(),
+                   os.getenv("NEWSMUNCHER_NEW_VOCABULARY", "on").strip().lower() != "off")
     def __post_init__(self):
         if self.mode not in {"generated", "legacy"}:
             raise ValueError("NEWSMUNCHER_CONCEPT_MODE must be 'generated' or 'legacy'")
@@ -112,12 +124,25 @@ class ConceptRegistry:
                     lexical_penalties=lexical_penalties,
                     noun_exclusions=noun_exclusions,
                     source_text=source_text,
-                    target_bank=(target if noun_exclusions else None),
+                    target_bank=(target if noun_exclusions or self.config.new_vocabulary
+                                 else None),
                     component_filter_cache=component_filter_cache,
                     exclusion_index=exclusion_index,
+                    new_vocabulary=self.config.new_vocabulary,
                 )
-                result.extend((item, target) for item in generator.generate(
-                    count, category=category))
+                generated = generator.generate(
+                    count, category=category, allow_partial=True)
+                result.extend((item, target) for item in generated)
+                if len(generated) < count:
+                    diagnostics = generator.last_diagnostics
+                    self.last_metrics.setdefault(
+                        "candidate_generation_shortfalls", []).append({
+                            "target": target,
+                            "category": category,
+                            "requested": count,
+                            "produced": len(generated),
+                            "rejected": dict(diagnostics.rejected),
+                        })
         return result
 
     def _acquire(self, record_id, selection_key, now, until, fields, enforce_cooldown=True):
@@ -142,13 +167,14 @@ class ConceptRegistry:
                category_quota_slack=0):
         selected = []
         target_counts = {"nouns": 0, "animals": 0}
+        targets_required = target_totals()
         category_counts = {target: {category: 0 for category in quotas}
                            for target, quotas in TARGET_QUOTAS.items()}
         selected_bases = set()
         selected_premises = set()
         for item, target in candidates:
             quota = TARGET_QUOTAS[target][item.category]
-            if (target_counts[target] == 10 or
+            if (target_counts[target] == targets_required[target] or
                     category_counts[target][item.category] >= quota + category_quota_slack or
                     normalised(item.base) in selected_bases or
                     item.premise_key in selected_premises):
@@ -162,7 +188,12 @@ class ConceptRegistry:
             acquired = []
             record_types = ("phrase", "base", "premise", "animal")
             for record_id, record_type in zip(ids, record_types):
-                strict = record_type == "phrase" or enforce_diversity_cooldown
+                species_record = bool(item.animal_species and (
+                    record_type == "animal" or
+                    (record_type == "base" and
+                     normalised(item.base) == normalised(item.animal_species))))
+                strict = (record_type == "phrase" or
+                          (enforce_diversity_cooldown and not species_record))
                 self.last_metrics["lease_writes"] += 1
                 if not self._acquire(record_id, selection_key, now, until,
                                      {**common, "record_type": record_type}, strict):
@@ -179,7 +210,7 @@ class ConceptRegistry:
             target_counts[target] += 1
             category_counts[target][item.category] += 1
             selected_bases.add(normalised(item.base)); selected_premises.add(item.premise_key)
-            if target_counts == {"nouns": 10, "animals": 10}:
+            if target_counts == targets_required:
                 return selected
         self.release(selection_key)
         return None
@@ -188,18 +219,19 @@ class ConceptRegistry:
     def _can_fill(candidates):
         """Cheaply prove the deterministic queue can satisfy every hard quota."""
         target_counts = {"nouns": 0, "animals": 0}
+        targets_required = target_totals()
         category_counts = {target: {category: 0 for category in quotas}
                            for target, quotas in TARGET_QUOTAS.items()}
         bases, premises = set(), set()
         for item, target in candidates:
-            if (target_counts[target] == 10 or
+            if (target_counts[target] == targets_required[target] or
                     category_counts[target][item.category] >= TARGET_QUOTAS[target][item.category] or
                     normalised(item.base) in bases or item.premise_key in premises):
                 continue
             target_counts[target] += 1
             category_counts[target][item.category] += 1
             bases.add(normalised(item.base)); premises.add(item.premise_key)
-        return target_counts == {"nouns": 10, "animals": 10}
+        return target_counts == targets_required
 
     def offer(self, selection_key, recent_offers=None, lexical_penalties=None,
               noun_exclusions=(), source_text=""):
@@ -211,6 +243,7 @@ class ConceptRegistry:
                              "category_quota_slack": 0,
                              "candidate_batches": 1,
                              "vocabulary_mode": self.config.vocabulary_mode,
+                             "new_vocabulary": self.config.new_vocabulary,
                              "lexical_penalty_terms": len(lexical_penalties or {})}
         try:
             stage = monotonic()
@@ -276,6 +309,8 @@ class ConceptRegistry:
                 f"{target}/{item.category}" for item, target in candidates))
             self.last_metrics["candidate_ms"] = round((monotonic() - stage) * 1000, 2)
         except ValueError as exc:
+            self.last_metrics["generation_error"] = str(exc)
+            self.last_metrics["failure_stage"] = "candidate_generation"
             self.release(selection_key)
             raise ConceptSelectionExhausted(
                 "Not enough generated concepts are currently available. Please try MUNGE IT again."
@@ -310,12 +345,28 @@ class ConceptRegistry:
                      if doc.get("last_used_at")]
             offer_penalty = max((recent_offers.get(record_id, 0)
                                  for record_id in self._record_ids(item)), default=0)
-            return (offer_penalty,
+            construction_penalty = float((lexical_penalties or {}).get(
+                "premise:" + item.premise_key, 0.0))
+            animal_penalty = (short_animal_penalty(item.phrase, lexical_penalties)
+                              if item.animal_species else 0.0)
+            return (text_penalty(item.phrase, lexical_penalties) + construction_penalty
+                    + animal_penalty,
+                    offer_penalty,
                     max(dates) if dates else datetime.min.replace(tzinfo=timezone.utc),
                     sum(doc.get("use_count", 0) for doc in records))
 
+        def candidate_available(item, relaxed=False):
+            for record_id in self._record_ids(item):
+                species_record = bool(item.animal_species and (
+                    record_id == "animal:" + normalised(item.animal_species) or
+                    (record_id == "base:" + normalised(item.base) and
+                     normalised(item.base) == normalised(item.animal_species))))
+                if not available(record_id, not relaxed and not species_record):
+                    return False
+            return True
+
         strict_candidates = [(item, target) for item, target in candidates
-                             if all(available(record_id) for record_id in self._record_ids(item))]
+                             if candidate_available(item)]
         self.last_metrics["strict_cooldown_rejected"] = (
             len(candidates) - len(strict_candidates))
         strict_candidates.sort(key=lambda pair: recency(pair[0]))

@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {UdderSounds,MIXKIT_SOUNDS,SUSPENSE_SOUND}=require('../../newsmuncher/static/js/creation/udder-sounds.js');
+const {UdderSounds,MIXKIT_SOUNDS,MUNGE_SOUNDS,SUSPENSE_SOUND}=require('../../newsmuncher/static/js/creation/udder-sounds.js');
 
 function element(){const listeners={};return{listeners,addEventListener:(name,fn)=>(listeners[name]??=[]).push(fn),dispatch(name,event={}){for(const fn of listeners[name]||[])fn(event);}};}
 class FakeAudio{
@@ -8,7 +8,7 @@ class FakeAudio{
  play(){this.played=true;return this.rejection?Promise.reject(Error('blocked')):Promise.resolve();}
  finish(name='ended'){this.listeners[name]?.();}
 }
-function setup(random=()=>0,count=5){FakeAudio.all=[];const buttons=Array.from({length:count},element),munge=element();return{buttons,munge,sounds:new UdderSounds({buttons,munge,AudioClass:FakeAudio,random})};}
+function setup(random=()=>0,count=5,options={}){FakeAudio.all=[];const buttons=Array.from({length:count},element),munge=element();return{buttons,munge,sounds:new UdderSounds({buttons,munge,AudioClass:FakeAudio,random,...options})};}
 
 test('page load assigns five unique Mixkit sounds and remains silent',()=>{
  const {sounds}=setup();assert.equal(sounds.assignments.length,5);assert.equal(new Set(sounds.assignments).size,5);
@@ -39,14 +39,14 @@ test('rejected playback is swallowed and cleaned up',async()=>{
  await new Promise(resolve=>setImmediate(resolve));assert.equal(sounds.active.size,0);
 });
 
-test('template loads isolated sound module and identifies the existing MUNGE action',()=>{
- const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');assert(html.includes('id="mungeControl"'));assert(html.includes("path='js/creation/udder-sounds.js'"));assert(html.indexOf('source-udder.js')<html.indexOf('munge-control.js'));assert(html.indexOf('munge-control.js')<html.indexOf('udder-sounds.js'));
+test('template loads teat sounds after controls without binding the retired MUNGE body sound',()=>{
+ const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),script=fs.readFileSync('newsmuncher/static/js/creation/udder-sounds.js','utf8');assert(html.includes('id="mungeControls"'));assert(html.includes("path='js/creation/udder-sounds.js'"));assert(html.indexOf('source-udder.js')<html.indexOf('munge-control.js'));assert(html.indexOf('munge-control.js')<html.indexOf('udder-sounds.js'));assert.match(script,/buttons:control\.querySelectorAll\('\.munge-teat'\)/);assert.doesNotMatch(script,/munge:button/);assert.doesNotMatch(script,/bodies:Object\.fromEntries/);
 });
 
-test('six-teat MUNGE set is unique, polyphonic and rerandomises with one suspense per click',()=>{
+test('six-teat MUNGE set keeps its instruments and never plays legacy suspense',()=>{
  let values=[.1,.2,.3,.4,.5,.6,.7,.8,.9,.9,.8,.7,.6,.5,.4,.3,.2,.1],i=0;
- const {buttons,sounds}=setup(()=>values[i++%values.length],6);assert.equal(sounds.assignments.length,6);assert.equal(new Set(sounds.assignments).size,6);assert(!sounds.assignments.includes(SUSPENSE_SOUND));
+ const {buttons,sounds}=setup(()=>values[i++%values.length],6,{rootPath:'/static/audio/effects/munge/',pool:MUNGE_SOUNDS,clickSound:'assigned',pressSound:true});assert.equal(sounds.assignments.length,6);assert.equal(new Set(sounds.assignments).size,6);assert(!sounds.assignments.includes(SUSPENSE_SOUND));
  const before=[...sounds.assignments];for(const button of buttons)button.dispatch('pointerenter',{pointerType:'mouse'});assert.equal(FakeAudio.all.length,6);assert.equal(sounds.active.size,6);
- let munges=0;buttons[4].addEventListener('click',()=>munges++);buttons[4].dispatch('click');assert.equal(munges,1);assert.equal(FakeAudio.all.filter(a=>a.src.endsWith('/suspense.wav')).length,1);
+ let munges=0;buttons[4].addEventListener('click',()=>munges++);buttons[4].dispatch('pointerdown');buttons[4].dispatch('click');assert.equal(munges,1);assert.equal(FakeAudio.all.filter(a=>a.src.endsWith('/suspense.wav')).length,0);assert(FakeAudio.all.at(-1).src.startsWith('/static/audio/effects/munge/'));
  assert.equal(new Set(sounds.assignments).size,6);assert.notDeepEqual(sounds.assignments,before);FakeAudio.all[0].finish();assert.equal(sounds.active.size,6);
 });

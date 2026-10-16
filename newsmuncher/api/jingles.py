@@ -24,6 +24,15 @@ def saved_jingles(active_pet: str = Cookie(None)):
         raise HTTPException(exc.status, detail=str(exc)) from exc
 
 
+@router.get("/soundtrack")
+def soundtrack_jingles(active_pet: str = Cookie(None)):
+    try:
+        return JSONResponse(service.soundtrack_library(collection, active_pet),
+                            headers={"Cache-Control": "private, max-age=60"})
+    except JingleError as exc:
+        raise HTTPException(exc.status, detail=str(exc)) from exc
+
+
 @router.get("/{rewrite_id}")
 def jingle_status(rewrite_id: str, active_pet: str = Cookie(None)):
     return invoke(service.status, rewrite_id, active_pet)

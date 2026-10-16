@@ -11,6 +11,7 @@ import re
 import unicodedata
 
 RESOURCE_PATH = Path(__file__).parents[1] / "resources/vocabulary/comedy_vocabulary_catalogue.json"
+ANIMAL_POLICY_PATH = Path(__file__).parents[1] / "resources/vocabulary/animal_selection_policy.json"
 FAMILIES = {"animals", "objects", "descriptors", "names", "slang", "places"}
 APPROVALS = {"machine_checked", "editorially_reviewed", "rejected"}
 SUPPORTED_LICENCES = {"CC0-1.0", "CC-BY-4.0", "OGL-3.0", "Apache-2.0", "INTERNAL-UNVERIFIED"}
@@ -121,6 +122,22 @@ def cached_catalogue():
     return catalogue
 
 
+@lru_cache(maxsize=1)
+def animal_selection_policy():
+    """Editorial classification for terms unsuitable as standalone animals."""
+    return json.loads(ANIMAL_POLICY_PATH.read_text(encoding="utf-8"))
+
+
+def selectable_animal_identity(text):
+    excluded = animal_selection_policy()["excluded_standalone_identities"]
+    return str(text or "").casefold().strip() not in excluded
+
+
+def reviewed_machine_animal_identity(text):
+    reviewed = animal_selection_policy()["reviewed_machine_checked_identities"]
+    return str(text or "").casefold().strip() in reviewed
+
+
 def eligible_concept_entries(family, approval_mode="reviewed"):
     """Apply the explicit animal/object live-evaluation eligibility policy."""
     if family not in {"animals", "objects"}:
@@ -139,6 +156,16 @@ def eligible_concept_entries(family, approval_mode="reviewed"):
                 or grammar.get("number") != "singular"
                 or grammar.get("countability") != "countable"
                 or len(entry.get("text", "").split()) > 5):
+            continue
+        if family == "animals" and not selectable_animal_identity(entry.get("text")):
+            continue
+        # The imported WordNet parentage is useful review evidence, but it
+        # also labels anatomy, life stages and roles as animals. Until that
+        # identity has editorial approval, do not use it as a standalone
+        # species. The reviewed generator bank still supplies unusual animals.
+        if (family == "animals"
+                and entry.get("approval_status") != "editorially_reviewed"
+                and not reviewed_machine_animal_identity(entry.get("text"))):
             continue
         if family == "objects" and entry.get("semantic_class") == "unclassified_object":
             continue

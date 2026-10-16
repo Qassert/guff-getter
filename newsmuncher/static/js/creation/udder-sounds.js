@@ -43,10 +43,10 @@
                     if (event.pointerType === 'touch') return;
                     this.play(this.assignments[index]);
                 });
-                if(this.pressSound)button.addEventListener('pointerdown',()=>{this.pressed.add(button);this.interaction();this.randomise();});
+                if(this.pressSound)button.addEventListener('pointerdown',()=>{this.pressed.add(button);this.interaction(index);this.randomise();});
                 button.addEventListener('click',()=>{
                     if(this.pressed.has(button)){this.pressed.delete(button);return;}
-                    this.interaction();this.randomise();
+                    this.interaction(index);this.randomise();
                 });
                 button.addEventListener('pointercancel',()=>this.pressed.delete(button));
             });
@@ -66,7 +66,11 @@
             return [...this.assignments];
         }
         suspense() { return this.play(SUSPENSE_SOUND); }
-        interaction() { return this.play(this.clickSound==='random'?this.pool[Math.floor(this.random()*this.pool.length)]:this.clickSound); }
+        interaction(index) {
+            const sound=this.clickSound==='assigned'?this.assignments[index]:
+                this.clickSound==='random'?this.pool[Math.floor(this.random()*this.pool.length)]:this.clickSound;
+            return this.play(sound);
+        }
         play(filename) {
             if (!filename || !this.AudioClass) return null;
             const audio=new this.AudioClass(this.rootPath+filename); this.active.add(audio);
@@ -84,8 +88,17 @@
 
     if(typeof module!=='undefined')module.exports={UdderSounds,MIXKIT_SOUNDS,MUNGE_SOUNDS,SUSPENSE_SOUND,SOUND_ROOT,MUNGE_ROOT};
     if(typeof document==='undefined')return;
-    const udder=document.getElementById('sourceUdder'),munge=document.getElementById('mungeControl');
+    const udder=document.getElementById('sourceUdder'),munge=document.getElementById('mungeControls');
     if(!udder)return;
     root.udderSounds=new UdderSounds({buttons:udder.querySelectorAll('.udder-teat'),pressSound:true});
-    if(munge)root.mungeSounds=new UdderSounds({buttons:munge.querySelectorAll('.munge-teat'),munge:document.getElementById('mungeBodyButton'),rootPath:MUNGE_ROOT,pool:MUNGE_SOUNDS,clickSound:SUSPENSE_SOUND,pressSound:true});
+    if(munge){
+        const controls=[...munge.querySelectorAll('.munge-control')];
+        const bodies=Object.fromEntries(controls.map(control=>[
+            control.dataset.mungeEngine,control.querySelector('.munge-body-button')]));
+        root.mungeSoundTargets=Object.freeze({...bodies});
+        root.mungeSounds={
+            teats:controls.map(control=>new UdderSounds({buttons:control.querySelectorAll('.munge-teat'),
+                rootPath:MUNGE_ROOT,pool:MUNGE_SOUNDS,clickSound:'assigned',pressSound:true}))
+        };
+    }
 })(typeof globalThis!=='undefined'?globalThis:this);

@@ -31,6 +31,7 @@ FEATURE_FLAGS = (
     "NEWSMUNCHER_REPETITION_REPLACEMENT",
     "NEWSMUNCHER_PHRASE_REPLACEMENT",
     "NEWSMUNCHER_NOUN_EXCLUSION",
+    "NEWSMUNCHER_AUTOMATIC_REPETITION_CONTROL",
     "NEWSMUNCHER_COMEDY_VARIANT",
     "NEWSMUNCHER_NAME_MODE",
     "NEWSMUNCHER_CONCEPT_MODE",
@@ -276,6 +277,7 @@ def build_audit_record(*, rewrite_id, source, result, names=None, concepts=None,
             "copy_edit_fell_back": bool(context.get("copy_edit_fell_back", False)),
         }
     if noun_exclusion_context is not None:
+        automatic = noun_exclusion_context.get("automatic_repetition", {})
         record["noun_exclusion"] = {
             "enabled": bool(noun_exclusion_context.get("enabled", False)),
             "excluded_before": int(noun_exclusion_context.get("excluded_before", 0)),
@@ -289,6 +291,23 @@ def build_audit_record(*, rewrite_id, source, result, names=None, concepts=None,
                 noun_exclusion_context.get("model_introduced_violations", ())],
             "newly_extracted": [str(value) for value in
                 noun_exclusion_context.get("newly_extracted", ())],
+            "recent_identities": [str(value) for value in
+                noun_exclusion_context.get("recent_identities", ())],
+            "automatic_repetition": {
+                "recent_events": int(automatic.get("recent_events", 0)),
+                "recent_identity_history": [
+                    {"rewrite_id": str(event.get("rewrite_id", "")),
+                     "identities": [str(value) for value in event.get("identities", ())]}
+                    for event in automatic.get("recent_identity_history", ())
+                    if isinstance(event, dict)
+                ],
+                "applied_penalties": {
+                    str(key): float(value)
+                    for key, value in automatic.get("applied_penalties", {}).items()
+                    if isinstance(value, (int, float))
+                },
+                "guidance": str(automatic.get("guidance", "")),
+            },
         }
     safe_timings = _numeric_metrics(timings or {})
     if safe_timings:

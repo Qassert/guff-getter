@@ -45,9 +45,11 @@
       <textarea id="sourceBodyDraft" aria-label="Source body" oninput="autoResize(this)"></textarea>
     </div>
 <div class="generation-controls munge-generation-controls">
-    <div id="mungeControl" class="munge-control" role="group" aria-label="MUNGE IT">
-      <div id="mungeRotor" class="munge-rotor">
-      <button type="button" id="mungeBodyButton" class="munge-body-button" aria-label="MUNGE IT">
+  <div id="mungeControls" class="munge-engine-group" role="group" aria-label="MUNGE engines">
+    {% for engine, label in [('classic', 'MUNGE CLASSIC'), ('current', 'MUNGE'), ('experimental', 'MUNGE EXPERIMENTAL')] %}
+    <div id="mungeControl-{{ engine }}" class="munge-control" data-munge-engine="{{ engine }}">
+      <div id="mungeRotor-{{ engine }}" class="munge-rotor">
+      <button type="button" id="mungeBodyButton-{{ engine }}" class="munge-body-button" data-munge-engine="{{ engine }}" aria-label="{{ label }}">
         <img class="munge-body" src="{{ url_for('static', path='images/udders/munge/munge-body.png') }}" alt="">
       </button>
       {% set munge_teats = [
@@ -61,12 +63,15 @@
       {% for orientation, image, x, y, width, tx, ty, axis_x, axis_y, origin_x, origin_y, rotation in munge_teats %}
       <button type="button" class="munge-teat munge-teat-{{ orientation }}"
         style="--x:{{ x }};--y:{{ y }};--w:{{ width }};--tx:{{ tx }};--ty:{{ ty }};--axis-x:{{ axis_x }};--axis-y:{{ axis_y }};--origin-x:{{ origin_x }};--origin-y:{{ origin_y }};--base-rotation:{{ rotation }}"
-        data-orientation="{{ orientation }}" aria-label="MUNGE IT — {{ orientation }} teat">
+        data-orientation="{{ orientation }}" data-munge-engine="{{ engine }}" aria-label="{{ label }} — {{ orientation }} teat">
         <span class="munge-teat-shape" aria-hidden="true"><img src="{{ url_for('static', path='images/udders/munge/munge-teat-' ~ image ~ '.png') }}" alt=""></span>
       </button>
       {% endfor %}
       </div>
+      <span class="munge-engine-label">{{ label }}</span>
     </div>
+    {% endfor %}
+  </div>
   </div>
   </div>
 
@@ -76,7 +81,7 @@
   <div id="outputContainer" class="container hidden">
     <div id="responseEditor" class="section-editor">
       <input id="responseTitleDraft" type="hidden" value="">
-      <textarea id="responseBodyDraft" aria-label="Response body" oninput="autoResize(this)"></textarea>
+      <textarea id="responseBodyDraft" aria-label="Response body" oninput="autoResize(this); responseEdited(); updateCopyButton()"></textarea>
     </div>
 
     <!-- Generated image -->
@@ -91,13 +96,14 @@
 
     <!-- ONE shared centred button row — all action buttons live here -->
     <div id="creationActions" class="creation-actions">
-      <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
+      <button type="button" id="copyMungeButton" class="funky-button creation-action-button" onclick="copyMungeResult()" hidden>COPY</button>
+      <button id="bankButton" class="funky-button creation-action-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
+      <button type="button" id="deleteCreationButton" class="funky-button creation-action-button" hidden>DELETE</button>
       <button type="button" id="embellishButton" class="funky-button shizzle-button" onclick="embellishUI.reembellish()" hidden>RE-EMBELLISH</button>
       <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled hidden>MAKE JINGLE</button>
       <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
       <div id="animationControls" class="animation-controls-inline" hidden>
       </div>
-      <button type="button" id="deleteCreationButton" class="funky-button creation-delete-button" hidden>DELETE</button>
     </div>
 
     <!-- Operational status messages shown beneath the button row when non-empty -->
@@ -132,4 +138,4 @@
 </div>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/munge-control.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=phase2e-fix1"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/munge-control.js') }}?v=munge-audio-1"></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=munge-audio-2"></script><script src="{{ url_for('static', path='js/creation/munge-music.js') }}?v=munge-music-4"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=create-actions-4"></script>{% endblock %}

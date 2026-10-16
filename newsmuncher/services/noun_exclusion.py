@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
+from collections import Counter
 import hashlib
 import csv
 import json
@@ -13,7 +14,7 @@ import re
 
 from pymongo.errors import DuplicateKeyError
 
-from newsmuncher.services.lexical_exposure import meaningful_words
+from newsmuncher.services.lexical_exposure import meaningful_words, normal_identity
 
 
 NOUN_EXCLUSION_ENV = "NEWSMUNCHER_NOUN_EXCLUSION"
@@ -32,6 +33,19 @@ GRAMMATICAL_COMPONENTS = frozenset({
     "until", "upon", "with", "within", "without",
 })
 COMPONENT_RE = re.compile(r"[a-z]+", re.I)
+TRACKED_COMIC_IDENTITIES = frozenset({
+    "allotment", "apocalypse", "biscuit", "gravy", "queue",
+})
+AUTOMATIC_REPETITION_ENV = "NEWSMUNCHER_AUTOMATIC_REPETITION_CONTROL"
+RECENT_IDENTITY_WINDOW = 12
+RECENT_IDENTITY_GUIDANCE_LIMIT = 8
+
+
+def automatic_repetition_enabled():
+    value = os.getenv(AUTOMATIC_REPETITION_ENV, "on").strip().lower()
+    if value not in {"on", "off"}:
+        raise ValueError(f"{AUTOMATIC_REPETITION_ENV} must be on or off")
+    return value == "on"
 
 
 @lru_cache(maxsize=1)
@@ -61,8 +75,8 @@ def _bank_values(bank):
         yield from bank
 
 
-@lru_cache(maxsize=1)
-def verified_noun_anchors():
+@lru_cache(maxsize=2)
+def verified_noun_anchors(include_experimental=False):
     """Return independently catalogued, single-token noun identities.
 
     Multiword vocabulary is retained as a phrase identity when it is accepted,
@@ -113,7 +127,178 @@ def verified_noun_anchors():
         with (root / "words" / filename).open(newline="", encoding="utf-8-sig") as handle:
             add_heads(cell for row in csv.reader(handle) for cell in row if cell)
 
-    return frozenset(anchors - set(GENERIC_NOUNS) - set(structural_components()))
+    if include_experimental:
+        from newsmuncher.services.experimental_vocabulary import concept_banks
+        add_heads(concept_banks()["domestic_objects"])
+
+    return frozenset(
+        (anchors | set(TRACKED_COMIC_IDENTITIES))
+        - set(GENERIC_NOUNS) - set(structural_components()))
+
+
+@lru_cache(maxsize=2)
+def recent_comic_identity_anchors(include_experimental=False):
+    """Known noun identities suitable for advisory recent-use controls."""
+    verified = set(verified_noun_anchors(include_experimental))
+    anchors = set(verified)
+    root = Path(__file__).resolve().parents[1] / "resources"
+    data = json.loads((root / "concepts" /
+                       "comedy_concept_components.json").read_text(encoding="utf-8"))
+    role_banks = {
+        template.get("modifier_bank")
+        for templates in data["templates"].values()
+        for template in templates
+        if template.get("modifier_bank") and any(
+            hint in template["modifier_bank"]
+            for hint in ("role", "occupation", "profession")
+        )
+    }
+    generic_role_heads = set()
+    for bank in role_banks:
+        values = list(_bank_values(data["banks"][bank]))
+        head_counts = Counter(
+            component_words(value, omit_articles=True)[-1]
+            for value in values if component_words(value, omit_articles=True))
+        for value in values:
+            words = component_words(value, omit_articles=True)
+            if words and head_counts[words[-1]] == 1:
+                anchors.add(words[-1])
+        generic_role_heads.update(
+            word for word, count in head_counts.items() if count > 1)
+        generic_role_heads.update(word for word in head_counts if word in verified)
+    # Internal identities qualify only when catalogue structure supplies strong
+    # noun evidence: the token occurs in multiple independent banks and is also
+    # a complete bank value or a phrase head. This captures e.g. floorboard and
+    # parish while excluding one-off adjectives and template grammar.
+    occurrences = Counter()
+    bank_occurrences = {}
+    heads = set()
+    singletons = set()
+    for filename in ("concepts/comedy_concept_components.json",
+                     "descriptors/comedy_descriptor_components.json"):
+        resource = json.loads((root / filename).read_text(encoding="utf-8"))
+        for bank, values in resource["banks"].items():
+            values = list(_bank_values(values))
+            bank_words = set()
+            for value in values:
+                words = component_words(value, omit_articles=True)
+                if not words:
+                    continue
+                bank_words.update(words)
+                heads.add(words[-1])
+                if len(words) == 1:
+                    singletons.add(words[0])
+                occurrences.update(set(words))
+            for word in bank_words:
+                bank_occurrences.setdefault(word, set()).add(filename + ":" + bank)
+    anchors.update(
+        word for word, banks in bank_occurrences.items()
+        if (word in singletons or word in heads) and len(banks) >= 2
+        and occurrences[word] >= 2
+    )
+    return frozenset(
+        anchors - set(GENERIC_NOUNS) - set(structural_components())
+        - generic_role_heads)
+
+
+@lru_cache(maxsize=1)
+def short_animal_identity_anchors():
+    """Reviewed/catalogued animal words omitted by generic lexical scoring."""
+    from newsmuncher.services.comedy_concepts import animal_vocabulary
+    values = animal_vocabulary()
+    return frozenset(
+        word for value in values
+        for word in component_words(value, omit_articles=True)
+        if 2 < len(word) < 4 and word not in structural_components()
+    )
+
+
+def short_animal_mentions(text):
+    """Return known short animal identities, including plural/possessive forms."""
+    folded = str(text or "").casefold()
+    found = set()
+    for animal in short_animal_identity_anchors():
+        if animal.endswith("y") and animal[-2:-1] not in "aeiou":
+            plural = animal[:-1] + "ies"
+        elif animal.endswith(("s", "x", "ch", "sh")):
+            plural = animal + "es"
+        else:
+            plural = animal + "s"
+        if re.search(rf"(?<![a-z])(?:{re.escape(animal)}|{re.escape(plural)})"
+                     rf"(?:['’]s)?(?![a-z])", folded):
+            found.add(animal)
+    return found
+
+
+def animal_identity_mentions(text):
+    """Return every selectable species with plural and possessive normalisation."""
+    from newsmuncher.services.comedy_concepts import animal_mentions
+    return animal_mentions(text)
+
+
+def short_animal_penalty(text, penalties):
+    """Apply the soft recent-use penalty consistently to every known species."""
+    return sum(float((penalties or {}).get("word:" + animal, 0.0))
+               for animal in animal_identity_mentions(text))
+
+
+def discover_recent_identities(text, source_text=""):
+    """Find conservatively recognised comic nouns in displayed output."""
+    protected = protected_words(source_text)
+    anchors = recent_comic_identity_anchors(
+        os.getenv("NEWSMUNCHER_NEW_VOCABULARY", "on").strip().lower() != "off")
+    identities = {
+        word for word in component_words(text, omit_articles=True)
+        if word in anchors and word not in protected
+    }
+    identities.update(
+        animal_identity_mentions(text) - animal_identity_mentions(source_text))
+    return sorted(identities)
+
+
+def construction_label(item):
+    """Return the structured joke-bearing component, excluding its replaceable base."""
+    if item.get("subject") and not item.get("base"):
+        return " ".join(component_words(item["subject"], omit_articles=True))
+    phrase = list(component_words(item.get("phrase", ""), omit_articles=True))
+    base = component_words(item.get("base") or item.get("subject", ""),
+                           omit_articles=True)
+    for start in range(len(phrase) - len(base) + 1):
+        if tuple(phrase[start:start + len(base)]) == base:
+            del phrase[start:start + len(base)]
+            break
+    grammar = structural_components()
+    words = [word for word in phrase if word not in grammar]
+    return " ".join(words) if words else ""
+
+
+def discover_used_constructions(text, source_text="", concepts=(), descriptors=()):
+    """Recognise structured premises retained exactly or by a narrow paraphrase."""
+    final_words = component_words(text, omit_articles=True)
+    source_words = set(component_words(source_text, omit_articles=True))
+    results = []
+    refusal_cue = re.compile(r"\b(?:refus\w*|reject\w*|won't|wouldn't)\b", re.I)
+    for item in tuple(concepts or ()) + tuple(descriptors or ()):
+        premise = str(item.get("premise_key", ""))
+        label = construction_label(item)
+        words = component_words(label, omit_articles=True)
+        if not premise or not words or set(words) <= source_words:
+            continue
+        exact = phrase_found(text, label)
+        # Editors commonly replace one leading action while retaining the
+        # distinctive multiword object (recognise -> reject linear time).
+        core = words[1:] if len(words) >= 3 else ()
+        paraphrased = bool(core and len(core) >= 2 and phrase_found(text, " ".join(core)))
+        # For a two-word refusal premise, require both its distinctive head and
+        # an explicit refusal cue; the head alone is insufficient evidence.
+        if (not exact and not paraphrased and len(words) == 2 and
+                item.get("semantic_theme") == "principled_refusal" and
+                words[-1] in final_words and refusal_cue.search(text)):
+            paraphrased = True
+        if exact or paraphrased:
+            results.append({"key": premise, "label": label,
+                            "match": "exact" if exact else "paraphrased"})
+    return list({item["key"]: item for item in results}.values())
 
 
 class NounExclusionExhausted(RuntimeError):
@@ -158,18 +343,36 @@ def component_words(text, omit_articles=False):
                  if not (omit_articles and word in OPTIONAL_ARTICLES))
 
 
+def identity_words(text):
+    """Canonical tokens used by persisted phrase identities and their matcher."""
+    return tuple(word for word in component_words(text, omit_articles=True)
+                 if len(word) >= 4)
+
+
 def identity_entries(text):
-    words = tuple(word for word in component_words(text, omit_articles=True)
-                  if len(word) >= 4)
+    words = identity_words(text)
     if not words:
         return set()
-    entries = {"phrase:" + " ".join(words)}
-    noun_anchors = verified_noun_anchors()
+    animal_phrases = animal_identity_word_sequences()
+    entries = (set() if words in animal_phrases
+               else {"phrase:" + " ".join(words)})
+    noun_anchors = verified_noun_anchors(
+        os.getenv("NEWSMUNCHER_NEW_VOCABULARY", "on").strip().lower() != "off")
     # Versioned entries let current extraction coexist with older ledgers that
     # promoted every component to ``noun:``. New anchors are unambiguous.
+    animal_words = {sequence[0] for sequence in animal_phrases
+                    if len(sequence) == 1}
     entries.update("noun_identity:" + word for word in words
-                   if word in noun_anchors)
+                   if word in noun_anchors and word not in animal_words)
     return entries
+
+
+@lru_cache(maxsize=1)
+def animal_identity_word_sequences():
+    """Canonical complete species identities exempt from the hard noun FIFO."""
+    from newsmuncher.services.comedy_concepts import animal_vocabulary
+    return frozenset(identity_words(value) for value in animal_vocabulary()
+                     if identity_words(value))
 
 
 def phrase_found(text, value):
@@ -202,24 +405,31 @@ def compile_exclusion_index(exclusions, source_text=""):
     for entry in exclusions:
         if not entry.startswith("phrase:"):
             continue
-        phrase_words = component_words(entry.split(":", 1)[1], omit_articles=True)
+        phrase_words = identity_words(entry.split(":", 1)[1])
         if phrase_words:
             legacy_boundaries.update((phrase_words[0], phrase_words[-1]))
     nouns = {}
+    noun_anchors = verified_noun_anchors(
+        os.getenv("NEWSMUNCHER_NEW_VOCABULARY", "on").strip().lower() != "off")
     phrases = []
+    animal_phrases = animal_identity_word_sequences()
+    animal_words = {sequence[0] for sequence in animal_phrases
+                    if len(sequence) == 1}
     for entry in exclusions:
         kind, value = entry.split(":", 1)
         words = value.split()
         if any(word in protected for word in words):
             continue
         if kind in {"noun", "noun_identity"}:
+            if value in animal_words:
+                continue
             current_or_supported_legacy = (
                 kind == "noun_identity" or value in legacy_boundaries)
-            if current_or_supported_legacy and value in verified_noun_anchors():
+            if current_or_supported_legacy and value in noun_anchors:
                 nouns.setdefault(value, []).append(entry)
         elif kind == "phrase":
-            phrase_words = component_words(value, omit_articles=True)
-            if phrase_words:
+            phrase_words = identity_words(value)
+            if phrase_words and phrase_words not in animal_phrases:
                 phrases.append((phrase_words, entry))
     return nouns, tuple(phrases)
 
@@ -227,7 +437,11 @@ def compile_exclusion_index(exclusions, source_text=""):
 def blocked_entries(text, exclusions, source_text="", exclusion_index=None):
     nouns, phrases = (exclusion_index or
                       compile_exclusion_index(exclusions, source_text))
-    available = component_words(text, omit_articles=True)
+    # Phrase entries are persisted from ``identity_entries``, which omits short
+    # connective tokens. Use that exact representation here too: otherwise a
+    # stored ``phrase:beast burden`` fails to match ``beast of burden`` during
+    # selection but collides when the same canonical key is reserved later.
+    available = identity_words(text)
     available_set = set(available)
     found = [entry for word, entries in nouns.items() if word in available_set
              for entry in entries]
@@ -267,8 +481,8 @@ def ingredient_texts(concepts=(), descriptors=(), raw=(), contenders=None):
         for field in ("text", "base", "subject"):
             if item.get(field):
                 yield str(item[field])
-    for bank in ("nouns", "animals"):
-        yield from (str(value) for value in (contenders or {}).get(bank, ()))
+    for values in (contenders or {}).values():
+        yield from (str(value) for value in values)
 
 
 def extract_final_entries(*, title, body, source_text, concepts=(), descriptors=(),
@@ -285,6 +499,20 @@ def extract_final_entries(*, title, body, source_text, concepts=(), descriptors=
     for item in tuple(concepts or ()) + tuple(descriptors or ()):
         if item.get("premise_key") and phrase_found(final_text, item.get("phrase", "")):
             entries.add("premise:" + str(item["premise_key"]))
+    # These deliberately curated comic noun identities recur through many
+    # constructions and may also be improvised by the writer. Record exact
+    # normalized tokens from the displayed result without promoting arbitrary
+    # modifiers or using substring matching.
+    final_words = set(component_words(final_text, omit_articles=True))
+    entries.update(
+        "noun_identity:" + identity
+        for identity in TRACKED_COMIC_IDENTITIES
+        if identity in final_words and identity not in protected
+    )
+    # Broader metadata-derived identities are recorded separately in the recent
+    # identity history. They drive advisory prompt guidance and soft ranking,
+    # but do not become permanent hard exclusions merely because they appeared
+    # once in prose.
     return entries
 
 
@@ -299,6 +527,8 @@ class NounExclusionMemory:
         self.record_id = "scope:" + digest
         self.entries = []
         self.reservations = []
+        self.recent_identity_events = []
+        self.last_reservation_conflict = {}
 
     def load(self):
         if not self.config.enabled:
@@ -311,7 +541,79 @@ class NounExclusionMemory:
         doc = self.collection.find_one({"_id": self.record_id}) or {}
         self.entries = list(doc.get("entries", []))[-self.config.capacity:]
         self.reservations = list(doc.get("reservations", []))
+        self.recent_identity_events = list(doc.get(
+            "recent_identity_events", []))[-RECENT_IDENTITY_WINDOW:]
         return self.entries
+
+    def identity_penalties(self, source_text=""):
+        if not self.config.enabled or not automatic_repetition_enabled():
+            return Counter()
+        protected = protected_words(source_text) | animal_identity_mentions(source_text)
+        penalties = Counter()
+        for age, event in enumerate(reversed(self.recent_identity_events), 1):
+            recency = RECENT_IDENTITY_WINDOW - age + 1
+            for identity in set(event.get("identities", ())) - protected:
+                penalties["word:" + identity] += recency
+            for construction in event.get("constructions", ()):
+                key = construction.get("key", "")
+                label = construction.get("label", "")
+                if key:
+                    penalties["premise:" + key] += recency
+                identity = normal_identity(label)
+                if identity:
+                    penalties["identity:" + identity] += recency
+        return penalties
+
+    def avoidance_guidance(self, source_text=""):
+        penalties = self.identity_penalties(source_text)
+        protected = protected_words(source_text) | animal_identity_mentions(source_text)
+        appearances = Counter(
+            identity
+            for event in self.recent_identity_events
+            for identity in set(event.get("identities", ())) - protected
+        )
+        ranked = sorted(
+            ((key[5:], value) for key, value in penalties.items()
+             if key.startswith("word:") and appearances[key[5:]] >= 2),
+            key=lambda item: (-item[1], item[0]),
+        )
+        construction_appearances = Counter(
+            construction.get("key")
+            for event in self.recent_identity_events
+            for construction in event.get("constructions", ())
+            if construction.get("key"))
+        construction_labels = {}
+        for event in self.recent_identity_events:
+            for construction in event.get("constructions", ()):
+                construction_labels[construction.get("key")] = construction.get("label")
+        construction_ranked = sorted(
+            ((key, penalties.get("premise:" + key, 0))
+             for key, count in construction_appearances.items() if count >= 2),
+            key=lambda item: (-item[1], item[0]),
+        )[:3]
+        constructions = [construction_labels[key] for key, _ in construction_ranked
+                         if construction_labels.get(key)]
+        remaining = RECENT_IDENTITY_GUIDANCE_LIMIT - len(constructions)
+        selected = [identity for identity, _ in ranked
+                    if (len(identity) >= 4 or identity in short_animal_identity_anchors())
+                    and identity not in structural_components()][
+                        :remaining]
+        if not selected and not constructions:
+            return ""
+        parts = []
+        if selected:
+            parts.append("comic nouns: " + ", ".join(selected))
+        if constructions:
+            parts.append("complete comic ideas: " + ", ".join(constructions))
+        return (
+            "RECENT COMIC IDENTITY VARIETY (soft guidance):\n"
+            "Unless the source requires them, avoid leaning again on these recently "
+            "repeated " + "; ".join(parts) + ". Use fresh, equally "
+            "surreal vocabulary instead. Grammatical joke patterns remain available "
+            "when their comic target or punchline changes substantially; avoid the "
+            "listed complete ideas and close paraphrases, not the reusable pattern. "
+            "Preserve the source facts and comedy style."
+        )
 
     def exclusions(self, generation_id=None):
         values = set(self.entries)
@@ -324,25 +626,76 @@ class NounExclusionMemory:
         if not self.config.enabled:
             return True
         entries = sorted(set(entries))
+        self.last_reservation_conflict = {}
         if not entries:
             return True
         now = self.now()
         query = {"_id": self.record_id, "entries": {"$nin": entries},
                  "reservations.entries": {"$nin": entries}}
         update = {
-            "$setOnInsert": {"version": 1, "record_type": "noun_exclusion", "entries": []},
             "$push": {"reservations": {"generation_id": str(generation_id),
                                         "entries": entries,
                                         "offer_until": now + timedelta(
                                             minutes=self.config.reservation_minutes)}},
         }
+        # Create the scope independently, then make the exclusion check and
+        # reservation one conditional atomic update. Combining both with an
+        # upsert made an ordinary filter mismatch surface as DuplicateKeyError
+        # on the existing _id and bypassed conflict diagnostics entirely.
         try:
-            result = self.collection.update_one(query, update, upsert=True)
+            self.collection.update_one(
+                {"_id": self.record_id},
+                {"$setOnInsert": {"version": 1,
+                                   "record_type": "noun_exclusion",
+                                   "entries": [], "reservations": []}},
+                upsert=True,
+            )
         except DuplicateKeyError:
-            return False
+            # A concurrent creator won; the conditional update below remains
+            # authoritative.
+            pass
+        result = self.collection.update_one(query, update)
         if result.matched_count or result.upserted_id is not None:
             self.reservations.append(update["$push"]["reservations"])
             return True
+        # The atomic query deliberately rejects both completed FIFO entries and
+        # entries reserved by another generation. Read back only those bounded
+        # identifiers so diagnostics can distinguish a stale selection snapshot
+        # from genuine concurrent work without exposing prompt/source content.
+        current = self.collection.find_one({"_id": self.record_id}) or {}
+        completed = sorted(set(entries) & set(current.get("entries", ())))
+        active = []
+        owners = set()
+        for reservation in current.get("reservations", ()):
+            collisions = sorted(set(entries) & set(reservation.get("entries", ())))
+            if collisions and reservation.get("generation_id") != str(generation_id):
+                active.extend(collisions)
+                owners.add(str(reservation.get("generation_id", "")))
+        if completed and active:
+            reason = "mixed"
+        elif completed:
+            reason = "completed_history"
+        elif active:
+            reason = "active_reservation"
+        elif not current:
+            reason = "missing_scope_document"
+        else:
+            reason = "atomic_filter_mismatch_without_visible_conflict"
+        self.last_reservation_conflict = {
+            "reason": reason,
+            "completed_entries": completed,
+            "active_entries": sorted(set(active)),
+            "active_owner_count": len(owners),
+        }
+        # State may change between the failed atomic update and readback. Retry
+        # once only when the fresh authoritative document shows no conflict;
+        # never retry a verified hard exclusion or active reservation.
+        if not completed and not active and current:
+            retry = self.collection.update_one(query, update)
+            if retry.matched_count or retry.upserted_id is not None:
+                self.reservations.append(update["$push"]["reservations"])
+                self.last_reservation_conflict = {}
+                return True
         return False
 
     def release(self, generation_id):
@@ -354,20 +707,29 @@ class NounExclusionMemory:
             self.reservations = [item for item in self.reservations
                                  if item.get("generation_id") != str(generation_id)]
 
-    def complete(self, generation_id, new_entries):
+    def complete(self, generation_id, new_entries, recent_identities=(),
+                 recent_constructions=()):
         if not self.config.enabled:
             return False
         new_entries = sorted(set(new_entries))
         for _ in range(4):
             doc = self.collection.find_one({"_id": self.record_id}) or {}
             if not doc:
+                recent_events = ([{"rewrite_id": str(generation_id),
+                                   "identities": sorted(set(recent_identities)),
+                                   "constructions": list(recent_constructions)}]
+                                 if automatic_repetition_enabled() and
+                                 (recent_identities or recent_constructions)
+                                 else [])
                 try:
                     result = self.collection.update_one(
                         {"_id": self.record_id},
                         {"$setOnInsert": {"version": 1,
                                           "record_type": "noun_exclusion"},
                          "$set": {"entries": new_entries[-self.config.capacity:],
-                                  "reservations": [], "revision": 1}},
+                                  "reservations": [],
+                                  "recent_identity_events": recent_events,
+                                  "revision": 1}},
                         upsert=True,
                     )
                 except DuplicateKeyError:
@@ -375,6 +737,7 @@ class NounExclusionMemory:
                 if result.matched_count or result.upserted_id is not None:
                     self.entries = new_entries[-self.config.capacity:]
                     self.reservations = []
+                    self.recent_identity_events = recent_events
                     return True
                 continue
             revision = int(doc.get("revision", 0))
@@ -383,6 +746,17 @@ class NounExclusionMemory:
                 if entry not in entries:
                     entries.append(entry)
             entries = entries[-self.config.capacity:]
+            recent_events = list(doc.get("recent_identity_events", []))
+            if (automatic_repetition_enabled() and
+                    (recent_identities or recent_constructions) and
+                    all(event.get("rewrite_id") != str(generation_id)
+                        for event in recent_events)):
+                recent_events.append({
+                    "rewrite_id": str(generation_id),
+                    "identities": sorted(set(recent_identities)),
+                    "constructions": list(recent_constructions),
+                })
+            recent_events = recent_events[-RECENT_IDENTITY_WINDOW:]
             reservations = [item for item in doc.get("reservations", [])
                             if item.get("generation_id") != str(generation_id)]
             revision_query = ({"$or": [{"revision": 0}, {"revision": {"$exists": False}}]}
@@ -390,9 +764,11 @@ class NounExclusionMemory:
             result = self.collection.update_one(
                 {"_id": self.record_id, **revision_query},
                 {"$set": {"entries": entries, "reservations": reservations,
+                           "recent_identity_events": recent_events,
                            "revision": revision + 1}},
             )
             if result.matched_count:
                 self.entries, self.reservations = entries, reservations
+                self.recent_identity_events = recent_events
                 return True
         raise RuntimeError("Concurrent noun-exclusion update did not settle")

@@ -7,12 +7,11 @@ let creationNominated = false, currentImageUrl = null, imageRedoPending = false,
 let imageRetryAttemptId = null, imageRetryConfirmation = null;
 window.creationContext=()=>({rewrite_id:displayedRewriteId,sequence:rewriteSequence});
 function renderRedoImage() {
+    renderNominationButton();
     const button = document.getElementById('redoImageButton');
     if (!button) return;
     button.hidden = creationNominated || (!currentImageUrl && !imageGenerationFailed);
     button.disabled = imageRedoPending || nominationPending;
-    const bank = document.getElementById('bankButton');
-    if (bank) bank.disabled = imageRedoPending || nominationPending;
     button.textContent = imageRedoPending ? 'REPLACING IMAGE…' :
         (!currentImageUrl && imageRetryAttemptId ? 'RETRY IMAGE' : 'REDO IMAGE');
 }
@@ -107,14 +106,11 @@ function setNominationState(data) {
     renderRedoImage();
     if (typeof videoUI !== "undefined") videoUI.show(data);
     if (typeof jingleUI !== "undefined") jingleUI.show(data);
-    const button = document.getElementById('bankButton');
-    button.textContent = 'NOMINATE';
-    button.hidden = data.nominated === true;
-    button.disabled = imageRedoPending;
     nominatedSnapshot = data.nominated ? JSON.stringify({
         crazyReplacement1Title: data.crazyReplacement1Title || '',
         crazyReplacement1Extract: data.crazyReplacement1Extract || ''
     }) : null;
+    renderNominationButton();
     renderDeleteCreation();
 }
 function renderDeleteCreation() {
@@ -159,7 +155,46 @@ async function deleteCurrentCreation() {
     }
 }
 function responseEdited() {
-    if (nominatedSnapshot) document.getElementById('bankButton').textContent = 'UPDATE NOMINATION';
+    renderNominationButton();
+}
+
+function renderNominationButton() {
+    const button = document.getElementById('bankButton');
+    if (!button) return;
+    const current = typeof currentResultText === 'function'
+        ? JSON.stringify(currentResultText()) : null;
+    const changed = !!nominatedSnapshot && current !== nominatedSnapshot;
+    button.hidden = !displayedRewriteId;
+    button.textContent = creationNominated
+        ? (changed ? 'UPDATE NOMINATION' : 'NOMINATED') : 'NOMINATE';
+    button.disabled = nominationPending || imageRedoPending ||
+        (creationNominated && !changed);
+}
+
+let copyFeedbackTimer = null;
+function updateCopyButton() {
+    const button = document.getElementById('copyMungeButton');
+    const text = document.getElementById('responseBodyDraft')?.value || '';
+    if (!button) return;
+    button.hidden = !text;
+    button.disabled = !text;
+}
+
+async function copyMungeResult() {
+    const button = document.getElementById('copyMungeButton');
+    const text = document.getElementById('responseBodyDraft')?.value || '';
+    if (!button || !text) return;
+    clearTimeout(copyFeedbackTimer);
+    try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'COPIED!';
+    } catch (_) {
+        button.textContent = 'COPY FAILED';
+    }
+    copyFeedbackTimer = setTimeout(() => {
+        button.textContent = 'COPY';
+        updateCopyButton();
+    }, 1600);
 }
 
 function autoResize(textarea) {
@@ -168,11 +203,9 @@ function autoResize(textarea) {
 }
 
 let mungeProcessing = false;
-let mungeSpinAnimation = null;
-let mungeDeceleration = null;
-let mungeThrobAnimation = null;
+let mungeSpinAnimations = [];
+let mungeDecelerations = [];
 const MUNGE_REVOLUTION_MS = 1120;
-const MUNGE_THROB_MS = 1400;
 const MUNGE_ANGULAR_VELOCITY = 360 / MUNGE_REVOLUTION_MS;
 
 function mungeRotation(element) {
@@ -184,96 +217,65 @@ function mungeRotation(element) {
     } catch (_) { return 0; }
 }
 
-function finishMungeProcessing(mungeControl, mungeButton) {
-    mungeSpinAnimation?.cancel(); mungeSpinAnimation = null;
-    mungeDeceleration?.cancel(); mungeDeceleration = null;
-    mungeThrobAnimation?.cancel(); mungeThrobAnimation = null;
-    mungeControl?.classList.remove('munge-control-processing', 'munge-control-decelerating');
-    if (mungeControl) {
-        mungeControl.style.transform = '';
-        mungeControl.setAttribute('aria-busy', 'false');
-    }
-    const rotor = document.getElementById('mungeRotor');
-    if (rotor) { rotor.style.transform = ''; rotor.style.filter = ''; }
-    if (mungeButton) {
-        mungeButton.disabled = false;
-        mungeButton.setAttribute('aria-disabled', 'false');
-    }
+function finishMungeProcessing() {
+    mungeSpinAnimations.forEach(animation => animation?.cancel()); mungeSpinAnimations = [];
+    mungeDecelerations.forEach(animation => animation?.cancel()); mungeDecelerations = [];
+    document.querySelectorAll('.munge-control').forEach(control => {
+        control.classList.remove('munge-control-processing', 'munge-control-decelerating');
+        control.style.transform = ''; control.setAttribute('aria-busy', 'false');
+    });
+    document.querySelectorAll('.munge-rotor').forEach(rotor => {
+        rotor.style.transform = ''; rotor.style.filter = '';
+    });
+    document.querySelectorAll('.munge-body-button').forEach(button => {
+        button.disabled = false; button.setAttribute('aria-disabled', 'false');
+    });
     mungeProcessing = false;
 }
 
 function setMungeProcessing(running) {
-    const mungeControl = document.getElementById('mungeControl');
-    const mungeRotor = document.getElementById('mungeRotor');
-    const mungeButton = document.getElementById('mungeBodyButton');
-    if (!mungeControl || !mungeRotor) return;
+    const controls = [...document.querySelectorAll('.munge-control')];
+    const rotors = [...document.querySelectorAll('.munge-rotor')];
+    if (!controls.length || !rotors.length) return;
     const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
     if (running) {
-        const angle = mungeRotation(mungeRotor);
-        mungeDeceleration?.cancel(); mungeDeceleration = null;
-        mungeSpinAnimation?.cancel();
+        mungeDecelerations.forEach(animation => animation?.cancel()); mungeDecelerations = [];
+        mungeSpinAnimations.forEach(animation => animation?.cancel());
         mungeProcessing = true;
-        mungeControl.classList.remove('munge-control-decelerating');
-        mungeControl.classList.add('munge-control-processing');
-        mungeControl.setAttribute('aria-busy', 'true');
-        if (mungeButton) {
-            mungeButton.disabled = true;
-            mungeButton.setAttribute('aria-disabled', 'true');
-        }
+        controls.forEach(control => {
+            control.classList.remove('munge-control-decelerating');
+            control.classList.add('munge-control-processing'); control.setAttribute('aria-busy', 'true');
+        });
+        document.querySelectorAll('.munge-body-button').forEach(button => {
+            button.disabled = true; button.setAttribute('aria-disabled', 'true');
+        });
         if (!reduced) {
-            mungeSpinAnimation = mungeRotor.animate(
-                [{transform:`rotate(${angle}deg)`},{transform:`rotate(${angle+360}deg)`}],
+            mungeSpinAnimations = rotors.map(rotor => rotor.animate(
+                [{transform:`rotate(${mungeRotation(rotor)}deg)`},{transform:`rotate(${mungeRotation(rotor)+360}deg)`}],
                 {duration:MUNGE_REVOLUTION_MS,iterations:Infinity,easing:'linear'}
-            );
-            if (mungeThrobAnimation) {
-                mungeThrobAnimation.effect.updateTiming({iterations:Infinity});
-                mungeThrobAnimation.play();
-            } else {
-                mungeThrobAnimation = mungeControl.animate([
-                    {transform:'scale(1)',offset:0,easing:'cubic-bezier(.45,0,.55,1)'},
-                    {transform:'scale(1.5)',offset:.5,easing:'cubic-bezier(.45,0,.55,1)'},
-                    {transform:'scale(1)',offset:1}
-                ],{duration:MUNGE_THROB_MS,iterations:Infinity});
-            }
+            ));
         }
         return;
     }
 
-    if (!mungeProcessing || mungeDeceleration) return;
-    if (reduced) return finishMungeProcessing(mungeControl, mungeButton);
-
-    const angle = mungeRotation(mungeRotor);
-    mungeSpinAnimation?.cancel(); mungeSpinAnimation = null;
-    mungeControl.classList.remove('munge-control-processing');
-    mungeControl.classList.add('munge-control-decelerating');
-    const distance = ((360 - angle) % 360) + 360;
-    const duration = Math.max(1, (2 * distance) / MUNGE_ANGULAR_VELOCITY);
-    const steps = 60;
-    const rotationFrames = Array.from({length:steps + 1}, (_, index) => {
-        const progress = index / steps;
-        const travelled = distance * (2 * progress - progress * progress);
-        return {transform:`rotate(${angle + travelled}deg)`,filter:`blur(${1.5 * (1-progress)}px)`,offset:progress};
+    if (!mungeProcessing || mungeDecelerations.length) return;
+    if (reduced) return finishMungeProcessing();
+    mungeSpinAnimations.forEach(animation => animation?.cancel()); mungeSpinAnimations = [];
+    controls.forEach(control => {
+        control.classList.remove('munge-control-processing'); control.classList.add('munge-control-decelerating');
     });
-    mungeDeceleration = mungeRotor.animate(rotationFrames,{duration,easing:'linear',fill:'forwards'});
-
-    let throbFinished = Promise.resolve();
-    if (mungeThrobAnimation) {
-        const currentTime = Number(mungeThrobAnimation.currentTime) || 0;
-        const completedCycles = Math.floor(currentTime / MUNGE_THROB_MS);
-        mungeThrobAnimation.effect.updateTiming({iterations:completedCycles + 1});
-        throbFinished = mungeThrobAnimation.finished.catch(()=>{});
-    }
-    Promise.all([mungeDeceleration.finished, throbFinished]).then(()=>{
-        if (!mungeDeceleration) return;
-        mungeRotor.style.transform='rotate(0deg)';mungeRotor.style.filter='blur(0px)';
-        mungeControl.style.transform='scale(1)';
-        finishMungeProcessing(mungeControl, mungeButton);
-    }).catch(()=>{});
+    mungeDecelerations = rotors.map(rotor => {
+        const angle=mungeRotation(rotor),distance=((360-angle)%360)+360;
+        return rotor.animate([{transform:`rotate(${angle}deg)`},{transform:`rotate(${angle+distance}deg)`}],
+            {duration:Math.max(1,(2*distance)/MUNGE_ANGULAR_VELOCITY),easing:'ease-out',fill:'forwards'});
+    });
+    Promise.all(mungeDecelerations.map(animation => animation.finished)).then(finishMungeProcessing).catch(()=>{});
 }
 
 function cancelMungeProcessingImmediately() {
-    finishMungeProcessing(document.getElementById('mungeControl'), document.getElementById('mungeBodyButton'));
+    window.mungeMusic?.stop();
+    finishMungeProcessing();
 }
 
 function showLoader() {
@@ -328,6 +330,7 @@ function fetchAndDisplay(scriptName) {
 }
 
 function beginNewCreation() {
+    window.mungeMusic?.stop();
     rewriteSequence++;
     setDisplayedRewriteId(null);
     nominatedSnapshot = null;
@@ -338,6 +341,7 @@ function beginNewCreation() {
     if (typeof embellishUI !== 'undefined') embellishUI.show(null);
     document.getElementById('responseTitleDraft').value = '';
     document.getElementById('responseBodyDraft').value = '';
+    updateCopyButton();
     const output = document.getElementById('outputContainer');
     output.style.display = 'none';
     output.classList.add('hidden');
@@ -346,25 +350,29 @@ function beginNewCreation() {
     return rewriteSequence;
 }
 
-function confirmData() {
+function confirmData(event) {
     if (mungeProcessing) return;
+    const mungeClickedAt = window.performance?.now?.() ?? Date.now();
     const mungeMessage = document.getElementById('mungeMessage');
     if (mungeMessage) { mungeMessage.hidden = true; mungeMessage.textContent = ''; }
     if (typeof jingleUI !== "undefined") jingleUI.show({nominated: false});
     const sequence = ++rewriteSequence;
     document.getElementById('bankButton').disabled = true;
     resetImagePanel();
+    window.mungeMusic?.start(mungeClickedAt);
     showLoader();
     const sourceTitle=document.getElementById('sourceTitleDraft').value,[title,...parts]=sourceTitle.split(' - ');
     const description=parts.join(' - '),extract=document.getElementById('sourceBodyDraft').value;
 
+    const engine = event?.currentTarget?.dataset?.mungeEngine || 'current';
+    window.mungeMusic?.markApiDispatched();
     fetch("/temp/shizzalise_data", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({title,description,extract,draft_session:workingSession()})
+        body: JSON.stringify({title,description,extract,draft_session:workingSession(),engine})
     })
         .then(async response => {
             const data = await response.json().catch(() => ({}));
@@ -373,6 +381,7 @@ function confirmData() {
         })
         .then(data => {
             if (sequence !== rewriteSequence) return;
+            window.mungeMusic?.stop();
             setDisplayedRewriteId(data.rewrite_id);
             setNominationState(data);
             try {
@@ -381,6 +390,7 @@ function confirmData() {
             } catch (_) {}
             const titleBox=document.getElementById('responseTitleDraft'),extractBox=document.getElementById('responseBodyDraft');
             titleBox.value=data.crazyReplacement1Title||'';extractBox.value=data.crazyReplacement1Extract||'';
+            updateCopyButton();
 
             document.getElementById("outputContainer").style.display = 'block';
             document.getElementById("bankButton").classList.remove("hidden");
@@ -394,6 +404,7 @@ function confirmData() {
         })
         .catch(error => {
             if (sequence !== rewriteSequence) return;
+            window.mungeMusic?.stop();
             console.error("Error during shizzalise:", error);
             if (mungeMessage) {
                 mungeMessage.textContent = error.message;
@@ -429,6 +440,7 @@ function bankThisBeauty() {
     const snapshot = JSON.stringify(response);
     if (snapshot === nominatedSnapshot) return;
     nominationPending = true;
+    renderNominationButton();
     renderRedoImage();
     const nominatingId = displayedRewriteId;
     const nominatingSequence = rewriteSequence;
@@ -458,7 +470,7 @@ function bankThisBeauty() {
                 renderRedoImage();
                 if (typeof videoUI !== 'undefined') videoUI.show({nominated: creationNominated, rewrite_id: data.rewrite_id || nominatingId});
                 nominatedSnapshot = JSON.stringify(savedText);
-                document.getElementById('bankButton').hidden=true;
+                renderNominationButton();
                 if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
                 if(typeof embellishUI!=='undefined')embellishUI.nominate({rewrite_id:data.rewrite_id||nominatingId,sequence:nominatingSequence});
             }
@@ -468,7 +480,11 @@ function bankThisBeauty() {
             console.error("Error banking the beauty:", error);
             hideLoader();
         })
-        .finally(() => { nominationPending = false; renderRedoImage(); });
+        .finally(() => {
+            nominationPending = false;
+            renderRedoImage();
+            renderNominationButton();
+        });
 }
 
 function setImageStyle(style) {
@@ -605,6 +621,7 @@ async function restoreImageRewrite() {
         setNominationState(data);
         const title=document.getElementById('responseTitleDraft'),extract=document.getElementById('responseBodyDraft');
         title.value=data.crazyReplacement1Title||'';extract.value=data.crazyReplacement1Extract||'';
+        renderNominationButton();
         document.getElementById('outputContainer').style.display = 'block';
         document.getElementById('bankButton').classList.remove('hidden');
         autoResize(extract);
@@ -612,7 +629,7 @@ async function restoreImageRewrite() {
     } catch (_) {} // Restoration is optional and never initiates paid generation.
 }
 
-document.getElementById('mungeControl')?.querySelectorAll?.('.munge-teat, .munge-body-button')?.forEach(button => button.addEventListener('click', confirmData));
+document.getElementById('mungeControls')?.querySelectorAll?.('.munge-teat, .munge-body-button')?.forEach(button => button.addEventListener('click', confirmData));
 window.addEventListener('pagehide', cancelMungeProcessingImmediately);
 document.getElementById('deleteCreationButton')?.addEventListener('click', openDeleteCreation);
 document.getElementById('confirmDeleteCreation')?.addEventListener('click', deleteCurrentCreation);

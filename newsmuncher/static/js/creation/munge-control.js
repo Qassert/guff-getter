@@ -47,6 +47,6 @@
     }
     if(typeof module!=='undefined')module.exports={MungeControl};
     if(typeof document==='undefined')return;
-    const control=document.getElementById('mungeControl');if(!control)return;
-    root.mungeControl=new MungeControl({buttons:control.querySelectorAll('.munge-teat'),reduced:()=>!!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches});
+    const controls=[...document.querySelectorAll('.munge-control')];if(!controls.length)return;
+    root.mungeControls=controls.map(control=>new MungeControl({buttons:control.querySelectorAll('.munge-teat'),reduced:()=>!!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches}));
 })(typeof globalThis!=='undefined'?globalThis:this);

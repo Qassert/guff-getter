@@ -285,6 +285,30 @@ class Jingles:
                               "title": self.snapshot(entry)["title"], **result})
         return {"jingles": saved}
 
+    def soundtrack_library(self, collection, owner):
+        """Return owned saved-audio URLs without discovery reconciliation.
+
+        MUNGE playback needs a fast, read-only library lookup. Full discovery
+        also reconciles every nomination with local state and is intentionally
+        kept for the nomination UI rather than the click-to-audio critical path.
+        """
+        if not owner:
+            raise JingleError(401, "Select a pet first.")
+        entries = collection.find({"nominated": True, "$or": [
+            {"image_owner": owner},
+            {"image_owner": {"$exists": False}, "creationUser": owner}]},
+            {"_id": 1, "jingle_url": 1}).sort(
+                [("creationDate", -1), ("_id", -1)])
+        urls = []
+        for entry in entries:
+            try:
+                expected = self.audio.url(str(entry["_id"]))
+            except (KeyError, ValueError):
+                continue
+            if entry.get("jingle_url") == expected and expected not in urls:
+                urls.append(expected)
+        return {"jingles": [{"jingle_url": url} for url in urls]}
+
     def status(self, collection, rewrite_id, owner):
         entry = self.nomination(collection, rewrite_id, owner)
         return self.entry_status(collection, entry, owner)

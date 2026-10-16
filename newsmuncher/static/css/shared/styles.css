@@ -190,6 +190,7 @@ body { isolation: isolate; }
   --profile-reading: rgba(242, 240, 231, .94);
   --profile-soft-paper: rgba(242, 240, 231, .86);
   --profile-foreground: var(--ink);
+  --munge-control-width: min(82vw, 370px);
   position: relative;
 }
 .initial-background { position: fixed; inset: 0;
@@ -381,7 +382,13 @@ body { isolation: isolate; }
   /* The udder is an absolute overlay; reserve only its lower teat footprint. */
   position:relative; z-index:1; padding-top: clamp(107px, 13.92vw, 136px);
 }
-.profile-page #responseEditor { padding-top: clamp(10px, 1.5vw, 16px); }
+.profile-page #responseEditor {
+  position: relative;
+  padding: clamp(10px, 1.5vw, 16px) 0 0;
+}
+.profile-page #responseBodyDraft {
+  position: relative; z-index: 1; pointer-events: auto; cursor: text;
+}
 .profile-page :is(.profile-container, #outputContainer) .section-editor textarea:focus {
   background: transparent; box-shadow: none;
   outline: 1px dashed #817259; outline-offset: 3px;
@@ -421,6 +428,19 @@ body { isolation: isolate; }
   position: absolute; left: 50%; width: 100%;
   bottom: calc(-1 * var(--paper-edge) - var(--paper-transition-half-gap) - 10px);
   transform: translate(-50%, 50%); margin: 0; overflow: visible;
+  pointer-events: none;
+}
+.profile-page .munge-engine-group {
+  display:flex; align-items:center; justify-content:center; width:min(100vw, 1040px);
+  gap:clamp(2px, 1vw, 14px); pointer-events:none;
+}
+.profile-page .munge-engine-group .munge-control {
+  width:min(28vw, 290px); flex:0 1 290px;
+}
+.profile-page .munge-engine-label {
+  position:absolute; z-index:3; left:50%; bottom:1%; transform:translateX(-50%);
+  width:100%; text-align:center; color:var(--print-ink); font-weight:800;
+  font-size:clamp(.62rem, 1.25vw, .9rem); letter-spacing:.035em; pointer-events:none;
 }
 .profile-page .profile-container {
   --paper-transition-half-gap: 19px;
@@ -522,9 +542,14 @@ body { isolation: isolate; }
 .profile-page .creation-actions #bankButton:active {
   position: relative; inset: auto; transform: none; margin: 0;
   width: auto; min-width: 0; z-index: auto;
+  --tab-tint: brightness(1); color: var(--print-ink);
+  text-shadow: var(--print-body-relief);
 }
 .profile-page .creation-actions .shizzle-button { margin: 0; width: auto; min-width: 0; }
-.profile-page .creation-delete-button { min-height: 56px; padding: 16px 24px; font-size: 1rem; opacity: 1; }
+.profile-page .creation-actions .creation-action-button {
+  width: auto; min-width: 112px; margin: 0;
+  min-height: 56px; padding: 16px 24px; font-size: 1rem; opacity: 1;
+}
 .creation-delete-dialog {
   width: min(420px, calc(100% - 32px)); padding: 28px; color: var(--ink);
   border: 18px solid transparent;
@@ -618,13 +643,15 @@ body { isolation: isolate; }
 
 /* Supplied furry MUNGE artwork: one fixed body with six radial native-button teats. */
 .profile-page .munge-control {
-  position: relative; isolation: isolate; width: min(82vw, 370px); aspect-ratio: 1.18;
+  position: relative; isolation: isolate; width: var(--munge-control-width); aspect-ratio: 1.18;
   margin-inline: auto; overflow: visible; transform-origin: 50% 50%;
   transition: transform 150ms cubic-bezier(.2,.8,.3,1.35);
+  pointer-events: none;
 }
 .profile-page .munge-rotor {
   position:absolute; inset:0; overflow:visible; transform-origin:50% calc(50% - 30px);
   transition:filter 120ms ease-out;
+  pointer-events: none;
 }
 .profile-page .munge-control.munge-control-processing .munge-rotor {
   filter:blur(1.5px);
@@ -633,6 +660,7 @@ body { isolation: isolate; }
 .profile-page .munge-body-button {
   position: absolute; z-index: 1; left: 16%; top: 5%; width: 68%; height: auto;
   display: block; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; cursor: pointer;
+  pointer-events: auto;
 }
 .profile-page .munge-body {
   display: block; width: 100%; height: auto; pointer-events: none; user-select: none;
@@ -644,6 +672,7 @@ body { isolation: isolate; }
   min-width: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 45%;
   background: transparent; box-shadow: none; overflow: visible; cursor: grab; touch-action: manipulation;
   transform: translate(var(--tx),var(--ty)); -webkit-tap-highlight-color: transparent;
+  pointer-events: auto;
 }
 .profile-page .munge-teat:hover,
 .profile-page .munge-teat:active { transform: translate(var(--tx),var(--ty)); box-shadow: none; }
@@ -705,16 +734,18 @@ body { isolation: isolate; }
 @keyframes udder-drop-fade { 0% { opacity:1; transform:scale(.1); } 12% { opacity:1; transform:scale(1.15); } 45% { opacity:.76; transform:scale(1); } 75% { opacity:.28; transform:translateY(22px); } 100% { opacity:0; transform:translateY(50px) scale(.45); } }
 
 @media (max-width: 620px) {
+  .profile-page {
+    --munge-control-width: min(88vw, 330px);
+  }
   .profile-page .nonsense-container { width: calc(100% + var(--paper-edge)); }
   .profile-page .source-udder { width: min(108vw, 620px); height: clamp(145px, 31vw, 185px); }
   .profile-page .udder-teat { top: calc(min(90px, 14.8vw) + var(--teat-offset-y)); height: 68%; }
   .profile-page #sourceEditor { padding-top: clamp(90px, 19.22vw, 115px); }
-  .profile-page .munge-control { width: min(88vw, 330px); }
+  .profile-page .munge-engine-group { width:100vw; gap:0; }
+  .profile-page .munge-engine-group .munge-control { width:33.333vw; flex-basis:33.333vw; }
+  .profile-page .munge-engine-label { font-size:.54rem; bottom:-2%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .profile-page .munge-control.munge-control-processing {
-    animation:munge-control-processing-pulse 700ms ease-in-out infinite alternate !important;
-  }
   .profile-page .munge-control.munge-control-processing .munge-rotor {
     filter:blur(.3px);
   }
@@ -723,10 +754,6 @@ body { isolation: isolate; }
   .profile-page .munge-teat-shape { transform: rotate(var(--base-rotation)) !important; animation: none !important; }
   .profile-page .munge-control { transition: none; }
   .udder-liquid-layer { display: none; }
-}
-@keyframes munge-control-processing-pulse {
-  from { transform:scale(.99); }
-  to { transform:scale(1.01); }
 }
 @keyframes l9 { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }
 .page-loader, .image-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 4; }

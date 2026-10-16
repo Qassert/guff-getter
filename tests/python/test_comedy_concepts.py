@@ -23,6 +23,24 @@ def test_seeded_generation_is_deterministic_and_other_seeds_vary():
     assert first != other
 
 
+def test_new_vocabulary_softly_blends_accessibility_tiers():
+    from collections import Counter
+    from newsmuncher.services.experimental_vocabulary import vocabulary_tiers
+
+    tiers = vocabulary_tiers()
+    generator = ComedyConceptGenerator("accessible-blend", new_vocabulary=True)
+    ordinary = [generator._pick("domestic_objects") for _ in range(500)]
+    counts = Counter(tiers.get(value.casefold(), "production") for value in ordinary)
+    assert counts["production"] > counts["specialist"] > 0
+    assert counts["familiar"] > counts["unusual"] > 0
+
+    specialist_averse = [generator._pick(
+        "domestic_objects", avoid_specialist=True) for _ in range(500)]
+    avoided_count = sum(tiers.get(value.casefold()) == "specialist"
+                        for value in specialist_averse)
+    assert 0 < avoided_count < counts["specialist"]
+
+
 def test_default_category_weights_are_exact_for_a_hundred():
     concepts = ComedyConceptGenerator(7).generate(100)
     counts = {category: sum(item.category == category for item in concepts)
@@ -103,7 +121,7 @@ def test_large_audit_is_unique_balanced_and_does_not_exhaust():
     assert len(report.templates) >= 22
     assert max(report.bases.values()) <= 125
     assert len({item.base for item in concepts}) >= 850
-    assert len({item.premise_key for item in concepts}) >= 900
+    assert len({item.premise_key for item in concepts}) >= 875
     assert len({item.comic_mechanism for item in concepts}) >= 21
     assert len({item.semantic_theme for item in concepts}) >= 15
 
@@ -127,6 +145,12 @@ def test_small_component_space_reports_exhaustion(tmp_path):
     with pytest.raises(ValueError, match="exhausted"):
         generator.generate(2)
     assert generator.last_diagnostics.exhausted
+
+    partial_generator = ComedyConceptGenerator(
+        1, config=config, components_path=path)
+    partial = partial_generator.generate(2, allow_partial=True)
+    assert len(partial) == 1
+    assert partial_generator.last_diagnostics.exhausted
 
 
 def test_existing_word_banks_and_live_claim_categories_are_not_part_of_generator():

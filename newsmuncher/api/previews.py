@@ -11,6 +11,7 @@ import subprocess
 import sys
 import os
 import re
+from typing import Literal
 from time import monotonic
 from collections import Counter
 from datetime import datetime, timezone
@@ -60,8 +61,12 @@ from newsmuncher.services.repetition_replacement import (
 )
 from newsmuncher.services.noun_exclusion import (
     NounExclusionConfig, NounExclusionMemory, blocked_entries,
-    NounExclusionExhausted, attribute_violations, extract_final_entries, identity_entries,
+    NounExclusionExhausted, attribute_violations, discover_recent_identities,
+    discover_used_constructions, extract_final_entries, identity_entries,
     ingredient_texts, protected_words,
+)
+from newsmuncher.services.munge_engines import (
+    MungeEngine, engine_plan, project_modern_variant,
 )
 
 
@@ -198,6 +203,7 @@ class ShizzRequest(BaseModel):
     extract: str
     generate_images: bool = False
     draft_session: str = Field(default="legacy", min_length=1, max_length=100)
+    engine: Literal["classic", "current", "experimental"] = "current"
 
 @router.post("/shizzalise_data")
 def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), active_pet: str = Cookie(None)):
@@ -212,10 +218,41 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
 
     if not active_pet:
         raise HTTPException(status_code=401, detail="No active pet selected.")
-    source = payload.model_dump(exclude={'generate_images', 'draft_session'})
+    plan = engine_plan(payload.engine)
+    source = payload.model_dump(exclude={'generate_images', 'draft_session', 'engine'})
     rewrite_id = store.begin_draft({**source, 'creationUser': creationUser}, active_pet, payload.draft_session)
     with open(TEMP_FILE, "w") as f:
         json.dump({**source, "creationUser": creationUser}, f)
+
+    if plan.classic_csv:
+        try:
+            from newsmuncher.services.classic_munge import prepare_classic_prompt
+            prompt_template = prepare_classic_prompt(source)
+            initial_response = send_prompt(prompt_template["full_prompt"])
+            if not initial_response:
+                raise HTTPException(status_code=500, detail="OpenAI generation failed.")
+            result = format_shizzalise_result(initial_response)
+            if not result:
+                raise HTTPException(status_code=500, detail="Generated title or extract is invalid.")
+            polished = copy_edit_pass(result)
+            if polished:
+                result = polished
+            full_result = {
+                **source, **result, "creationUser": creationUser,
+                "contenders": prompt_template["contenders"],
+                "munge_engine": MungeEngine.CLASSIC.value,
+            }
+            full_result = store.complete_draft(
+                rewrite_id, active_pet, full_result,
+                before_save=lambda: claim_used_words(prompt_template["contenders"], result),
+            )
+            if full_result is None:
+                raise HTTPException(status_code=409, detail="Draft superseded by a newer rewrite.")
+            log_timings("complete")
+            return full_result
+        except RewriteProviderQuotaExhausted as exc:
+            log_timings("rewrite_error")
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     name_config = NameSelectionConfig.from_environment()
     # A rewrite UUID identifies one attempt. New MUNGEs from the same browser
@@ -271,6 +308,8 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     noun_exclusion_config = NounExclusionConfig.from_environment()
     noun_exclusion_memory = None
     noun_exclusions = set()
+    automatic_identity_penalties = Counter()
+    automatic_identity_guidance = ""
     noun_exclusion_snapshot = {"enabled": noun_exclusion_config.enabled}
     source_text = "\n".join(str(source.get(key, ""))
                             for key in ("title", "description", "extract"))
@@ -287,7 +326,21 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 comedy_noun_exclusion_collection(), active_pet, noun_exclusion_config)
             noun_exclusion_memory.load()
             noun_exclusions = noun_exclusion_memory.exclusions(rewrite_id)
+            automatic_identity_penalties = noun_exclusion_memory.identity_penalties(
+                source_text)
+            automatic_identity_guidance = noun_exclusion_memory.avoidance_guidance(
+                source_text)
+            if not isinstance(automatic_identity_penalties, dict):
+                automatic_identity_penalties = Counter()
+            if not isinstance(automatic_identity_guidance, str):
+                automatic_identity_guidance = ""
             noun_exclusion_snapshot["excluded_before"] = len(noun_exclusions)
+            noun_exclusion_snapshot["automatic_repetition"] = {
+                "recent_events": len(noun_exclusion_memory.recent_identity_events),
+                "recent_identity_history": noun_exclusion_memory.recent_identity_events,
+                "applied_penalties": dict(automatic_identity_penalties),
+                "guidance": automatic_identity_guidance,
+            }
         if thematic_config.enabled or theme_ingredient_config.enabled:
             try:
                 domain_config = (thematic_config if thematic_config.enabled else
@@ -330,6 +383,9 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                       f"{type(lexical_exc).__name__}")
                 lexical_memory = None
                 lexical_penalties = None
+        if automatic_identity_penalties:
+            lexical_penalties = Counter(lexical_penalties or {})
+            lexical_penalties.update(automatic_identity_penalties)
         if theme_ingredient_config.enabled and thematic_domains:
             try:
                 theme_ingredient_memory = ThemeIngredientMemory(
@@ -369,6 +425,8 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             invented_names = name_registry.offer(
                 name_selection_key,
                 topic_memory.recent_name_families() if topic_memory else None,
+                noun_exclusions=noun_exclusions,
+                source_text=source_text,
             )
             elapsed("invented_name_selection_ms", stage)
             timings["invented_name_selection"] = getattr(name_registry, "last_metrics", {})
@@ -392,6 +450,8 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             )
             if theme_ingredient_builder:
                 variant_plan = theme_ingredient_builder.apply_concepts(variant_plan)
+            variant_plan, animal_exposure = project_modern_variant(variant_plan)
+            timings["animal_concept_exposure"] = animal_exposure
             timings["comedy_variant"] = variant_plan["counts"]
         if descriptor_config.mode == "generated":
             descriptor_registry = DescriptorRegistry(generated_descriptor_collection(), descriptor_config)
@@ -484,6 +544,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         log_timings("selection_error")
         raise
 
+    rewrite_stage = "prompt_construction"
     try:
         stage = monotonic()
         prompt_template = prepare_prompt(
@@ -498,7 +559,8 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             descriptor_guidance=DESCRIPTOR_GUIDANCE if offered_descriptors is not None else "",
             final_joke_guidance=final_joke_guidance,
             topic_guidance="\n\n".join(
-                value for value in (topic_guidance, lexical_guidance, thematic_guidance) if value),
+                value for value in (topic_guidance, lexical_guidance,
+                                    automatic_identity_guidance, thematic_guidance) if value),
             theme_sparks=theme_sparks,
             diagnostics=timings,
             noun_exclusions=noun_exclusions,
@@ -508,6 +570,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             raise HTTPException(status_code=400, detail="Prompt preparation failed.")
 
         if noun_exclusion_memory:
+            rewrite_stage = "noun_reservation"
             reserved_entries = set()
             reserve_concepts = (variant_plan or {}).get("prompt") or offered_concepts or ()
             reserve_raw = list((variant_plan or {}).get("raw") or ())
@@ -520,11 +583,40 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                                 if not any(word in source_protected
                                            for word in entry.split(":", 1)[1].split())}
             if not noun_exclusion_memory.reserve(rewrite_id, reserved_entries):
-                raise HTTPException(
-                    status_code=409,
-                    detail="Comic noun choices collided with another active MUNGE. Please try again.")
+                conflict = noun_exclusion_memory.last_reservation_conflict
+                completed_entries = set(conflict.get("completed_entries", ()))
+                snapshot_conflicts = sorted(completed_entries & noun_exclusions)
+                introduced_conflicts = sorted(completed_entries - noun_exclusions)
+                conflict_origin = (
+                    "already_excluded_at_selection"
+                    if snapshot_conflicts and not introduced_conflicts else
+                    "introduced_after_selection"
+                    if introduced_conflicts and not snapshot_conflicts else
+                    "mixed" if completed_entries else "not_completed_history"
+                )
+                conflict.update({
+                    "origin": conflict_origin,
+                    "selection_snapshot_entries": snapshot_conflicts,
+                    "introduced_after_selection": introduced_conflicts,
+                })
+                print("[noun-reservation-diagnostic] " + json.dumps({
+                    "rewrite_id": str(rewrite_id),
+                    "reason": conflict.get("reason", "unknown"),
+                    "origin": conflict_origin,
+                    "completed_entries": conflict.get("completed_entries", ())[:12],
+                    "selection_snapshot_entries": snapshot_conflicts[:12],
+                    "introduced_after_selection": introduced_conflicts[:12],
+                    "active_entries": conflict.get("active_entries", ())[:12],
+                    "active_owner_count": conflict.get("active_owner_count", 0),
+                    "requested_entries": len(reserved_entries),
+                }, sort_keys=True))
+                noun_exclusion_snapshot["reservation_conflict"] = conflict
+                raise NounExclusionExhausted(
+                    "Selected comedy ingredients became unavailable before generation "
+                    f"({conflict.get('reason', 'unknown')}). Please try MUNGE IT again.")
             noun_exclusion_snapshot["reserved_ingredients"] = len(reserved_entries)
 
+        rewrite_stage = "first_provider_call"
         stage = monotonic()
         initial_response = send_prompt(prompt_template["full_prompt"])
         elapsed("first_rewrite_provider_ms", stage)
@@ -586,6 +678,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 (lexical_penalties or {}).most_common(80)
                 if hasattr(lexical_penalties, "most_common") else
                 list((lexical_penalties or {}).items())[:80])
+        rewrite_stage = "editor_provider_call"
         stage = monotonic()
         editor_enabled = comedy_editor_enabled()
         editor_target = comedy_editor_word_target(
@@ -635,10 +728,12 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             **source,
             **result,
             "creationUser": creationUser,
-            "contenders": prompt_template.get("contenders", {})
+            "contenders": prompt_template.get("contenders", {}),
+            "munge_engine": plan.engine.value,
         }
 
         try:
+            rewrite_stage = "persistence"
             stage = monotonic()
             full_result = store.complete_draft(
                 rewrite_id,
@@ -660,6 +755,17 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             descriptor_registry.release(descriptor_selection_key)
         if noun_exclusion_memory:
             noun_exclusion_memory.release(rewrite_id)
+        print("[rewrite-diagnostic] " + json.dumps({
+            "status": "rewrite_error",
+            "stage": rewrite_stage,
+            "exception": type(exc).__name__,
+            "http_status": getattr(exc, "status_code", None),
+            "rewrite_id": str(rewrite_id),
+            "provider_entered": rewrite_stage in {
+                "first_provider_call", "editor_provider_call", "persistence"},
+            "noun_reservations": len(
+                getattr(noun_exclusion_memory, "reservations", ()) or ()),
+        }, sort_keys=True, default=str))
         log_timings("rewrite_error")
         if isinstance(exc, RewriteProviderQuotaExhausted):
             raise HTTPException(status_code=503, detail=str(exc)) from exc
@@ -789,10 +895,19 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 names=invented_names or (),
                 places=prompt_template.get("contenders", {}).get("places", ()),
             )
-            noun_exclusion_memory.complete(rewrite_id, new_entries)
+            recent_identities = discover_recent_identities(final_text, source_text)
+            recent_constructions = discover_used_constructions(
+                final_text, source_text,
+                (variant_plan or {}).get("prompt") or offered_concepts or (),
+                offered_descriptors or ())
+            noun_exclusion_memory.complete(
+                rewrite_id, new_entries, recent_identities=recent_identities,
+                recent_constructions=recent_constructions)
             noun_exclusion_snapshot.update({
                 **violation_attribution,
                 "newly_extracted": sorted(new_entries),
+                "recent_identities": recent_identities,
+                "recent_constructions": recent_constructions,
                 "prevented_ingredient_candidates": sum(
                     int(metrics.get("noun_exclusion_rejected", 0))
                     for metrics in (

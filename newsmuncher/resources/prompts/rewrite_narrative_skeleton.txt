@@ -31,6 +31,10 @@ RANDOM INGREDIENTS:
 Animals/objects:
 {animal_words1}, {animal_words2}, {animal_words3}
 
+These animal concepts are optional alternatives, not a checklist. Use animals
+or objects wherever they create the strongest, clearest comic situation; do not
+force ingredients merely to cover the list.
+
 Adverbs/absurd descriptors:
 {adverb_words1}, {adverb_words2}, {adverb_words3}
 
@@ -48,7 +52,9 @@ Slang/rude words:
 
 INGREDIENT RULES:
 - Use several supplied ingredients as replacements for nouns already doing work in the source.
-- Use at least one supplied animal/object and several supplied nouns and descriptors.
+- Favour surprising substitutions that readers can readily picture. Use obscure
+  technical ingredients occasionally when they make a clear joke, and avoid
+  cramming unrelated specialist terms into one nested phrase.
 - Use supplied names and places to replace source identities where practical.
 - Include supplied rude/slang language where it improves the joke.
 - Freely alter grammar and pluralisation.
