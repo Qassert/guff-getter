@@ -224,6 +224,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         raise HTTPException(status_code=401, detail="No active pet selected.")
     plan = engine_plan(payload.engine)
     radical_mode = plan.engine is MungeEngine.EXPERIMENTAL
+    radical_audit_context = None
     source = payload.model_dump(exclude={'generate_images', 'draft_session', 'engine'})
     rewrite_id = store.begin_draft({**source, 'creationUser': creationUser}, active_pet, payload.draft_session)
     with open(TEMP_FILE, "w") as f:
@@ -580,6 +581,18 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 identity_guidance=automatic_identity_guidance,
                 noun_exclusions=noun_exclusions,
             )
+            controlling_premise = prompt_template.get(
+                "radical_controlling_premise")
+            radical_audit_context = {
+                "controlling_premise_enabled": bool(prompt_template.get(
+                    "radical_controlling_premise_enabled", False)),
+                "controlling_premise_id": getattr(
+                    controlling_premise, "identifier", ""),
+                "mechanism_family": getattr(
+                    controlling_premise, "mechanism_family", ""),
+                "sparks": list(prompt_template.get(
+                    "radical_inspirations", ()))[:6],
+            }
             timings["radical_mode"].update({
                 "inspirations": prompt_template.get("radical_inspirations", ()),
                 "prompt_characters": len(prompt_template["full_prompt"]),
@@ -1037,6 +1050,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 repetition_replacement_context=repetition_snapshot,
                 noun_exclusion_context=noun_exclusion_snapshot,
                 comedy_editor_context=comedy_editor_snapshot,
+                radical_context=radical_audit_context,
             ))
         except Exception as audit_exc:
             # The local audit is diagnostic and cannot invalidate persisted work.

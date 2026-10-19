@@ -237,6 +237,24 @@ def test_audit_records_phrase_overlap_provenance_and_unmatched_removal():
     assert record["feature_flags"]["NEWSMUNCHER_PHRASE_REPLACEMENT"] == "evaluation"
 
 
+def test_audit_records_bounded_radical_controlling_premise_diagnostics():
+    record = build_audit_record(
+        rewrite_id="radical-premise", source={}, result={},
+        radical_context={
+            "controlling_premise_enabled": True,
+            "controlling_premise_id": "codex-session-2026-10-18:premise:017",
+            "mechanism_family": "mistaken_identity",
+            "sparks": [f"spark-{index}" for index in range(9)],
+        })
+    diagnostic = record["radical_experiment"]
+    assert diagnostic == {
+        "controlling_premise_enabled": True,
+        "controlling_premise_id": "codex-session-2026-10-18:premise:017",
+        "mechanism_family": "mistaken_identity",
+        "sparks": [f"spark-{index}" for index in range(6)],
+    }
+
+
 def test_duplicate_and_concurrent_rewrite_ids_are_written_once(tmp_path):
     path = tmp_path / "audit.jsonl"
     logger = ComedyAuditLogger(ComedyAuditConfig(True, path))

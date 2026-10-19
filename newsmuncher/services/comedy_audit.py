@@ -82,7 +82,8 @@ def build_audit_record(*, rewrite_id, source, result, names=None, concepts=None,
                        first_pass=None, lexical_context=None, thematic_context=None,
                        theme_ingredient_context=None,
                        repetition_replacement_context=None,
-                       noun_exclusion_context=None, comedy_editor_context=None):
+                       noun_exclusion_context=None, comedy_editor_context=None,
+                       radical_context=None):
     """Build a fixed-schema record; arbitrary request/provider metadata is excluded."""
     environment = os.environ if environment is None else environment
     title = str(result.get("crazyReplacement1Title", ""))
@@ -308,6 +309,17 @@ def build_audit_record(*, rewrite_id, source, result, names=None, concepts=None,
                 },
                 "guidance": str(automatic.get("guidance", "")),
             },
+        }
+    if radical_context is not None:
+        record["radical_experiment"] = {
+            "controlling_premise_enabled": bool(
+                radical_context.get("controlling_premise_enabled", False)),
+            "controlling_premise_id": str(
+                radical_context.get("controlling_premise_id", ""))[:160],
+            "mechanism_family": str(
+                radical_context.get("mechanism_family", ""))[:80],
+            "sparks": [str(value)[:160]
+                       for value in radical_context.get("sparks", ())[:6]],
         }
     safe_timings = _numeric_metrics(timings or {})
     if safe_timings:

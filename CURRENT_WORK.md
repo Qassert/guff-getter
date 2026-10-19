@@ -13,10 +13,34 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Working NewsMuncher Experimental comedy baseline checkpoint, validated and saved locally.
-APPROVAL: Local catalogue editing and the two exclusion changes are approved. No live database alteration, provider call, commit or push is approved.
-NEXT_STEP: Investigate Experimental premise diversity and repetition from the tagged baseline when explicitly requested.
+CURRENT_TASK: Default-off Experimental controlling-premise diversity experiment.
+APPROVAL: The controlling-premise checkpoint commit, annotated tag and push to the verified feature branch are approved. No live database alteration or provider call is approved.
+NEXT_STEP: Review and optionally live-test the default-off Experimental controlling-premise experiment.
 VALIDATION: Relevant Python suites: 199 passed. Frontend: 107 passed. Broader Python run reached 469 passed plus 105 subtests without a failure before a long lexical-exposure test was interrupted at 6m51s. Python compilation and git diff --check pass. No provider calls or production database writes.
+
+## Experimental controlling-premise trial — 2026-10-19
+
+- Added default-off `NEWSMUNCHER_RADICAL_CONTROLLING_PREMISE=evaluation` for
+  Experimental only. It loads the existing 118-entry Codex editorial premise batch.
+  The controlling-premise view excludes 30 short entries from
+  `everyday_post_modifiers` and `cheeky_post_modifiers`, leaving 88 narrative-capable
+  entries across eight families; the source catalogues remain unchanged. It selects
+  a family uniformly, then one premise within it using a rewrite-ID-seeded RNG.
+  Current and Classic never enter this path. An unexpectedly empty eligible view
+  safely produces the unchanged baseline RADICAL prompt rather than failing.
+- When enabled, the selected relationship becomes the first pass's primary direction:
+  it must be adapted rather than quoted, transform the generic subject/function and
+  develop through at least two existing narrative beats. The existing six sparks
+  remain unchanged and secondary. With the flag absent/off, no text is appended to
+  the checkpointed RADICAL prompt.
+- Local audits now record the enabled state, stable premise identifier, mechanism
+  family and at most six bounded spark strings under `radical_experiment`. No prompt,
+  provider metadata, history, reservation, editor, model or database behavior changed.
+- Validation: 40 focused Python tests and all 107 frontend tests pass; compilation and
+  `git diff --check` pass. Fifteen source-preprocessing tests pass separately. Broader
+  legacy route suites still exhibit their pre-existing module-stub isolation failure
+  when `source_preprocessing` is replaced without the RADICAL exports; no product-code
+  failure was found. No provider call or Mongo write occurred.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
 

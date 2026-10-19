@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from functools import lru_cache
 import hashlib
 import json
+import os
 from pathlib import Path
 import random
 import re
@@ -23,6 +24,11 @@ RADICAL_PROMPT_PATH = (
 )
 RADICAL_HISTORY_WINDOW = 12
 RADICAL_GUIDANCE_LIMIT = 5
+RADICAL_CONTROLLING_PREMISE_ENV = "NEWSMUNCHER_RADICAL_CONTROLLING_PREMISE"
+RADICAL_CONTROLLING_PREMISE_BATCH = "codex-session-2026-10-18"
+RADICAL_CONTROLLING_PREMISE_EXCLUDED_BANKS = frozenset({
+    "everyday_post_modifiers", "cheeky_post_modifiers",
+})
 STRUCTURAL_PLACEHOLDER_RE = re.compile(
     r"\[(?:PERSON|PLACE|ORGANIZATION|FACT|OBJECT|PHRASE|DESCRIPTION)_\d+\]",
     re.IGNORECASE,
@@ -31,6 +37,35 @@ STRUCTURAL_PLACEHOLDER_RE = re.compile(
 
 class RadicalPlaceholderError(ValueError):
     """RADICAL output still contains a structural source placeholder."""
+
+
+@dataclass(frozen=True)
+class RadicalControllingPremiseConfig:
+    """Default-off switch for the isolated controlling-premise experiment."""
+
+    mode: str = "off"
+
+    @classmethod
+    def from_environment(cls):
+        return cls(os.getenv(RADICAL_CONTROLLING_PREMISE_ENV, "off").strip().lower())
+
+    def __post_init__(self):
+        if self.mode not in {"off", "evaluation"}:
+            raise ValueError(
+                f"{RADICAL_CONTROLLING_PREMISE_ENV} must be off or evaluation")
+
+    @property
+    def enabled(self):
+        return self.mode == "evaluation"
+
+
+@dataclass(frozen=True)
+class RadicalControllingPremise:
+    identifier: str
+    text: str
+    mechanism_family: str
+    bank: str
+    intensity: int
 
 
 def radical_placeholder_map(preprocessing):
@@ -244,6 +279,74 @@ def radical_inspirations(seed, noun_exclusions=(), source_text="", count=6):
     return rng.sample(eligible, min(count, len(eligible)))
 
 
+@lru_cache(maxsize=1)
+def radical_controlling_premises() -> tuple[RadicalControllingPremise, ...]:
+    """Load the existing accepted premise batch with stable local identifiers."""
+    root = Path(__file__).parents[1] / "resources" / "concepts"
+    data = json.loads((root / "comedy_concept_components.json").read_text(
+        encoding="utf-8"))
+    batch = next(
+        (item for item in data.get("editorial_batches", ())
+         if item.get("id") == RADICAL_CONTROLLING_PREMISE_BATCH),
+        None,
+    )
+    if batch is None:
+        raise ValueError(
+            f"Missing controlling-premise batch {RADICAL_CONTROLLING_PREMISE_BATCH}")
+    premises = []
+    for index, item in enumerate(batch.get("premises", ())):
+        text = str(item.get("text", "")).strip()
+        family = str(item.get("mechanism_family", "")).strip()
+        bank = str(item.get("bank", "")).strip()
+        if not text or not family or not bank:
+            raise ValueError(f"Incomplete controlling premise at index {index}")
+        premises.append(RadicalControllingPremise(
+            identifier=f"{batch['id']}:premise:{index:03d}",
+            text=text,
+            mechanism_family=family,
+            bank=bank,
+            intensity=int(item.get("intensity", 1)),
+        ))
+    if len(premises) != 118:
+        raise ValueError(
+            f"Expected 118 controlling premises, found {len(premises)}")
+    return tuple(premises)
+
+
+def eligible_radical_controlling_premises() -> tuple[RadicalControllingPremise, ...]:
+    """Return narrative-capable premise components without altering their catalogues."""
+    return tuple(
+        premise for premise in radical_controlling_premises()
+        if premise.bank not in RADICAL_CONTROLLING_PREMISE_EXCLUDED_BANKS
+    )
+
+
+def select_radical_controlling_premise(seed) -> RadicalControllingPremise | None:
+    """Choose a family, then a premise, reproducibly without family-size bias."""
+    premises = eligible_radical_controlling_premises()
+    by_family = {}
+    for premise in premises:
+        by_family.setdefault(premise.mechanism_family, []).append(premise)
+    if not by_family:
+        return None
+    rng = random.Random(f"radical-controlling-premise:{seed}")
+    family = rng.choice(sorted(by_family))
+    return rng.choice(by_family[family])
+
+
+def controlling_premise_guidance(premise: RadicalControllingPremise) -> str:
+    return (
+        "CONTROLLED PREMISE EXPERIMENT — PRIMARY CREATIVE DIRECTION\n"
+        f"Mechanism seed: {premise.text}\n"
+        "Silently adapt the underlying comic relationship to this source; do not merely "
+        "insert or quote the wording. Make it transform the central generic subject or "
+        "function and develop its consequences through at least two existing narrative "
+        "beats. Preserve the source's event relationships and protected aliases, and do "
+        "not invent unrelated events just to accommodate the premise. The optional sparks "
+        "remain secondary inspiration."
+    )
+
+
 def load_noun_history_read_only(memory):
     """Load the hard-history snapshot without cleaning or mutating CURRENT state."""
     if not memory.config.enabled:
@@ -257,7 +360,8 @@ def load_noun_history_read_only(memory):
 
 
 def prepare_radical_prompt(source, rewrite_id, recent_premises="",
-                           identity_guidance="", noun_exclusions=()):
+                           identity_guidance="", noun_exclusions=(),
+                           controlling_premise_config=None):
     """Build the source-led prompt without modern concept or CSV assignments."""
     original = preserve_source_text(source)
     preprocessing = preprocess_radical_source(original)
@@ -272,6 +376,21 @@ def prepare_radical_prompt(source, rewrite_id, recent_premises="",
         recent_premises=recent_premises or "No recent RADICAL premise warnings.",
         identity_guidance=identity_guidance or "",
     )
+    premise_config = (controlling_premise_config
+                      or RadicalControllingPremiseConfig.from_environment())
+    controlling_premise = None
+    if premise_config.enabled:
+        controlling_premise = select_radical_controlling_premise(rewrite_id)
+        if controlling_premise is not None:
+            spark_marker = "The optional sparks below are loose visual provocations."
+            if spark_marker not in prompt:
+                raise ValueError("RADICAL prompt is missing its optional-sparks marker")
+            prompt = prompt.replace(
+                spark_marker,
+                controlling_premise_guidance(controlling_premise)
+                + "\n\n" + spark_marker,
+                1,
+            )
     title = str(masked.get("title", "No title provided")).strip()
     description = str(masked.get("description", "")).strip()
     extract = str(masked.get("extract", "No extract provided")).strip()
@@ -286,4 +405,6 @@ def prepare_radical_prompt(source, rewrite_id, recent_premises="",
         "title_to_change": title,
         "extract_to_change": extract,
         "radical_inspirations": inspirations,
+        "radical_controlling_premise_enabled": premise_config.enabled,
+        "radical_controlling_premise": controlling_premise,
     }

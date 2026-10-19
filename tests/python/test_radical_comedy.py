@@ -1,5 +1,7 @@
 from copy import deepcopy
 from datetime import datetime, timezone
+import json
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -7,9 +9,14 @@ import pytest
 from pymongo.errors import DuplicateKeyError
 
 from newsmuncher.services.radical_comedy import (
+    RADICAL_CONTROLLING_PREMISE_ENV,
+    RADICAL_CONTROLLING_PREMISE_EXCLUDED_BANKS,
+    RadicalControllingPremiseConfig,
     RadicalPlaceholderError, RadicalPremiseConfig, RadicalPremiseMemory,
-    detect_radical_premises, prepare_radical_prompt, radical_inspirations,
-    restore_radical_placeholders,
+    detect_radical_premises, eligible_radical_controlling_premises,
+    prepare_radical_prompt,
+    radical_controlling_premises, radical_inspirations,
+    restore_radical_placeholders, select_radical_controlling_premise,
 )
 
 
@@ -127,6 +134,94 @@ def test_radical_prompt_is_seeded_source_led_and_uses_only_optional_sparks():
     assert "Each rewritten sentence should do the narrative work" not in first["full_prompt"]
     assert "The mayor opened the bridge after lunch." in first["full_prompt"]
     assert first["preprocessing"] is not None
+
+
+def test_controlling_premise_catalogue_filters_modifier_banks_without_mutation():
+    premises = radical_controlling_premises()
+    eligible = eligible_radical_controlling_premises()
+    assert len(premises) == 118
+    assert len(eligible) == 88
+    assert len({item.identifier for item in premises}) == 118
+    assert len({item.mechanism_family for item in premises}) == 11
+    assert len({item.mechanism_family for item in eligible}) == 8
+    assert all(item.text and item.bank and item.mechanism_family for item in premises)
+    excluded = [item for item in premises
+                if item.bank in RADICAL_CONTROLLING_PREMISE_EXCLUDED_BANKS]
+    assert len(excluded) == 30
+    assert not ({item.identifier for item in excluded}
+                & {item.identifier for item in eligible})
+
+    # Filtering is a selector view only. Every entry remains in its original
+    # intensity-specific production bank.
+    data = json.loads(Path(
+        "newsmuncher/resources/concepts/comedy_concept_components.json"
+    ).read_text(encoding="utf-8"))
+    for item in excluded:
+        bank = data["banks"][item.bank]
+        values = bank[str(item.intensity)] if isinstance(bank, dict) else bank
+        assert item.text in values
+
+
+def test_controlling_premise_selection_is_deterministic_and_reaches_every_family():
+    eligible_families = {
+        item.mechanism_family for item in eligible_radical_controlling_premises()}
+    assert (select_radical_controlling_premise("rewrite-1") ==
+            select_radical_controlling_premise("rewrite-1"))
+    selected_families = {
+        select_radical_controlling_premise(f"family-coverage-{index}").mechanism_family
+        for index in range(500)
+    }
+    assert selected_families == eligible_families
+
+
+def test_empty_controlling_premise_pool_degrades_to_baseline_prompt(monkeypatch):
+    monkeypatch.setenv(RADICAL_CONTROLLING_PREMISE_ENV, "evaluation")
+    monkeypatch.setattr(
+        "newsmuncher.services.radical_comedy.radical_controlling_premises",
+        lambda: (),
+    )
+    prepared = prepare_radical_prompt(
+        {"title": "Mayor", "description": "", "extract": "The mayor opened a bridge."},
+        "empty-pool",
+    )
+    assert prepared["radical_controlling_premise_enabled"] is True
+    assert prepared["radical_controlling_premise"] is None
+    assert "CONTROLLED PREMISE EXPERIMENT" not in prepared["full_prompt"]
+
+
+def test_controlling_premise_flag_is_default_off_and_preserves_prompt(monkeypatch):
+    monkeypatch.delenv(RADICAL_CONTROLLING_PREMISE_ENV, raising=False)
+    source = {"title": "Mayor opens bridge", "description": "Today",
+              "extract": "The mayor opened the bridge after lunch."}
+    prepared = prepare_radical_prompt(source, "rewrite-off")
+    assert prepared["radical_controlling_premise_enabled"] is False
+    assert prepared["radical_controlling_premise"] is None
+    assert "CONTROLLED PREMISE EXPERIMENT" not in prepared["full_prompt"]
+    assert RadicalControllingPremiseConfig().enabled is False
+
+
+def test_enabled_controlling_premise_is_primary_but_sparks_stay_secondary(monkeypatch):
+    monkeypatch.setenv(RADICAL_CONTROLLING_PREMISE_ENV, "evaluation")
+    source = {"title": "Mayor opens bridge", "description": "Today",
+              "extract": "The mayor opened the bridge after lunch."}
+    first = prepare_radical_prompt(source, "rewrite-enabled")
+    second = prepare_radical_prompt(source, "rewrite-enabled")
+    premise = first["radical_controlling_premise"]
+    assert first["full_prompt"] == second["full_prompt"]
+    assert premise == second["radical_controlling_premise"]
+    assert first["radical_controlling_premise_enabled"] is True
+    assert premise.identifier.startswith("codex-session-2026-10-18:premise:")
+    assert f"Mechanism seed: {premise.text}" in first["full_prompt"]
+    assert "transform the central generic subject or function" in first["full_prompt"]
+    assert "through at least two existing narrative beats" in first["full_prompt"]
+    assert "do not merely insert or quote the wording" in first["full_prompt"]
+    assert "optional sparks remain secondary inspiration" in first["full_prompt"]
+    assert len(first["radical_inspirations"]) == 6
+
+
+def test_controlling_premise_flag_rejects_unknown_mode():
+    with pytest.raises(ValueError, match=RADICAL_CONTROLLING_PREMISE_ENV):
+        RadicalControllingPremiseConfig("on")
 
 
 def test_radical_prompt_keeps_ordinary_nouns_visible_for_transformation():
