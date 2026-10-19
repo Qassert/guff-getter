@@ -425,7 +425,7 @@ def format_shizzalise_result(response_data):
         return None
 
 
-def copy_edit_pass(pass1_result, repetition_replacement=None):
+def copy_edit_pass(pass1_result, repetition_replacement=None, radical_mode=False):
     """Second AI pass: copy-edit pass-1 output only.
 
     Receives ONLY the extract produced by pass 1.  The original
@@ -473,6 +473,14 @@ def copy_edit_pass(pass1_result, repetition_replacement=None):
         "objects, events or ideas. Return JSON with extract first, then title. "
         "Do not add commentary, markdown or code fences."
     )
+
+    if radical_mode:
+        system_prompt += (
+            "\n\nRADICAL MODE: Preserve each fresh conceptual collision, transformation, "
+            "invented custom, category mistake and strange relationship. Improve only the "
+            "local prose needed to make those premises land. Do not replace them with familiar "
+            "animal occupations, bureaucracy, power-source compounds or conventional jokes."
+        )
 
     if repetition_replacement:
         targets = [item["text"] for item in repetition_replacement.get("targets", ())][:3]
@@ -557,7 +565,7 @@ def comedy_editor_word_target(text):
     }
 
 
-def comedy_editor_pass(source, pass1_result, word_target=None):
+def comedy_editor_pass(source, pass1_result, word_target=None, radical_mode=False):
     """Optional concise comedy edit; callers retain pass one on failure."""
     title = pass1_result.get("crazyReplacement1Title", "")
     extract = pass1_result.get("crazyReplacement1Extract", "")
@@ -594,6 +602,13 @@ def comedy_editor_pass(source, pass1_result, word_target=None):
         "Do not reuse the source title merely because it is available. Return no explanations, "
         "commentary, markdown or code fences."
     )
+    if radical_mode:
+        system_prompt += (
+            " RADICAL MODE: Preserve the first pass's freshest conceptual relationships, "
+            "transformations, invented customs, category mistakes and physical impossibilities. "
+            "Cut repetition and padding without replacing unfamiliar premises with established "
+            "NewsMuncher patterns such as official animals, bureaucracy or powered objects."
+        )
     source_article = {
         key: str(source.get(key, ""))
         for key in ("title", "description", "extract") if source.get(key)

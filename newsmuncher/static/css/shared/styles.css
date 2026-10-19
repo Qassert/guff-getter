@@ -191,6 +191,7 @@ body { isolation: isolate; }
   --profile-soft-paper: rgba(242, 240, 231, .86);
   --profile-foreground: var(--ink);
   --munge-control-width: min(82vw, 370px);
+  --creation-gap-reduction: 30px;
   position: relative;
 }
 .initial-background { position: fixed; inset: 0;
@@ -380,10 +381,18 @@ body { isolation: isolate; }
 }
 .profile-page #sourceEditor {
   /* The udder is an absolute overlay; reserve only its lower teat footprint. */
-  position:relative; z-index:1; padding-top: clamp(107px, 13.92vw, 136px);
+  position:relative; z-index:1;
+  padding-top: clamp(77px, calc(13.92vw - var(--creation-gap-reduction)), 106px);
+  /* Pull only the first parchment's trailing edge toward its final source line. */
+  margin-bottom: -20px;
+}
+.profile-page #sourceBodyDraft {
+  /* Remove the generic textarea tail; this is the final item on the first parchment. */
+  margin-bottom: 0;
 }
 .profile-page #responseEditor {
   position: relative;
+  top: -30px;
   padding: clamp(10px, 1.5vw, 16px) 0 0;
 }
 .profile-page #responseBodyDraft {
@@ -437,11 +446,6 @@ body { isolation: isolate; }
 .profile-page .munge-engine-group .munge-control {
   width:min(28vw, 290px); flex:0 1 290px;
 }
-.profile-page .munge-engine-label {
-  position:absolute; z-index:3; left:50%; bottom:1%; transform:translateX(-50%);
-  width:100%; text-align:center; color:var(--print-ink); font-weight:800;
-  font-size:clamp(.62rem, 1.25vw, .9rem); letter-spacing:.035em; pointer-events:none;
-}
 .profile-page .profile-container {
   --paper-transition-half-gap: 19px;
   margin-bottom: calc(2 * var(--paper-transition-half-gap));
@@ -477,6 +481,10 @@ body { isolation: isolate; }
 /* Keep the paper artwork on its own surface without the retired EDIT tabs. */
 .profile-page :is(.profile-container, #outputContainer) {
   isolation: isolate; background: transparent; border-image-source: none;
+}
+.profile-page .profile-container {
+  /* Retain the earlier internal tightening independently of the restored paper edge. */
+  padding-bottom: calc(clamp(12px, 2vw, 24px) - 6px);
 }
 .profile-page :is(.profile-container, #outputContainer)::before {
   content: ''; position: absolute; pointer-events: none; z-index: -1;
@@ -740,10 +748,11 @@ body { isolation: isolate; }
   .profile-page .nonsense-container { width: calc(100% + var(--paper-edge)); }
   .profile-page .source-udder { width: min(108vw, 620px); height: clamp(145px, 31vw, 185px); }
   .profile-page .udder-teat { top: calc(min(90px, 14.8vw) + var(--teat-offset-y)); height: 68%; }
-  .profile-page #sourceEditor { padding-top: clamp(90px, 19.22vw, 115px); }
+  .profile-page #sourceEditor {
+    padding-top: clamp(60px, calc(19.22vw - var(--creation-gap-reduction)), 85px);
+  }
   .profile-page .munge-engine-group { width:100vw; gap:0; }
   .profile-page .munge-engine-group .munge-control { width:33.333vw; flex-basis:33.333vw; }
-  .profile-page .munge-engine-label { font-size:.54rem; bottom:-2%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .profile-page .munge-control.munge-control-processing .munge-rotor {

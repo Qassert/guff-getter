@@ -308,7 +308,7 @@ class NounExclusionExhausted(RuntimeError):
 @dataclass(frozen=True)
 class NounExclusionConfig:
     mode: str = "off"
-    capacity: int = 5000
+    capacity: int = 1500
     reservation_minutes: int = 15
 
     @classmethod
@@ -519,6 +519,10 @@ def extract_final_entries(*, title, body, source_text, concepts=(), descriptors=
 class NounExclusionMemory:
     """Persistent bounded FIFO with short atomic per-generation reservations."""
 
+    # Keep the previous history depth for inspection/rollback. Only the newest
+    # config.capacity entries participate in hard exclusion and reservation.
+    retained_history_capacity = 5000
+
     def __init__(self, collection, scope, config=None, now=None):
         self.collection = collection
         self.config = config or NounExclusionConfig()
@@ -618,9 +622,21 @@ class NounExclusionMemory:
     def exclusions(self, generation_id=None):
         values = set(self.entries)
         for reservation in self.reservations:
-            if reservation.get("generation_id") != generation_id:
+            if (reservation.get("generation_id") != generation_id
+                    and self._reservation_active(reservation, self.now())):
                 values.update(reservation.get("entries", ()))
         return values
+
+    @staticmethod
+    def _reservation_active(reservation, now):
+        expiry = reservation.get("offer_until")
+        # Malformed/missing expiry remains blocking; never silently treat an
+        # unproven lease as expired. PyMongo may return naive UTC datetimes.
+        if not isinstance(expiry, datetime):
+            return True
+        if expiry.tzinfo is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+        return expiry > now
 
     def reserve(self, generation_id, entries):
         if not self.config.enabled:
@@ -630,8 +646,17 @@ class NounExclusionMemory:
         if not entries:
             return True
         now = self.now()
-        query = {"_id": self.record_id, "entries": {"$nin": entries},
-                 "reservations.entries": {"$nin": entries}}
+        query = {
+            "_id": self.record_id,
+            "$expr": {"$eq": [{"$size": {"$setIntersection": [
+                {"$slice": [{"$ifNull": ["$entries", []]}, -self.config.capacity]},
+                entries,
+            ]}}, 0]},
+            "reservations": {"$not": {"$elemMatch": {
+                "entries": {"$in": entries},
+                "offer_until": {"$not": {"$lte": now}},
+            }}},
+        }
         update = {
             "$push": {"reservations": {"generation_id": str(generation_id),
                                         "entries": entries,
@@ -663,12 +688,15 @@ class NounExclusionMemory:
         # identifiers so diagnostics can distinguish a stale selection snapshot
         # from genuine concurrent work without exposing prompt/source content.
         current = self.collection.find_one({"_id": self.record_id}) or {}
-        completed = sorted(set(entries) & set(current.get("entries", ())))
+        completed = sorted(set(entries) & set(
+            current.get("entries", [])[-self.config.capacity:]))
         active = []
         owners = set()
         for reservation in current.get("reservations", ()):
+            if not self._reservation_active(reservation, now):
+                continue
             collisions = sorted(set(entries) & set(reservation.get("entries", ())))
-            if collisions and reservation.get("generation_id") != str(generation_id):
+            if collisions:
                 active.extend(collisions)
                 owners.add(str(reservation.get("generation_id", "")))
         if completed and active:
@@ -712,6 +740,7 @@ class NounExclusionMemory:
         if not self.config.enabled:
             return False
         new_entries = sorted(set(new_entries))
+        history_capacity = max(self.retained_history_capacity, self.config.capacity)
         for _ in range(4):
             doc = self.collection.find_one({"_id": self.record_id}) or {}
             if not doc:
@@ -726,7 +755,7 @@ class NounExclusionMemory:
                         {"_id": self.record_id},
                         {"$setOnInsert": {"version": 1,
                                           "record_type": "noun_exclusion"},
-                         "$set": {"entries": new_entries[-self.config.capacity:],
+                         "$set": {"entries": new_entries[-history_capacity:],
                                   "reservations": [],
                                   "recent_identity_events": recent_events,
                                   "revision": 1}},
@@ -742,10 +771,16 @@ class NounExclusionMemory:
                 continue
             revision = int(doc.get("revision", 0))
             entries = list(doc.get("entries", []))
+            active = set(entries[-self.config.capacity:])
             for entry in new_entries:
-                if entry not in entries:
+                if entry not in active:
+                    # A released historical identity starts a new quarantine
+                    # when actually reused. Repeated active/source-required
+                    # identities do not refresh their existing FIFO position.
+                    if entry in entries:
+                        entries.remove(entry)
                     entries.append(entry)
-            entries = entries[-self.config.capacity:]
+            entries = entries[-history_capacity:]
             recent_events = list(doc.get("recent_identity_events", []))
             if (automatic_repetition_enabled() and
                     (recent_identities or recent_constructions) and
@@ -768,7 +803,8 @@ class NounExclusionMemory:
                            "revision": revision + 1}},
             )
             if result.matched_count:
-                self.entries, self.reservations = entries, reservations
+                self.entries = entries[-self.config.capacity:]
+                self.reservations = reservations
                 self.recent_identity_events = recent_events
                 return True
         raise RuntimeError("Concurrent noun-exclusion update did not settle")

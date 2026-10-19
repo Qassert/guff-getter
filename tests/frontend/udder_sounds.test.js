@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
-const {UdderSounds,MIXKIT_SOUNDS,MUNGE_SOUNDS,SUSPENSE_SOUND}=require('../../newsmuncher/static/js/creation/udder-sounds.js');
+const {UdderSounds,MungeTeatSounds,MIXKIT_SOUNDS,MUNGE_SOUNDS,SUSPENSE_SOUND}=require('../../newsmuncher/static/js/creation/udder-sounds.js');
 
 function element(){const listeners={};return{listeners,addEventListener:(name,fn)=>(listeners[name]??=[]).push(fn),dispatch(name,event={}){for(const fn of listeners[name]||[])fn(event);}};}
 class FakeAudio{
@@ -9,6 +9,7 @@ class FakeAudio{
  finish(name='ended'){this.listeners[name]?.();}
 }
 function setup(random=()=>0,count=5,options={}){FakeAudio.all=[];const buttons=Array.from({length:count},element),munge=element();return{buttons,munge,sounds:new UdderSounds({buttons,munge,AudioClass:FakeAudio,random,...options})};}
+function control(engine){const listeners={},teats=Array.from({length:6},element),classes=new Set();return{dataset:{mungeEngine:engine},teats,listeners,classList:{contains:name=>classes.has(name),add:name=>classes.add(name),remove:name=>classes.delete(name)},querySelectorAll:selector=>selector==='.munge-teat'?teats:[],addEventListener:(name,fn)=>(listeners[name]??=[]).push(fn),dispatch(name,event={}){for(const fn of listeners[name]||[])fn(event);}};}
 
 test('page load assigns five unique Mixkit sounds and remains silent',()=>{
  const {sounds}=setup();assert.equal(sounds.assignments.length,5);assert.equal(new Set(sounds.assignments).size,5);
@@ -40,13 +41,39 @@ test('rejected playback is swallowed and cleaned up',async()=>{
 });
 
 test('template loads teat sounds after controls without binding the retired MUNGE body sound',()=>{
- const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),script=fs.readFileSync('newsmuncher/static/js/creation/udder-sounds.js','utf8');assert(html.includes('id="mungeControls"'));assert(html.includes("path='js/creation/udder-sounds.js'"));assert(html.indexOf('source-udder.js')<html.indexOf('munge-control.js'));assert(html.indexOf('munge-control.js')<html.indexOf('udder-sounds.js'));assert.match(script,/buttons:control\.querySelectorAll\('\.munge-teat'\)/);assert.doesNotMatch(script,/munge:button/);assert.doesNotMatch(script,/bodies:Object\.fromEntries/);
+ const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),script=fs.readFileSync('newsmuncher/static/js/creation/udder-sounds.js','utf8');assert(html.includes('id="mungeControls"'));assert(html.includes("path='js/creation/udder-sounds.js'"));assert(html.indexOf('source-udder.js')<html.indexOf('munge-control.js'));assert(html.indexOf('munge-control.js')<html.indexOf('udder-sounds.js'));assert.match(script,/buttons:control\.querySelectorAll\('\.munge-teat'\)/);assert.match(script,/new MungeTeatSounds\(\{controls/);assert.doesNotMatch(script,/munge:button/);assert.doesNotMatch(script,/bodies:Object\.fromEntries/);
 });
 
-test('six-teat MUNGE set keeps its instruments and never plays legacy suspense',()=>{
+test('six-teat MUNGE set keeps stable unique instruments and never plays legacy suspense',()=>{
  let values=[.1,.2,.3,.4,.5,.6,.7,.8,.9,.9,.8,.7,.6,.5,.4,.3,.2,.1],i=0;
- const {buttons,sounds}=setup(()=>values[i++%values.length],6,{rootPath:'/static/audio/effects/munge/',pool:MUNGE_SOUNDS,clickSound:'assigned',pressSound:true});assert.equal(sounds.assignments.length,6);assert.equal(new Set(sounds.assignments).size,6);assert(!sounds.assignments.includes(SUSPENSE_SOUND));
+ const {buttons,sounds}=setup(()=>values[i++%values.length],6,{rootPath:'/static/audio/effects/munge/',pool:MUNGE_SOUNDS,clickSound:'assigned',pressSound:true,randomiseOnInteraction:false});assert.equal(sounds.assignments.length,6);assert.equal(new Set(sounds.assignments).size,6);assert(!sounds.assignments.includes(SUSPENSE_SOUND));
  const before=[...sounds.assignments];for(const button of buttons)button.dispatch('pointerenter',{pointerType:'mouse'});assert.equal(FakeAudio.all.length,6);assert.equal(sounds.active.size,6);
  let munges=0;buttons[4].addEventListener('click',()=>munges++);buttons[4].dispatch('pointerdown');buttons[4].dispatch('click');assert.equal(munges,1);assert.equal(FakeAudio.all.filter(a=>a.src.endsWith('/suspense.wav')).length,0);assert(FakeAudio.all.at(-1).src.startsWith('/static/audio/effects/munge/'));
- assert.equal(new Set(sounds.assignments).size,6);assert.notDeepEqual(sounds.assignments,before);FakeAudio.all[0].finish();assert.equal(sounds.active.size,6);
+ assert.deepEqual(sounds.assignments,before);buttons[4].dispatch('pointerdown');buttons[4].dispatch('click');assert.equal(FakeAudio.all.at(-1).src,FakeAudio.all.at(-2).src);FakeAudio.all[0].finish();assert.equal(sounds.active.size,7);
+});
+
+test('each engine gets six unique stable sounds and selection refreshes only that engine',()=>{
+ const controls=['classic','current','experimental'].map(control),values=[.03,.17,.31,.47,.61,.79,.89,.71,.53,.37,.19,.07],pool=Array.from({length:38},(_,i)=>`sound-${i}.mp3`);let i=0;
+ FakeAudio.all=[];const sounds=new MungeTeatSounds({controls,AudioClass:FakeAudio,random:()=>values[i++%values.length],rootPath:'/munge/',pool});
+ const initial=Object.fromEntries(controls.map(item=>[item.dataset.mungeEngine,sounds.assignments(item.dataset.mungeEngine)]));
+ for(const engine of Object.keys(initial)){assert.equal(initial[engine].length,6);assert.equal(new Set(initial[engine]).size,6);}
+ controls[0].dispatch('pointerdown');const selected=sounds.assignments('classic');controls[0].teats[2].dispatch('pointerdown');controls[0].teats[2].dispatch('click');controls[0].teats[2].dispatch('pointerdown');controls[0].teats[2].dispatch('click');
+ assert.notDeepEqual(selected,initial.classic);assert.equal(new Set(selected).size,6);assert.equal(FakeAudio.all.at(-1).src,FakeAudio.all.at(-2).src);
+ assert.deepEqual(sounds.assignments('current'),initial.current);assert.deepEqual(sounds.assignments('experimental'),initial.experimental);
+ controls[1].dispatch('pointerdown');assert.notDeepEqual(sounds.assignments('current'),initial.current);
+ const firstClassic=[...selected];controls[0].dispatch('pointerdown');assert.notDeepEqual(sounds.assignments('classic'),firstClassic);
+});
+
+test('teat interaction during processing keeps the selected six-sound mapping',()=>{
+ const selected=control('experimental'),pool=Array.from({length:38},(_,i)=>`sound-${i}.mp3`);let tick=0;
+ const sounds=new MungeTeatSounds({controls:[selected],AudioClass:FakeAudio,random:()=>((tick++*7)%37)/38,rootPath:'/munge/',pool});
+ selected.dispatch('pointerdown');const assignment=sounds.assignments('experimental');selected.classList.add('munge-control-processing');selected.dispatch('pointerdown');selected.teats[0].dispatch('pointerdown');selected.teats[0].dispatch('click');
+ assert.deepEqual(sounds.assignments('experimental'),assignment);assert(FakeAudio.all.at(-1).src.endsWith('/'+assignment[0]));
+});
+
+test('MUNGE pool contains every unique supported asset and omits the duplicate copy',()=>{
+ const root='newsmuncher/static/audio/effects/munge';
+ assert.equal(MUNGE_SOUNDS.length,38);assert.equal(new Set(MUNGE_SOUNDS).size,38);
+ assert(MUNGE_SOUNDS.every(sound=>fs.existsSync(`${root}/${sound}`)));
+ assert(!MUNGE_SOUNDS.includes('edr-synth-side-stick-471670 (1).mp3'));
 });

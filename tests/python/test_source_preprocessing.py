@@ -9,7 +9,8 @@ import re
 import unittest
 from pathlib import Path
 from newsmuncher.utils.source_preprocessing import (
-    preprocess_source, preserve_source_text, replacement_guidance, log_overlap, filter_word_banks, ingredient_diagnostics,
+    preprocess_radical_source, preprocess_source, preserve_source_text,
+    replacement_guidance, log_overlap, filter_word_banks, ingredient_diagnostics,
 )
 
 
@@ -35,6 +36,23 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(text.count('[PERSON_1]'), 2)
         self.assertIn("[PERSON_1]'s", text)
         self.assertIn('She did not leave', text)
+
+    def test_radical_masks_factual_anchors_but_leaves_ordinary_prose_visible(self):
+        result = preprocess_radical_source({
+            'title': 'Alice Smith in London',
+            'extract': (
+                'Alice Smith carried a red balloon to London on 12 March 2020. '
+                'Smith polished the ancient brass telescope angrily.'
+            ),
+        })
+        text = result['masked']['extract']
+        self.assertEqual(text.count('[PERSON_1]'), 2)
+        self.assertIn('[PLACE_1]', text)
+        self.assertRegex(text, r'\[FACT_\d+\]')
+        for visible in ('red balloon', 'polished', 'ancient brass telescope', 'angrily'):
+            self.assertIn(visible, text)
+        for protected in ('Alice Smith', 'London', '12 March 2020'):
+            self.assertNotIn(protected, text)
 
     def test_unique_surname_reference(self):
         result = self.mask('Alice Smith arrived. Smith did not leave.')

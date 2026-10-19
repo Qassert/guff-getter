@@ -469,7 +469,8 @@ class CopyEditPassTests(unittest.TestCase):
 
             prompt_args = routes.prepare_prompt.call_args.kwargs
             assert len(prompt_args["concept_overrides"]["nouns"]) == 9
-            assert len(prompt_args["concept_overrides"]["animals"]) == 9
+            # Four animals are visible; one thematic spark is placed separately.
+            assert len(prompt_args["concept_overrides"]["animals"]) == 3
             assert len(prompt_args["descriptor_overrides"]) == 9
             assert [item["text"] for item in prompt_args["theme_sparks"]] == [
                 "fungal kettle using refraction", "spore-adapted lunar badger",

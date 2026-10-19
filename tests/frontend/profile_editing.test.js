@@ -11,8 +11,10 @@ assert(html.includes('aria-label="MUNGE engines"'));assert(html.includes('>NOMIN
 for(const removed of ['>EDIT<','>SAVE<','IMAGE GENERATION MODE','SHIZZALISE'])assert(!html.includes(removed));
 assert(!html.includes("path='profile-editing.js'"));
 const css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
-assert.match(css,/#sourceEditor\s*\{[^}]*padding-top:\s*clamp\(107px, 13\.92vw, 136px\)/s);
-assert.match(css,/#responseEditor\s*\{[^}]*padding:\s*clamp\(10px, 1\.5vw, 16px\) 0 0/s);
+assert.match(css,/#sourceEditor\s*\{[^}]*padding-top:\s*clamp\(77px, calc\(13\.92vw - var\(--creation-gap-reduction\)\), 106px\)[^}]*margin-bottom:\s*-20px/s);
+assert.match(css,/#sourceBodyDraft\s*\{[^}]*margin-bottom:\s*0/s);
+assert.match(css,/\.profile-page \.profile-container\s*\{[^}]*padding-bottom:\s*calc\(clamp\(12px, 2vw, 24px\) - 6px\)/s);
+assert.match(css,/#responseEditor\s*\{[^}]*position:\s*relative[^}]*top:\s*-30px[^}]*padding:\s*clamp\(10px, 1\.5vw, 16px\) 0 0/s);
 assert.match(css,/\.creation-actions\s*\{[^}]*justify-content:\s*center/s);
 assert(!css.includes(':is(.profile-container, #outputContainer)::after'));
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);assert.equal(ids.length,new Set(ids).size);

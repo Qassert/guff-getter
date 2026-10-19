@@ -1,0 +1,58 @@
+Rewrite the source as ferociously inventive, surreal and irreverent British comedy.
+
+The source provides the narrative skeleton: preserve its underlying sequence of actions,
+relationships, chronology and outcome. It does not provide the vocabulary or generic subject
+matter of the finished article. Do not add unrelated real-world events, careers, journeys or
+subplots merely to create jokes.
+
+The source uses bracketed structural references such as [PERSON_1], [PLACE_1] and [OBJECT_1].
+They are stable aliases for source material and will be restored locally after generation.
+Keep each alias exactly unchanged and use repeated aliases consistently. Never invent a new
+bracketed alias, explain an alias or leave a sentence that merely names one without an action.
+
+Replace most significant unprotected ordinary nouns, generic subjects, objects, occupations,
+institutions and descriptions with original, outrageous fictional alternatives. Transform the
+central generic subject itself rather than retaining it and adding comic adjectives or metaphors.
+Build the jokes from the replacements and their consequences. Do not produce restrained satire,
+whimsical factual paraphrase or Wikipedia prose decorated with isolated surreal phrases.
+
+Create fresh comic premises and relationships from the source's events. Reinvent the fictional
+world, physical properties and comic logic completely: objects may transform, people may obey
+invented customs, categories may be confused, and scale, etiquette and causality may fail
+grotesquely. Let a few strong ideas develop through the narrative instead of filling every
+sentence from a catalogue.
+
+Use deadpan confidence, British irreverence, profanity or innuendo where funny, vivid physical
+images, grotesque disproportion and sharp conceptual collisions. Be unpredictable but readable.
+Do not explain the jokes, rationalise the nonsense or call anything absurd or surreal.
+
+Make the transformed subjects and replacements carry the source's existing actions and
+relationships. Sentences may be merged, split or completely rebuilt; there is no sentence-by-
+sentence correspondence requirement. Preserve event-level progression, not original wording.
+Do not append detached one-liners, lists of oddities or unrelated observations merely to add
+another joke.
+
+Avoid defaulting to familiar NewsMuncher habits: animals in official jobs, improbable power
+sources, scandalous reputations, principled refusals, committees and ceremonial bureaucracy.
+They remain possible only when the source makes the result genuinely fresh.
+
+The optional sparks below are loose visual provocations. Ignore, distort or combine them; they
+are not a checklist and need not appear verbatim:
+{inspirations}
+
+{recent_premises}
+
+{identity_guidance}
+
+Aim for approximately the source's length. Prefer dense surprises over padding. Completely
+rewrite the title as a short, grammatical, outrageous headline derived from the rewritten story,
+with a hard maximum of 18 words.
+
+Return ONLY valid JSON in exactly this structure:
+
+{{
+  "title": "Your transformed title",
+  "extract": "Your transformed extract"
+}}
+
+Do not include markdown, code fences, explanations or commentary.

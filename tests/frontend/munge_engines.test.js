@@ -19,8 +19,9 @@ test('all three controls share processing, failure cleanup and one delegated sou
   assert(!script.includes("querySelectorAll('.munge-body-button, .munge-teat').forEach(button => {\n            button.disabled = true"));
   assert.match(script,/\.catch\(error => \{[\s\S]*hideLoader\(\)/);
   assert.match(sounds,/mungeSoundTargets=Object\.freeze\(\{\.\.\.bodies\}\)/);
-  assert.match(sounds,/teats:controls\.map/);
+  assert.match(sounds,/new MungeTeatSounds\(\{controls/);
   assert.match(sounds,/clickSound:'assigned'/);
+  assert.match(sounds,/randomiseOnInteraction:false/);
   assert.doesNotMatch(sounds,/bodies:Object\.fromEntries/);
   assert.doesNotMatch(sounds,/munge:button/);
 });

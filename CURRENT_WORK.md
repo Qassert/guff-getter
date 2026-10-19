@@ -1,7 +1,7 @@
 STATUS: READY
-OWNER: CODEX
+OWNER: NONE
 BRANCH: feature/video-animation
-LAST_COMPLETED_FEATURE: Phase 4X verified noun-identity exclusion correction
+LAST_COMPLETED_FEATURE: MUNGE EXPERIMENTAL RADICAL MODE
 LAST_COMPLETED_COMMIT: 3e07e12 fix: refine Gallery navigation and rotation
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,12 +13,153 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Completed comedy generation, exclusion-aware selection, concise editing and latest-edit media propagation are ready on `feature/video-animation`.
-APPROVAL: Repository reorganisation, cleanup and the final Gallery navigation, presentation, rotation and sound work are approved for commit and push. Do not merge `main`.
-NEXT_STEP: Continue manual evaluation from this checked-in feature-branch handover; do not merge `main` without approval.
-VALIDATION: Relevant Python integration tests: 92 passed / 0 failed / 6 subtests. Frontend: 84 passed / 0 failed. Python compilation, production JavaScript syntax checks and `git diff --check` pass. A broader Python run reached 408 passes / 105 subtests before its long diagnostic tail was interrupted after identifying one stale image-title assertion; the affected integration set was rerun successfully. No provider calls or production database writes.
+CURRENT_TASK: Working NewsMuncher Experimental comedy baseline checkpoint, validated and saved locally.
+APPROVAL: Local catalogue editing and the two exclusion changes are approved. No live database alteration, provider call, commit or push is approved.
+NEXT_STEP: Investigate Experimental premise diversity and repetition from the tagged baseline when explicitly requested.
+VALIDATION: Relevant Python suites: 199 passed. Frontend: 107 passed. Broader Python run reached 469 passed plus 105 subtests without a failure before a long lexical-exposure test was interrupted at 6m51s. Python compilation and git diff --check pass. No provider calls or production database writes.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+## RADICAL noun-replacement prompt correction — 2026-10-18
+
+- Replaced the recovered prompt's conflicting requirements to preserve principal
+  generic subjects and maintain sentence-by-sentence correspondence. The source
+  is now explicitly the event/relationship skeleton rather than the vocabulary
+  or generic subject matter of the finished article.
+- The first pass must replace most significant unprotected nouns, generic subjects,
+  objects, occupations, institutions and descriptions, including transforming the
+  central generic subject. Protected placeholders remain exact and restorable.
+- Local prompt assembly confirmed ordinary noun phrases remain visible, factual
+  aliases remain masked, the new requirements are sent to the provider, and the
+  obsolete preservation clauses are absent. The shared system instruction adds
+  only strict JSON/absurd-transformation framing and does not conflict.
+- No preprocessing, editor, model, sparks, catalogue, memory, route, CURRENT or
+  CLASSIC behavior changed. Prompt backup:
+  `/private/tmp/newsmuncher-radical-prompt-before-20261018T221927Z`.
+
+## RADICAL factual-anchor preprocessing trial — 2026-10-18
+
+- The verified pre-blacklist prompt, editor instructions, 50% target, six sparks,
+  model path and premise memory are unchanged. Only Experimental preprocessing
+  now differs from that baseline.
+- Experimental masks named people, places and organisations plus dates, times,
+  quantities, money, percentages, cardinals and ordinals. Repeated identities and
+  unambiguous surname references share stable placeholders across source fields.
+- Ordinary nouns, generic subjects and objects, adjectives, adverbs, descriptions
+  and verbs remain visible to the writer and therefore can be transformed. The
+  existing restoration and unresolved-placeholder guard now also cover FACT IDs.
+- CURRENT still calls the original `preprocess_source()`; CLASSIC remains on its
+  separate CSV path. No prompt, editor, catalogue or memory file was changed.
+- Pre-experiment backup:
+  `/private/tmp/newsmuncher-radical-preprocessing-experiment-20261018T220204Z`.
+
+## RADICAL pre-blacklist restoration — 2026-10-18
+
+- Restored the dedicated RADICAL prompt, service and focused tests exactly from
+  the hash-verified 2026-10-18 16:47 snapshot. The shared route now again uses
+  the ordinary 50% comedy-editor target and no longer invokes blacklist metrics.
+- RADICAL once again uses the shared `preprocess_source()` placeholder pathway.
+  The later anchor-only/FACT masking function and FACT placeholder recognition
+  were removed, restoring the original placeholder creation and restoration.
+- Restored the earlier short RADICAL editor suffix. Removed the fixed negative
+  prompt and all associated diagnostics so they cannot affect or fail the route.
+- The pre-restoration files are backed up at
+  `/private/tmp/newsmuncher-radical-pre-restore-20261018T214845Z`.
+- The following two historical sections describe superseded experiments and are
+  retained as history only; their behaviours are no longer active.
+
+## RADICAL transformation-strength correction — 2026-10-18
+
+- Experimental now uses a separate anchor-only source preprocessor. It masks and
+  safely restores named people, organisations, places, dates and quantities while
+  leaving ordinary nouns, adjectives, adverbs and descriptions visible for comic
+  transformation. CURRENT still uses its existing full replacement preprocessing.
+- The RADICAL prompt now requires one silent controlling premise that develops
+  across multiple factual beats. Fidelity is defined at event level rather than
+  sentence level, while genuine identities, chronology, milestones and outcomes
+  remain protected.
+- The Experimental editor targets 72% of the first pass, normally 62–82%, and is
+  explicitly told to preserve the premise, transformed vocabulary, escalation and
+  payoff. CURRENT retains its existing 50% target and editor instructions.
+- The fixed negative trial additionally covers trousers, trouser pockets and close
+  possessive/hyphenated compounds. Its list remains static and Experimental-only.
+- Focused validation: 106 tests passed. Live comedy quality remains to be assessed
+  through separately authorised MUNGEs; no provider request was made here.
+
+## Experimental fixed negative-prompt trial — 2026-10-18
+
+- Added one clearly delimited, fixed RADICAL V1 negative-prompt section covering
+  the requested ingredients, common variants and eight overused construction
+  families. Genuine source facts are explicitly exempt; the list does not learn
+  or grow between rewrites.
+- Experimental final output is inspected locally after editing and placeholder
+  restoration. Numeric diagnostics distinguish exact copied source clauses,
+  uncertain source overlap and material absent from the source. Construction
+  recognition is deliberately labelled heuristic because local matching cannot
+  prove every paraphrase or factual exception.
+- Diagnostics use the existing completion timing record and, when enabled, the
+  existing local comedy audit JSONL. They do not add a model call, database state
+  or enforcement pass. Classic and Current do not invoke the experiment.
+- Focused validation: 55 tests passed. No catalogue, selector, cooldown,
+  reservation, exclusion or persistent-memory behaviour changed.
+
+## Codex catalogue expansion and exclusion release — 2026-10-18
+
+- Authored 360 vocabulary proposals and 132 premise components directly in the
+  conversation, with no external model requests. Accepted 299 vocabulary entries
+  across 18 domains and 118 premises across 11 editorial mechanism families;
+  rejected 61 and 14 respectively. Per-entry decisions, edits, fiction labels
+  and provenance are in `docs/candidates/codex-catalogue-expansion-2026-10-18.json`.
+  These are Codex editorial decisions, not human-review claims.
+- Added approved entries to the existing vocabulary catalogue and premise
+  banks. Existing template patterns/weights and Radical inspiration banks are
+  unchanged. Reviewed food now reaches the existing cheeky-object bank. All 299
+  nouns pass reviewed eligibility; all 118 premises pass real template generation
+  and rejection checks with two-word bases. Phrase counts are not independent
+  noun-anchor capacity: compounds continue sharing the existing hard identities.
+- Reduced active hard history to the newest 1,500 distinct entries. Retain up to
+  5,000 history entries in the same field for inspection/rollback. Atomic checks
+  and diagnostics use the active tail even on old documents; reusing a released
+  historical entry puts it at the FIFO end, while active repeats do not refresh
+  their position. No live data was read or modified for this implementation.
+- Atomic reservation, in-memory exclusions and diagnostics now ignore leases
+  expiring at or before the operation time. Missing/invalid lease dates remain
+  blocking. Boundary, true-conflict, concurrent acquisition, failure-release and
+  history-preservation tests pass. Three sequential offline CURRENT selections
+  retain 14 nouns/6 animals internally, 14/4 in the prompt, and leave no leases.
+- Classic, Current prompts, Radical writing/editor logic and UI are untouched.
+  Comedy quality has not been evaluated through paid/live generation.
+
+## Create-page teat sounds and spacing — 2026-10-17
+
+- Selecting any MUNGE engine now assigns its six teats six distinct effects from
+  the shared 38-sound pool. The mapping remains fixed throughout that MUNGE and
+  refreshes when an engine is selected again.
+- Three layout-only reservations were reduced by 30px: source-udder clearance,
+  the source parchment's transparent lower border and the response parchment's
+  transparent upper border. Udder artwork and hitbox geometry are unchanged.
+
+## MUNGE EXPERIMENTAL RADICAL MODE — 2026-10-17
+
+- Experimental now bypasses the ranked concept, descriptor and invented-name
+  selectors. Its concise source-led prompt asks the existing writer to invent
+  premises and relationships, with six seeded vocabulary sparks as optional
+  inspiration rather than mandatory constructions.
+- A per-pet, 12-article soft premise memory stores relationship-plus-target
+  identities only after successful draft persistence. It shares the existing
+  noun-history Mongo collection without changing Current's records, has bounded
+  five-item guidance, and treats the same mechanism with a different target as
+  a fresh joke.
+- The existing first-pass and editor calls are reused. Radical-specific editor
+  guidance preserves novel ideas while Current calls retain their exact prior
+  arguments and prompts. Classic remains on its stateless CSV route.
+- Structural source aliases are now restored deterministically before editing,
+  with repeated aliases resolved to one canonical source reference. A second
+  check after editing and an authoritative pre-save guard reject any unknown or
+  newly introduced structural placeholder instead of completing the draft.
+- The Radical prompt now requires every surreal idea to perform the narrative
+  work of an existing source sentence, rather than appending detached oddities.
+- Focused validation: 148 tests pass. No provider call or database write occurred.
 
 ## Phase 4X noun-identity correction — 2026-10-13
 

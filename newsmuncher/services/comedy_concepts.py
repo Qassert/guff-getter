@@ -225,6 +225,7 @@ class ComedyConceptGenerator:
         physical = [item for item in objects if item["semantic_class"] not in {
             "food", "architecture", "historical_object",
         }]
+        food = [item for item in objects if item["semantic_class"] == "food"]
         devices = [item for item in objects if item["semantic_class"] in {
             "machinery", "tool", "vehicle", "scientific_equipment",
             "medical_equipment", "musical_instrument", "physical_object",
@@ -253,7 +254,7 @@ class ComedyConceptGenerator:
         return {
             "creatures": texts(animals),
             "domestic_objects": texts(physical),
-            "cheeky_objects": texts(physical),
+            "cheeky_objects": texts([*physical, *food]),
             "devices": texts(devices),
             "emergency_devices": texts(emergency),
             "ceremonial_objects": texts(ceremonial),

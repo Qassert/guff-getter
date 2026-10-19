@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from collections import Counter
 import os
 import threading
@@ -69,11 +69,22 @@ class Collection:
                 inserted = query["_id"]
             else:
                 inserted = None
-            if "entries" in query:
-                forbidden = set(query["entries"].get("$nin", ()))
-                reserved = {entry for item in self.doc.get("reservations", [])
-                            for entry in item.get("entries", ())}
-                if forbidden & (set(self.doc.get("entries", ())) | reserved):
+            if "$expr" in query:
+                # Evaluate the authoritative tail check, not the memory's
+                # earlier snapshot. Validate the actual Mongo query shape.
+                expression, expected = query["$expr"]["$eq"]
+                tail, requested = expression["$size"]["$setIntersection"]
+                array, offset = tail["$slice"]
+                assert array == {"$ifNull": ["$entries", []]} and expected == 0
+                active_history = self.doc.get("entries", [])[offset:]
+                if set(requested) & set(active_history):
+                    return SimpleNamespace(matched_count=0, upserted_id=None)
+                lease = query["reservations"]["$not"]["$elemMatch"]
+                now = lease["offer_until"]["$not"]["$lte"]
+                if any(set(lease["entries"]["$in"]) & set(item["entries"])
+                       and (not isinstance(item.get("offer_until"), datetime)
+                            or item["offer_until"].replace(tzinfo=timezone.utc) > now)
+                       for item in self.doc.get("reservations", [])):
                     return SimpleNamespace(matched_count=0, upserted_id=None)
             revision = query.get("revision")
             if revision is not None and self.doc.get("revision", 0) != revision:
@@ -85,6 +96,11 @@ class Collection:
                 if "generation_id" in condition:
                     self.doc["reservations"] = [x for x in self.doc["reservations"]
                         if x.get("generation_id") != condition["generation_id"]]
+                elif "offer_until" in condition:
+                    cutoff = condition["offer_until"]["$lte"]
+                    self.doc["reservations"] = [x for x in self.doc["reservations"]
+                        if not isinstance(x.get("offer_until"), datetime)
+                        or x["offer_until"].replace(tzinfo=timezone.utc) > cutoff]
             if "$push" in update:
                 self.doc.setdefault("reservations", []).append(
                     update["$push"]["reservations"])
@@ -97,7 +113,7 @@ class MongoUpsertConflictCollection(Collection):
     """Model Mongo's duplicate _id error for a conditional upsert miss."""
 
     def update_one(self, query, update, upsert=False):
-        if upsert and "entries" in query:
+        if upsert and "$expr" in query:
             raise DuplicateKeyError("duplicate key: _id")
         return super().update_one(query, update, upsert)
 
@@ -108,7 +124,7 @@ class VanishingConflictCollection(Collection):
         self.fail_conditional_once = True
 
     def update_one(self, query, update, upsert=False):
-        if "entries" in query and self.fail_conditional_once:
+        if "$expr" in query and self.fail_conditional_once:
             self.fail_conditional_once = False
             return SimpleNamespace(matched_count=0, upserted_id=None)
         return super().update_one(query, update, upsert)
@@ -116,7 +132,7 @@ class VanishingConflictCollection(Collection):
 
 class PersistentFilterMismatchCollection(Collection):
     def update_one(self, query, update, upsert=False):
-        if "entries" in query:
+        if "$expr" in query:
             return SimpleNamespace(matched_count=0, upserted_id=None)
         return super().update_one(query, update, upsert)
 
@@ -125,6 +141,86 @@ def test_flag_is_default_off_and_validated():
     with patch.dict("os.environ", {}, clear=True):
         assert not NounExclusionConfig.from_environment().enabled
     assert NounExclusionConfig("evaluation").enabled
+    assert NounExclusionConfig().capacity == 1500
+
+
+@pytest.mark.parametrize("offset,allowed", [(-1, False), (0, True), (1, True)])
+def test_noun_reservation_expires_between_load_and_atomic_reserve(offset, allowed):
+    started = datetime(2026, 10, 18, tzinfo=timezone.utc)
+    now = [started]
+    collection = Collection()
+    config = NounExclusionConfig("evaluation")
+    owner = NounExclusionMemory(collection, "pet", config, now=lambda: now[0])
+    contender = NounExclusionMemory(collection, "pet", config, now=lambda: now[0])
+    identity = "noun_identity:gravy"
+    assert owner.reserve("old", {identity})
+    contender.load()  # Lease is still active at snapshot time.
+    now[0] = started + timedelta(minutes=15, microseconds=offset)
+    assert (identity in contender.exclusions()) is not allowed
+    assert contender.reserve("new", {identity}) is allowed
+    if not allowed:
+        assert contender.last_reservation_conflict["reason"] == "active_reservation"
+        assert contender.last_reservation_conflict["active_entries"] == [identity]
+    else:
+        assert contender.last_reservation_conflict == {}
+    owner.release("old")
+    contender.release("new")
+    assert collection.doc["reservations"] == []
+
+
+def test_reduced_window_preserves_history_and_atomic_tail_agrees_with_load():
+    collection = Collection()
+    config = NounExclusionConfig("evaluation")
+    memory = NounExclusionMemory(collection, "pet", config)
+    history = [f"phrase:historic {i:04d}" for i in range(5000)]
+    collection.doc = {"_id": memory.record_id, "entries": list(history),
+                      "reservations": [], "revision": 1}
+    assert memory.load() == history[-1500:]
+    assert collection.doc["entries"] == history
+    assert memory.reserve("released", {history[-1501]})
+    assert not memory.reserve("still-active", {history[-1500]})
+    assert memory.last_reservation_conflict["completed_entries"] == [history[-1500]]
+    # Reuse starts a new quarantine; an already active source-required repeat
+    # does not refresh its position. Historical entries remain recoverable.
+    assert memory.complete("released", {history[-1501], history[-1499]})
+    assert collection.doc["entries"] == history[:3499] + history[3500:] + [history[3499]]
+    assert len(collection.doc["entries"]) == 5000
+    assert len(memory.entries) == 1500
+    assert memory.entries[-1] == history[-1501]
+    assert history[-1500] not in memory.entries
+    assert history[-1499] == memory.entries[0]
+    assert collection.doc["reservations"] == []
+    reopened = NounExclusionMemory(collection, "pet", config)
+    assert reopened.load() == memory.entries
+    assert not reopened.reserve("repeat", {history[-1501]})
+
+
+def test_expired_reservation_diagnostic_does_not_hide_completed_conflict():
+    now = datetime(2026, 10, 18, tzinfo=timezone.utc)
+    collection = Collection()
+    memory = NounExclusionMemory(collection, "pet", NounExclusionConfig("evaluation"),
+                                 now=lambda: now)
+    identity = "noun_identity:gravy"
+    collection.doc = {"_id": memory.record_id, "entries": [identity], "reservations": [
+        {"generation_id": "expired", "entries": [identity], "offer_until": now}
+    ]}
+    assert not memory.reserve("new", {identity})
+    assert memory.last_reservation_conflict == {
+        "reason": "completed_history", "completed_entries": [identity],
+        "active_entries": [], "active_owner_count": 0,
+    }
+
+
+def test_undated_reservation_remains_blocking_and_is_diagnosed():
+    collection = Collection()
+    memory = NounExclusionMemory(collection, "pet", NounExclusionConfig("evaluation"))
+    collection.doc = {"_id": memory.record_id, "entries": [], "reservations": [
+        {"generation_id": "unknown-age", "entries": ["noun_identity:gravy"]}
+    ]}
+    memory.load()
+    assert "noun_identity:gravy" in memory.exclusions()
+    assert not memory.reserve("new", {"noun_identity:gravy"})
+    assert memory.last_reservation_conflict["reason"] == "active_reservation"
 
 
 def test_automatic_repetition_control_is_default_on_and_reversible():

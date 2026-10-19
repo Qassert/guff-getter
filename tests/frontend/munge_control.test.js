@@ -20,11 +20,12 @@ test('pointer motion bends along configured radial axis and touch does not hover
  const untouched=t.buttons[1];untouched.dispatch('pointerenter',{pointerType:'touch',clientX:0,clientY:0});assert.equal(t.ui.states[1].lastX,null);
 });
 
-test('template restores the original bodies, animated teats and separate engine labels',()=>{
+test('template uses branded engine bodies with the original animated teats',()=>{
  const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
- assert(!html.includes('images/munge-buttons.png'));assert(html.includes('images/udders/munge/munge-body.png'));assert.equal((html.match(/class="munge-teat munge-teat-/g)||[]).length,1);
+ assert(!html.includes('images/munge-buttons.png'));assert(html.includes("images/udders/munge/munge-body-' ~ engine ~ '.png"));assert.equal((html.match(/class="munge-teat munge-teat-/g)||[]).length,1);
  assert(html.includes("images/udders/munge/munge-teat-"));assert.match(html,/class="munge-teat-shape" aria-hidden="true"><img/);
- assert(html.includes('class="munge-engine-label"'));assert(!html.includes('munge-lettering'));
+ assert(!html.includes('class="munge-engine-label"'));assert(!html.includes('munge-lettering'));
+ for(const engine of ['classic','current','experimental'])assert(fs.existsSync(`newsmuncher/static/images/udders/munge/munge-body-${engine}.png`));
  for(const name of ['upper-left','upper-right','left','right','lower-left','lower-right'])assert(html.includes(`('${name}'`)||html.includes(`, '${name}'`));
  for(let i=1;i<=6;i++)assert(html.includes(`munge-teat-' ~ image`));
  const script=fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8');assert.match(script,/getElementById\('mungeControls'\)\?\.querySelectorAll\?\.\('\.munge-teat, \.munge-body-button'\)/);assert(!html.includes('id="mungeButton"'));
@@ -35,12 +36,17 @@ test('template restores the original bodies, animated teats and separate engine 
  assert.match(css,/\.munge-body-button\s*\{[^}]*z-index:\s*1/s);assert.match(css,/\.munge-body\s*\{[^}]*pointer-events:\s*none/s);assert.match(css,/\.munge-teat\s*\{[^}]*z-index:\s*2/s);assert.match(css,/prefers-reduced-motion/);
  assert.match(css,/\.munge-control\s*\{[^}]*aspect-ratio:\s*1\.18/s);
  assert.match(css,/\.munge-body\s*\{[^}]*width:\s*100%[^}]*height:\s*auto/s);
- assert.match(css,/\.munge-engine-label\s*\{[^}]*position:\s*absolute[^}]*pointer-events:\s*none/s);
+ assert(!css.includes('.profile-page .munge-engine-label'));
  assert(!css.includes('.profile-page .munge-lettering'));
  const positions={"upper-left":['calc(32% + 16px)','23%'],"upper-right":['calc(68% - 16px)','23%'],left:['calc(26% + 8px)','calc(42% - 21px)'],right:['calc(74% - 6px)','calc(42% - 22px)'],"lower-left":['calc(37% + 20px)','calc(60% - 16px)'],"lower-right":['calc(63% - 12px)','calc(60% - 16px)']};
  for(const [name,[x,y]] of Object.entries(positions))assert(html.includes(`('${name}',`)&&html.includes(`'${x}', '${y}'`));
  assert.match(css,/\.munge-generation-controls\s*\{[^}]*position:\s*absolute[^}]*bottom:\s*calc\(-1 \* var\(--paper-edge\) - var\(--paper-transition-half-gap\) - 10px\)[^}]*transform:\s*translate\(-50%, 50%\)/s);
  assert.match(css,/\.profile-page \.profile-container\s*\{[^}]*margin-bottom:\s*calc\(2 \* var\(--paper-transition-half-gap\)\)/s);
+ assert.match(css,/--creation-gap-reduction:\s*30px/);
+ assert.match(css,/\.profile-page #sourceEditor\s*\{[^}]*padding-top:\s*clamp\(77px, calc\(13\.92vw - var\(--creation-gap-reduction\)\), 106px\)/s);
+ assert.match(css,/border-width:\s*calc\(var\(--paper-edge\) \* 1\.25\) var\(--paper-edge\) var\(--paper-edge\)/s);
+ assert(!css.includes('border-bottom-width: max(2px, calc(var(--paper-edge) - var(--creation-gap-reduction)))'));
+ assert(!css.includes('border-top-width: max(10px, calc(clamp(40px, 6.25vw, 75px) - var(--creation-gap-reduction)))'));
  assert.match(css,/\.profile-page \.munge-generation-controls\s*\{[^}]*pointer-events:\s*none/s);
  assert.match(css,/\.profile-page \.munge-rotor\s*\{[^}]*pointer-events:\s*none/s);
  assert.match(css,/\.profile-page \.munge-body-button\s*\{[^}]*pointer-events:\s*auto/s);

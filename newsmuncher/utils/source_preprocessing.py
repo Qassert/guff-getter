@@ -7,6 +7,9 @@ from functools import lru_cache
 logger = logging.getLogger(__name__)
 STRUCTURAL = frozenset('not no never neither nor hardly rarely scarcely only also then now later earlier before after already still again yet here there when where why how because therefore however first last next former latter'.split())
 ENTITY_TYPES = {'PERSON': 'PERSON', 'GPE': 'PLACE', 'LOC': 'PLACE', 'ORG': 'ORGANIZATION'}
+RADICAL_FACT_TYPES = {
+    'DATE', 'TIME', 'CARDINAL', 'ORDINAL', 'QUANTITY', 'MONEY', 'PERCENT',
+}
 
 
 @lru_cache(maxsize=1)
@@ -146,6 +149,84 @@ def preprocess_source(entry):
         masked[field] = text
     return {'masked': masked, 'records': records,
             'original_word_count': len(re.findall(r'\b\w+\b', fields['extract']))}
+
+
+def preprocess_radical_source(entry):
+    """Mask factual anchors while leaving ordinary prose open to transformation.
+
+    Unlike CURRENT's catalogue-substitution preprocessor, this Experimental-only
+    path does not mask common nouns or descriptions. Repeated named identities
+    share placeholders across fields, including an unambiguous surname reference.
+    """
+    fields = {
+        key: preserve_source_text(entry.get(key, ''))
+        for key in ('title', 'description', 'extract')
+    }
+    docs = {key: get_nlp()(text) for key, text in fields.items()}
+    entities = {}
+    for doc in docs.values():
+        for ent in doc.ents:
+            if ent.label_ in ENTITY_TYPES:
+                literal = ent.text.removesuffix("'s").removesuffix('’s')
+                entities[_key(literal)] = (literal, ENTITY_TYPES[ent.label_])
+            elif ent.label_ in RADICAL_FACT_TYPES:
+                entities[_key(ent.text)] = (ent.text, 'FACT')
+        # Back up NER for multiword proper names without capturing ordinary nouns.
+        for match in re.finditer(r'\b[A-Z][\w]*\s+[A-Z][\w]*(?:\s+[A-Z][\w]*)*\b', doc.text):
+            span = doc.char_span(*match.span(), alignment_mode='expand')
+            if span and any(token.pos_ == 'PROPN' for token in span):
+                entities.setdefault(_key(match.group()), (match.group(), 'PERSON'))
+
+    surname_owners = {}
+    for key, (literal, kind) in list(entities.items()):
+        if kind == 'PERSON' and len(key.split()) > 1:
+            surname_owners.setdefault(key.split()[-1], set()).add(key)
+    aliases = {}
+    for surname, owners in surname_owners.items():
+        if len(owners) == 1:
+            owner = next(iter(owners))
+            aliases[('PERSON', surname)] = ('PERSON', owner)
+            entities.setdefault(surname, (entities[owner][0].split()[-1], 'PERSON'))
+
+    counts = Counter()
+    identifiers = {}
+    records = []
+    masked = {}
+    for field, doc in docs.items():
+        spans = []
+        occupied = set()
+        for literal, kind in sorted(entities.values(), key=lambda item: -len(item[0])):
+            for match in re.finditer(
+                    r'(?<!\w)' + re.escape(literal) + r'(?!\w)', doc.text, re.IGNORECASE):
+                start, end = match.span()
+                if any(index in occupied for index in range(start, end)):
+                    continue
+                key = aliases.get((kind, _key(match.group())), (kind, _key(match.group())))
+                if key not in identifiers:
+                    counts[kind] += 1
+                    identifiers[key] = f'[{kind}_{counts[kind]}]'
+                placeholder = identifiers[key]
+                grammar = kind.lower()
+                if kind == 'PERSON' and doc.text[end:end + 2] in {"'s", '’s'}:
+                    grammar = 'possessive person; possessive suffix is already outside placeholder'
+                records.append({
+                    'kind': kind,
+                    'literal': match.group(),
+                    'placeholder': placeholder,
+                    'lemmas': [],
+                    'grammar': grammar,
+                })
+                spans.append((start, end, placeholder))
+                occupied.update(range(start, end))
+        text = doc.text
+        for start, end, placeholder in sorted(spans, reverse=True):
+            text = text[:start] + placeholder + text[end:]
+        masked[field] = text
+    return {
+        'masked': masked,
+        'records': records,
+        'original_word_count': len(re.findall(r'\b\w+\b', fields['extract'])),
+    }
 
 
 def filter_word_banks(preprocessed, banks):

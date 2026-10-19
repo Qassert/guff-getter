@@ -68,6 +68,10 @@ from newsmuncher.services.noun_exclusion import (
 from newsmuncher.services.munge_engines import (
     MungeEngine, engine_plan, project_modern_variant,
 )
+from newsmuncher.services.radical_comedy import (
+    RadicalPlaceholderError, RadicalPremiseMemory, load_noun_history_read_only,
+    prepare_radical_prompt, restore_radical_placeholders,
+)
 
 
 from newsmuncher.services.image_generation import store, choose_image_style, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path, DefinitiveImageFailure
@@ -219,6 +223,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     if not active_pet:
         raise HTTPException(status_code=401, detail="No active pet selected.")
     plan = engine_plan(payload.engine)
+    radical_mode = plan.engine is MungeEngine.EXPERIMENTAL
     source = payload.model_dump(exclude={'generate_images', 'draft_session', 'engine'})
     rewrite_id = store.begin_draft({**source, 'creationUser': creationUser}, active_pet, payload.draft_session)
     with open(TEMP_FILE, "w") as f:
@@ -242,10 +247,10 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 "contenders": prompt_template["contenders"],
                 "munge_engine": MungeEngine.CLASSIC.value,
             }
-            full_result = store.complete_draft(
-                rewrite_id, active_pet, full_result,
-                before_save=lambda: claim_used_words(prompt_template["contenders"], result),
-            )
+            # Classic deliberately preserves the original stateless CSV draw.
+            # Its completed draft is persisted, but its offered/used words never
+            # enter the modern permanent vocabulary-claim system.
+            full_result = store.complete_draft(rewrite_id, active_pet, full_result)
             if full_result is None:
                 raise HTTPException(status_code=409, detail="Draft superseded by a newer rewrite.")
             log_timings("complete")
@@ -311,6 +316,8 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     automatic_identity_penalties = Counter()
     automatic_identity_guidance = ""
     noun_exclusion_snapshot = {"enabled": noun_exclusion_config.enabled}
+    radical_premise_memory = None
+    radical_premise_guidance = ""
     source_text = "\n".join(str(source.get(key, ""))
                             for key in ("title", "description", "extract"))
     try:
@@ -324,7 +331,10 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         if noun_exclusion_config.enabled:
             noun_exclusion_memory = NounExclusionMemory(
                 comedy_noun_exclusion_collection(), active_pet, noun_exclusion_config)
-            noun_exclusion_memory.load()
+            if radical_mode:
+                load_noun_history_read_only(noun_exclusion_memory)
+            else:
+                noun_exclusion_memory.load()
             noun_exclusions = noun_exclusion_memory.exclusions(rewrite_id)
             automatic_identity_penalties = noun_exclusion_memory.identity_penalties(
                 source_text)
@@ -341,7 +351,23 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 "applied_penalties": dict(automatic_identity_penalties),
                 "guidance": automatic_identity_guidance,
             }
-        if thematic_config.enabled or theme_ingredient_config.enabled:
+        if radical_mode:
+            try:
+                radical_premise_memory = RadicalPremiseMemory(
+                    comedy_noun_exclusion_collection(), active_pet)
+                radical_premise_memory.load()
+                radical_premise_guidance = radical_premise_memory.guidance(source_text)
+                timings["radical_mode"] = {
+                    "enabled": True,
+                    "recent_premise_events": len(radical_premise_memory.events),
+                    "guidance": radical_premise_guidance,
+                }
+            except Exception as radical_exc:
+                print("[radical-mode] premise memory unavailable; continuing without "
+                      f"guidance: {type(radical_exc).__name__}")
+                radical_premise_memory = None
+                timings["radical_mode"] = {"enabled": True, "memory_error": True}
+        if not radical_mode and (thematic_config.enabled or theme_ingredient_config.enabled):
             try:
                 domain_config = (thematic_config if thematic_config.enabled else
                                  ThematicDiversityConfig("evaluation"))
@@ -364,7 +390,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 print("[comedy-themes] memory unavailable; continuing without guidance: "
                       f"{type(thematic_exc).__name__}")
                 thematic_memory = None
-        if lexical_config.enabled:
+        if not radical_mode and lexical_config.enabled:
             try:
                 lexical_memory = LexicalExposureMemory(
                     comedy_lexical_exposure_collection(), active_pet, lexical_config)
@@ -386,7 +412,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         if automatic_identity_penalties:
             lexical_penalties = Counter(lexical_penalties or {})
             lexical_penalties.update(automatic_identity_penalties)
-        if theme_ingredient_config.enabled and thematic_domains:
+        if not radical_mode and theme_ingredient_config.enabled and thematic_domains:
             try:
                 theme_ingredient_memory = ThemeIngredientMemory(
                     comedy_theme_ingredient_collection(), active_pet,
@@ -409,7 +435,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                       f"{type(theme_ingredient_exc).__name__}")
                 theme_ingredient_memory = None
                 theme_ingredient_builder = None
-        if topic_config.enabled:
+        if not radical_mode and topic_config.enabled:
             try:
                 topic_memory = TopicMemory(comedy_topic_memory_collection(), topic_config)
                 topic_memory.load()
@@ -419,7 +445,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                 print("[comedy-topics] memory unavailable; continuing without topic ranking: "
                       f"{type(topic_exc).__name__}")
                 topic_memory = None
-        if name_config.mode == "invented":
+        if not radical_mode and name_config.mode == "invented":
             name_registry = InventedNameRegistry(invented_name_collection(), name_config)
             stage = monotonic()
             invented_names = name_registry.offer(
@@ -430,7 +456,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             )
             elapsed("invented_name_selection_ms", stage)
             timings["invented_name_selection"] = getattr(name_registry, "last_metrics", {})
-        if concept_config.mode == "generated":
+        if not radical_mode and concept_config.mode == "generated":
             concept_registry = ConceptRegistry(generated_concept_collection(), concept_config)
             concept_recent = None
             if topic_memory:
@@ -453,7 +479,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             variant_plan, animal_exposure = project_modern_variant(variant_plan)
             timings["animal_concept_exposure"] = animal_exposure
             timings["comedy_variant"] = variant_plan["counts"]
-        if descriptor_config.mode == "generated":
+        if not radical_mode and descriptor_config.mode == "generated":
             descriptor_registry = DescriptorRegistry(generated_descriptor_collection(), descriptor_config)
             # Prefer descriptor mechanisms that are not already dominating the
             # twenty-concept slate. This is a soft ordering preference: grammar
@@ -502,7 +528,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
                     "selected": theme_ingredient_builder.selected,
                     "selection_metrics": theme_ingredient_builder.last_metrics,
                 })
-        if final_joke_config.enabled:
+        if not radical_mode and final_joke_config.enabled:
             try:
                 final_joke_memory = FinalJokeMemory(
                     final_joke_memory_collection(), final_joke_config)
@@ -523,7 +549,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             concept_registry.release(concept_selection_key)
         if descriptor_registry:
             descriptor_registry.release(descriptor_selection_key)
-        if noun_exclusion_memory:
+        if noun_exclusion_memory and not radical_mode:
             noun_exclusion_memory.release(rewrite_id)
         if isinstance(exc, (NameSelectionExhausted, ConceptSelectionExhausted,
                             DescriptorSelectionExhausted, NounExclusionExhausted)):
@@ -547,24 +573,36 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     rewrite_stage = "prompt_construction"
     try:
         stage = monotonic()
-        prompt_template = prepare_prompt(
-            source, name_config.slate_size, load_prompt(first_pass_prompt_file()),
-            names_override=invented_names,
-            name_guidance=INVENTED_NAME_GUIDANCE if invented_names is not None else "",
-            concept_overrides=concept_overrides,
-            concept_guidance=(CONCEPT_GUIDANCE + ("\n\n" + variant_plan["guidance"]
-                              if variant_plan and variant_plan["guidance"] else ""))
-                             if offered_concepts is not None else "",
-            descriptor_overrides=descriptor_overrides,
-            descriptor_guidance=DESCRIPTOR_GUIDANCE if offered_descriptors is not None else "",
-            final_joke_guidance=final_joke_guidance,
-            topic_guidance="\n\n".join(
-                value for value in (topic_guidance, lexical_guidance,
-                                    automatic_identity_guidance, thematic_guidance) if value),
-            theme_sparks=theme_sparks,
-            diagnostics=timings,
-            noun_exclusions=noun_exclusions,
-        )
+        if radical_mode:
+            prompt_template = prepare_radical_prompt(
+                source, rewrite_id,
+                recent_premises=radical_premise_guidance,
+                identity_guidance=automatic_identity_guidance,
+                noun_exclusions=noun_exclusions,
+            )
+            timings["radical_mode"].update({
+                "inspirations": prompt_template.get("radical_inspirations", ()),
+                "prompt_characters": len(prompt_template["full_prompt"]),
+            })
+        else:
+            prompt_template = prepare_prompt(
+                source, name_config.slate_size, load_prompt(first_pass_prompt_file()),
+                names_override=invented_names,
+                name_guidance=INVENTED_NAME_GUIDANCE if invented_names is not None else "",
+                concept_overrides=concept_overrides,
+                concept_guidance=(CONCEPT_GUIDANCE + ("\n\n" + variant_plan["guidance"]
+                                  if variant_plan and variant_plan["guidance"] else ""))
+                                 if offered_concepts is not None else "",
+                descriptor_overrides=descriptor_overrides,
+                descriptor_guidance=DESCRIPTOR_GUIDANCE if offered_descriptors is not None else "",
+                final_joke_guidance=final_joke_guidance,
+                topic_guidance="\n\n".join(
+                    value for value in (topic_guidance, lexical_guidance,
+                                        automatic_identity_guidance, thematic_guidance) if value),
+                theme_sparks=theme_sparks,
+                diagnostics=timings,
+                noun_exclusions=noun_exclusions,
+            )
         elapsed("prompt_preparation_total_ms", stage)
         if not prompt_template:
             raise HTTPException(status_code=400, detail="Prompt preparation failed.")
@@ -628,11 +666,16 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         result = format_shizzalise_result(initial_response)
         if not result:
             raise HTTPException(status_code=500, detail="Generated title or extract is invalid.")
+        if radical_mode:
+            rewrite_stage = "radical_placeholder_restoration"
+            result, restored_count = restore_radical_placeholders(
+                result, prompt_template["preprocessing"])
+            timings["radical_mode"]["first_pass_placeholders_restored"] = restored_count
         first_pass_result = dict(result)
 
         # Pass 2: copy-editing.  Receives only pass-1 output — never source text.
         # Falls back to the pass-1 result on any failure.
-        if repetition_config.enabled:
+        if not radical_mode and repetition_config.enabled:
             source_text_for_replacement = "\n".join(
                 str(source.get(key, "")) for key in ("title", "description", "extract"))
             if lexical_memory is None:
@@ -697,15 +740,28 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         }
         if editor_enabled:
             comedy_editor_snapshot["invoked"] = True
-            polished = comedy_editor_pass(source, result, editor_target)
+            polished = (comedy_editor_pass(
+                            source, result, editor_target, radical_mode=True)
+                        if radical_mode else
+                        comedy_editor_pass(source, result, editor_target))
             comedy_editor_snapshot["succeeded"] = bool(polished)
             comedy_editor_snapshot["fell_back"] = not bool(polished)
         else:
-            polished = (copy_edit_pass(result, repetition_replacement=repetition_plan)
-                        if repetition_plan else copy_edit_pass(result))
+            if radical_mode:
+                polished = copy_edit_pass(result, radical_mode=True)
+            else:
+                polished = (copy_edit_pass(
+                                result, repetition_replacement=repetition_plan)
+                            if repetition_plan else copy_edit_pass(result))
         elapsed("copy_edit_provider_ms", stage)
         if polished:
             result = polished
+
+        if radical_mode:
+            rewrite_stage = "radical_placeholder_validation"
+            result, restored_count = restore_radical_placeholders(
+                result, prompt_template["preprocessing"])
+            timings["radical_mode"]["editor_placeholders_restored"] = restored_count
 
         final_word_count = comedy_editor_word_target(
             result.get("crazyReplacement1Extract", ""))["first_pass_word_count"]
@@ -723,6 +779,12 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             result['crazyReplacement1Extract'],
             result['crazyReplacement1Title'],
         )
+        if radical_mode:
+            # Keep the persistence boundary authoritative even if later local
+            # title processing is changed in the future.
+            result, restored_count = restore_radical_placeholders(
+                result, prompt_template["preprocessing"])
+            timings["radical_mode"]["final_placeholders_restored"] = restored_count
 
         full_result = {
             **source,
@@ -735,12 +797,16 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         try:
             rewrite_stage = "persistence"
             stage = monotonic()
-            full_result = store.complete_draft(
-                rewrite_id,
-                active_pet,
-                full_result,
-                before_save=lambda: claim_used_words(prompt_template.get('contenders', {}), result),
-            )
+            if radical_mode:
+                full_result = store.complete_draft(rewrite_id, active_pet, full_result)
+            else:
+                full_result = store.complete_draft(
+                    rewrite_id,
+                    active_pet,
+                    full_result,
+                    before_save=lambda: claim_used_words(
+                        prompt_template.get('contenders', {}), result),
+                )
             elapsed("persistence_and_word_claim_ms", stage)
         except WordClaimConflict as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
@@ -753,7 +819,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             concept_registry.release(concept_selection_key)
         if descriptor_registry:
             descriptor_registry.release(descriptor_selection_key)
-        if noun_exclusion_memory:
+        if noun_exclusion_memory and not radical_mode:
             noun_exclusion_memory.release(rewrite_id)
         print("[rewrite-diagnostic] " + json.dumps({
             "status": "rewrite_error",
@@ -761,8 +827,9 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             "exception": type(exc).__name__,
             "http_status": getattr(exc, "status_code", None),
             "rewrite_id": str(rewrite_id),
-            "provider_entered": rewrite_stage in {
-                "first_provider_call", "editor_provider_call", "persistence"},
+            "provider_entered": (rewrite_stage in {
+                "first_provider_call", "editor_provider_call", "persistence"}
+                or radical_mode and rewrite_stage.startswith("radical_placeholder")),
             "noun_reservations": len(
                 getattr(noun_exclusion_memory, "reservations", ()) or ()),
         }, sort_keys=True, default=str))
@@ -771,6 +838,8 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         if isinstance(exc, NounExclusionExhausted):
             raise HTTPException(status_code=409, detail=str(exc)) from exc
+        if isinstance(exc, RadicalPlaceholderError):
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
         raise
 
     tracking_started = monotonic()
@@ -780,6 +849,18 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         if ingredient not in raw_ingredients:
             raw_ingredients.append(ingredient)
     topic_event = None
+    if radical_premise_memory:
+        try:
+            accepted_radical_premises = radical_premise_memory.accept(
+                rewrite_id, result['crazyReplacement1Title'],
+                result['crazyReplacement1Extract'], source_text)
+            timings["radical_mode"].update({
+                "accepted_premises": accepted_radical_premises,
+                "memory_update": radical_premise_memory.last_metrics,
+            })
+        except Exception as radical_exc:
+            print("[radical-mode] persisted rewrite saved; premise memory update failed: "
+                  f"{type(radical_exc).__name__}")
     if topic_memory:
         topic_event = build_topic_event(
             rewrite_id, result, source, invented_names or (),
@@ -877,7 +958,7 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
         except Exception as theme_ingredient_exc:
             print("[theme-ingredients] persisted rewrite saved; memory update failed: "
                   f"{type(theme_ingredient_exc).__name__}")
-    if noun_exclusion_memory:
+    if noun_exclusion_memory and not radical_mode:
         try:
             final_text = f"{result['crazyReplacement1Title']}\n{result['crazyReplacement1Extract']}"
             selected_texts = list(ingredient_texts(
