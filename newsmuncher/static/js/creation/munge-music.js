@@ -2,6 +2,8 @@
 (function(root) {
     const JINGLE_PATH = /^\/generated-audio\/[a-z0-9._-]+\.mp3$/i;
     const FADE_OUT_MS = 1500;
+    const CLIP_OVERLAP_SECONDS = .5;
+    const SCHEDULE_LOOKAHEAD_SECONDS = .1;
     class MungeMusic {
         constructor({contextFactory=()=>new (root.AudioContext||root.webkitAudioContext)(),
                      fetcher=(url,options)=>fetch(url,options), random=Math.random,
@@ -47,9 +49,10 @@
             const {offset,length}=this.excerpt(buffer,clip);
             const source=this.context.createBufferSource(),gain=this.context.createGain();
             source.buffer=buffer;source.connect(gain);gain.connect(this.master);
-            const fade=Math.min(.08,length/4);
-            gain.gain.setValueAtTime(0,when);gain.gain.linearRampToValueAtTime(.22,when+fade);
-            gain.gain.setValueAtTime(.22,Math.max(when+fade,when+length-fade));
+            const overlap=Math.min(CLIP_OVERLAP_SECONDS,length/2);
+            const fadeIn=this.sources.size?overlap:Math.min(.08,overlap);
+            gain.gain.setValueAtTime(0,when);gain.gain.linearRampToValueAtTime(.22,when+fadeIn);
+            gain.gain.setValueAtTime(.22,Math.max(when+fadeIn,when+length-overlap));
             gain.gain.linearRampToValueAtTime(0,when+length);
             const voice={source,gain};this.sources.add(voice);
             source.onended=()=>{this.sources.delete(voice);source.disconnect?.();gain.disconnect?.();};
@@ -61,7 +64,7 @@
                 this.playbackMarkTimer=this.schedule(
                     ()=>this.mark('first_sample_playback_started'),delay);
             }
-            return {...voice,length};
+            return {...voice,length,overlap};
         }
         chooseUrls(library) {
             const urls=this.shuffle(library).slice(0,5);
@@ -80,7 +83,9 @@
             this.buffers[index]=buffer;
             if(this.master)return true;
             this.master=this.context.createGain();this.master.gain.setValueAtTime(.82,this.context.currentTime);
-            this.master.connect(this.context.destination);
+            this.muteGain=this.context.createGain();this.muteGain.gain.setValueAtTime(1,this.context.currentTime);
+            this.master.connect(this.muteGain);this.muteGain.connect(this.context.destination);
+            root.NewsMuncherAudio?.registerGain(this.muteGain,1);
             const firstStep=this.pattern.findIndex(hit=>hit?.sampleIndex===index);
             this.step=firstStep<0?0:firstStep;
             this.tick(token);return true;
@@ -94,7 +99,7 @@
                 usable:results.filter(Boolean).length,selected:urls.length});
             return results.some(Boolean);
         }
-        tick(token) {
+        tick(token, scheduledWhen=null) {
             if(!this.running||token!==this.revision||!this.pattern?.length)return;
             let hit,buffer;
             for(let checked=0;checked<this.pattern.length;checked++){
@@ -102,10 +107,12 @@
                 buffer=this.buffers[hit.sampleIndex];
                 if(buffer)break;
             }
-            const playing=this.voice(buffer,this.context.currentTime+.025,hit);
-            const seconds=playing?.length||this.beatMs/1000;
-            const beats=Math.max(1,Math.round((seconds-.08)/(this.beatMs/1000)));
-            this.timer=this.schedule(()=>this.tick(token),beats*this.beatMs);
+            const when=Math.max(this.context.currentTime+.025,scheduledWhen||0);
+            const playing=this.voice(buffer,when,hit);
+            const seconds=playing?playing.length-playing.overlap:this.beatMs/1000;
+            const nextWhen=when+Math.max(.06,seconds);
+            const delay=Math.max(0,nextWhen-this.context.currentTime-SCHEDULE_LOOKAHEAD_SECONDS);
+            this.timer=this.schedule(()=>this.tick(token,nextWhen),delay*1000);
         }
         async start(clickedAt=this.clock()) {
             this.stop(true);const token=++this.revision;this.running=true;
@@ -133,7 +140,7 @@
             this.running=false;this.revision++;this.cancel(this.timer);this.timer=null;
             this.cancel(this.stopTimer);this.stopTimer=null;
             this.cancel(this.playbackMarkTimer);this.playbackMarkTimer=null;
-            const finish=()=>{for(const voice of [...this.sources]){try{voice.source.stop();}catch(_){}voice.source.disconnect?.();voice.gain.disconnect?.();}this.sources.clear();this.master?.disconnect?.();this.master=null;};
+            const finish=()=>{for(const voice of [...this.sources]){try{voice.source.stop();}catch(_){}voice.source.disconnect?.();voice.gain.disconnect?.();}this.sources.clear();if(this.muteGain)root.NewsMuncherAudio?.unregisterGain(this.muteGain);this.master?.disconnect?.();this.muteGain?.disconnect?.();this.master=null;this.muteGain=null;};
             if(!this.master||immediate)return finish();
             const now=this.context.currentTime;this.master.gain.cancelScheduledValues?.(now);
             this.master.gain.setValueAtTime(this.master.gain.value,now);
@@ -141,7 +148,8 @@
             this.stopTimer=this.schedule(finish,FADE_OUT_MS);
         }
     }
-    if(typeof module!=='undefined')module.exports={MungeMusic,JINGLE_PATH,FADE_OUT_MS};
+    if(typeof module!=='undefined')module.exports={MungeMusic,JINGLE_PATH,FADE_OUT_MS,
+        CLIP_OVERLAP_SECONDS,SCHEDULE_LOOKAHEAD_SECONDS};
     if(typeof document==='undefined')return;
     root.mungeMusic=new MungeMusic();
     root.addEventListener('pagehide',()=>root.mungeMusic.stop(true));

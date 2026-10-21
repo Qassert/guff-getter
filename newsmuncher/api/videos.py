@@ -7,6 +7,7 @@ from uuid import UUID
 from newsmuncher.api.entries import collection
 from newsmuncher.api.promotion_gallery import viewer
 from newsmuncher.services.video import service, VideoError
+from newsmuncher.services.video_pingpong import service as pingpong
 
 router = APIRouter(prefix='/videos', tags=['Animation'])
 
@@ -52,9 +53,15 @@ def retry_uncertain_end_image(rewrite_id: str, payload: EndImageRetry,
 
 
 @router.get('/{rewrite_id}/media')
-def media(rewrite_id: str, user=Depends(viewer)):
+def media(rewrite_id: str, tasks: BackgroundTasks, user=Depends(viewer)):
     data = invoke(service.status, rewrite_id, user['pet'])
     if not data.get('video_url'):
         raise HTTPException(404, 'Stored animation unavailable.')
-    return FileResponse(service.path(rewrite_id), media_type='video/mp4',
+    original = service.path(rewrite_id)
+    playback = service.playback_path(rewrite_id)
+    if playback == original and pingpong.can_attempt(original):
+        # Match Gallery: serve the original immediately while the local, unpaid
+        # forward/reverse derivative is prepared for the next status refresh.
+        tasks.add_task(pingpong.derive, original)
+    return FileResponse(playback, media_type='video/mp4',
                         headers={'Cache-Control': 'private, no-store'})

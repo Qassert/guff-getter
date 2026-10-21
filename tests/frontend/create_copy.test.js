@@ -22,7 +22,7 @@ test('copy button shares the centred action row and does not narrow the editor',
   const actions=html.slice(html.indexOf('id="creationActions"'),html.indexOf('<!-- Operational status'));
   assert(actions.indexOf('id="copyMungeButton"') < actions.indexOf('id="bankButton"'));
   assert(actions.indexOf('id="bankButton"') < actions.indexOf('id="deleteCreationButton"'));
-  assert.match(css,/#responseEditor\s*\{[^}]*padding:[^;}]* 0 0/s);
+  assert.match(css,/#responseEditor\s*\{[^}]*padding:\s*26px 0/s);
   assert.doesNotMatch(css,/#responseEditor\s*\{[^}]*padding-right/s);
   assert.doesNotMatch(css,/\.profile-page \.result-copy-button\s*\{/);
 });
@@ -31,7 +31,7 @@ test('fresh Create assets expose a fully interactive inline result editor',()=>{
   const textarea=html.match(/<textarea id="responseBodyDraft"[^>]*>/)?.[0] || '';
   assert(textarea);assert.doesNotMatch(textarea,/\b(?:readonly|disabled)\b/i);
   assert.match(css,/#responseBodyDraft\s*\{[^}]*pointer-events:\s*auto[^}]*cursor:\s*text/s);
-  assert.match(base,/styles\.css'\) \}\}\?v=create-actions-2/);
+  assert.match(base,/styles\.css'\) \}\}\?v=master-audio-1/);
   assert.match(html,/script\.js'\) \}\}\?v=create-actions-4/);
 });
 
@@ -81,9 +81,18 @@ test('pending or failed nomination keeps its label and restores retry access',()
 });
 
 test('MUNGE processing keeps rotor spin without scaling the control',()=>{
-  assert.match(script,/rotors\.map\(rotor => rotor\.animate/);
+  assert.match(script,/mungeSpinAnimations = rotors\.map\(startMungeRotorMotion\)/);
   assert(!script.includes("transform:'scale(1.5)'"));
   assert(!css.includes('munge-control-processing-pulse'));
+});
+
+test('MUNGE rotors use half-speed engine-specific directions and a seamless middle swing',()=>{
+  assert.match(script,/const MUNGE_REVOLUTION_MS = 2240/);
+  assert.match(script,/engine === 'classic' \? -360 : 360/);
+  assert.match(script,/\[\{transform:'rotate\(0deg\)'\},\{transform:'rotate\(-90deg\)'\}\]/);
+  assert.match(script,/duration:MUNGE_QUARTER_TURN_MS,easing:'linear',fill:'forwards'/);
+  assert.match(script,/\[\{transform:'rotate\(-90deg\)'\},\{transform:'rotate\(90deg\)'\}\]/);
+  assert.match(script,/duration:MUNGE_HALF_TURN_MS,iterations:Infinity,direction:'alternate',easing:'linear'/);
 });
 
 test('transparent MUNGE layers pass through while visible controls remain clickable',()=>{

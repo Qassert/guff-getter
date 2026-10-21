@@ -126,6 +126,7 @@ const jingleUI = (() => {
                 stop();
                 return;
             }
+            globalThis.NewsMuncherAudio?.unmuteForExplicitPlayback();
             await playCurrent();
             return;
         }

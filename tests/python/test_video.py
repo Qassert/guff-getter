@@ -16,6 +16,7 @@ import requests
 
 from newsmuncher.services.image_generation import RewriteStore, build_image_prompt
 from newsmuncher.services.video import Videos, VideoError
+from newsmuncher.services.video_pingpong import service as pingpong
 from newsmuncher.integrations import wavespeed
 
 PNG = b'\x89PNG\r\n\x1a\n' + b'fixture'
@@ -106,6 +107,24 @@ def test_views_never_generate_and_explicit_job_is_reused_after_restart(setup):
     assert 'mock-secret' not in json.dumps(video)
     assert service.path(key).is_file()
     assert all(path.name.startswith(key) for path in service.directory.iterdir())
+
+
+def test_create_status_prefers_gallery_pingpong_derivative(setup):
+    service, collection, key, calls = setup
+    service.claim(collection, key, 'pet')
+    original = service.path(key)
+    original.write_bytes(MP4)
+    derivative = pingpong.path(original)
+    derivative.write_bytes(MP4 + b'-forward-reverse')
+
+    result = service.status(collection, key, 'pet')
+
+    assert result['video_status'] == 'complete'
+    assert result['video_derivative_status'] == 'ready'
+    assert '?v=pingpong-' in result['video_url']
+    assert service.playback_path(key) == derivative
+    assert service.playback_path(key).read_bytes().endswith(b'-forward-reverse')
+    assert not calls
 
 
 def test_concurrent_claims_and_duplicate_worker_delivery_pay_once(setup):
@@ -231,9 +250,12 @@ def test_routes_gets_only_read_post_schedules_once_and_media_ranges(setup):
         client.headers['X-Gallery-Request'] = '1'
         assert client.post('/videos/' + key).status_code == 202
         assert client.post('/videos/' + key).json()['video_status'] == 'complete'
+        pingpong.path(service.path(key)).write_bytes(MP4 + b'-forward-reverse')
         data = client.get('/videos/' + key).json()
         assert 'prompt' not in data and 'request_id' not in data
-        assert client.get(data['video_url']).content == MP4
+        assert data['video_derivative_status'] == 'ready'
+        assert '?v=pingpong-' in data['video_url']
+        assert client.get(data['video_url']).content == MP4 + b'-forward-reverse'
         partial = client.get(data['video_url'], headers={'Range': 'bytes=0-3'})
         assert partial.status_code == 206 and partial.content == MP4[:4]
     assert len(calls) == 1

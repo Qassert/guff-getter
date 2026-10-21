@@ -79,6 +79,27 @@ class Videos:
         except OSError:
             return False
 
+    def playback_path(self, key):
+        """Use the same local forward/reverse derivative preferred by Gallery."""
+        return pingpong.preferred(self.path(key))
+
+    def derivative_status(self, key):
+        original = self.path(key)
+        if pingpong.available(original):
+            return 'ready'
+        if pingpong.failure_reason(original):
+            return 'failed'
+        return 'pending' if pingpong.can_attempt(original) else 'unavailable'
+
+    def playback_url(self, key):
+        path = self.playback_path(key)
+        try:
+            stat = path.stat()
+            variant = 'pingpong' if path.name.endswith('-pingpong.mp4') else 'original'
+            return f'/videos/{key}/media?v={variant}-{stat.st_mtime_ns}-{stat.st_size}'
+        except OSError:
+            return f'/videos/{key}/media'
+
     def public(self, key, state):
         if state.get('video_detached'):
             return {'rewrite_id': key, 'video_status': 'superseded', 'can_generate': False}
@@ -100,7 +121,9 @@ class Videos:
                 end_status = 'unavailable'
         if status == 'complete' and self.has_video(key):
             return {'rewrite_id': key, 'video_status': 'complete', 'can_generate': False,
-                    'end_image_status': end_status, 'video_url': f'/videos/{key}/media'}
+                    'end_image_status': end_status,
+                    'video_derivative_status': self.derivative_status(key),
+                    'video_url': self.playback_url(key)}
         if status in ('queued', 'started') and time.time() - video.get('requested_epoch', 0) < 1800:
             return {'rewrite_id': key, 'video_status': status, 'end_image_status': end_status,
                     'can_generate': False}

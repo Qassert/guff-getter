@@ -1,5 +1,5 @@
 STATUS: READY
-OWNER: NONE
+OWNER: CODEX
 BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: MUNGE EXPERIMENTAL RADICAL MODE
 LAST_COMPLETED_COMMIT: 3e07e12 fix: refine Gallery navigation and rotation
@@ -13,10 +13,43 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Default-off Experimental controlling-premise diversity experiment.
-APPROVAL: The controlling-premise checkpoint commit, annotated tag and push to the verified feature branch are approved. No live database alteration or provider call is approved.
-NEXT_STEP: Review and optionally live-test the default-off Experimental controlling-premise experiment.
-VALIDATION: Relevant Python suites: 199 passed. Frontend: 107 passed. Broader Python run reached 469 passed plus 105 subtests without a failure before a long lexical-exposure test was interrupted at 6m51s. Python compilation and git diff --check pass. No provider calls or production database writes.
+CURRENT_TASK: Completed NewsMuncher milestone: shared OBJECT vocabulary, Create/Gallery improvements, media/audio refinements, and STUFF/SWEAR generators.
+APPROVAL: Andy explicitly approved final validation, one milestone commit, and push to the tracked feature branch.
+NEXT_STEP: Begin new work from the pushed milestone after reviewing the two deliberately untracked generated media/reference assets.
+VALIDATION: All 153 frontend tests pass. Relevant Python tests pass except the documented source-preprocessing module-stub isolation failures when legacy route fixtures are combined; Python compilation and `git diff --check` pass. No provider calls or production database writes.
+
+## MUNGE body shadow strength — 2026-10-20
+
+- Changed the single shared `.profile-page .munge-body` drop shadow from
+  `drop-shadow(0 8px 7px #35151c55)` to `drop-shadow(0 16px 14px #35151caa)`.
+  The original colour is retained while offset, softness and alpha are doubled.
+  Existing overflow remains visible, so the larger filter footprint is not clipped.
+
+## Standalone Create swear-word generator — 2026-10-20
+
+- Mechanically extracted all 756 runtime strings from the authoritative RTF source into
+  a UTF-8 CSV: 440 `bijv_nw`, 141 `gilles`, 70 `zelfs_nw`, and 105 `handelend`.
+  The six original phrase structures are unchanged. No StatCounter or other analytics
+  source was copied.
+- Added an independent Create-page panel below the existing workshop. It does not read
+  or mutate MUNGE, nomination, Gallery, parchment, audio, database or provider state.
+- Generation retains five 100ms flicks and starts the next slot after the third flick.
+  Completed slots become native buttons; replacing one retains its category and every
+  other slot. Reduced motion resolves immediately, and superseded timer chains settle
+  safely.
+- Completed phrase keys are retained in bounded session storage. Small spaces are
+  checked exactly without materialising their combinations; large spaces use 64 bounded
+  random attempts before clearing the 2,000-key history and selecting safely.
+- Restyled the visible control as one compact transparent flex row: parchment-style
+  `SWEAR` button followed immediately by the wrapping dark-red serif phrase. Removed the
+  heading, panel backgrounds, dotted word rules, instruction and visible phrase history;
+  sessionStorage duplicate tracking remains unchanged. Loading/replacement state remains
+  available to assistive technology without adding another visible element.
+- Moved that row into `#outputContainer` between the unchanged response editor and image
+  panel, with a 4px top margin. Added a matching `COPY` button beside `SWEAR`; it copies
+  `generator.phrase()` as plain text through the Clipboard API or a temporary-textarea
+  fallback, shows `COPIED` for 1.2 seconds only after success, and is disabled before a
+  complete phrase and throughout whole-phrase or individual-slot animation.
 
 ## Experimental controlling-premise trial — 2026-10-19
 
@@ -43,6 +76,154 @@ VALIDATION: Relevant Python suites: 199 passed. Frontend: 107 passed. Broader Py
   failure was found. No provider call or Mongo write occurred.
 MILESTONE_COMMITS: M1/M2 02b36ed; M3 b5e2baf; M4 cd1e7e0; M5 a0d0ab7; M6 7f947fc.
 LIMITATIONS: ELEVENLABS_API_KEY is not configured, so no real jingle was generated. Historical narration and Modal/ACE-Step artifacts remain preserved but inactive.
+
+## Create MUNGE control position — 2026-10-20
+
+- Changed only `.profile-page .munge-generation-controls` from
+  `translate(-50%, 50%)` to `translate(-50%, calc(50% + 12px))`.
+- This is a visual offset on the existing absolute group. Its anchor, flow, dimensions,
+  horizontal position, internal spacing, parchment geometry and text regions are unchanged.
+
+## Source-udder milk-puddle feathering — 2026-10-20
+
+- Feathered only the irregular canvas contour used by the `cream` puddles emitted by
+  source teat indices 0 and 2. Fourteen shape-following alpha bands preserve the
+  enlarged outer contour and opaque radial-gradient centre; the existing 2x canvas
+  effect scale makes the transition approximately 28 rendered pixels at full puddle
+  size. The old puddle-edge shadow was removed because it retained a perceptible hard
+  contour. The complete puddle footprint, highlight and edge droplets are now twice as
+  wide around the same impact point, while every vertical measurement remains unchanged.
+- Stream rendering, teat origins, trajectories, puddle centre and height,
+  animation/fade timing, and every non-cream teat effect remain unchanged.
+- The puddle interior uses an 88% opacity base, matching the feather's innermost band,
+  plus seven broad deterministic radial alpha fields clipped inside the unchanged
+  boundary. Each field fades completely before its rectangular paint extent, so no
+  individual ellipse or hard geometric boundary is rendered. The former long highlight
+  ellipse was removed because it produced the visible horizontal cream band.
+- The seven small satellite splash marks retain their existing centres and dimensions,
+  but now fade organically to transparent instead of ending as solid pale ovals.
+- Validation: source-udder and MUNGE-control focused tests pass (10/10); all 127
+  frontend tests pass; JavaScript syntax and `git diff --check` pass.
+
+## Source-udder bubble-puddle width — 2026-10-20
+
+- Expanded only the settled `foam` phase used by source teat indices 1 and 4. It reads
+  the source parchment's live rendered bounds each frame and distributes 25–72 bubbles
+  irregularly across that width, retaining the existing bubble renderer and four-row
+  vertical range. Seven overlapping base patches replace the former localised patch.
+- Initial emission coordinates, falling trajectories, bubble sizes/colours/alpha,
+  build/fade timing, milk effects and all layout geometry remain unchanged.
+
+## Combined source-udder liquid effects — 2026-10-20
+
+- Every one of the five source teats now creates one `liquid` effect record whose shared
+  renderer invokes the existing milk puddle, full-width foam, milk stream and milk
+  droplets together. The layer order keeps the stream visible above both puddles.
+- Each effect retains the clicked teat's existing start/impact calculation and a 5700ms
+  lifetime, matching the longest existing foam effect. Individual milk and foam phase
+  timings, geometry and fades are unchanged; active-effect cleanup remains unified.
+
+## Engine-specific MUNGE rotor motion — 2026-10-20
+
+- Doubled full-turn duration from 1120ms to 2240ms. Classic now rotates anticlockwise;
+  Experimental retains clockwise rotation. Both remain constant-speed linear loops.
+- Current enters from upright to -90 degrees in 560ms, then alternates linearly between
+  -90 and +90 degrees in 1120ms per half-turn. Its one-time entry controller hands off
+  to the alternating animation without a repeated 0-degree boundary or extra listeners.
+- Existing rotor origin, group position, 12px visual offset, control dimensions, hover
+  interactions, processing lifecycle and cleanup are unchanged.
+
+## Hybrid Gallery nomination ordering — 2026-10-20
+
+- New Mongo nomination documents receive `nominated_at` as a BSON date alongside
+  `creationDate`; the idempotent rewrite upsert places it under `$setOnInsert`, and
+  edit/media/promotion paths do not update it.
+- A fresh Gallery shows the three newest nominations first. Recency uses valid
+  `nominated_at`, falls back to valid legacy `creationDate`, puts undated records last,
+  and resolves equal dates by descending `_id`.
+- From the fourth selection onward, the original minimum
+  `promotion_gallery_seen_count` floor and random tie-breaking are active again. Page-local
+  visited state avoids repeats until the available cycle is exhausted; persisted counters
+  continue to increment only after successful display acknowledgement.
+- BACK stores the page just left in an in-memory forward stack. NEXT after BACK restores
+  that same page without a new random selection or duplicate view-count acknowledgement.
+- Focused hybrid ordering/persistence tests and Gallery frontend tests pass. No MongoDB
+  or provider call was made. The combined legacy run still has its pre-existing 960px CSS
+  assertion and source-preprocessing module-stub isolation failures.
+
+## Site-wide master mute — 2026-10-19
+
+- Added a shared controller loaded by the base template, with a fixed native button and
+  the persistent `newsmuncher.masterMuted` localStorage preference. The default remains
+  unmuted. The accessible label, pressed state and temporary speaker icon update together.
+- The controller intercepts `HTMLMediaElement.play()` once, so existing and dynamically
+  created Audio/video players inherit mute before playback. It remembers and restores
+  each player's prior individual muted state rather than changing its volume.
+- MUNGE Web Audio now routes its unchanged `.82` creative master through a separate
+  registered mute gain. This leaves clip crossfades and the 1.5-second completion fade
+  intact while allowing immediate site-wide silence and clean gain deregistration.
+- Explicit Create and Gallery Play Jingle actions synchronously clear and persist master
+  mute before playback. Automatic MUNGE, media, narration and effect paths never unmute.
+- Validation: 76 focused audio/media tests and all 126 frontend tests pass; JavaScript
+  syntax checks and `git diff --check` pass.
+
+## MUNGE loading-jingle crossfade — 2026-10-19
+
+- Consecutive decoded excerpts now start 500ms before the outgoing excerpt ends.
+  Very short excerpts cap the overlap at half their actual duration.
+- Per-voice Web Audio gain nodes linearly fade the outgoing voice from the existing
+  `.22` level to zero while the incoming voice rises from zero to `.22`. The existing
+  `.82` master level, five-jingle choice, shuffled order, progressive loading, final
+  1.5-second soundtrack fade and immediate restart cleanup are unchanged.
+- Transition scheduling now uses each excerpt's decoded duration rather than rounding
+  its end to a beat interval. Failed buffers remain skipped and the first available
+  decoded buffer can still begin without waiting for all five.
+- Validation: 11 soundtrack tests, 17 focused soundtrack/engine tests and all 120
+  frontend tests pass; JavaScript syntax and `git diff --check` pass.
+
+## Create and Gallery parchment enlargement — 2026-10-19
+
+- Increased both effective desktop parchment shells from 960px to 1200px, while
+  retaining viewport gutters and the existing 24px mobile gutter.
+- Added a 388px desktop minimum height (from Gallery's previous 310px baseline),
+  proportionally enlarged Gallery's image-layout height/gap/arrow position, and let
+  the three Create MUNGE controls use the wider panel without changing hitboxes.
+- The parchment nine-slice artwork, full-screen backgrounds, templates and application
+  behavior are unchanged. Focused Create/Gallery tests and all 109 frontend tests pass;
+  `git diff --check` passes. Live rendering was not started because application startup
+  attempts to resolve the configured MongoDB host; no database connection was made.
+
+## Create forward/reverse nominated-video playback — 2026-10-19
+
+- Create now consumes the same local FFmpeg ping-pong derivative already used by
+  Gallery. Its authenticated status/media route prefers the derivative, serves the
+  original immediately while a missing derivative is prepared, and exposes a bounded
+  readiness state without invoking a paid media provider.
+- Create continues read-only status polling at two-second intervals only while that
+  derivative is pending. A versioned URL change runs through the existing video
+  replacement lifecycle, which pauses, unloads and removes the old player before the
+  muted native loop starts automatically. Page exit, rewrite replacement, media errors
+  and reduced-motion cleanup retain their existing behavior.
+- Validation: 23 video-service Python tests, 16 focused Create video tests and all 110
+  frontend tests pass. Python compilation and `git diff --check` pass. No provider call
+  or database write occurred.
+
+## Dynamic Create and Gallery article sizing — 2026-10-19
+
+- Added one shared `ArticleTextFitter` with an 8px (6pt) floor, generous 60px ceiling,
+  1.35 line height and bounded binary search over measured `scrollHeight` /
+  `scrollWidth` versus a separate allocated content region. Content is never altered.
+- Create's editable response and Gallery's article column now expose the full responsive
+  region to the fitter, with 26px top/bottom breathing room (22px on narrow Gallery
+  layouts). The fitted block is vertically centred. Unfittable text remains contained
+  and vertically scrollable at the minimum rather than clipping or overlapping controls.
+- Fitting is coalesced through `requestAnimationFrame` after edits, entry changes,
+  image layout changes, ResizeObserver notifications, viewport resizing and font load.
+  Page exit disconnects observers and listeners.
+- The correction removes the previous 26px cap and no longer measures against the
+  text node's collapsing natural box, which had left short Gallery articles small and
+  pinned to the top. Eight focused fitter tests and all 118 frontend tests pass;
+  JavaScript syntax checks and `git diff --check` pass.
 
 ## RADICAL noun-replacement prompt correction — 2026-10-18
 

@@ -1,0 +1,51 @@
+category,word,domain,form,source_file,review_status
+object,high-level cistern,toilet_fittings,passive_object,curated_batch_22,proposed
+object,pull-chain handle,toilet_fittings,passive_object,curated_batch_22,proposed
+object,toilet-roll spindle,toilet_fittings,passive_object,curated_batch_22,proposed
+object,cistern siphon,toilet_fittings,passive_object,curated_batch_22,proposed
+object,ballcock valve,toilet_fittings,passive_object,curated_batch_22,proposed
+object,flush cone,toilet_fittings,passive_object,curated_batch_22,needs_review
+object,pan connector,toilet_fittings,passive_object,curated_batch_22,proposed
+object,toilet-seat hinge,toilet_fittings,passive_object,curated_batch_22,proposed
+object,urinal divider,toilet_fittings,passive_object,curated_batch_22,proposed
+object,toilet-brush holder,toilet_fittings,passive_object,curated_batch_22,proposed
+object,bath rack,bathroom_accessories,passive_object,curated_batch_22,proposed
+object,soap cage,bathroom_accessories,passive_object,curated_batch_22,proposed
+object,sponge basket,bathroom_accessories,passive_object,curated_batch_22,proposed
+device,bath thermometer,bathroom_accessories,powered_device,curated_batch_22,proposed
+object,shaving mirror arm,bathroom_accessories,passive_object,curated_batch_22,proposed
+object,toothbrush tumbler,bathroom_accessories,passive_object,curated_batch_22,proposed
+object,towel ring,bathroom_accessories,passive_object,curated_batch_22,proposed
+object,bath pillow,bathroom_accessories,passive_object,curated_batch_22,proposed
+object,plug-chain stay,bathroom_accessories,passive_object,curated_batch_22,proposed
+object,toilet paper hood,bathroom_accessories,passive_object,curated_batch_22,proposed
+object,tap backnut spanner,plumbing_tools,passive_object,curated_batch_22,proposed
+object,tap reseating tool,plumbing_tools,passive_object,curated_batch_22,proposed
+object,pipe freezing kit,plumbing_tools,passive_object,curated_batch_22,proposed
+object,drain testing plug,plumbing_tools,passive_object,curated_batch_22,proposed
+object,pipe bending spring,plumbing_tools,passive_object,curated_batch_22,proposed
+object,olive puller,plumbing_tools,passive_object,curated_batch_22,proposed
+object,stopcock key,plumbing_tools,passive_object,curated_batch_22,proposed
+object,radiator key,plumbing_tools,passive_object,curated_batch_22,proposed
+object,sink plunger,plumbing_tools,passive_object,curated_batch_22,proposed
+object,drain rod reel,plumbing_tools,passive_object,curated_batch_22,proposed
+device,bedpan washer,sanitation_equipment,powered_device,curated_batch_22,proposed
+object,sluice sink,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,sanitary-bin pedal,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,urinal flush controller,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,portable handwash station,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,soap dispenser pump,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,toilet-seat sanitiser,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,mop wringer bucket,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,clinical waste trolley,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,boot-cleaning station,sanitation_equipment,passive_object,curated_batch_22,proposed
+object,close-stool chair,historical_sanitation,passive_object,curated_batch_22,proposed
+object,bourdaloue,historical_sanitation,passive_object,curated_batch_22,needs_review
+object,commode bucket,historical_sanitation,passive_object,curated_batch_22,proposed
+object,washstand set,historical_sanitation,passive_object,curated_batch_22,proposed
+object,hip bath,historical_sanitation,passive_object,curated_batch_22,proposed
+object,sitz bath,historical_sanitation,passive_object,curated_batch_22,proposed
+object,jug-and-basin set,historical_sanitation,passive_object,curated_batch_22,proposed
+object,chamber candlestick,historical_sanitation,passive_object,curated_batch_22,proposed
+object,privy key,historical_sanitation,passive_object,curated_batch_22,proposed
+object,earth closet,historical_sanitation,passive_object,curated_batch_22,needs_review

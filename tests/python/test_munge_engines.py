@@ -1,10 +1,12 @@
 import random
 import os
 import sys
+import csv
+from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from newsmuncher.services.classic_munge import prepare_classic_prompt
+from newsmuncher.services.classic_munge import classic_physical_pool, prepare_classic_prompt
 from newsmuncher.services.munge_engines import (
     MungeEngine, engine_plan, project_modern_variant,
 )
@@ -20,6 +22,63 @@ def test_classic_uses_all_historical_csv_banks_offline():
     assert all(len(values) == 10 for values in result["contenders"].values())
     assert "Text to Transform:" in result["full_prompt"]
     assert "Always add 1 rude swear word" in result["full_prompt"]
+
+
+def _write_object_vocabulary(path, rows):
+    with path.open("w", encoding="utf-8", newline="") as target:
+        writer = csv.writer(target)
+        writer.writerow(["category", "word"])
+        writer.writerows(rows)
+
+
+def test_classic_combines_legacy_objects_and_physical_object_categories(tmp_path):
+    legacy = tmp_path / "animalsAndObjects.csv"
+    legacy.write_text("legacy badger,Shared   Wrench,legacy kettle", encoding="utf-8")
+    shared = tmp_path / "object-generator-vocabulary.csv"
+    _write_object_vocabulary(shared, [
+        ("object", "robotic gripper"),
+        ("device", "signal generator"),
+        ("adjective", "luminous"),
+        ("surreal_descriptor", "bureaucratic"),
+        ("object", " shared wrench "),
+    ])
+
+    pool = classic_physical_pool(legacy, shared)
+    normalised = {" ".join(word.casefold().split()): word for word in pool}
+    assert "legacy badger" in normalised
+    assert "robotic gripper" in normalised
+    assert "signal generator" in normalised
+    assert "luminous" not in normalised
+    assert "bureaucratic" not in normalised
+    assert list(normalised).count("shared wrench") == 1
+    assert normalised["shared wrench"] == "Shared   Wrench"
+
+
+def test_classic_reads_future_object_additions_without_code_changes(tmp_path):
+    shared = tmp_path / "object-generator-vocabulary.csv"
+    _write_object_vocabulary(shared, [("object", "future clockwork turnip")])
+    with patch("newsmuncher.services.classic_munge.random.sample",
+               side_effect=lambda values, count: list(values)[-count:]):
+        result = prepare_classic_prompt(
+            {"title": "Source", "description": "Description", "extract": "Body"},
+            object_vocabulary_path=shared,
+        )
+    assert len(result["contenders"]["animals"]) == 10
+    assert "future clockwork turnip" in result["contenders"]["animals"]
+    assert all(len(values) == 10 for values in result["contenders"].values())
+
+
+def test_classic_falls_back_to_legacy_pool_for_missing_or_malformed_shared_csv(
+        tmp_path, caplog):
+    legacy = tmp_path / "animalsAndObjects.csv"
+    legacy.write_text("badger,emu,wrench", encoding="utf-8")
+    missing = tmp_path / "missing.csv"
+    assert set(classic_physical_pool(legacy, missing)) == {"badger", "emu", "wrench"}
+
+    malformed = tmp_path / "malformed.csv"
+    malformed.write_text("wrong,columns\nobject,anvil\n", encoding="utf-8")
+    assert set(classic_physical_pool(legacy, malformed)) == {"badger", "emu", "wrench"}
+    assert "using legacy pool only" in caplog.text
 
 
 def test_current_benchmark_is_independent_of_experimental_options():

@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {MungeMusic,FADE_OUT_MS}=require('../../newsmuncher/static/js/creation/munge-music.js');
+const {MungeMusic,FADE_OUT_MS,CLIP_OVERLAP_SECONDS,SCHEDULE_LOOKAHEAD_SECONDS}=require('../../newsmuncher/static/js/creation/munge-music.js');
 
 class Param{constructor(){this.value=1;this.calls=[];}setValueAtTime(v,t){this.value=v;this.calls.push(['set',v,t]);}linearRampToValueAtTime(v,t){this.value=v;this.calls.push(['ramp',v,t]);}cancelScheduledValues(t){this.calls.push(['cancel',t]);}}
 class Context{
@@ -28,15 +28,46 @@ test('one MUNGE selects five jingles, unlocks audio and schedules a bounded snip
  assert(Math.abs(length-3.65)<.001);
 });
 
-test('one fixed tempo and recognisable pattern repeat without progressive chaos',async()=>{
+test('one recognisable pattern repeats without progressive chaos',async()=>{
  const t=setup({random:()=>0});await t.music.start();
- const pattern=JSON.stringify(t.music.pattern),beat=t.music.beatMs;
+ const pattern=JSON.stringify(t.music.pattern);
  for(let index=0;index<40;index++)t.timers.at(-1).fn();
  assert.equal(JSON.stringify(t.music.pattern),pattern);
  assert(t.music.tempo>=96&&t.music.tempo<=128);
- assert(t.timers.filter(timer=>timer.ms>100&&timer.ms!==160).every(timer=>timer.ms%beat===0));
  assert(t.context.starts.length<=41);
  assert.equal(t.music.master.gain.value,.82);
+});
+
+test('consecutive excerpts overlap by 500ms with complementary gain ramps',async()=>{
+ const t=setup();await t.music.start();
+ const firstVoice=[...t.music.sources][0],firstStart=t.context.starts[0][0];
+ const transition=t.timers.find(timer=>Math.abs(timer.ms-
+  (firstStart+3.65-CLIP_OVERLAP_SECONDS-SCHEDULE_LOOKAHEAD_SECONDS)*1000)<.001);
+ assert(transition);transition.fn();
+ const voices=[...t.music.sources],secondVoice=voices[1];
+ assert.equal(t.context.starts.length,2);
+ const secondStart=t.context.starts[1][0];
+ assert(Math.abs((firstStart+3.65)-secondStart-CLIP_OVERLAP_SECONDS)<.001);
+ assert.deepEqual(firstVoice.gain.gain.calls.slice(-2),[
+  ['set',.22,firstStart+3.15],['ramp',0,firstStart+3.65]
+ ]);
+ assert.deepEqual(secondVoice.gain.gain.calls.slice(0,2),[
+  ['set',0,secondStart],['ramp',.22,secondStart+CLIP_OVERLAP_SECONDS]
+ ]);
+});
+
+test('very short clips use a bounded half-duration crossfade',async()=>{
+ const t=setup({duration:.2});await t.music.start();
+ const [,offset,length]=t.context.starts[0];
+ assert.equal(length,.12);assert(offset>=0);
+ const transition=t.timers.find(timer=>timer.ms===0);
+ assert(transition);transition.fn();assert.equal(t.context.starts.length,2);
+ const second=[...t.music.sources][1];
+ const secondStart=t.context.starts[1][0];
+ const [initial,ramp]=second.gain.gain.calls;
+ assert.deepEqual(initial,['set',0,secondStart]);
+ assert.deepEqual(ramp.slice(0,2),['ramp',.22]);
+ assert(Math.abs(ramp[2]-(secondStart+.06))<.0001);
 });
 
 test('short or unavailable audio fails silently and never blocks generation',async()=>{
@@ -63,6 +94,20 @@ test('a new MUNGE immediately cleans a fading soundtrack before starting another
  assert(t.cancelled.includes(pendingCleanup.id));
  assert(oldVoices.every(voice=>voice.source.stopped));
  assert(t.music.running);assert(t.music.master);
+});
+
+test('MUNGE Web Audio registers a dedicated master-mute gain and releases it',async()=>{
+ const previous=globalThis.NewsMuncherAudio,registered=[],released=[];
+ globalThis.NewsMuncherAudio={registerGain(node,value){registered.push({node,value});node.gain.setValueAtTime(0,0);},
+  unregisterGain(node){released.push(node);}};
+ try {
+  const t=setup();await t.music.start();
+  assert.equal(registered.length,1);assert.equal(registered[0].node,t.music.muteGain);
+  assert.equal(registered[0].value,1);assert.equal(t.music.muteGain.gain.value,0);
+  assert.equal(t.music.master.gain.value,.82,'creative master volume remains independent');
+  const muteGain=t.music.muteGain;t.music.stop(true);
+  assert.deepEqual(released,[muteGain]);assert.equal(muteGain.disconnected,true);
+ } finally { globalThis.NewsMuncherAudio=previous; }
 });
 
 test('successive starts replace playback and create fresh arrangements while reusing decoded cache',async()=>{

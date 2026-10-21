@@ -37,10 +37,28 @@ def minimum_seen_count(entries, exclude=None):
     return min((seen(entry) for entry in candidates), default=0)
 
 
+def nomination_time(entry):
+    """Return one comparable naive-UTC BSON date, or None for undated legacy rows."""
+    value = entry.get('nominated_at')
+    if not isinstance(value, datetime):
+        value = entry.get('creationDate')
+    if not isinstance(value, datetime):
+        return None
+    if value.tzinfo is not None:
+        value = value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
+
+
+def chronological_key(entry):
+    value = nomination_time(entry)
+    return (value is not None, value or datetime.min, str(entry['_id']))
+
+
 class PromotionGallery:
     def __init__(self, entries, receipts, images=GENERATED_IMAGES_DIR,
                  narration=GENERATED_NARRATION_DIR, audio=GENERATED_AUDIO_DIR,
-                 jingles=JINGLE_STATE_FILE, choose=random.choice, videos=GENERATED_VIDEO_DIR):
+                 jingles=JINGLE_STATE_FILE, choose=random.choice,
+                 videos=GENERATED_VIDEO_DIR):
         self.entries, self.receipts = entries, receipts
         self.images, self.narration, self.audio = map(Path, (images, narration, audio))
         self.jingles, self.choose = Path(jingles), choose
@@ -168,23 +186,37 @@ class PromotionGallery:
         except OSError:
             return url
 
-    def select(self, viewer, previous=None):
-        # Only IDs/counts are scanned; content/assets are loaded for one item.
-        candidates = list(self.entries.find(NOMINATED, {'promotion_gallery_seen_count': 1}))
+    def select(self, viewer, previous=None, shown=(), chronological_index=0):
+        # Only ordering metadata is scanned; content/assets are loaded for one item.
+        candidates = list(self.entries.find(NOMINATED, {
+            'nominated_at': 1, 'creationDate': 1, 'promotion_gallery_seen_count': 1
+        }))
         if not candidates:
             return {'item': None}
-        # Never repeat the page just left while any other nomination is available.
-        pool = [entry for entry in candidates if str(entry['_id']) != previous]
-        pool = pool or candidates
-        minimum = min(map(seen, pool))
-        eligible = [entry for entry in pool if seen(entry) == minimum]
-        selected = self.choose(eligible)
+        candidates.sort(key=chronological_key, reverse=True)
+        shown = set(shown)
+        unseen = [entry for entry in candidates if str(entry['_id']) not in shown]
+        chronological = chronological_index < 3 and bool(unseen)
+        if chronological:
+            selected = unseen[0]
+        else:
+            # Once the three newest entries have been shown, retain the original
+            # fairness floor and random tie-breaking. Prefer unvisited entries for
+            # this page's browsing cycle, then resume normal fairness selection.
+            pool = unseen or [entry for entry in candidates if str(entry['_id']) != previous]
+            pool = pool or candidates
+            floor = min(seen(entry) for entry in pool)
+            selected = self.choose([entry for entry in pool if seen(entry) == floor])
         entry = self.entry(str(selected['_id']))
         token = str(uuid4())
         self.receipts.create_index('expires_at', expireAfterSeconds=0)
         self.receipts.insert_one({'_id': token, 'viewer': viewer, 'entry_id': entry['_id'],
             'displayed': False, 'expires_at': datetime.now(timezone.utc) + timedelta(minutes=10)})
-        return {'item': self.serialize(entry), 'view_token': token}
+        return {'item': self.serialize(entry), 'view_token': token,
+                'chronological': chronological,
+                'chronological_complete': chronological and (
+                    chronological_index >= 2 or len(unseen) == 1),
+                'cycle_complete': len(unseen) == 1}
 
     def displayed(self, viewer, token):
         # Receipt + count commit together; a retried ACK cannot increment twice.

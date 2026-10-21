@@ -120,7 +120,11 @@ class DraftLifecycleTests(unittest.TestCase):
         update=routes.collection.update_one.call_args.args[1]
         self.assertTrue(update['$setOnInsert']['nominated'])
         self.assertEqual(update['$setOnInsert']['gallery_status'],'pending')
+        self.assertIsInstance(update['$setOnInsert']['nominated_at'], routes.datetime.datetime)
+        self.assertEqual(update['$setOnInsert']['nominated_at'],
+                         update['$setOnInsert']['creationDate'])
         self.assertEqual(update['$set']['crazyReplacement1Title'],'edited')
+        self.assertNotIn('nominated_at', update['$set'])
         self.assertTrue(routes.collection.update_one.call_args.kwargs['upsert'])
 
     def test_text_update_unsets_stale_persisted_image_metadata(self):
@@ -145,6 +149,7 @@ class DraftLifecycleTests(unittest.TestCase):
         update = routes.collection.update_one.call_args.args[1]
         self.assertEqual(set(update['$unset']), set(routes.ImageMetadata.model_fields))
         self.assertNotIn('toucan', str(update['$set']).lower())
+        self.assertNotIn('nominated_at', update['$set'])
 
     def test_superseded_text_completion_cannot_restore_draft(self):
         a=self.store.begin_draft(self.result,'alice','browser')

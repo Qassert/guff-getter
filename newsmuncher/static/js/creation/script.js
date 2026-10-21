@@ -198,14 +198,30 @@ async function copyMungeResult() {
 }
 
 function autoResize(textarea) {
+    if (textarea?.id === 'responseBodyDraft' && responseArticleFitter) {
+        responseArticleFitter.schedule();
+        return;
+    }
     textarea.style.height = 'auto';
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
+const responseArticleFitter = typeof ArticleTextFitter === 'function'
+    ? new ArticleTextFitter({
+        element: document.getElementById('responseBodyDraft'),
+        container: document.getElementById('responseEditor')
+    })
+        .observe(document.getElementById('responseEditor'))
+        .observe(document.getElementById('outputContainer'))
+        .observe(document.getElementById('imagePanel'))
+    : null;
+
 let mungeProcessing = false;
 let mungeSpinAnimations = [];
 let mungeDecelerations = [];
-const MUNGE_REVOLUTION_MS = 1120;
+const MUNGE_REVOLUTION_MS = 2240;
+const MUNGE_QUARTER_TURN_MS = MUNGE_REVOLUTION_MS / 4;
+const MUNGE_HALF_TURN_MS = MUNGE_REVOLUTION_MS / 2;
 const MUNGE_ANGULAR_VELOCITY = 360 / MUNGE_REVOLUTION_MS;
 
 function mungeRotation(element) {
@@ -215,6 +231,38 @@ function mungeRotation(element) {
         const matrix = new DOMMatrixReadOnly(transform);
         return (Math.atan2(matrix.b, matrix.a) * 180 / Math.PI + 360) % 360;
     } catch (_) { return 0; }
+}
+
+function mungeEngineForRotor(rotor) {
+    return rotor.closest?.('.munge-control')?.dataset?.mungeEngine || rotor.id?.replace('mungeRotor-', '') || 'current';
+}
+
+function startMiddleMungeMotion(rotor) {
+    let cancelled = false;
+    let active = rotor.animate(
+        [{transform:'rotate(0deg)'},{transform:'rotate(-90deg)'}],
+        {duration:MUNGE_QUARTER_TURN_MS,easing:'linear',fill:'forwards'}
+    );
+    const intro = active;
+    intro.finished.then(() => {
+        if (cancelled || !mungeProcessing) return;
+        active = rotor.animate(
+            [{transform:'rotate(-90deg)'},{transform:'rotate(90deg)'}],
+            {duration:MUNGE_HALF_TURN_MS,iterations:Infinity,direction:'alternate',easing:'linear'}
+        );
+    }).catch(()=>{});
+    return {cancel() { cancelled = true; active?.cancel(); if (active !== intro) intro.cancel(); }};
+}
+
+function startMungeRotorMotion(rotor) {
+    const engine = mungeEngineForRotor(rotor);
+    if (engine === 'current') return startMiddleMungeMotion(rotor);
+    const start = mungeRotation(rotor);
+    const turn = engine === 'classic' ? -360 : 360;
+    return rotor.animate(
+        [{transform:`rotate(${start}deg)`},{transform:`rotate(${start+turn}deg)`}],
+        {duration:MUNGE_REVOLUTION_MS,iterations:Infinity,easing:'linear'}
+    );
 }
 
 function finishMungeProcessing() {
@@ -251,10 +299,7 @@ function setMungeProcessing(running) {
             button.disabled = true; button.setAttribute('aria-disabled', 'true');
         });
         if (!reduced) {
-            mungeSpinAnimations = rotors.map(rotor => rotor.animate(
-                [{transform:`rotate(${mungeRotation(rotor)}deg)`},{transform:`rotate(${mungeRotation(rotor)+360}deg)`}],
-                {duration:MUNGE_REVOLUTION_MS,iterations:Infinity,easing:'linear'}
-            ));
+            mungeSpinAnimations = rotors.map(startMungeRotorMotion);
         }
         return;
     }
@@ -630,7 +675,10 @@ async function restoreImageRewrite() {
 }
 
 document.getElementById('mungeControls')?.querySelectorAll?.('.munge-teat, .munge-body-button')?.forEach(button => button.addEventListener('click', confirmData));
-window.addEventListener('pagehide', cancelMungeProcessingImmediately);
+window.addEventListener('pagehide', () => {
+    cancelMungeProcessingImmediately();
+    responseArticleFitter?.disconnect();
+});
 document.getElementById('deleteCreationButton')?.addEventListener('click', openDeleteCreation);
 document.getElementById('confirmDeleteCreation')?.addEventListener('click', deleteCurrentCreation);
 document.getElementById('cancelDeleteCreation')?.addEventListener('click', () => {

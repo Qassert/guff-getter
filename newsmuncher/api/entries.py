@@ -78,7 +78,8 @@ def create_entry(post: Post, request: Request):
         "flagForDeleteCount": 0,
         "flagForFunnyCount": 0,
         "chatHistory": [],
-        "creationDate": datetime.datetime.utcnow(),
+        "creationDate": creation_date,
+        "nominated_at": creation_date,
         "creationUser": post.creationUser or request.cookies.get("active_pet")
     }
 

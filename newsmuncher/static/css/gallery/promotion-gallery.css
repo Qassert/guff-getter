@@ -1,4 +1,4 @@
-.promotion-gallery { width: min(1080px, 100%); margin: 0 auto; }
+.promotion-gallery { width: min(1200px, 100%); margin: 0 auto; }
 .promotion-gallery-page {
   --print-ink: #30291f;
   --print-headline-font: Rockwell, 'Rockwell Nova', 'Roboto Slab', Georgia, 'Times New Roman', serif;
@@ -33,7 +33,9 @@
 .gallery-page[hidden], .gallery-page [hidden] { display: none; }
 .gallery-page figure { margin: 0 0 32px; }
 .gallery-page img { display: block; width: 100%; max-height: 65vh; object-fit: contain; }
-.gallery-body { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; font-size: clamp(.95rem, 1.8vw, 1.125rem); font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif; }
+.gallery-copy { display: flex; flex-direction: column; height: clamp(220px, 48vh, 520px); min-height: 0; }
+.gallery-text-region { display: flex; align-items: center; flex: 1 1 auto; min-width: 0; min-height: 0; padding: 26px 0; overflow: hidden; }
+.gallery-body { width: 100%; min-height: 0; white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: hidden; overflow-y: auto; line-height: 1.35; font-size: 1rem; font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif; }
 .gallery-stamp { font-weight: 800; letter-spacing: .1em; color: #4c632d; }
 .gallery-controls { justify-content: center; margin: 24px 0; }
 .gallery-signin { margin-top: 32px; }
@@ -43,14 +45,14 @@
 .gallery-audio .funky-button { font-size: .8rem; }
 
 /* The shared mode control leads directly into the existing parchment creation card. */
-.promotion-gallery-page .site-main { width: min(960px, calc(100% - 64px)); padding-top: 24px; }
+.promotion-gallery-page .site-main { width: min(1200px, calc(100% - 64px)); padding-top: 24px; }
 .promotion-gallery-page .mode-nav { z-index: 5; margin-bottom: 14px; }
 .gallery-page {
   --gallery-control-size: clamp(70px, 9.75vw, 101px);
   position: relative; isolation: isolate; transform-origin: left center;
   border: 24px solid transparent; border-image: url('../../images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 stretch;
   padding: clamp(12px, 2.8vw, 36px); background-clip: padding-box;
-  box-shadow: none; min-height: 310px; overflow: visible;
+  box-shadow: none; min-height: 388px; overflow: visible;
 }
 #galleryPage { margin-top: -136px; }
 .gallery-arrow {
@@ -202,11 +204,11 @@
   100% { transform: translate(0,0) rotate(0) scaleX(1) scaleY(1); }
 }
 @media (min-width: 850px) {
-  .gallery-page.has-image { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: center; min-height: calc(min(64dvh, 600px) + 50px); height: auto; }
-  .gallery-page.has-image .gallery-arrow { top: max(155px, calc(min(32dvh, 300px) + 25px)); }
+  .gallery-page.has-image { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: stretch; min-height: calc(min(80dvh, 750px) + 62px); height: auto; }
+  .gallery-page.has-image .gallery-arrow { top: max(194px, calc(min(40dvh, 375px) + 31px)); }
   .gallery-page.has-image figure { position: sticky; top: 24px; margin: 0; height: 100%; }
   .gallery-page.has-image figure > img { height: 100%; max-height: 100%; }
-  .gallery-page.has-image .gallery-copy { max-height: none; overflow: visible; padding-right: 4px; }
+  .gallery-page.has-image .gallery-copy { height: auto; max-height: none; overflow: hidden; padding-right: 4px; }
 }
 @media (max-width: 620px) {
   .promotion-gallery-page .site-main { width: calc(100% - 24px); padding-top: 20px; }
@@ -215,7 +217,7 @@
   .gallery-page img { max-height: 48vh; }
   .gallery-controls { gap: 12px; }
   .gallery-fur-controls { gap: 10px; }
-  .gallery-body { line-height: 1.65; }
+  .gallery-text-region { padding-block: 22px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .gallery-page.turning { animation: none; }

@@ -116,9 +116,12 @@
                 const result = await this.request('GET', key);
                 if (token !== this.revision) return;
                 this.render(result);
-                if (['queued', 'started'].includes(result.video_status) && polls < 360) {
+                const derivativePending = result.video_status === 'complete' &&
+                    result.video_derivative_status === 'pending';
+                if ((['queued', 'started'].includes(result.video_status) || derivativePending) && polls < 360) {
                     this.cancel(this.timer);
-                    this.timer = this.schedule(() => this.refresh(token, polls + 1), 5000);
+                    this.timer = this.schedule(
+                        () => this.refresh(token, polls + 1), derivativePending ? 2000 : 5000);
                 }
             } catch (error) {
                 if (token === this.revision) this.render({message: error.message});

@@ -5,6 +5,7 @@
 {% block header %}{% endblock %}
 {% block background %}<div id="galleryBackdrop" class="gallery-backdrop" aria-hidden="true"><img id="galleryBackdropImage" alt=""></div>{% endblock %}
 {% block content %}
+<script src="{{ url_for('static', path='js/shared/article-text-fit.js') }}?v=article-fit-1"></script>
 <section class="promotion-gallery" aria-label="Nominated creations" data-creation-url="{{ creation_url }}" data-click-sound="{{ url_for('static', path='audio/effects/munge/hello meme funny - QuickSounds.com.mp3') }}" data-arrow-click-sound="{{ url_for('static', path='audio/effects/ui/cartoon-double-boing-pop.wav') }}" data-enhance-hover="{{ url_for('static', path='audio/voices/Enhance_Shout.mp3') }}" data-edit-hover="{{ url_for('static', path='audio/voices/NewsMuncher_Edit_Shout.mp3') }}" data-promote-hover="{{ url_for('static', path='audio/voices/NewsMuncher_Promote_Shout.mp3') }}" data-play-hover="{{ url_for('static', path='audio/voices/Play_Shout.mp3') }}" data-mute-hover="{{ url_for('static', path='audio/voices/Mute_Shout.mp3') }}">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
     <a class="mode-nav-button mode-nav-create" href="{{ creation_url }}" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/voices/Create_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></a>
@@ -18,7 +19,7 @@
     <figure id="galleryIllustration" hidden><img id="galleryImage" alt="" decoding="async"></figure>
     <div class="gallery-copy">
       <p id="galleryPromoted" class="gallery-stamp" hidden>PROMOTED</p>
-      <div id="galleryBody" class="gallery-body"></div>
+      <div id="galleryTextRegion" class="article-fit-region gallery-text-region"><div id="galleryBody" class="gallery-body"></div></div>
     </div>
     <div id="galleryFurControls" class="gallery-fur-controls" role="group" aria-label="Creation controls">
       <button id="galleryMusic" type="button" class="gallery-fur-control gallery-fur-music" aria-label="Play music" title="Play music" aria-pressed="false"><img src="{{ url_for('static', path='images/buttons/Rustic Cowhide Volume Icon.png') }}" alt=""></button>

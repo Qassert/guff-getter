@@ -4,12 +4,13 @@ function setup(blocked = false) {
  const ids=['jingleControls','jingleButton','jingleStop','jingleGenre','jingleMessage','creationMeta','crazyTitleBox','crazyExtractBox'];
  const nodes=Object.fromEntries(ids.map(id=>[id,{hidden:true,textContent:'',value:'',disabled:false,children:[],replaceChildren(){this.children=[];},appendChild(child){this.children.push(child);}}]));
  const calls=[], audios=[], timers=[];
- let savedAnswer=null, loading=false;
+ let savedAnswer=null, loading=false, explicitUnmutes=0;
  let answer={jingle_status:'none',can_generate:true}, resolvePost;
  const context={
   document:{getElementById:id=>nodes[id],createElement:()=>({})},
   setTimeout:fn=>{timers.push(fn);return 1;},clearTimeout(){},
   imageLoading:{isActive:()=>loading},
+  NewsMuncherAudio:{unmuteForExplicitPlayback(){explicitUnmutes++;}},
   Audio:class {constructor(url){this.url=url;this.paused=true;audios.push(this);}play(){this.played=true;this.plays=(this.plays||0)+1;if(blocked)return Promise.reject(new Error("NotAllowedError"));this.paused=false;return Promise.resolve();}pause(){this.paused=true;}},
   fetch(url, options) {
    calls.push({url,options});
@@ -20,7 +21,7 @@ function setup(blocked = false) {
  vm.createContext(context);
  vm.runInContext(fs.readFileSync('newsmuncher/static/js/creation/creation-meta.js','utf8')+
    fs.readFileSync('newsmuncher/static/js/creation/jingles.js','utf8')+'\nglobalThis.ui=jingleUI;',context);
- return {ui:context.ui,nodes,calls,audios,timers,setAnswer:v=>answer=v,setSaved:v=>savedAnswer=v,setLoading:v=>loading=v,
+ return {ui:context.ui,nodes,calls,audios,timers,get explicitUnmutes(){return explicitUnmutes;},setAnswer:v=>answer=v,setSaved:v=>savedAnswer=v,setLoading:v=>loading=v,
   complete:(data,ok=true)=>resolvePost({ok,json:async()=>data})};
 }
 (async()=>{
@@ -45,6 +46,7 @@ function setup(blocked = false) {
  const before=t.calls.length;
  await t.ui.act();await t.ui.act();
  assert.equal(t.calls.length,before);assert.equal(t.audios.length,1);
+ assert.equal(t.explicitUnmutes,1);
  assert(t.audios[0].played);t.ui.stop();assert(t.audios[0].paused);
  // Blocked explicit playback retains PLAY and never submits again.
  t=setup(true);t.ui.show({nominated:true,rewrite_id:'blocked'});await flush();

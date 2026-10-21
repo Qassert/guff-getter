@@ -134,6 +134,15 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
 .site-footer span:first-child { color: var(--ink); }
 .skip-link { position: absolute; left: 16px; top: -100px; padding: 12px; background: var(--accent); color: var(--ink); z-index: 20; }
 .skip-link:focus { top: 12px; }
+.master-mute-button {
+  position: fixed; z-index: 10000; top: 14px; right: 14px;
+  display: grid; place-items: center; width: 48px; height: 48px; min-height: 0; padding: 0;
+  border: 2px solid var(--ink); border-radius: 50%; background: var(--surface);
+  color: var(--ink); box-shadow: 2px 2px 0 var(--ink); font-size: 1.45rem; line-height: 1;
+}
+.master-mute-button.is-muted { background: #d8d4c8; }
+.master-mute-button:hover { transform: none; box-shadow: 2px 2px 0 var(--ink); }
+.master-mute-button:focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
 @media (max-width: 620px) {
   .site-header, .site-main, .site-footer { width: calc(100% - 36px); }
   .site-header { padding-block: 22px; }
@@ -199,7 +208,10 @@ body { isolation: isolate; }
 .initial-background { z-index: -3; overflow: hidden; }
 .initial-background img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
 .profile-page .image-ambient { z-index: -2; }
-.profile-page .site-main { padding-top: 24px; }
+.profile-page .site-main {
+  width: min(1200px, calc(100% - 64px));
+  padding-top: 24px;
+}
 .profile-page .profile-container { color: var(--profile-foreground); border-radius: 0;
   background: linear-gradient(110deg, var(--profile-reading), var(--profile-soft-paper)); }
 .profile-page #outputContainer { color: var(--profile-foreground);
@@ -209,12 +221,13 @@ body { isolation: isolate; }
 .profile-page :focus-visible { outline: 3px solid var(--purple); outline-offset: 4px;
   box-shadow: 0 0 0 7px var(--paper); }
 @media (max-width: 620px) {
+  .profile-page .site-main { width: calc(100% - 24px); }
   .initial-background img { object-position: 50% 15%; }
   .profile-page #outputContainer { padding: 20px; }
 }
 
 /* Creator and Viewing begin at the same shell inset. */
-.profile-page .workshop { position: relative; padding-top: 0; }
+.profile-page .workshop { position: relative; max-width: 1200px; padding-top: 0; }
 .profile-page .mode-nav {
   position: absolute; z-index: 5; top: -30px; left: 50%; width: 100%;
   transform: translateX(-50%); margin-bottom: 0;
@@ -274,6 +287,10 @@ body { isolation: isolate; }
   padding: clamp(12px, 2vw, 24px);
   min-width: 0;
 }
+@media (min-width: 850px) {
+  .profile-page .profile-container,
+  .profile-page #outputContainer { min-height: 388px; }
+}
 .profile-page .profile-container textarea,
 .profile-page #outputContainer textarea {
   background: transparent;
@@ -283,6 +300,7 @@ body { isolation: isolate; }
 /* Ink pressed into parchment; scoped to printed copy, never UI controls. */
 .profile-page {
   --print-ink: #30291f;
+  --creation-body-font-size: .9375rem;
   --print-headline-font: Rockwell, 'Rockwell Nova', 'Roboto Slab', Georgia, 'Times New Roman', serif;
   --print-body-font: Georgia, 'Times New Roman', serif;
   --print-headline-relief: 0 .8px 0 #fff5df, 0 -.5px 0 #554632;
@@ -304,7 +322,7 @@ body { isolation: isolate; }
 }
 .profile-page #responseBodyDraft {
   font-family: 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
-  font-size: .9375rem;
+  font-size: var(--creation-body-font-size);
 }
 
 /* Parchment tabs: texture and tint live beneath the readable ink labels. */
@@ -393,10 +411,16 @@ body { isolation: isolate; }
 .profile-page #responseEditor {
   position: relative;
   top: -30px;
-  padding: clamp(10px, 1.5vw, 16px) 0 0;
+  height: clamp(190px, 32vh, 360px);
+  min-height: 0;
+  padding: 26px 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
 }
 .profile-page #responseBodyDraft {
-  position: relative; z-index: 1; pointer-events: auto; cursor: text;
+  position: relative; z-index: 1; width: 100%; min-height: 0;
+  pointer-events: auto; cursor: text; overflow-x: hidden; overflow-y: auto;
 }
 .profile-page :is(.profile-container, #outputContainer) .section-editor textarea:focus {
   background: transparent; box-shadow: none;
@@ -436,15 +460,15 @@ body { isolation: isolate; }
 .profile-page .munge-generation-controls {
   position: absolute; left: 50%; width: 100%;
   bottom: calc(-1 * var(--paper-edge) - var(--paper-transition-half-gap) - 10px);
-  transform: translate(-50%, 50%); margin: 0; overflow: visible;
+  transform: translate(-50%, calc(50% + 12px)); margin: 0; overflow: visible;
   pointer-events: none;
 }
 .profile-page .munge-engine-group {
-  display:flex; align-items:center; justify-content:center; width:min(100vw, 1040px);
+  display:flex; align-items:center; justify-content:center; width:min(100vw, 1200px);
   gap:clamp(2px, 1vw, 14px); pointer-events:none;
 }
 .profile-page .munge-engine-group .munge-control {
-  width:min(28vw, 290px); flex:0 1 290px;
+  width:min(28vw, 362px); flex:0 1 362px;
 }
 .profile-page .profile-container {
   --paper-transition-half-gap: 19px;
@@ -672,7 +696,7 @@ body { isolation: isolate; }
 }
 .profile-page .munge-body {
   display: block; width: 100%; height: auto; pointer-events: none; user-select: none;
-  filter: drop-shadow(0 8px 7px #35151c55);
+  filter: drop-shadow(0 16px 14px #35151caa);
 }
 .profile-page .munge-control:not(.munge-control-processing):not(.munge-control-decelerating):has(.munge-body-button:active) { transform: scale(.92); }
 .profile-page .munge-teat {

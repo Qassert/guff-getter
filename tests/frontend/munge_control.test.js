@@ -34,13 +34,14 @@ test('template uses branded engine bodies with the original animated teats',()=>
  assert(html.includes("path='js/creation/munge-music.js'"));
  for(const variable of ['--x','--y','--w','--axis-x','--axis-y','--origin-x','--origin-y','--base-rotation'])assert(html.includes(variable));
  assert.match(css,/\.munge-body-button\s*\{[^}]*z-index:\s*1/s);assert.match(css,/\.munge-body\s*\{[^}]*pointer-events:\s*none/s);assert.match(css,/\.munge-teat\s*\{[^}]*z-index:\s*2/s);assert.match(css,/prefers-reduced-motion/);
+ assert.match(css,/\.profile-page \.munge-body\s*\{[^}]*drop-shadow\(0 16px 14px #35151caa\)/s);
  assert.match(css,/\.munge-control\s*\{[^}]*aspect-ratio:\s*1\.18/s);
  assert.match(css,/\.munge-body\s*\{[^}]*width:\s*100%[^}]*height:\s*auto/s);
  assert(!css.includes('.profile-page .munge-engine-label'));
  assert(!css.includes('.profile-page .munge-lettering'));
  const positions={"upper-left":['calc(32% + 16px)','23%'],"upper-right":['calc(68% - 16px)','23%'],left:['calc(26% + 8px)','calc(42% - 21px)'],right:['calc(74% - 6px)','calc(42% - 22px)'],"lower-left":['calc(37% + 20px)','calc(60% - 16px)'],"lower-right":['calc(63% - 12px)','calc(60% - 16px)']};
  for(const [name,[x,y]] of Object.entries(positions))assert(html.includes(`('${name}',`)&&html.includes(`'${x}', '${y}'`));
- assert.match(css,/\.munge-generation-controls\s*\{[^}]*position:\s*absolute[^}]*bottom:\s*calc\(-1 \* var\(--paper-edge\) - var\(--paper-transition-half-gap\) - 10px\)[^}]*transform:\s*translate\(-50%, 50%\)/s);
+ assert.match(css,/\.munge-generation-controls\s*\{[^}]*position:\s*absolute[^}]*bottom:\s*calc\(-1 \* var\(--paper-edge\) - var\(--paper-transition-half-gap\) - 10px\)[^}]*transform:\s*translate\(-50%, calc\(50% \+ 12px\)\)/s);
  assert.match(css,/\.profile-page \.profile-container\s*\{[^}]*margin-bottom:\s*calc\(2 \* var\(--paper-transition-half-gap\)\)/s);
  assert.match(css,/--creation-gap-reduction:\s*30px/);
  assert.match(css,/\.profile-page #sourceEditor\s*\{[^}]*padding-top:\s*clamp\(77px, calc\(13\.92vw - var\(--creation-gap-reduction\)\), 106px\)/s);

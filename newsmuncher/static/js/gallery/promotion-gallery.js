@@ -211,6 +211,9 @@
             this.sequence = 0;
             this.current = null;
             this.history = [];
+            this.forward = [];
+            this.cycleSeen = [];
+            this.chronologicalIndex = 0;
             this.receipt = null;
             this.acknowledging = null;
         }
@@ -299,12 +302,36 @@
                 // Do not select again until the previous displayed item is counted.
                 await this.acknowledge();
                 if (sequence !== this.sequence) return;
-                const previous = this.current ? '?previous=' + encodeURIComponent(this.current.id) : '';
-                const data = await this.request('/next' + previous, {signal: this.abort.signal});
+                if (this.forward.length) {
+                    const item = this.forward.pop();
+                    if (previousItem && previousItem.id !== item.id) this.history.push(previousItem);
+                    this.current = item;
+                    this.view.show(item);
+                    this.view.backAvailable?.(this.history.length > 0);
+                    this.backdrop.activate(item);
+                    await this.afterDisplay();
+                    if (sequence !== this.sequence) return;
+                    this.media.activate(item);
+                    this.visual.activate(item, this.view.imageReady);
+                    this.watchForPingPong(item, sequence);
+                    return;
+                }
+                const query = new URLSearchParams({
+                    chronological_index: String(this.chronologicalIndex)
+                });
+                if (this.current) query.set('previous', this.current.id);
+                if (this.cycleSeen.length) query.set('shown', this.cycleSeen.join(','));
+                const data = await this.request('/next?' + query, {signal: this.abort.signal});
                 if (sequence !== this.sequence) return;
                 if (!data.item) { this.view.empty(); return; }
+                this.forward = [];
                 if (previousItem && previousItem.id !== data.item.id) this.history.push(previousItem);
                 this.current = data.item;
+                if (!this.cycleSeen.includes(data.item.id)) this.cycleSeen.push(data.item.id);
+                if (data.chronological === true) this.chronologicalIndex++;
+                if (data.chronological === false || data.chronological_complete)
+                    this.chronologicalIndex = 3;
+                if (data.cycle_complete) this.cycleSeen = [];
                 this.view.show(data.item);
                 this.view.backAvailable?.(this.history.length > 0);
                 this.backdrop.activate(data.item);
@@ -332,7 +359,9 @@
             this.backdrop.stop();
             if (this.abort) this.abort.abort();
             this.receipt = null;
+            const forwardItem = this.current;
             const item = this.history.pop();
+            if (forwardItem && forwardItem.id !== item.id) this.forward.push(forwardItem);
             this.current = item;
             this.view.show(item);
             this.view.backAvailable?.(this.history.length > 0);
@@ -624,6 +653,12 @@
     const complete = get('galleryComplete'), completionStatus = get('galleryCompletionStatus');
     const edit = get('galleryEdit'), creationUrl = document.querySelector('.promotion-gallery').dataset.creationUrl;
     const illustration = get('galleryIllustration');
+    const articleFitter = typeof root.ArticleTextFitter === 'function'
+        ? new root.ArticleTextFitter({
+            element: get('galleryBody'), container: get('galleryTextRegion')
+        })
+            .observe(page).observe(page.querySelector('.gallery-copy')).observe(illustration)
+        : null;
     const retryDialog = get('galleryImageRetryDialog');
     const endRetryDialog = get('galleryEndImageRetryDialog');
     let retryConfirmation = null;
@@ -659,6 +694,7 @@
         empty() { page.hidden = true; page.setAttribute('aria-busy', 'false'); status.textContent = 'The collection is waiting for its first nomination. Head back to NewsMuncher to nominate a creation.'; },
         show(item) {
             get('galleryBody').textContent = item.body || 'No saved text for this creation.';
+            articleFitter?.schedule();
             get('galleryPromoted').hidden = !item.promoted;
             promote.classList.toggle('is-promoted', !!item.promoted);
             promote.setAttribute('aria-label', item.promoted ? 'Creation promoted' : 'Promote creation');
@@ -669,7 +705,9 @@
             image.id = 'galleryImage'; image.alt = ''; image.decoding = 'async';
             get('galleryImage').replaceWith(image);
             this.imageReady = new Promise(resolve => {
-                image.addEventListener('load', () => { alignFurControls(); resolve(true); }, {once: true});
+                image.addEventListener('load', () => {
+                    alignFurControls(); articleFitter?.schedule(); resolve(true);
+                }, {once: true});
                 image.addEventListener('error', () => resolve(false), {once: true});
                 if (!item.image_url) resolve(false);
             });
@@ -677,6 +715,7 @@
                 if (get('galleryImage') === image) {
                     get('galleryIllustration').hidden = true;
                     page.classList.remove('has-image');
+                    articleFitter?.schedule();
                 }
             });
             page.classList.toggle('has-image', !!item.image_url);
@@ -807,7 +846,10 @@
     music.addEventListener('click', () => {
         music.classList.remove('is-pressed'); void music.offsetWidth; music.classList.add('is-pressed');
         if (music.classList.contains('is-playing')) media.pause();
-        else media.restart();
+        else {
+            root.NewsMuncherAudio?.unmuteForExplicitPlayback();
+            media.restart();
+        }
     });
     page.addEventListener('animationend', () => page.classList.remove('turning'));
     const nextButton = get('galleryNext');
@@ -873,6 +915,7 @@
         clearTimeout(nextTimer);
         clearTimeout(promoteTimer);
         clearTimeout(editTimer);
+        articleFitter?.disconnect();
         gallery.leave();
     });
     window.addEventListener('resize', alignFurControls);

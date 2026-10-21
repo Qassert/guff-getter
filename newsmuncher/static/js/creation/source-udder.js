@@ -5,6 +5,9 @@
         {x:-45,y:-12}, {x:-30,y:0}, {x:0,y:0}, {x:30,y:-20}, {x:40,y:-20}
     ]);
     const EFFECT_SCALE=2;
+    const PUDDLE_WIDTH_SCALE=2;
+    const PUDDLE_FEATHER_PX=14;
+    const PUDDLE_INTERIOR_ALPHA=.88;
 
     class UdderEffectsCanvas {
         constructor({reduced=()=>false}={}) {
@@ -34,9 +37,8 @@
                 y:Math.min(paper.bottom-75,Math.max(start.y+105,paper.top+paper.height*.34))
             };
             const now=performance.now(),random=()=>Math.random();
-            const kinds=['cream','foam','cream','pressure','foam'],durations=[5200,5700,5200,3800,5700];
             if(index===3)impact.x=Math.max(paper.left+95,Math.min(paper.right-95,paper.left+paper.width*.28));
-            const effect={index,kind:kinds[index],duration:durations[index],start,impact,born:now,scrollX:root.scrollX,scrollY:root.scrollY,
+            const effect={index,kind:'liquid',duration:5700,start,impact,born:now,scrollX:root.scrollX,scrollY:root.scrollY,
                 phase:random()*Math.PI*2,
                 edge:Array.from({length:18},(_,i)=>.78+random()*.38+(i%3===0?random()*.16:0)),
                 drops:Array.from({length:5},(_,i)=>({birth:360+i*155+random()*110,dx:(random()-.5)*55,
@@ -77,25 +79,58 @@
             ctx.closePath();ctx.fillStyle=colour;ctx.fill();
             points.forEach(point=>{ctx.beginPath();ctx.arc(point.x,point.y,point.r,0,Math.PI*2);ctx.fill();});
         }
+        puddleContour(ctx,effect,p,x,y,inset=0) {
+            effect.edge.forEach((edge,index)=>{
+                const angle=index/effect.edge.length*Math.PI*2;
+                const rx=Math.max(0,(76*p*edge-inset)*PUDDLE_WIDTH_SCALE),ry=Math.max(0,30*p*(.86+edge*.16)-inset);
+                const px=x+Math.cos(angle)*rx,py=y+Math.sin(angle)*ry;
+                index?ctx.lineTo(px,py):ctx.moveTo(px,py);
+            });
+            ctx.closePath();
+        }
+        puddleInteriorVariation(ctx,effect,p,x,y,fade) {
+            ctx.save();
+            ctx.beginPath();this.puddleContour(ctx,effect,p,x,y,PUDDLE_FEATHER_PX*p);
+            ctx.clip();
+            for(let index=0;index<7;index++) {
+                const angle=effect.phase+index*2.19;
+                const washX=x+Math.cos(angle)*(22+index*11)*p;
+                const washY=y+Math.sin(angle)*(5+index*2.4)*p;
+                const radius=(48+(index%3)*17)*p;
+                const wash=ctx.createRadialGradient(washX-radius*.12,washY-radius*.07,0,washX,washY,radius);
+                wash.addColorStop(0,`rgba(255,253,239,${.07+(index%2)*.025})`);
+                wash.addColorStop(.34,'rgba(248,239,215,.045)');
+                wash.addColorStop(.72,'rgba(235,219,181,.018)');
+                wash.addColorStop(1,'rgba(221,201,157,0)');
+                ctx.globalAlpha=fade;ctx.fillStyle=wash;
+                ctx.fillRect(x-190*p,y-48*p,380*p,96*p);
+            }
+            ctx.restore();
+        }
         puddle(effect,age,offset) {
             if(age<610)return;
             const ctx=this.context,p=Math.min(1,(age-610)/700),fade=age<4300?1:Math.max(0,1-(age-4300)/850);
             const x=effect.impact.x+offset.x,y=effect.impact.y+offset.y;
-            ctx.save();ctx.globalAlpha=fade;ctx.shadowColor='rgba(64,38,14,.36)';ctx.shadowBlur=7;ctx.shadowOffsetY=4;
+            ctx.save();ctx.globalAlpha=fade;
             const gradient=ctx.createRadialGradient(x-18*p,y-7*p,3,x,y,78*p);
             gradient.addColorStop(0,'#fffbea');gradient.addColorStop(.48,'#f6e8c5');gradient.addColorStop(1,'#ddc99d');
-            ctx.beginPath();
-            effect.edge.forEach((edge,index)=>{
-                const angle=index/effect.edge.length*Math.PI*2,rx=76*p*edge,ry=30*p*(.86+edge*.16);
-                const px=x+Math.cos(angle)*rx,py=y+Math.sin(angle)*ry;
-                index?ctx.lineTo(px,py):ctx.moveTo(px,py);
-            });
-            ctx.closePath();ctx.fillStyle=gradient;ctx.fill();ctx.restore();
-            ctx.save();ctx.globalAlpha=fade*.55;ctx.fillStyle='#fffdf1';ctx.beginPath();ctx.ellipse(x-15*p,y-7*p,30*p,5*p,-.08,0,Math.PI*2);ctx.fill();ctx.restore();
+            ctx.fillStyle=gradient;
+            for(let band=0;band<PUDDLE_FEATHER_PX;band++) {
+                ctx.globalAlpha=fade*(.005+.875*band/(PUDDLE_FEATHER_PX-1));
+                ctx.beginPath();this.puddleContour(ctx,effect,p,x,y,band*p);
+                this.puddleContour(ctx,effect,p,x,y,(band+1)*p);
+                ctx.fill('evenodd');
+            }
+            ctx.globalAlpha=fade*PUDDLE_INTERIOR_ALPHA;ctx.beginPath();this.puddleContour(ctx,effect,p,x,y,PUDDLE_FEATHER_PX*p);
+            ctx.fill();ctx.restore();
+            this.puddleInteriorVariation(ctx,effect,p,x,y,fade);
             for(let i=0;i<7;i++) {
                 const angle=effect.phase+i*2.17,distance=(54+(i%3)*17)*p,size=(3+(i%4)*1.7)*Math.min(1,p*2);
-                ctx.save();ctx.globalAlpha=fade*.9;ctx.fillStyle='#f3e3bc';ctx.beginPath();
-                ctx.ellipse(x+Math.cos(angle)*distance,y+Math.sin(angle)*distance*.42,size,size*.72,angle,0,Math.PI*2);ctx.fill();ctx.restore();
+                const dropX=x+Math.cos(angle)*distance*PUDDLE_WIDTH_SCALE,dropY=y+Math.sin(angle)*distance*.42;
+                ctx.save();ctx.translate(dropX,dropY);ctx.rotate(angle);ctx.scale(1,.72);
+                const drop=ctx.createRadialGradient(-size*.18,-size*.12,0,0,0,size);
+                drop.addColorStop(0,'rgba(255,253,239,.52)');drop.addColorStop(.5,'rgba(243,227,188,.28)');drop.addColorStop(1,'rgba(221,201,157,0)');
+                ctx.globalAlpha=fade;ctx.fillStyle=drop;ctx.beginPath();ctx.arc(0,0,size,0,Math.PI*2);ctx.fill();ctx.restore();
             }
         }
         droplets(effect,age,offset) {
@@ -126,12 +161,22 @@
             });
             if(age>650) {
                 const build=Math.min(1,(age-650)/950),ctx=this.context;
-                for(let i=0;i<25;i++) {
-                    const row=Math.floor(i/8),column=i%8,spread=(column-3.5)*16+(row%2)*7;
+                const paper=document.querySelector('.profile-container').getBoundingClientRect();
+                const left=paper.left+22,right=paper.right-22,width=Math.max(1,right-left);
+                const settledCount=Math.min(72,Math.max(25,Math.ceil(width/18)));
+                for(let i=0;i<settledCount;i++) {
+                    const row=i%4;
+                    const scatter=(Math.sin((i+1)*91.713+effect.phase*17.19)*43758.5453)%1;
+                    const x=left+(scatter<0?scatter+1:scatter)*width;
                     const r=(7+(i*7%11))*build,wobble=Math.sin(age*.002+i)*1.6;
-                    this.bubble(ix+spread+wobble,iy-row*13-Math.abs(spread)*.035,r,fade);
+                    this.bubble(x+wobble,iy-row*13,r,fade);
                 }
-                ctx.save();ctx.globalAlpha=fade*.3;ctx.fillStyle='#f8f8df';ctx.beginPath();ctx.ellipse(ix,iy+8,78*build,19*build,0,0,Math.PI*2);ctx.fill();ctx.restore();
+                ctx.save();ctx.globalAlpha=fade*.3;ctx.fillStyle='#f8f8df';
+                for(let i=0;i<7;i++) {
+                    const x=left+width*(i+.35+Math.sin(effect.phase+i*2.31)*.18)/7;
+                    ctx.beginPath();ctx.ellipse(x,iy+8,Math.min(78,width/10)*build,19*build,0,0,Math.PI*2);ctx.fill();
+                }
+                ctx.restore();
             }
         }
         runSlimeEffect(effect,age,offset) {
@@ -190,6 +235,12 @@
                 ctx.restore();
             });
         }
+        runCombinedLiquidEffect(effect,age,offset) {
+            this.puddle(effect,age,offset);
+            this.runFoamEffect(effect,age,offset);
+            this.stream(effect,age,offset);
+            this.droplets(effect,age,offset);
+        }
         draw(time) {
             this.frame=0;this.size();const ctx=this.context;
             ctx.clearRect(0,0,root.innerWidth,root.innerHeight);
@@ -200,7 +251,8 @@
                 const age=time-effect.born,offset=this.offset(effect);
                 const anchorX=effect.start.x+offset.x,anchorY=effect.start.y+offset.y;
                 ctx.save();ctx.translate(anchorX,anchorY);ctx.scale(EFFECT_SCALE,EFFECT_SCALE);ctx.translate(-anchorX,-anchorY);
-                if(effect.kind==='cream'){this.puddle(effect,age,offset);this.stream(effect,age,offset);this.droplets(effect,age,offset);}
+                if(effect.kind==='liquid')this.runCombinedLiquidEffect(effect,age,offset);
+                else if(effect.kind==='cream'){this.puddle(effect,age,offset);this.stream(effect,age,offset);this.droplets(effect,age,offset);}
                 else if(effect.kind==='foam')this.runFoamEffect(effect,age,offset);
                 else if(effect.kind==='slime')this.runSlimeEffect(effect,age,offset);
                 else if(effect.kind==='pressure')this.runPressureEffect(effect,age,offset);

@@ -6,7 +6,7 @@ const response = data => ({ok:true,json:async()=>data});
 function setup(fetcher) {
     const states=[], timers=[]; let stops=0;
     const ui = new AnimationUI({fetcher, view:{render(data,pending){states.push({...data,pending});},stop(){stops++;}},
-        schedule(fn){timers.push(fn);return timers.length;},cancel(){}});
+        schedule(fn,delay){fn.delay=delay;timers.push(fn);return timers.length;},cancel(){}});
     return {ui,states,timers,stops:()=>stops};
 }
 test('view/restore performs GET only; no image hides generation; existing video reused', async () => {
@@ -54,6 +54,21 @@ test('permission failures use safe sign-in message without exposing provider det
     const {ui,states}=setup(async()=>({ok:false,status:401}));
     await ui.show({nominated:true,rewrite_id:'a'}); await ui.act();
     assert.match(states.at(-1).message,/Sign in/); assert(!ui.state.can_generate);
+});
+
+test('completed Create video polls until the shared Gallery pingpong derivative is ready', async()=>{
+    const replies=[
+        {video_status:'complete',video_derivative_status:'pending',video_url:'/videos/a/media?v=original-1'},
+        {video_status:'complete',video_derivative_status:'ready',video_url:'/videos/a/media?v=pingpong-2'}
+    ];
+    const calls=[];
+    const {ui,states,timers}=setup(async(url,opts)=>{calls.push(opts.method);return response(replies.shift());});
+    await ui.show({nominated:true,rewrite_id:'a'});
+    assert.equal(states.at(-1).video_url,'/videos/a/media?v=original-1');
+    assert.equal(timers.length,1);assert.equal(timers[0].delay,2000);
+    await timers[0]();
+    assert.equal(states.at(-1).video_url,'/videos/a/media?v=pingpong-2');
+    assert.equal(timers.length,1);assert.deepEqual(calls,['GET','GET']);
 });
 
 test('real DOM binding keeps animation automatic with no generation button', async()=>{
@@ -157,7 +172,7 @@ function visualSetup(start = () => Promise.resolve()) {
     reveal(value){shown.push(value);},status(message){messages.push(message);},onPlaying(){playback.push('playing');}});
     return {visual,players,shown,messages,playback,setImage(value){imageReady=value;},setReduced(value){reduced=value;}};
 }
-test('generation retains still; ready URL preloads in place and canplay automatically starts muted inline loop', async()=>{
+test('generation retains still; ready pingpong URL autoplays as a muted continuous loop', async()=>{
     const {visual,players,shown,playback}=visualSetup();
     const pending=deferred();
     const ui=new AnimationUI({view:{stop:()=>visual.stop(),render(data){if(data.video_url)visual.show(data.video_url);}},
@@ -165,16 +180,17 @@ test('generation retains still; ready URL preloads in place and canplay automati
     const loading=ui.show({nominated:true,rewrite_id:'a'});
     ui.render({video_status:'queued'});ui.render({video_status:'started'});
     assert.equal(players.length,0);assert(shown.every(value=>!value));
-    pending.resolve({video_status:'complete',video_url:'/stored',can_generate:false});await loading;
+    pending.resolve({video_status:'complete',video_derivative_status:'ready',video_url:'/stored?v=pingpong-1',can_generate:false});await loading;
     const player=players[0];
     assert(player.mounted);assert.equal(player.preload,'auto');assert.equal(player.calls,0);
+    assert.equal(player.src,'/stored?v=pingpong-1');
     assert.equal(shown.at(-1),false);
     assert(player.muted && player.defaultMuted && player.playsInline && player.loop && !player.controls);
     await player.events.canplay();assert.equal(player.calls,1);
     assert.equal(shown.at(-1),false); // No fade until actual playback, not merely a resolved promise.
     player.events.playing();assert.equal(shown.at(-1),true);assert.equal(playback.length,1);
     player.events.playing();assert.equal(playback.length,1);
-    await player.events.canplay();ui.render({video_url:'/stored'});
+    await player.events.canplay();ui.render({video_url:'/stored?v=pingpong-1'});
     assert.equal(player.calls,1);assert.equal(players.length,1);
 });
 test('saved video waits for the current still to mount before attaching',()=>{

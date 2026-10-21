@@ -1,5 +1,6 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const {PromotionGallery,creatorEditUrl} = require('../../newsmuncher/static/js/gallery/promotion-gallery.js');
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a; reject=b;}); return {promise,resolve,reject}; };
 const response = data => ({ok:true, json:async () => data});
@@ -56,6 +57,23 @@ test('BACK becomes visibly available with history and restores the previous crea
     assert.deepEqual(shown,['first','second','first']);
     await gallery.next();
     assert.equal(gallery.current.id,'second', 'NEXT remains functional after BACK');
+    assert.equal(selected,2, 'forward history revisits the page without another random selection');
+});
+test('first three requests are chronological, then the fourth carries cycle state into fairness', async () => {
+    const urls=[]; let selected=0;
+    const {gallery}=setup(async url => {
+        if (url.endsWith('/displayed')) return response({recorded:true});
+        urls.push(url);
+        selected++;
+        return response({item:item(String(selected)),view_token:'token-'+selected,
+            chronological:selected <= 3, chronological_complete:selected === 3,
+            cycle_complete:false});
+    });
+    await gallery.next(); await gallery.next(); await gallery.next(); await gallery.next();
+    const queries=urls.map(url=>new URL(url,'https://example.test').searchParams);
+    assert.deepEqual(queries.map(query=>query.get('chronological_index')),['0','1','2','3']);
+    assert.equal(queries[3].get('shown'),'1,2,3');
+    assert.equal(gallery.current.id,'4');
 });
 test('failed count is retried before another selection; empty collection is valid', async () => {
     let nexts=0, acks=0;
@@ -82,6 +100,15 @@ test('EDIT targets the current rewrite within the authenticated Creator route',(
     assert.equal(creatorEditUrl('/pets/pet_profile/current-pet','rewrite/id'),
         '/pets/pet_profile/current-pet?rewrite_id=rewrite%2Fid');
     assert.equal(creatorEditUrl('/pets/pet_profile/current-pet',null),'/pets/pet_profile/current-pet');
+});
+
+test('Gallery parchment uses the enlarged desktop shell without changing mobile width',()=>{
+    const css=fs.readFileSync('newsmuncher/static/css/gallery/promotion-gallery.css','utf8');
+    assert.match(css,/\.promotion-gallery\s*\{[^}]*width:\s*min\(1200px,\s*100%\)/s);
+    assert.match(css,/\.promotion-gallery-page \.site-main\s*\{[^}]*width:\s*min\(1200px,\s*calc\(100% - 64px\)\)/s);
+    assert.match(css,/\.gallery-page\s*\{[^}]*min-height:\s*388px/s);
+    assert.match(css,/@media \(min-width:\s*850px\)[^{]*\{[^}]*\.gallery-page\.has-image\s*\{[^}]*min-height:\s*calc\(min\(80dvh,\s*750px\) \+ 62px\)/s);
+    assert.match(css,/@media \(max-width:\s*620px\)\s*\{\s*\.promotion-gallery-page \.site-main\s*\{\s*width:\s*calc\(100% - 24px\)/s);
 });
 
 const {GalleryMedia} = require('../../newsmuncher/static/js/gallery/promotion-gallery.js');

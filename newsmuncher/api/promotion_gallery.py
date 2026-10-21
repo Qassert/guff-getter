@@ -1,6 +1,7 @@
 """Private Promotion Gallery: stored nominations and assets only."""
 import logging
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from bson import ObjectId
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from urllib.parse import quote
@@ -36,8 +37,10 @@ def response(value):
 
 
 @router.get('/next')
-def next_item(previous: str | None = None, user=Depends(viewer)):
-    return response(service.select(user['id'], previous))
+def next_item(previous: str | None = None, shown: str | None = None,
+              chronological_index: int = Query(0, ge=0, le=3), user=Depends(viewer)):
+    shown_ids = tuple(key for key in (shown or '').split(',') if ObjectId.is_valid(key))
+    return response(service.select(user['id'], previous, shown_ids, chronological_index))
 
 
 class Displayed(BaseModel):
