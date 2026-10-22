@@ -74,29 +74,15 @@ from newsmuncher.services.radical_comedy import (
 )
 
 
-from newsmuncher.services.image_generation import store, choose_image_style, get_provider, build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY, IMAGE_SIZE, image_path, DefinitiveImageFailure
+from newsmuncher.services.image_generation import (store, choose_image_style, get_provider,
+    build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY,
+    IMAGE_SIZE, image_path, DefinitiveImageFailure, safe_provider_failure)
+from newsmuncher.services.media_description import ensure_media_description
 
 router = APIRouter()
 
 ENTRIES_API_BASE_URL = os.getenv("ENTRIES_API_BASE_URL", "http://127.0.0.1:8000")
 
-
-def safe_provider_failure(exc):
-    """Small diagnostic subset only; never persist request/auth/full response data."""
-    body = getattr(exc, 'body', None)
-    error = body.get('error', body) if isinstance(body, dict) else {}
-    def text(value, limit):
-        if not isinstance(value, str):
-            return None
-        return ' '.join(value.split())[:limit]
-    return {
-        'failure_category': type(exc).__name__,
-        'failure_http_status': getattr(exc, 'status_code', None),
-        'failure_code': text(error.get('code') if isinstance(error, dict) else None, 80),
-        'failure_param': text(error.get('param') if isinstance(error, dict) else None, 80),
-        'failure_message': text(error.get('message') if isinstance(error, dict) else None, 240)
-                           or 'Provider rejected the image request.',
-    }
 
 def entries_collection():
     from newsmuncher.api.entries import collection
@@ -1218,15 +1204,16 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
         state = read_image_rewrite(db, payload.rewrite_id, active_pet)
         if state.get('generating'):
             raise HTTPException(status_code=409, detail='Rewrite is not ready.')
+        media_description = ensure_media_description(state)
         if state['result'].get('image_url'):
             # Even partial legacy metadata must not trigger another paid image.
-            defaults = dict(image_prompt=build_image_prompt(state['result']), image_model='unknown',
+            defaults = dict(image_prompt=build_image_prompt(state['result'], media_description=media_description), image_model='unknown',
                             image_provider='unknown', image_generated_at=None, image_style=None)
             cached = {key: state['result'].get(key, defaults.get(key)) for key in IMAGE_FIELDS}
             state['result'].update(cached)
             store.save(db, payload.rewrite_id, state)
         else:
-            prompt = build_image_prompt(state['result'])
+            prompt = build_image_prompt(state['result'], media_description=media_description)
             attempt = {**dict(image_id=payload.rewrite_id, prompt=prompt, model=IMAGE_MODEL, quality=IMAGE_QUALITY, size=IMAGE_SIZE),
                        **(state.get('image_attempt') or {})}
             try:
@@ -1247,7 +1234,7 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
             else:
                 # Commit before contacting OpenAI. Never clear this marker on failure.
                 image_style = choose_image_style()
-                prompt = build_image_prompt(state['result'], image_style)
+                prompt = build_image_prompt(state['result'], image_style, media_description)
                 attempt.update(prompt=prompt, image_style=image_style, stage='main',
                                created_at=datetime.now(timezone.utc).isoformat())
                 state['image_attempt'] = {**attempt, 'status': 'started'}
@@ -1363,9 +1350,10 @@ def retry_uncertain_image(payload: UncertainImageRetryRequest, active_pet: str =
         state.setdefault('image_attempt_history', []).append({
             **previous, 'status': 'superseded_by_confirmed_retry'
         })
+        media_description = ensure_media_description(state)
         style = choose_image_style()
         attempt = dict(image_id=str(uuid4()), image_style=style,
-                       prompt=build_image_prompt(state['result'], style),
+                       prompt=build_image_prompt(state['result'], style, media_description),
                        model=IMAGE_MODEL, quality=IMAGE_QUALITY, size=IMAGE_SIZE,
                        status='started', stage='main', retry_of=previous['image_id'],
                        created_at=datetime.now(timezone.utc).isoformat(),
@@ -1448,8 +1436,9 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
         if previous and previous['previous_image_url'] == payload.previous_image_url:
             if previous['status'] == 'complete':
                 return {key: state['result'].get(key) for key in IMAGE_FIELDS}
-            raise HTTPException(409, 'Replacement attempt already started; no paid retry.')
-        if previous and previous['status'] != 'complete':
+            if previous['status'] != 'definitive_failed':
+                raise HTTPException(409, 'Replacement attempt already started; no paid retry.')
+        if previous and previous['status'] not in ('complete', 'definitive_failed'):
             raise HTTPException(409, 'Replacement needs operator review; no paid retry.')
         current_url = state['result'].get('image_url')
         main_attempt = state.get('image_attempt') or {}
@@ -1459,9 +1448,11 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
             raise HTTPException(409, 'Current saved image required.')
         if not current_url and (payload.previous_image_url is not None or not state.get('image_attempt')):
             raise HTTPException(409, 'A terminal image attempt is required.')
+        media_description = ensure_media_description(state)
         style = choose_image_style(exclude=state['result'].get('image_style'))
         attempt = dict(image_id=str(uuid4()), previous_image_url=payload.previous_image_url,
-                       image_style=style, prompt=build_image_prompt(state['result'], style),
+                       image_style=style,
+                       prompt=build_image_prompt(state['result'], style, media_description),
                        model=IMAGE_MODEL, quality=IMAGE_QUALITY, size=IMAGE_SIZE, status='started')
         if previous:
             state.setdefault('image_redo_history', []).append(previous)
@@ -1533,7 +1524,9 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
             if recovered:
                 finish_image_redo(db, rewrite_id, state, recovered)
         if not state['result'].get('image_url') or not all(k in state['result'] for k in IMAGE_FIELDS if k != 'image_style'):
-            attempt = {**dict(prompt=build_image_prompt(state['result']), model=IMAGE_MODEL),
+            media_description = ensure_media_description(state)
+            attempt = {**dict(prompt=build_image_prompt(
+                state['result'], media_description=media_description), model=IMAGE_MODEL),
                        **(state.get('image_attempt') or {})}
             try:
                 recovered = recover_image(attempt.get('image_id', rewrite_id), attempt)
@@ -1543,14 +1536,17 @@ def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
                 state['result'].update(recovered)
                 store.save(db, rewrite_id, state)
         if state['result'].get('image_url'):
-            defaults = dict(image_prompt=build_image_prompt(state['result']), image_model='unknown',
+            defaults = dict(image_prompt=build_image_prompt(
+                state['result'], media_description=ensure_media_description(state)), image_model='unknown',
                             image_provider='unknown', image_generated_at=None, image_style=None)
             for key, value in defaults.items():
                 state['result'].setdefault(key, value)
             store.save(db, rewrite_id, state)
         result = state['result'].copy()
         result['nominated'] = bool(state.get('entry_id') or result.get('nominated'))
-        result['image_redo_pending'] = bool(state.get('image_redo') and state['image_redo']['status'] != 'complete')
+        result['image_redo_pending'] = bool(
+            state.get('image_redo') and
+            state['image_redo']['status'] in ('queued', 'started', 'uncertain'))
         result['image_generation_failed'] = bool(not result.get('image_url') and state.get('image_attempt'))
         uncertain = state.get('image_attempt') or {}
         result['image_outcome_uncertain'] = bool(
@@ -1629,9 +1625,13 @@ def bank_image_rewrite(request, rewrite_id, payload=None):
                 store.save(db, rewrite_id, state)
             except requests.RequestException as exc:
                 raise HTTPException(status_code=502, detail='Could not update nominated response.') from exc
+        if state['entry_id']:
+            ensure_media_description(state)
+            store.save(db, rewrite_id, state)
         if not state['entry_id']:
             if payload is not None:
                 state['result'].update(payload_data)
+            ensure_media_description(state)
             try:
                 response = requests.post(f'{ENTRIES_API_BASE_URL}/create/',
                     json={**state['result'], 'image_owner': owner},

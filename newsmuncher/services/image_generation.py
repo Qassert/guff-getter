@@ -2,6 +2,7 @@
 from contextlib import contextmanager, closing
 from datetime import datetime, timezone
 import random
+import re
 import base64
 import hashlib
 import os
@@ -55,10 +56,17 @@ def choose_image_style(exclude=None):
     return random.choice(tuple(style for style in IMAGE_STYLES if style != exclude))
 
 
-def build_image_prompt(result, image_style=None):
-    prompt = (f'{STYLE}\nArticle title inspiration: '
-              f'{result.get("crazyReplacement1Title", "")[:240]}\n'
-              f'Scene: {result["crazyReplacement1Extract"][:1200]}\n'
+def visual_concept(result, media_description=None):
+    if isinstance(media_description, dict) and media_description.get('concept'):
+        return str(media_description['concept'])[:1400]
+    return (f'{result.get("crazyReplacement1Title", "")[:240]}. '
+            f'{result.get("crazyReplacement1Extract", "")[:1200]}').strip()
+
+
+def build_image_prompt(result, image_style=None, media_description=None):
+    prompt = (f'{STYLE}\nMedia-safe visual concept: '
+              f'{visual_concept(result, media_description)}\n'
+              f'Scene: Establish this exact visual concept with recognisable subjects, setting and key objects.\n'
               f'{build_composition_map()}')
     return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 
@@ -94,7 +102,8 @@ def format_transformation_map(mapping):
                      for item in mapping)
 
 
-def build_end_image_prompt(result, image_style=None, transformation_map=None):
+def build_end_image_prompt(result, image_style=None, transformation_map=None,
+                           media_description=None, transformation=None):
     """Create a later action state while preserving the supplied scene and style."""
     transformation_map = transformation_map or build_transformation_map(result)
     prompt = (
@@ -103,11 +112,11 @@ def build_end_image_prompt(result, image_style=None, transformation_map=None):
         'consistently. No text, captions, logos or lettering in the image.\n'
         'Use the supplied image as the exact start of the same shot. Preserve the same characters, '
         'subjects, objects, clothing, props, environment, camera, framing, perspective and proportions. '
-        'Deliberately render this later moment in the independently selected visual style; do not preserve '
-        'the start image palette, medium, texture or rendering technique. Do not add, remove or replace the '
-        'scene. Show a clearly later moment by advancing only the physical action, gestures and '
-        'expressions already implied by the rewritten scene. Maintain character and object identity.\n'
-        f'Scene inspiration: {result["crazyReplacement1Extract"][:1200]}\n'
+        'Render this later moment in exactly the same visual style, palette, medium, texture and lighting. '
+        'Do not replace the principal characters, key objects or setting. Show a clearly later moment with '
+        'a meaningful visible change, while maintaining character and object identity.\n'
+        f'Shared visual concept: {visual_concept(result, media_description)}\n'
+        f'Development: {(transformation or {}).get("end_direction", "Advance the established action into a clear harmless comic payoff.")}\n'
         f'{build_composition_map()}\nContinuity map:\n{format_transformation_map(transformation_map)}'
     )
     return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
@@ -120,6 +129,25 @@ class ImageProvider(Protocol):
 
 class DefinitiveImageFailure(RuntimeError):
     """Provider positively returned without a usable image; no request is in flight."""
+
+
+def safe_provider_failure(exc):
+    """Persist bounded provider diagnostics without prompts, secrets or request IDs."""
+    body = getattr(exc, 'body', None)
+    error = body.get('error', body) if isinstance(body, dict) else {}
+    def text(value, limit):
+        if not isinstance(value, str):
+            return None
+        value = re.sub(r'\breq_[A-Za-z0-9_-]+\b', '[request id omitted]', value)
+        return ' '.join(value.split())[:limit]
+    return {
+        'failure_category': type(exc).__name__,
+        'failure_http_status': getattr(exc, 'status_code', None),
+        'failure_code': text(error.get('code') if isinstance(error, dict) else None, 80),
+        'failure_param': text(error.get('param') if isinstance(error, dict) else None, 80),
+        'failure_message': text(error.get('message') if isinstance(error, dict) else None, 240)
+                           or 'Provider rejected the image request.',
+    }
 
 
 class LocalStubProvider:

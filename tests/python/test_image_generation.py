@@ -40,7 +40,7 @@ class ImageTests(unittest.TestCase):
     def test_prompt_and_stub(self):
         prompt = build_image_prompt(self.result)
         self.assertNotIn('SECRET SOURCE', prompt)
-        self.assertIn('Article title inspiration: Moon soup', prompt)
+        self.assertIn('Media-safe visual concept: Moon soup', prompt)
         self.assertNotIn('Scene title:', prompt)
         self.assertIn('A cat paints the moon.', prompt)
         image = LocalStubProvider().generate_image(prompt)
@@ -156,6 +156,8 @@ class ImageTests(unittest.TestCase):
         clean.RewriteProviderQuotaExhausted = RewriteProviderQuotaExhausted
         source = types.ModuleType('newsmuncher.utils.source_preprocessing')
         source.log_overlap = MagicMock()
+        source.preserve_source_text = MagicMock()
+        source.preprocess_radical_source = MagicMock()
         with patch.dict(sys.modules, {'newsmuncher.utils.clean_data': clean,
                                      'newsmuncher.utils.source_preprocessing': source}):
             spec = importlib.util.spec_from_file_location('image_test_previews', 'newsmuncher/api/previews.py')
@@ -248,6 +250,50 @@ class ImageTests(unittest.TestCase):
             result = routes.redo_image(routes.RedoImageRequest(rewrite_id=rid), 'alice')
         self.assertEqual(result['image_url'], replacement['image_url'])
 
+    def test_nominated_definitive_failure_redo_rebuilds_safe_description(self):
+        routes = self.previews()
+        unsafe = {**self.result,
+            'crazyReplacement1Title': 'Aroused ceremonial machine',
+            'crazyReplacement1Extract':
+                'A Manboob clotpole meets an udder watcher before the explicit incident.'}
+        rid = self.store.create(unsafe, 'alice')['rewrite_id']
+        with self.store.transaction() as db:
+            state = self.store.read(db, rid, 'alice')
+            state['entry_id'] = 'saved-id'
+            state['result']['nominated'] = True
+            state['image_attempt'] = {'image_id': rid, 'status': 'definitive_failed'}
+            state['image_redo'] = {
+                'image_id': '00000000-0000-0000-0000-000000000998',
+                'previous_image_url': None, 'status': 'definitive_failed'}
+            state['media_description'] = {
+                'version': 'media-safe-v2', 'source_hash': 'stale',
+                'concept': 'A retained unsafe source fragment.'}
+            self.store.save(db, rid, state)
+        replacement = LocalStubProvider().generate_image('replacement')
+        provider = MagicMock()
+        provider.generate_image.return_value = replacement
+        with patch.object(routes, 'get_provider', return_value=provider), \
+             patch.object(routes, 'sync_image_metadata'), \
+             patch.object(routes, 'entries_collection', return_value=MagicMock()), \
+             patch('newsmuncher.services.video.service.replace') as replace:
+            result = routes.redo_image(routes.RedoImageRequest(
+                rewrite_id=rid, previous_image_url=None, replace_nomination=True), 'alice')
+        self.assertEqual(result['image_url'], replacement['image_url'])
+        self.assertEqual(provider.generate_image.call_count, 1)
+        prompt = provider.generate_image.call_args.args[0].lower()
+        self.assertIn('eccentric civic hall', prompt)
+        for leaked in ('manboob', 'udder watcher', 'explicit incident', 'unsafe source fragment'):
+            self.assertNotIn(leaked, prompt)
+        replace.assert_called_once()
+        with self.store.transaction() as db:
+            state = self.store.read(db, rid, 'alice')
+        self.assertEqual(state['media_description']['version'], 'media-safe-v3')
+        self.assertEqual(state['image_redo_history'][0]['status'], 'definitive_failed')
+        self.assertEqual(state['result']['crazyReplacement1Title'],
+                         unsafe['crazyReplacement1Title'])
+        self.assertEqual(state['result']['crazyReplacement1Extract'],
+                         unsafe['crazyReplacement1Extract'])
+
     def test_ambiguous_failure_never_retries_automatically(self):
         routes = self.previews()
         rid = self.store.create(self.result, 'alice')['rewrite_id']
@@ -268,12 +314,14 @@ class ImageTests(unittest.TestCase):
         routes.format_shizzalise_result.return_value = self.result
         # Make copy_edit_pass return None so it falls back to pass-1 result
         routes.copy_edit_pass.return_value = None
-        for enabled in (False, True):
-            result = routes.shizzalise_data(routes.ShizzRequest(title='source', description='', extract='source', generate_images=enabled), 'alice', 'alice')
-            self.assertIn('rewrite_id', result)
-            self.assertFalse(result['nominated'])
-            self.assertNotIn('generate_images', result)
-            self.assertEqual(result['crazyReplacement1Title'], 'Moon soup')
+        with patch.object(routes, 'ensure_media_description') as sanitiser:
+            for enabled in (False, True):
+                result = routes.shizzalise_data(routes.ShizzRequest(title='source', description='', extract='source', generate_images=enabled), 'alice', 'alice')
+                self.assertIn('rewrite_id', result)
+                self.assertFalse(result['nominated'])
+                self.assertNotIn('generate_images', result)
+                self.assertEqual(result['crazyReplacement1Title'], 'Moon soup')
+            sanitiser.assert_not_called()
 
     def test_legacy_and_image_document_storage(self):
         client = MagicMock()
@@ -308,6 +356,40 @@ class ImageTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['image_provider'], 'openai')
             routes.send_prompt.assert_not_called()
+
+    def test_image_endpoint_accepts_sanitised_nomination_without_risk_labels(self):
+        """The safe description must not reintroduce moderation labels into the prompt."""
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        routes = self.previews()
+        original = {**self.result,
+            'crazyReplacement1Title': 'Aroused ceremonial machine',
+            'crazyReplacement1Extract':
+                'A librarian operates a brass filing cabinet in the village hall.'}
+        result = self.store.create(original, 'alice')
+        app = FastAPI()
+        app.include_router(routes.router, prefix='/temp')
+        with TestClient(app) as client:
+            client.cookies.set('active_pet', 'alice')
+            self.assertEqual(client.post('/temp/generate_image', json={}).status_code, 422)
+            response = client.post('/temp/generate_image',
+                                   json={'rewrite_id': result['rewrite_id']})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.api.call_count, 1)
+        prompt = self.api.call_args.kwargs['prompt'].lower()
+        self.assertIn('eccentric civic hall', prompt)
+        self.assertNotIn('librarian', prompt)
+        self.assertNotIn('aroused', prompt)
+        self.assertNotIn('adult material', prompt)
+        self.assertNotIn('graphic material', prompt)
+        with self.store.transaction() as db:
+            state = self.store.read(db, result['rewrite_id'], 'alice')
+        self.assertEqual(state['result']['crazyReplacement1Title'],
+                         original['crazyReplacement1Title'])
+        self.assertEqual(state['result']['crazyReplacement1Extract'],
+                         original['crazyReplacement1Extract'])
+        self.assertEqual(state['image_attempt']['status'], 'complete')
+        self.assertEqual(state['media_description']['version'], 'media-safe-v3')
 
     def test_openai_settings_storage_repeat_and_restore(self):
         routes = self.previews()

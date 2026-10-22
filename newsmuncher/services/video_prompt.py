@@ -1,5 +1,30 @@
 """Small deterministic motion cues; no text-model call or source-article passthrough."""
 import re
+import random
+
+
+TRANSFORMATIONS = (
+    {'id': 'comic_escalation',
+     'end_direction': 'Escalate the established action into coherent, harmless comic chaos; props react and the principal figures struggle to retain dignity.',
+     'motion_direction': 'Build continuously from calm order into brisk, harmless comic chaos.'},
+    {'id': 'surreal_object_change',
+     'end_direction': 'Transform one prominent object into a surprising but harmless physical form while every principal figure, key prop and the setting remain recognisable.',
+     'motion_direction': 'Make the prominent object visibly and continuously reshape into its harmless surreal end state.'},
+    {'id': 'unexpected_reveal',
+     'end_direction': 'Reveal an unexpected harmless detail already concealed within the established setting, prompting a clear reaction from the principal figures.',
+     'motion_direction': 'Use continuous movement to reveal the concealed comic detail and the figures’ reactions.'},
+    {'id': 'prop_springs_to_life',
+     'end_direction': 'Bring the principal machine or prop into energetic harmless action, with secondary objects responding physically around it.',
+     'motion_direction': 'Animate the principal prop springing into action and causing coherent secondary motion.'},
+    {'id': 'surreal_intrusion',
+     'end_direction': 'Introduce one unexpected harmless everyday object into the same scene and make it interact coherently with the existing action.',
+     'motion_direction': 'Bring one harmless everyday object into view through continuous physical motion, without cuts or replacement pop-ins.'},
+)
+
+
+def choose_transformation(exclude=None):
+    eligible = [item for item in TRANSFORMATIONS if item['id'] != exclude] or list(TRANSFORMATIONS)
+    return dict(random.choice(eligible))
 
 BASE = (
     'Preserve the original image, characters, composition and surreal style. '
@@ -39,11 +64,13 @@ def build_motion_prompt(result):
                    'shift and settle with brisk comic energy throughout.')
 
 
-def build_transition_prompt(result, shared_visual_style=None):
+def build_transition_prompt(result, shared_visual_style=None, transformation=None):
     """Motion direction for independent first/last-frame conditioning."""
     style = (f' Both endpoint images belong to the same visual world: {shared_visual_style}. '
              'Maintain that exact artistic medium, lighting, colour treatment, era and texture '
              'throughout the animation.' if shared_visual_style else '')
+    direction = (transformation or {}).get(
+        'motion_direction', 'Advance the established physical action into a clear harmless comic payoff.')
     return (
         'Begin exactly from the supplied first image and finish exactly at the supplied last image. '
         'Create one continuous surreal cinematic transformation between them, never a cut or dissolve. '
@@ -53,5 +80,6 @@ def build_transition_prompt(result, shared_visual_style=None):
         'movement where it helps the journey, while keeping the camera reasonably coherent. The middle '
         'may be wildly imaginative, but strongly preserve the supplied opening and ending frames. '
         'Corresponding objects must physically morph into each other; do not use cuts, crossfades, '
-        'dissolves, scene changes, teleportation, disappearances or replacement pop-ins.' + style
+        'dissolves, scene changes, teleportation, disappearances or replacement pop-ins. '
+        f'Chosen transformation: {direction}' + style
     )

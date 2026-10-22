@@ -9,11 +9,13 @@ import time
 from uuid import UUID, uuid4
 
 from bson import ObjectId
+from openai import BadRequestError
 
 from newsmuncher.config import GENERATED_IMAGES_DIR, GENERATED_VIDEO_DIR
 from newsmuncher.services.image_generation import (store, get_provider, build_end_image_prompt,
-    build_transformation_map, choose_image_style)
-from newsmuncher.services.video_prompt import build_transition_prompt
+    build_transformation_map, choose_image_style, safe_provider_failure)
+from newsmuncher.services.media_description import ensure_media_description
+from newsmuncher.services.video_prompt import build_transition_prompt, choose_transformation
 from newsmuncher.services.video_pingpong import service as pingpong
 from newsmuncher.integrations.wavespeed import MODEL, create_video, read_image
 
@@ -130,7 +132,7 @@ class Videos:
         result = {'rewrite_id': key, 'video_status': 'failed_or_uncertain', 'can_generate': False,
                 'end_image_status': end_status,
                 'message': 'Animation unavailable or interrupted. Operator review is needed; no automatic retry.'}
-        if (isinstance(end_frame, dict) and end_status in ('started', 'uncertain') and
+        if (isinstance(end_frame, dict) and end_status in ('started', 'uncertain', 'duplicate') and
                 isinstance(end_frame.get('image_id'), str)):
             result['end_image_retry_attempt_id'] = end_frame['image_id']
         return result
@@ -191,20 +193,24 @@ class Videos:
             self.directory.mkdir(parents=True, exist_ok=True)
             start_style = state['result'].get('image_style')
             start_style = start_style.strip() if isinstance(start_style, str) and start_style.strip() else None
-            end_style = choose_image_style(exclude=start_style)
+            shared_style = start_style or choose_image_style()
+            media_description = ensure_media_description(state)
+            transformation = choose_transformation()
             transformation_map = build_transformation_map(state['result'])
             state['video'] = {'rewrite_id': key, 'status': 'queued', 'provider': 'wavespeed',
                 'model': MODEL, 'duration': 8, 'resolution': '480p',
-                'prompt': build_transition_prompt(state['result']),
-                'start_image_style': start_style, 'seed': secrets.randbelow(2**31),
+                'prompt': build_transition_prompt(state['result'], shared_style, transformation),
+                'start_image_style': start_style, 'visual_style': shared_style,
+                'transformation': transformation, 'seed': secrets.randbelow(2**31),
                 'source_sha256': hashlib.sha256(image).hexdigest(), 'requested_at': now(),
                 'requested_epoch': time.time(), 'storage_key': f'{key}.mp4',
                 'end_frame': {'mode': 'composition_reference_end_frame', 'status': 'queued',
                     'image_id': str(uuid4()),
                     'created_at': now(), 'stage': 'end',
-                    'image_style': end_style, 'transformation_map': transformation_map}}
+                    'image_style': shared_style, 'transformation_map': transformation_map}}
             state['video']['end_frame']['image_prompt'] = build_end_image_prompt(
-                state['result'], end_style, transformation_map)
+                state['result'], shared_style, transformation_map,
+                media_description, transformation)
             self.store.save(db, key, state)
             return self.public(key, state), True
 
@@ -220,7 +226,7 @@ class Videos:
             end_frame = video.get('end_frame') if isinstance(video, dict) else None
             if not isinstance(end_frame, dict) or end_frame.get('image_id') != expected:
                 raise VideoError(409, 'End-image attempt changed; retry authorisation was not used.')
-            if video.get('status') != 'failed_or_uncertain' or end_frame.get('status') not in ('started', 'uncertain'):
+            if video.get('status') != 'failed_or_uncertain' or end_frame.get('status') not in ('started', 'uncertain', 'duplicate'):
                 raise VideoError(409, 'This end-image attempt is not eligible for uncertain-outcome recovery.')
             old_path = self.images / f'{expected}.png'
             if old_path.is_symlink():
@@ -312,6 +318,12 @@ class Videos:
                     data, _, _ = read_image(last_source)
                     end_frame['source_sha256'] = hashlib.sha256(data).hexdigest()
                     end_frame['persistence_completed_at'] = now()
+                    if end_frame['source_sha256'] == video['source_sha256']:
+                        last_source.unlink(missing_ok=True)
+                        end_frame.update(status='duplicate', failure_category='ExactDuplicateEndFrame',
+                                         failure_message='Endpoint image exactly matches the start image.')
+                        checkpoint()
+                        raise VideoError(422, 'Endpoint image duplicated the start image; explicit recovery is required.')
                     checkpoint()
                 elif not last_source.is_file():
                     raise VideoError(409, 'Stored end frame is unavailable.')
@@ -332,14 +344,22 @@ class Videos:
             video['status'] = 'failed_or_uncertain'
             end_frame = video.get('end_frame')
             if isinstance(end_frame, dict) and end_frame.get('status') == 'started':
-                end_frame['status'] = 'uncertain'
-                end_frame['failure_category'] = type(exc).__name__
-                end_frame['failure_message'] = (
-                    str(exc)[:240] if isinstance(exc, VideoError)
-                    else f'Image provider or local persistence raised {type(exc).__name__}.')
+                if isinstance(exc, BadRequestError):
+                    end_frame.update(status='definitive_failed', **safe_provider_failure(exc))
+                else:
+                    diagnostic = safe_provider_failure(exc) if (
+                        getattr(exc, 'status_code', None) is not None or getattr(exc, 'body', None)) else {}
+                    end_frame.update(status='uncertain', failure_category=type(exc).__name__,
+                        failure_message=(diagnostic.get('failure_message') or
+                            (str(exc)[:240] if isinstance(exc, VideoError)
+                             else f'Image provider or local persistence raised {type(exc).__name__}.')),
+                        **{key: value for key, value in diagnostic.items()
+                           if key not in ('failure_category', 'failure_message')})
             if 'error' not in video:
-                stage = 'end_image' if isinstance(end_frame, dict) and end_frame.get('status') == 'uncertain' else 'video'
-                video['error'] = {'stage': stage, 'http_status': getattr(exc, 'status', None),
+                stage = ('end_image' if isinstance(end_frame, dict) and
+                         end_frame.get('status') in ('uncertain', 'definitive_failed', 'duplicate') else 'video')
+                video['error'] = {'stage': stage, 'http_status': (
+                                      getattr(exc, 'status', None) or getattr(exc, 'status_code', None)),
                                   'exception_type': type(exc).__name__,
                                   'exception_message': (str(exc)[:240] if isinstance(exc, VideoError)
                                                         else f'{stage} work raised {type(exc).__name__}.')}

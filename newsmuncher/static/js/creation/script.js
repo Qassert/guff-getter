@@ -10,7 +10,9 @@ function renderRedoImage() {
     renderNominationButton();
     const button = document.getElementById('redoImageButton');
     if (!button) return;
-    button.hidden = creationNominated || (!currentImageUrl && !imageGenerationFailed);
+    // Successful images are replaced only through RE-EMBELLISH. This explicit
+    // recovery action is for a failed image attempt, nominated or otherwise.
+    button.hidden = !imageGenerationFailed;
     button.disabled = imageRedoPending || nominationPending;
     button.textContent = imageRedoPending ? 'REPLACING IMAGE…' :
         (!currentImageUrl && imageRetryAttemptId ? 'RETRY IMAGE' : 'REDO IMAGE');
@@ -46,7 +48,7 @@ async function confirmedImageRetry(id, sequence) {
     return response.json();
 }
 async function redoImage() {
-    if (creationNominated || (!currentImageUrl && !imageGenerationFailed) || imageRedoPending || nominationPending) return;
+    if (!imageGenerationFailed || imageRedoPending || nominationPending) return;
     const id = displayedRewriteId, sequence = rewriteSequence, previous = currentImageUrl;
     const current = () => id === displayedRewriteId && sequence === rewriteSequence;
     if (typeof imageLoading !== 'undefined') imageLoading.start();
@@ -61,9 +63,15 @@ async function redoImage() {
         else {
             const response = await fetch('/temp/redo_image', {
                 method: 'POST', credentials: 'include', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({rewrite_id: id, previous_image_url: previous || null})
+                body: JSON.stringify({rewrite_id: id, previous_image_url: previous || null,
+                                      replace_nomination: creationNominated})
             });
-            if (!response.ok) throw new Error('Replacement unavailable');
+            if (!response.ok) {
+                const failure = await response.json().catch(() => ({}));
+                const error = new Error(failure.detail || 'Replacement unavailable');
+                error.definitive = response.status === 422;
+                throw error;
+            }
             data = await response.json();
         }
         if (!current()) return;
@@ -74,11 +82,19 @@ async function redoImage() {
         displayRewriteImage(data.image_url, current, data.image_style);
         if (message) message.hidden = true;
         renderRedoImage();
-    } catch (_) {
+    } catch (error) {
         if (!current()) return;
         if (typeof imageLoading !== 'undefined') imageLoading.stop();
-        // Keep the durable attempt blocked. Restore uses GET and may recover a saved file.
-        if (message) message.textContent = 'Replacement uncertain; old image retained. Reload to check saved status. No paid retry.';
+        if (error.definitive) {
+            imageRedoPending = false;
+            imageGenerationFailed = true;
+            renderRedoImage();
+            if (message) message.textContent = 'Image was rejected. Use REDO IMAGE to make another explicit attempt.';
+        } else {
+            // Keep an ambiguous durable attempt blocked. Restore uses GET and may
+            // recover a saved file without making another paid request.
+            if (message) message.textContent = 'Replacement uncertain; old image retained. Reload to check saved status. No paid retry.';
+        }
     }
 }
 
@@ -600,7 +616,16 @@ window.generateCreationImage=async(id,sequence,replace=false)=>{
  const url=replace?'/temp/redo_image':'/temp/generate_image';
  const body=replace?{rewrite_id:id,previous_image_url:currentImageUrl,replace_nomination:true}:{rewrite_id:id};
  const response=await fetch(url,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
- if(!response.ok)throw Error('Image generation failed');const data=await response.json();if(!current())throw Error('Rewrite changed');
+ if(!response.ok){
+  const failure=await response.json().catch(()=>({}));
+  if(current()){
+   imageGenerationFailed=true;
+   imageRetryAttemptId=failure.detail?.code==='image_outcome_uncertain'?(failure.detail.attempt_id||null):null;
+   renderRedoImage();
+  }
+  throw Error(failure.detail?.message||failure.detail||'Image generation failed');
+ }
+ const data=await response.json();if(!current())throw Error('Rewrite changed');
  return{data,reveal(){currentImageUrl=data.image_url;return displayRewriteImage(data.image_url,current,data.image_style);}};
 };
 

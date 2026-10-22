@@ -13,10 +13,55 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Completed NewsMuncher milestone: shared OBJECT vocabulary, Create/Gallery improvements, media/audio refinements, and STUFF/SWEAR generators.
-APPROVAL: Andy explicitly approved final validation, one milestone commit, and push to the tracked feature branch.
-NEXT_STEP: Begin new work from the pushed milestone after reviewing the two deliberately untracked generated media/reference assets.
-VALIDATION: All 153 frontend tests pass. Relevant Python tests pass except the documented source-preprocessing module-stub isolation failures when legacy route fixtures are combined; Python compilation and `git diff --check` pass. No provider calls or production database writes.
+CURRENT_TASK: Stable checkpoint for completed NOMINATE media-safety, video-transformation and REDO IMAGE recovery work.
+APPROVAL: Andy explicitly approved a local checkpoint after final mocked-provider validation; no push.
+NEXT_STEP: Begin further development only from this reviewed checkpoint.
+VALIDATION: Full Python coverage completed in two segments: 851 tests plus 105 subtests pass. All 154 frontend tests pass. JavaScript syntax, Python compilation and `git diff --check` pass. No provider calls or production database writes.
+
+## NOMINATE repeated image failure and REDO recovery — 2026-10-21
+
+- The latest durable record proved media-safe-v2 was running, but clause filtering kept
+  suggestive compounds and malformed duplicated quoted fragments from the source. OpenAI
+  returned `moderation_blocked` with `safety_violations=[sexual]` again.
+- Media-safe-v3 preserves clean articles verbatim, but any locally detected unsafe source
+  now receives the existing standalone harmless visual scene. No source fragments or
+  descriptions of omitted categories enter either the main or endpoint image prompt.
+- Restored REDO IMAGE to the shared action row. A definitive main or replacement failure
+  exposes the action even after nomination; the request declares nomination replacement,
+  rebuilds stale descriptions, and makes exactly one user-triggered provider attempt.
+- Definitive failed redo claims are archived and may be explicitly retried. Started or
+  uncertain claims remain blocked and confirmation-gated, and successful images remain
+  hidden from REDO so RE-EMBELLISH retains ownership of deliberate replacement.
+
+## NOMINATE image HTTP 422 correction — 2026-10-21
+
+- The durable attempt record proved the browser payload passed FastAPI validation and
+  OpenAI returned `moderation_blocked` with a sexual classification. The v1 sanitizer
+  removed the source clause but reintroduced the labels "adult or graphic material"
+  into the provider prompt.
+- Media-safe v2 retains the same clause removal and harmless replacement strategy but
+  refers only to "anything omitted". The version bump rebuilds persisted v1 descriptions
+  on an explicit retry without bypassing the existing paid-attempt safeguard.
+- Regression coverage exercises the real FastAPI payload shape with a mocked provider,
+  preserves the original nomination text, verifies one provider call, rejects an invalid
+  payload, and confirms prior v1 descriptions are rebuilt.
+
+## NOMINATE media reliability — 2026-10-21
+
+- Added a deterministic nomination-only media description that preserves clean visual
+  material, removes unsafe clauses, and falls back to a harmless surreal British
+  editorial scene without changing saved or displayed comedy.
+- Main and endpoint images share the durable description and one retained visual style.
+  Each new video claim stores one of five coordinated transformation directions used by
+  both the endpoint-image prompt and WaveSpeed transition prompt.
+- Exact byte-identical endpoint images are detected by SHA-256, diagnosed, removed, and
+  left for the existing explicit retry flow; no automatic paid retry was added.
+- Endpoint OpenAI failures now retain bounded structured diagnostics using the same
+  request-ID-stripping helper as main images. Existing WaveSpeed records showed that all
+  four upload-ticket HTTP 400s were insufficient-credit responses, so request construction
+  was left unchanged. The existing polling timeout remains an uncertain non-retry state.
+- Validation used mocked providers only: 157 focused Python tests and 153 frontend tests
+  pass, compilation and diff checks pass, and MUNGE isolation is explicitly covered.
 
 ## MUNGE body shadow strength — 2026-10-20
 

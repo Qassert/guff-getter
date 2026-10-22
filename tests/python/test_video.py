@@ -13,6 +13,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.testclient import TestClient
 import pytest
 import requests
+import httpx
+from openai import BadRequestError
 
 from newsmuncher.services.image_generation import RewriteStore, build_image_prompt
 from newsmuncher.services.video import Videos, VideoError
@@ -20,6 +22,7 @@ from newsmuncher.services.video_pingpong import service as pingpong
 from newsmuncher.integrations import wavespeed
 
 PNG = b'\x89PNG\r\n\x1a\n' + b'fixture'
+END_PNG = b'\x89PNG\r\n\x1a\n' + b'changed-end-frame'
 MP4 = b'\0\0\0\x18ftypmp42fixture'
 
 
@@ -51,7 +54,7 @@ def setup(tmp_path, monkeypatch):
         calls.append((source, prompt, seed, last_source))
         assert api_key == 'mock-secret'
         assert source.read_bytes() == PNG
-        assert last_source is not None and last_source.read_bytes() == PNG
+        assert last_source is not None and last_source.read_bytes() == END_PNG
         record['request_id'] = 'safe-id'
         checkpoint()
         target.write_bytes(MP4)
@@ -59,7 +62,7 @@ def setup(tmp_path, monkeypatch):
         def __init__(self): self.calls = []
         def generate_image(self, prompt, image_id):
             self.calls.append(('generate', prompt, image_id, None))
-            (images / f'{image_id}.png').write_bytes(PNG)
+            (images / f'{image_id}.png').write_bytes(END_PNG)
             return {'image_url': f'/generated-images/{image_id}.png',
                     'image_prompt': prompt, 'image_model': 'mock-image',
                     'image_provider': 'mock', 'image_generated_at': 'now'}
@@ -348,7 +351,7 @@ def test_discard_during_generation_cannot_attach_or_expose_output(setup):
     assert len(calls) == 1
 
 
-def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
+def test_consistent_end_frame_prompt_is_retained_and_assigned(setup):
     service, collection, key, calls = setup
     service.claim(collection, key, 'pet')
     claimed = state(service, key)['video']
@@ -357,15 +360,20 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     end_style = claimed['end_frame']['image_style']
     start_prompt = build_image_prompt(state(service, key)['result'], start_style)
     assert start_style == '1970s British folk-horror film'
-    assert end_style != start_style
+    assert end_style == start_style
     assert start_prompt != claimed['end_frame']['image_prompt']
     assert f'Visual style: {start_style}.' in start_prompt
     assert f'Visual style: {end_style}.' in claimed['end_frame']['image_prompt']
     assert 'same characters' in claimed['end_frame']['image_prompt']
-    assert 'do not preserve the start image palette' in claimed['end_frame']['image_prompt']
+    assert 'exactly the same visual style' in claimed['end_frame']['image_prompt']
     assert len(claimed['end_frame']['transformation_map']) == 5
     assert 'continuous surreal cinematic transformation' in claimed['prompt']
-    assert 'same visual world' not in claimed['prompt']
+    assert 'same visual world' in claimed['prompt']
+    assert claimed['transformation']['id'] in {
+        'comic_escalation', 'surreal_object_change', 'unexpected_reveal',
+        'prop_springs_to_life', 'surreal_intrusion'}
+    assert claimed['transformation']['motion_direction'] in claimed['prompt']
+    assert claimed['transformation']['end_direction'] in claimed['end_frame']['image_prompt']
     service.run(collection, key, 'pet')
     saved = state(service, key)['video']['end_frame']
     assert saved['status'] == 'complete'
@@ -375,7 +383,7 @@ def test_independent_end_frame_prompt_is_retained_and_assigned(setup):
     assert service.image_provider.calls[0][3] == service.images / f'{key}.png'
 
 
-def test_historical_image_without_persisted_style_uses_independent_end_style(setup):
+def test_historical_image_without_persisted_style_uses_compatible_shared_fallback(setup):
     service, collection, key, calls = setup
     with service.store.transaction() as db:
         saved = service.store.read(db, key, 'pet')
@@ -385,7 +393,7 @@ def test_historical_image_without_persisted_style_uses_independent_end_style(set
     assert claimed
     video = state(service, key)['video']
     assert video['start_image_style'] is None
-    assert video['end_frame']['image_style']
+    assert video['visual_style'] == video['end_frame']['image_style']
     assert not calls and not service.image_provider.calls
 
 
@@ -399,3 +407,46 @@ def test_end_frame_failure_preserves_start_and_never_submits_video(setup):
     assert saved['video']['status'] == 'failed_or_uncertain'
     assert saved['video']['end_frame']['status'] == 'uncertain'
     assert not calls
+
+
+def test_endpoint_moderation_rejection_keeps_structured_safe_diagnostic(setup):
+    service, collection, key, calls = setup
+    response = httpx.Response(400, request=httpx.Request('POST', 'https://provider.invalid'))
+    rejection = BadRequestError('rejected', response=response, body={'error': {
+        'code': 'moderation_blocked',
+        'message': 'Rejected req_private123 safety_violations=[sexual]',
+    }})
+    service.image_provider.generate_referenced_image = lambda *args: (_ for _ in ()).throw(rejection)
+    service.claim(collection, key, 'pet')
+    service.run(collection, key, 'pet')
+    saved = state(service, key)['video']
+    assert saved['error']['stage'] == 'end_image'
+    assert saved['end_frame']['status'] == 'definitive_failed'
+    assert saved['end_frame']['failure_code'] == 'moderation_blocked'
+    assert saved['end_frame']['failure_http_status'] == 400
+    assert 'req_private123' not in json.dumps(saved)
+    assert not calls
+
+
+def test_exact_duplicate_end_frame_is_diagnostic_and_requires_explicit_retry(setup):
+    service, collection, key, calls = setup
+    def duplicate(prompt, image_id, reference):
+        target = service.images / f'{image_id}.png'
+        target.write_bytes(PNG)
+        return {'image_url': f'/generated-images/{image_id}.png', 'image_prompt': prompt}
+    service.image_provider.generate_referenced_image = duplicate
+    service.claim(collection, key, 'pet')
+    service.run(collection, key, 'pet')
+    saved = state(service, key)['video']
+    assert saved['status'] == 'failed_or_uncertain'
+    assert saved['end_frame']['status'] == 'duplicate'
+    assert saved['end_frame']['failure_category'] == 'ExactDuplicateEndFrame'
+    assert not calls
+    public = service.status(collection, key, 'pet')
+    assert public['end_image_retry_attempt_id'] == saved['end_frame']['image_id']
+    _, claimed = service.retry_uncertain_end_image(
+        collection, key, 'pet', saved['end_frame']['image_id'])
+    assert claimed
+    replacement = state(service, key)['video']['end_frame']
+    assert replacement['retry_of'] == saved['end_frame']['image_id']
+    assert replacement['transformation_map'] == saved['end_frame']['transformation_map']

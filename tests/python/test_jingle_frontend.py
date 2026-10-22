@@ -42,4 +42,4 @@ class JingleFrontendTests(unittest.TestCase):
         self.assertIn('aria-live="polite"', html)
         self.assertEqual(html.count(">EDIT</button>"), 0)
         self.assertIn('id="sourceEditor" class="section-editor"', html)
-        self.assertIn('id="responseEditor" class="section-editor"', html)
+        self.assertRegex(html, r'id="responseEditor" class="[^"]*\bsection-editor\b[^"]*"')
