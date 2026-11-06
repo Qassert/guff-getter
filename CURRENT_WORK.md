@@ -13,10 +13,24 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Enable bounded, asynchronous MUNGE story generation on Build and refine its action layout.
+CURRENT_TASK: BUILD now reuses CREATE's editable result and complete creation-action lifecycle.
 APPROVAL: Andy explicitly assigned the isolated Build worktree; no push, merge or deployment.
-NEXT_STEP: Review the functional Build MUNGE prototype; perform a live provider call only with explicit approval.
-VALIDATION: 11 focused Python tests and 12 focused frontend tests pass. Python and JavaScript syntax checks and `git diff --check` pass. Provider responses were mocked; no paid calls or database writes occurred.
+NEXT_STEP: Review BUILD prompt/result editing and actions in a browser; perform live provider/media calls only with explicit approval.
+VALIDATION: 18 focused Python tests and 46 focused frontend/controller tests pass. Python and JavaScript syntax checks, local GET rendering, and `git diff --check` pass. Provider responses were mocked; no paid calls or database writes occurred.
+
+## Build editing and CREATE action reuse — 2026-11-06
+
+- BUILD exposes the established absurdist creative instructions in an editable prompt
+  field. The selected 30/60/90 target remains server-controlled and is appended to the
+  edited instructions with the matching 33/66/99 hard cap.
+- Generated stories use CREATE's editable response textarea. COPY, nomination updates,
+  image recovery, deletion, re-embellishment, jingle and video controllers now use the
+  latest edited story through CREATE's existing action lifecycle and button order.
+- Generating a BUILD story remains persistence-free. The server creates a bounded local
+  draft only after an explicit NOMINATE click, then the existing nomination pipeline owns
+  any database or media work invoked by that action.
+- Chrome was unavailable for native visual inspection. A local GET rendered `/build`
+  successfully with all three length controls, both editors and the shared action row.
 
 ## Build MUNGE generation — 2026-11-06
 

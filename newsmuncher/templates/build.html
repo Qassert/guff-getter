@@ -7,6 +7,7 @@
 <div id="generatedBackdrop" class="generated-backdrop" aria-hidden="true"><div></div><div></div></div>
 {% endblock %}
 {% block content %}
+<script src="{{ url_for('static', path='js/shared/article-text-fit.js') }}?v=article-fit-1"></script>
 <link rel="stylesheet" href="{{ url_for('static', path='build-page.css') }}">
 <div id="imageAmbient" class="image-ambient" aria-hidden="true"><div class="wash-group"><span></span><span></span></div><div class="wash-group"><span></span><span></span></div></div>
 <section class="build-workshop workshop"
@@ -16,7 +17,8 @@
   data-modifier-url="{{ url_for('static', path='data/build-modifiers.csv') }}"
   data-person-url="{{ url_for('static', path='data/build-people.csv') }}"
   data-theme-url="{{ url_for('static', path='data/build-themes.csv') }}"
-  data-generate-url="/build/generate">
+  data-generate-url="/build/generate"
+  data-draft-url="/build/draft">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
     <a class="mode-nav-button mode-nav-create" href="{{ creation_url }}" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/voices/Create_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></a>
     <span class="mode-nav-button mode-nav-build mode-nav-active" aria-current="page" aria-label="BUILD"><img src="{{ url_for('static', path='images/buttons/build-idle.png') }}" alt=""></span>
@@ -85,9 +87,10 @@
     <div class="recipe-empty" data-recipe-empty>Use an ingredient above to begin.</div>
     <div class="recipe-categories" data-recipe-categories></div>
 
-    <details class="prompt-preview">
-      <summary>Preview Prompt</summary>
-      <pre data-prompt-preview></pre>
+    <details class="prompt-preview" open>
+      <summary>Edit creative prompt</summary>
+      <textarea class="build-prompt-editor" data-prompt-editor aria-label="Build creative prompt">{{ build_creative_prompt }}</textarea>
+      <pre data-prompt-preview aria-label="Complete prompt preview"></pre>
     </details>
 
     <div class="munge-action">
@@ -98,12 +101,50 @@
       </div>
       <p id="munchStatus" class="munch-status" data-munge-status role="status">Choose at least one ingredient to MUNGE.</p>
     </div>
-    <section class="build-result" data-build-result aria-live="polite" hidden>
+    <section id="outputContainer" class="build-result" data-build-result aria-live="polite" hidden>
       <p class="eyebrow">YOUR FRESH MUNGE</p>
-      <p data-build-story></p>
+      <div id="responseEditor" class="section-editor">
+        <input id="responseTitleDraft" type="hidden" value="">
+        <textarea id="responseBodyDraft" data-build-story aria-label="Generated story" oninput="responseEdited(); updateCopyButton()"></textarea>
+      </div>
+      <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
+      <p id="creationMeta" class="creation-meta" hidden></p>
+      <p id="imageRedoMessage" role="status" class="creation-status-message" hidden></p>
+      <p id="embellishStatus" role="status" class="creation-status-message" hidden></p>
+      <div id="creationActions" class="creation-actions">
+        <button type="button" id="copyMungeButton" class="funky-button creation-action-button" onclick="copyMungeResult()" hidden>COPY</button>
+        <button type="button" id="bankButton" class="funky-button creation-action-button" data-build-nominate hidden>NOMINATE</button>
+        <button type="button" id="redoImageButton" class="funky-button creation-action-button" onclick="redoImage()" hidden>REDO IMAGE</button>
+        <button type="button" id="deleteCreationButton" class="funky-button creation-action-button" hidden>DELETE</button>
+        <button type="button" id="embellishButton" class="funky-button shizzle-button" onclick="embellishUI.reembellish()" hidden>RE-EMBELLISH</button>
+        <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled hidden>MAKE JINGLE</button>
+        <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
+        <div id="animationControls" class="animation-controls-inline" hidden></div>
+      </div>
+      <p id="animationMessage" role="status" aria-live="polite" class="creation-status-message"></p>
+      <p id="jingleMessage" role="status" aria-live="polite" class="creation-status-message"></p>
+      <div id="jingleControls" class="jingle-controls-hidden" hidden></div>
     </section>
   </div>
+  <div id="loader" class="loader page-loader hidden" role="status" aria-label="Loading"></div>
+
+  <dialog id="deleteCreationDialog" class="creation-delete-dialog" aria-labelledby="deleteCreationTitle">
+    <h2 id="deleteCreationTitle">Are you sure you want to delete this creation?</h2>
+    <p id="deleteCreationError" role="alert" hidden></p>
+    <div class="creation-delete-dialog-actions">
+      <button type="button" id="confirmDeleteCreation" class="funky-button">DELETE</button>
+      <button type="button" id="cancelDeleteCreation" class="funky-button">CANCEL</button>
+    </div>
+  </dialog>
+  <dialog id="imageRetryDialog" class="creation-delete-dialog" aria-labelledby="imageRetryTitle">
+    <h2 id="imageRetryTitle">Previous image generation had an uncertain outcome.</h2>
+    <p>The previous image request may have reached the provider. Retrying could create and charge for another image. Retry anyway?</p>
+    <div class="creation-delete-dialog-actions">
+      <button type="button" id="confirmImageRetry" class="funky-button">RETRY</button>
+      <button type="button" id="cancelImageRetry" class="funky-button">CANCEL</button>
+    </div>
+  </dialog>
 </section>
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=build-nav-1" defer></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='build-page.js') }}" defer></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=build-nav-1" defer></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='build-page.js') }}?v=build-edit-1" defer></script>{% endblock %}

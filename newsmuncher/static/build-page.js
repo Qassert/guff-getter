@@ -21,6 +21,16 @@
   const INITIAL_COUNTS = {stuff: 3, swear: 2, modifier: 5, person: 1, theme: 1};
   const FLICK_COUNT = 5;
   const FLICK_DELAY = 100;
+  const DEFAULT_CREATIVE_PROMPT = `You are an inventive, irreverent absurdist comedy writer. Write one coherent, genuinely funny miniature story using the selected ingredients as creative inspiration.
+
+Creative rules:
+- Transform, do not merely insert. Treat ingredients as creative seeds rather than mandatory phrases. Reinterpret, mutate and combine them so they become integral to the characters, objects, events or absurd logic.
+- Never satisfy the recipe by simply making a character say an insult, occupation or unusual phrase. Avoid lazy dialogue; build jokes from what the ingredients become and do.
+- Invent unexpected connections between ingredients. Begin with a peculiar situation, add a surprising complication, then escalate through a twisted but recognisable chain of cause and effect.
+- Prioritise comedy over completeness. Transform or omit an ingredient when literal inclusion would make the story weaker.
+- Be boldly irreverent: use deadpan narration, vivid specificity, dark humour, grotesque imagery, vulgarity, stupidity and wildly inappropriate consequences when funny.
+- Avoid tired surrealist clichés, especially generic existential dread, arbitrary promotions and sentient bureaucracy.
+- End with a surprising punchline that pays off or recontextualises an earlier detail instead of becoming random.`;
 
   function parseCSV(text) {
     const rows = [];
@@ -76,13 +86,13 @@
 
   function phrase(parts) { return capitalise(parts.map(part => part.word).join(' ')); }
 
-  function buildPrompt(recipe, targetWords = 60) {
+  function buildPrompt(recipe, targetWords = 60, creativePrompt = DEFAULT_CREATIVE_PROMPT) {
     const line = (label, key) => `${label}: ${(recipe[key] || []).map(item => item.text).join('; ') || 'None selected'}`;
     const maximum = {30: 33, 60: 66, 90: 99}[targetWords];
     const minimum = Math.round(targetWords * 0.9);
     const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
     return [
-      'You are an inventive, irreverent absurdist comedy writer. Write one coherent, genuinely funny miniature story using the selected ingredients as creative inspiration.',
+      creativePrompt.trim(),
       '',
       'Selected ingredients:',
       '',
@@ -91,15 +101,6 @@
       line('People', 'person'),
       line('Modifiers', 'modifier'),
       line('Theme or setting', 'theme'),
-      '',
-      'Creative rules:',
-      '- Transform, do not merely insert. Treat ingredients as creative seeds rather than mandatory phrases. Reinterpret, mutate and combine them so they become integral to the characters, objects, events or absurd logic.',
-      '- Never satisfy the recipe by simply making a character say an insult, occupation or unusual phrase. Avoid lazy dialogue; build jokes from what the ingredients become and do.',
-      '- Invent unexpected connections between ingredients. Begin with a peculiar situation, add a surprising complication, then escalate through a twisted but recognisable chain of cause and effect.',
-      '- Prioritise comedy over completeness. Transform or omit an ingredient when literal inclusion would make the story weaker.',
-      '- Be boldly irreverent: use deadpan narration, vivid specificity, dark humour, grotesque imagery, vulgarity, stupidity and wildly inappropriate consequences when funny.',
-      '- Avoid tired surrealist clichés, especially generic existential dread, arbitrary promotions and sentient bureaucracy.',
-      '- End with a surprising punchline that pays off or recontextualises an earlier detail instead of becoming random.',
       '',
       `Aim for about ${targetWords} words (roughly ${minimum} to ${maximum}). ${pacing} Coherence and the comic payoff matter more than an exact count, but never exceed ${maximum} words.`,
       'When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.',
@@ -114,17 +115,28 @@
       items.map(item => ({text: item.text, ...(item.grammar ? {grammar: item.grammar} : {})}))]));
   }
 
-  async function requestBuildStory(fetcher, url, recipe, targetWords, signal) {
+  async function requestBuildStory(fetcher, url, recipe, targetWords, creativePrompt, signal) {
     const response = await fetcher(url, {
       method: 'POST', credentials: 'same-origin', signal,
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({recipe: serialiseRecipe(recipe), target_words: targetWords})
+      body: JSON.stringify({recipe: serialiseRecipe(recipe), target_words: targetWords,
+        creative_prompt: creativePrompt})
     });
     let payload = {};
     try { payload = await response.json(); } catch (_) {}
     if (!response.ok) throw new Error(payload.detail || 'Story generation failed. Please try again.');
     if (!payload.story) throw new Error('Story generation returned no text. Please try again.');
     return payload.story;
+  }
+
+  async function requestBuildDraft(fetcher, url, story) {
+    const response = await fetcher(url, {
+      method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({story})
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.detail || 'Nomination could not be prepared.');
+    return payload;
   }
 
   class BuildWorkshop {
@@ -273,7 +285,10 @@
     }
 
     bind() {
+      this.element.querySelector('[data-prompt-editor]')?.addEventListener('input', () => this.renderPrompt());
       this.element.addEventListener('click', event => {
+        const nominate = event.target.closest('[data-build-nominate]');
+        if (nominate) return this.nominateStory();
         const munge = event.target.closest('[data-munge]');
         if (munge) return this.generateStory(Number(munge.dataset.mungeTarget));
         const add = event.target.closest('[data-add-slot]');
@@ -328,7 +343,7 @@
       container.innerHTML = Object.entries(this.recipe).filter(([, items]) => items.length).map(([category, items]) =>
         `<section class="recipe-category"><h3>${LABELS[category]}</h3><div class="recipe-items">${items.map(item =>
           `<span class="recipe-chip">${escapeHTML(item.text)}${item.grammar ? ` <small>(${escapeHTML(item.grammar)})</small>` : ''}<button type="button" data-remove-recipe="${item.id}" data-category="${category}" aria-label="Remove ${escapeHTML(item.text)}">×</button></span>`).join('')}</div></section>`).join('');
-      this.element.querySelector('[data-prompt-preview]').textContent = buildPrompt(this.recipe, this.promptTarget);
+      this.renderPrompt();
       const buttons = this.element.querySelectorAll('[data-munge]');
       buttons.forEach(button => { button.disabled = !populated || this.generating; });
       if (!this.generating) {
@@ -339,12 +354,39 @@
       }
     }
 
+    creativePrompt() {
+      return this.element.querySelector('[data-prompt-editor]')?.value.trim() || DEFAULT_CREATIVE_PROMPT;
+    }
+
+    renderPrompt() {
+      this.element.querySelector('[data-prompt-preview]').textContent =
+        buildPrompt(this.recipe, this.promptTarget, this.creativePrompt());
+    }
+
+    async nominateStory() {
+      const story = this.element.querySelector('[data-build-story]')?.value.trim();
+      if (!story) return;
+      if (root.creationActions?.hasDraft?.()) return root.bankThisBeauty?.();
+      const button = this.element.querySelector('[data-build-nominate]');
+      button.disabled = true; button.textContent = 'NOMINATING…';
+      try {
+        const data = await requestBuildDraft(this.fetcher, this.element.dataset.draftUrl, story);
+        root.creationActions?.attachDraft?.(data);
+        root.bankThisBeauty?.();
+      } catch (error) {
+        const status = this.element.querySelector('[data-munge-status]');
+        status.classList.add('is-error');
+        status.textContent = error.message || 'Nomination failed. Your story is still here.';
+        button.disabled = false; button.textContent = 'NOMINATE';
+      }
+    }
+
     async generateStory(targetWords) {
       const populated = Object.values(this.recipe).some(items => items.length);
       if (!populated || this.generating) return;
       this.generating = true;
       this.promptTarget = targetWords;
-      this.element.querySelector('[data-prompt-preview]').textContent = buildPrompt(this.recipe, targetWords);
+      this.renderPrompt();
       const buttons = this.element.querySelectorAll('[data-munge]');
       const button = this.element.querySelector(`[data-munge-target="${targetWords}"]`);
       const status = this.element.querySelector('[data-munge-status]');
@@ -355,9 +397,14 @@
       this.generateController = new AbortController();
       const timeout = root.setTimeout(() => this.generateController?.abort(), 35000);
       try {
-        const story = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe, targetWords, this.generateController.signal);
+        const story = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe,
+          targetWords, this.creativePrompt(), this.generateController.signal);
         const result = this.element.querySelector('[data-build-result]');
-        this.element.querySelector('[data-build-story]').textContent = story;
+        root.creationActions?.reset?.();
+        this.element.querySelector('[data-build-story]').value = story;
+        root.updateCopyButton?.();
+        const nominate = this.element.querySelector('[data-build-nominate]');
+        nominate.hidden = false; nominate.disabled = false; nominate.textContent = 'NOMINATE';
         result.hidden = false;
         status.textContent = 'MUNGE complete. Press MUNGE again for another version.';
       } catch (error) {
@@ -383,8 +430,8 @@
     workshop.load(); return workshop;
   }
 
-  const api = {parseCSV, weightedStructure, phrase, buildPrompt, serialiseRecipe, requestBuildStory, BuildWorkshop, mount,
-    STUFF_STRUCTURES, STUFF_WEIGHTS, SWEAR_STRUCTURES, INITIAL_COUNTS, FLICK_COUNT, FLICK_DELAY};
+  const api = {parseCSV, weightedStructure, phrase, buildPrompt, serialiseRecipe, requestBuildStory, requestBuildDraft, BuildWorkshop, mount,
+    DEFAULT_CREATIVE_PROMPT, STUFF_STRUCTURES, STUFF_WEIGHTS, SWEAR_STRUCTURES, INITIAL_COUNTS, FLICK_COUNT, FLICK_DELAY};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.NewsMuncherBuild = api;
   if (root.document) root.document.querySelectorAll('[data-build-workshop]').forEach(element => mount(element));

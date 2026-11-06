@@ -47,7 +47,9 @@ def test_build_reuses_create_udder_parchment_and_background_without_source_actio
         assert script in template
     assert 'onclick="fetchAndDisplay' not in template
     assert 'data-source=' not in template
-    assert 'js/creation/script.js' not in template
+    assert 'js/creation/script.js' in template  # Shared CREATE result/action lifecycle only.
+    assert "if (!document.querySelector('[data-build-workshop]')) restoreImageRewrite()" in Path(
+        'newsmuncher/static/js/creation/script.js').read_text()
     assert '<h1>BUILD A MUNGE</h1>' in template
 
 
@@ -94,3 +96,18 @@ def test_build_offers_three_responsive_munge_story_lengths():
     assert 'role="group" aria-label="Choose story length"' in template
     assert '.munge-buttons' in css
     assert 'flex-wrap: wrap' in css
+
+
+def test_build_reuses_create_editors_and_bottom_action_order():
+    template = Path('newsmuncher/templates/build.html').read_text()
+    assert 'data-prompt-editor' in template
+    assert 'id="responseBodyDraft" data-build-story' in template
+    action_ids = [
+        'copyMungeButton', 'bankButton', 'redoImageButton', 'deleteCreationButton',
+        'embellishButton', 'jingleButton', 'jingleStop', 'animationControls',
+    ]
+    positions = [template.index(f'id="{action_id}"') for action_id in action_ids]
+    assert positions == sorted(positions)
+    for script in ('creation-meta.js', 'image-loading.js', 'embellish.js', 'video.js',
+                   'jingles.js', 'script.js'):
+        assert script in template

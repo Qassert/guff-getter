@@ -222,7 +222,8 @@ function autoResize(textarea) {
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
-const responseArticleFitter = typeof ArticleTextFitter === 'function'
+const responseArticleFitter = typeof ArticleTextFitter === 'function' &&
+    document.getElementById('responseBodyDraft') && document.getElementById('responseEditor')
     ? new ArticleTextFitter({
         element: document.getElementById('responseBodyDraft'),
         container: document.getElementById('responseEditor')
@@ -410,6 +411,36 @@ function beginNewCreation() {
     try { sessionStorage.removeItem('newsmuncher.imageRewrite'); } catch (_) {}
     return rewriteSequence;
 }
+
+function resetCreationActionState() {
+    rewriteSequence++;
+    setDisplayedRewriteId(null);
+    nominatedSnapshot = null;
+    creationNominated = false;
+    nominationPending = false;
+    resetImagePanel();
+    if (typeof jingleUI !== 'undefined') jingleUI.show({nominated:false});
+    renderNominationButton();
+    updateCopyButton();
+}
+
+function attachCreationDraft(data) {
+    setDisplayedRewriteId(data.rewrite_id);
+    creationNominated = false;
+    nominatedSnapshot = null;
+    const title = document.getElementById('responseTitleDraft');
+    const body = document.getElementById('responseBodyDraft');
+    if (title) title.value = data.crazyReplacement1Title || '';
+    if (body && data.crazyReplacement1Extract != null) body.value = data.crazyReplacement1Extract;
+    renderNominationButton();
+    updateCopyButton();
+}
+
+window.creationActions = {
+    reset: resetCreationActionState,
+    attachDraft: attachCreationDraft,
+    hasDraft: () => Boolean(displayedRewriteId),
+};
 
 function confirmData(event) {
     if (mungeProcessing) return;
@@ -719,7 +750,7 @@ document.getElementById('imageRetryDialog')?.addEventListener('cancel', event =>
 window.addEventListener('pageshow', renderDeleteCreation);
 
 window.onload = () => {
-    populateTempData();
-    restoreImageRewrite();
+    if (document.getElementById('sourceBodyDraft')) populateTempData();
+    if (!document.querySelector('[data-build-workshop]')) restoreImageRewrite();
     if (typeof jingleUI !== "undefined") jingleUI.discover();
 };

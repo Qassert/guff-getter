@@ -63,7 +63,8 @@ test('Build teat controls are cosmetic and reuse Create interaction controllers'
   assert.match(template, /id="sourceUdder" class="source-udder"/);
   assert.match(template, /js\/creation\/source-udder\.js/);
   assert.match(template, /js\/creation\/udder-sounds\.js/);
-  assert.doesNotMatch(template, /fetchAndDisplay|data-source=|js\/creation\/script\.js/);
+  assert.doesNotMatch(template, /fetchAndDisplay|data-source=/);
+  assert.match(template, /js\/creation\/script\.js/);
   assert.match(template, /<h1>BUILD A MUNGE<\/h1>/);
 });
 

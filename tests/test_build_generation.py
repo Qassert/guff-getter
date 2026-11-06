@@ -26,13 +26,21 @@ def recipe(**overrides):
     return value
 
 
+def generation_payload(target=60, **overrides):
+    return {
+        'recipe': recipe(**overrides),
+        'target_words': target,
+        'creative_prompt': build.DEFAULT_BUILD_CREATIVE_PROMPT,
+    }
+
+
 def test_build_generation_uses_recipe_without_persistence_and_caps_each_length():
     original = build.story_provider
     seen = []
     build.story_provider = lambda prompt, maximum: seen.append((prompt, maximum)) or ' '.join(f'w{i}' for i in range(120))
     try:
         responses = {
-            target: client().post('/build/generate', json={'recipe': recipe(), 'target_words': target})
+            target: client().post('/build/generate', json=generation_payload(target))
             for target in (30, 60, 90)
         }
     finally:
@@ -51,8 +59,9 @@ def test_build_generation_uses_recipe_without_persistence_and_caps_each_length()
 
 
 def test_build_generation_rejects_empty_and_oversized_payloads():
-    empty = client().post('/build/generate', json={'recipe': {}, 'target_words': 60})
-    oversized = client().post('/build/generate', json={'recipe': {'stuff': [{'text': 'x' * 161}]}, 'target_words': 60})
+    empty = client().post('/build/generate', json={**generation_payload(), 'recipe': {}})
+    oversized = client().post('/build/generate', json={
+        **generation_payload(), 'recipe': {'stuff': [{'text': 'x' * 161}]}})
     assert empty.status_code == 422
     assert oversized.status_code == 422
 
@@ -64,8 +73,8 @@ def test_build_generation_rejects_missing_or_invalid_story_lengths_without_provi
     try:
         responses = [
             client().post('/build/generate', json={'recipe': recipe()}),
-            client().post('/build/generate', json={'recipe': recipe(), 'target_words': 80}),
-            client().post('/build/generate', json={'recipe': recipe(), 'target_words': 31}),
+            client().post('/build/generate', json={**generation_payload(), 'target_words': 80}),
+            client().post('/build/generate', json={**generation_payload(), 'target_words': 31}),
         ]
     finally:
         build.story_provider = original
@@ -73,11 +82,20 @@ def test_build_generation_rejects_missing_or_invalid_story_lengths_without_provi
     provider.assert_not_called()
 
 
+def test_build_generation_rejects_blank_or_oversized_edited_prompts():
+    blank = client().post('/build/generate', json={
+        **generation_payload(), 'creative_prompt': '   '})
+    oversized = client().post('/build/generate', json={
+        **generation_payload(), 'creative_prompt': 'x' * 6001})
+    assert blank.status_code == 422
+    assert oversized.status_code == 422
+
+
 def test_build_generation_reports_timeout_without_losing_recipe():
     original = build.story_provider
     build.story_provider = lambda _prompt, _maximum: (_ for _ in ()).throw(TimeoutError())
     try:
-        response = client().post('/build/generate', json={'recipe': recipe(), 'target_words': 60})
+        response = client().post('/build/generate', json=generation_payload())
     finally:
         build.story_provider = original
     assert response.status_code == 504
@@ -97,6 +115,42 @@ def test_provider_reuses_responses_api_model_and_word_limit_without_live_call():
     assert 'rather than quoting them in dialogue' in call['input'][0]['content']
     assert 'at most 99 words' in call['input'][0]['content']
     assert len(story.split()) == 85
+
+
+def test_build_generation_uses_edited_creative_prompt_with_server_owned_length_rules():
+    original = build.story_provider
+    seen = []
+    build.story_provider = lambda prompt, maximum: seen.append((prompt, maximum)) or 'Edited prompt result.'
+    try:
+        response = client().post('/build/generate', json={
+            **generation_payload(30),
+            'creative_prompt': 'Make the village fête obey malicious pastry physics.',
+        })
+    finally:
+        build.story_provider = original
+    assert response.status_code == 200
+    assert 'malicious pastry physics' in seen[0][0]
+    assert 'Aim for about 30 words' in seen[0][0]
+    assert seen[0][1] == 33
+
+
+def test_build_draft_is_created_only_by_explicit_nomination_preparation():
+    with patch.object(build.store, 'create', return_value={'rewrite_id': 'draft-id'}) as create:
+        response = client().post('/build/draft', json={'story': 'An edited story remains the authoritative version.'},
+                                 cookies={'active_pet': 'builder'})
+    assert response.status_code == 200
+    assert response.json()['rewrite_id'] == 'draft-id'
+    saved, owner = create.call_args.args
+    assert owner == 'builder'
+    assert saved['crazyReplacement1Extract'] == 'An edited story remains the authoritative version.'
+    assert saved['munge_engine'] == 'build'
+
+
+def test_build_draft_requires_an_active_pet():
+    with patch.object(build.store, 'create') as create:
+        response = client().post('/build/draft', json={'story': 'Keep this local.'})
+    assert response.status_code == 401
+    create.assert_not_called()
 
 
 def test_build_template_has_build_only_footer_override_and_functional_munge():
