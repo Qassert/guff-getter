@@ -102,10 +102,18 @@ Creative rules:
       line('Modifiers', 'modifier'),
       line('Theme or setting', 'theme'),
       '',
-      `Aim for about ${targetWords} words (roughly ${minimum} to ${maximum}). ${pacing} Coherence and the comic payoff matter more than an exact count, but never exceed ${maximum} words.`,
       'When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.',
-      'Return only the story, with no title, introduction or explanation.'
+      'Return only the story, with no title, introduction or explanation.',
+      `Story length: Aim for about ${targetWords} words (roughly ${minimum} to ${maximum}). ${pacing} Coherence and the comic payoff matter more than an exact count, but never exceed ${maximum} words.`
     ].join('\n');
+  }
+
+  function applyStoryLength(prompt, targetWords) {
+    const maximum = {30: 33, 60: 66, 90: 99}[targetWords];
+    const minimum = Math.round(targetWords * 0.9);
+    const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
+    const cleaned = String(prompt || '').replace(/^Story length:.*(?:\n|$)/gm, '').trimEnd();
+    return `${cleaned}\n\nStory length: Aim for about ${targetWords} words (roughly ${minimum} to ${maximum}). ${pacing} Coherence and the comic payoff matter more than an exact count, but never exceed ${maximum} words.`;
   }
 
   function wait(delay) { return new Promise(resolve => setTimeout(resolve, delay)); }
@@ -115,12 +123,11 @@ Creative rules:
       items.map(item => ({text: item.text, ...(item.grammar ? {grammar: item.grammar} : {})}))]));
   }
 
-  async function requestBuildStory(fetcher, url, recipe, targetWords, creativePrompt, signal) {
+  async function requestBuildStory(fetcher, url, recipe, targetWords, prompt, signal) {
     const response = await fetcher(url, {
       method: 'POST', credentials: 'same-origin', signal,
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({recipe: serialiseRecipe(recipe), target_words: targetWords,
-        creative_prompt: creativePrompt})
+      body: JSON.stringify({recipe: serialiseRecipe(recipe), target_words: targetWords, prompt})
     });
     let payload = {};
     try { payload = await response.json(); } catch (_) {}
@@ -151,6 +158,8 @@ Creative rules:
       this.nextId = 1;
       this.generating = false;
       this.generateController = null;
+      this.promptDirty = false;
+      this.promptTarget = 60;
       this.recent = {stuff: new Set(), swear: new Set(), modifier: new Set(), person: new Set(), theme: new Set()};
     }
 
@@ -285,9 +294,14 @@ Creative rules:
 
     bind() {
       const promptEditor = this.element.querySelector('[data-prompt-editor]');
-      promptEditor?.addEventListener('input', () => this.resizePromptEditor());
+      promptEditor?.addEventListener('input', () => {
+        this.promptDirty = true;
+        this.resizePromptEditor();
+      });
       (root.requestAnimationFrame || (callback => callback()))(() => this.resizePromptEditor());
       this.element.addEventListener('click', event => {
+        const resetPrompt = event.target.closest('[data-reset-prompt]');
+        if (resetPrompt) return this.resetPrompt();
         const nominate = event.target.closest('[data-build-nominate]');
         if (nominate) return this.nominateStory();
         const munge = event.target.closest('[data-munge]');
@@ -344,6 +358,7 @@ Creative rules:
       container.innerHTML = Object.entries(this.recipe).filter(([, items]) => items.length).map(([category, items]) =>
         `<section class="recipe-category"><h3>${LABELS[category]}</h3><div class="recipe-items">${items.map(item =>
           `<span class="recipe-chip">${escapeHTML(item.text)}${item.grammar ? ` <small>(${escapeHTML(item.grammar)})</small>` : ''}<button type="button" data-remove-recipe="${item.id}" data-category="${category}" aria-label="Remove ${escapeHTML(item.text)}">×</button></span>`).join('')}</div></section>`).join('');
+      if (!this.promptDirty) this.resetPrompt();
       const buttons = this.element.querySelectorAll('[data-munge]');
       buttons.forEach(button => { button.disabled = !populated || this.generating; });
       if (!this.generating) {
@@ -354,8 +369,16 @@ Creative rules:
       }
     }
 
-    creativePrompt() {
-      return this.element.querySelector('[data-prompt-editor]')?.value.trim() || DEFAULT_CREATIVE_PROMPT;
+    currentPrompt() {
+      return this.element.querySelector('[data-prompt-editor]')?.value || '';
+    }
+
+    resetPrompt() {
+      const editor = this.element.querySelector('[data-prompt-editor]');
+      if (!editor) return;
+      editor.value = buildPrompt(this.recipe, this.promptTarget);
+      this.promptDirty = false;
+      this.resizePromptEditor();
     }
 
     resizePromptEditor() {
@@ -387,6 +410,10 @@ Creative rules:
       const populated = Object.values(this.recipe).some(items => items.length);
       if (!populated || this.generating) return;
       this.generating = true;
+      this.promptTarget = targetWords;
+      const editor = this.element.querySelector('[data-prompt-editor]');
+      editor.value = applyStoryLength(editor.value, targetWords);
+      this.resizePromptEditor();
       const buttons = this.element.querySelectorAll('[data-munge]');
       const button = this.element.querySelector(`[data-munge-target="${targetWords}"]`);
       const status = this.element.querySelector('[data-munge-status]');
@@ -398,7 +425,7 @@ Creative rules:
       const timeout = root.setTimeout(() => this.generateController?.abort(), 35000);
       try {
         const story = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe,
-          targetWords, this.creativePrompt(), this.generateController.signal);
+          targetWords, this.currentPrompt(), this.generateController.signal);
         const result = this.element.querySelector('[data-build-result]');
         root.creationActions?.reset?.();
         this.element.querySelector('[data-build-story]').value = story;
@@ -430,7 +457,7 @@ Creative rules:
     workshop.load(); return workshop;
   }
 
-  const api = {parseCSV, weightedStructure, phrase, buildPrompt, serialiseRecipe, requestBuildStory, requestBuildDraft, BuildWorkshop, mount,
+  const api = {parseCSV, weightedStructure, phrase, buildPrompt, applyStoryLength, serialiseRecipe, requestBuildStory, requestBuildDraft, BuildWorkshop, mount,
     DEFAULT_CREATIVE_PROMPT, STUFF_STRUCTURES, STUFF_WEIGHTS, SWEAR_STRUCTURES, INITIAL_COUNTS, FLICK_COUNT, FLICK_DELAY};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.NewsMuncherBuild = api;

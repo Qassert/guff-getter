@@ -68,6 +68,7 @@ button:disabled { cursor: not-allowed; opacity: .52; }
 .recipe-chip small { color: #746554; }
 .recipe-chip button { width: 28px; min-height: 28px; padding: 0; border: 0; box-shadow: none; background: transparent; color: #7d2d34; font-size: 1.2rem; }
 .prompt-editor-panel { margin-top: 26px; border-top: 2px solid #7c6b5355; padding-top: 18px; }
+.prompt-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .prompt-editor-panel label { display: block; font: 800 1rem var(--build-head); text-transform: uppercase; }
 .build-prompt-editor {
   min-height: 260px; margin: 14px 0 0; padding: 16px; resize: none; overflow-y: hidden;
@@ -88,6 +89,7 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   .ingredient-heading { align-items: stretch; flex-direction: column; gap: 8px; }
   .ingredient-heading .mini-action { align-self: flex-start; }
   .slot-actions { flex-wrap: wrap; }
+  .prompt-editor-heading { align-items: flex-start; flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) {
   .build-page *, .build-page *::before, .build-page *::after { animation: none !important; transition: none !important; }

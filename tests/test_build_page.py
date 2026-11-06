@@ -115,11 +115,14 @@ def test_build_reuses_create_editors_and_bottom_action_order():
         assert script in template
 
 
-def test_build_prompt_editor_auto_sizes_without_displaying_assembled_prompt():
+def test_build_prompt_editor_auto_sizes_and_remains_the_only_prompt_surface():
     script = Path('newsmuncher/static/build-page.js').read_text()
     css = Path('newsmuncher/static/build-page.css').read_text()
     assert "editor.style.height = 'auto'" in script
     assert "editor.style.height = `${editor.scrollHeight}px`" in script
-    assert "creative_prompt: creativePrompt" in script
+    assert "target_words: targetWords, prompt" in script
+    assert "if (!this.promptDirty) this.resetPrompt()" in script
+    assert "this.promptDirty = true" in script
+    assert 'data-reset-prompt' in Path('newsmuncher/templates/build.html').read_text()
     assert 'overflow-y: hidden' in css
     assert '.prompt-preview pre' not in css

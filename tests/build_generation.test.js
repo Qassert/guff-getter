@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {buildPrompt, serialiseRecipe, requestBuildStory, requestBuildDraft} = require('../newsmuncher/static/build-page.js');
+const {buildPrompt, applyStoryLength, serialiseRecipe, requestBuildStory, requestBuildDraft} = require('../newsmuncher/static/build-page.js');
 
 const recipe = {
   stuff: [{id: 'local-1', text: 'Transparent bipolar wrench projector'}],
@@ -38,20 +38,33 @@ test('story request posts structured recipe and returns provider story', async (
     request = {url, options};
     return {ok: true, json: async () => ({story: 'A tiny coherent disaster.'})};
   };
-  const editedPrompt = 'Apply malicious pastry physics to every selected ingredient.';
-  const story = await requestBuildStory(fetcher, '/build/generate', recipe, 90, editedPrompt);
+  const editedPrompt = 'Apply malicious pastry physics.\n\nStory length: custom old value';
+  const submittedPrompt = applyStoryLength(editedPrompt, 90);
+  const story = await requestBuildStory(fetcher, '/build/generate', recipe, 90, submittedPrompt);
   assert.equal(story, 'A tiny coherent disaster.');
   assert.equal(request.url, '/build/generate');
   assert.equal(request.options.method, 'POST');
   const body = JSON.parse(request.options.body);
   assert.deepEqual(body.recipe.stuff, [{text: 'Transparent bipolar wrench projector'}]);
   assert.equal(body.target_words, 90);
-  assert.equal(body.creative_prompt, editedPrompt);
+  assert.equal(body.prompt, submittedPrompt);
 });
 
 test('story request surfaces safe backend errors', async () => {
   const fetcher = async () => ({ok: false, json: async () => ({detail: 'Story generation timed out. Please try again.'})});
   await assert.rejects(requestBuildStory(fetcher, '/build/generate', recipe, 30, 'Keep it odd.'), /timed out/);
+});
+
+test('length switching preserves all manual prompt edits and keeps one instruction', () => {
+  let prompt = buildPrompt(recipe, 60).replace('Transparent bipolar wrench projector', 'Hand-edited gazebo');
+  prompt = applyStoryLength(prompt, 30);
+  assert.match(prompt, /Hand-edited gazebo/);
+  assert.match(prompt, /Aim for about 30 words/);
+  prompt = applyStoryLength(prompt, 90);
+  assert.match(prompt, /Hand-edited gazebo/);
+  assert.doesNotMatch(prompt, /Aim for about 30 words/);
+  assert.match(prompt, /Aim for about 90 words/);
+  assert.equal((prompt.match(/Story length:/g) || []).length, 1);
 });
 
 test('nomination preparation sends the latest edited story and no generated original', async () => {
@@ -78,7 +91,7 @@ test('edited story and CREATE-compatible action row remain authoritative', () =>
   const source = require('node:fs').readFileSync(require('node:path').join(__dirname, '../newsmuncher/static/build-page.js'), 'utf8');
   assert.match(source, /querySelector\('\[data-build-story\]'\)\?\.value\.trim\(\)/);
   assert.match(source, /JSON\.stringify\(\{story\}\)/);
-  assert.match(source, /creative_prompt: creativePrompt/);
+  assert.match(source, /target_words: targetWords, prompt/);
   assert.match(source, /creationActions\?\.attachDraft/);
   assert.match(source, /bankThisBeauty/);
 });

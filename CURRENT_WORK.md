@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: BUILD now has one auto-sizing creative prompt editor with hidden request-time assembly.
+CURRENT_TASK: BUILD's sole editor is now the authoritative complete provider prompt, with explicit reset and length switching.
 APPROVAL: Andy explicitly assigned the isolated Build worktree; no push, merge or deployment.
 NEXT_STEP: Review BUILD prompt/result editing and actions in a browser; perform live provider/media calls only with explicit approval.
-VALIDATION: 19 focused Python tests and 15 focused Build frontend tests pass. Python and JavaScript syntax checks and `git diff --check` pass. Provider responses were mocked; no paid calls or database writes occurred.
+VALIDATION: 19 focused Python tests and 16 focused Build frontend tests pass. Python and JavaScript syntax checks and `git diff --check` pass. Provider responses were mocked; no paid calls or database writes occurred.
 
 ## Build prompt editor cleanup — 2026-11-06
 

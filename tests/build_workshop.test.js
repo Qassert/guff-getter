@@ -49,6 +49,7 @@ test('Build template is isolated and exposes bounded MUNGE generation', () => {
   assert.match(template, /data-build-workshop/);
   assert.match(template, /data-slot-list="stuff"/);
   assert.match(template, /data-prompt-editor/);
+  assert.match(template, /data-reset-prompt>RESET PROMPT/);
   assert.doesNotMatch(template, /data-prompt-preview|Complete prompt preview/);
   assert.match(template, /data-generate-url="\/build\/generate"/);
   assert.match(template, /for target in \(30, 60, 90\)/);

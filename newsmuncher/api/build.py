@@ -1,3 +1,4 @@
+import re
 from typing import Literal, Optional
 from urllib.parse import quote
 
@@ -44,7 +45,7 @@ class BuildRecipe(BaseModel):
 class BuildStoryRequest(BaseModel):
     recipe: BuildRecipe
     target_words: Literal[30, 60, 90]
-    creative_prompt: str = Field(min_length=1, max_length=6000)
+    prompt: str = Field(min_length=1, max_length=10000)
 
 
 class BuildDraftRequest(BaseModel):
@@ -71,10 +72,28 @@ def build_story_prompt(recipe: BuildRecipe, target_words: int, creative_prompt: 
         line("Modifiers", "modifier"),
         line("Theme or setting", "theme"),
         "",
-        f"Aim for about {target_words} words (roughly {minimum} to {maximum}). {pacing} Coherence and the comic payoff matter more than an exact count, but never exceed {maximum} words.",
         "When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.",
         "Return only the story, with no title, introduction or explanation.",
+        f"Story length: Aim for about {target_words} words (roughly {minimum} to {maximum}). {pacing} Coherence and the comic payoff matter more than an exact count, but never exceed {maximum} words.",
     ))
+
+
+def apply_story_length(prompt: str, target_words: int) -> str:
+    """Replace only NewsMuncher's canonical length line, preserving all user edits."""
+    maximum = STORY_LENGTH_MAXIMUMS[target_words]
+    minimum = round(target_words * 0.9)
+    pacing = ({
+        30: "Keep it punchy and compressed.",
+        60: "Give the absurd situation room to escalate.",
+        90: "Develop a more elaborate absurd situation while keeping every sentence useful.",
+    })[target_words]
+    cleaned = re.sub(r"(?m)^Story length:.*(?:\n|$)", "", prompt).rstrip()
+    instruction = (
+        f"Story length: Aim for about {target_words} words (roughly {minimum} to {maximum}). "
+        f"{pacing} Coherence and the comic payoff matter more than an exact count, "
+        f"but never exceed {maximum} words."
+    )
+    return f"{cleaned}\n\n{instruction}"
 
 
 @router.get('/build', response_class=HTMLResponse)
@@ -87,15 +106,16 @@ async def build_workshop(request: Request):
         request=request,
         name='build.html',
         context={'request': request, 'creation_url': creation_url,
-                 'build_creative_prompt': DEFAULT_BUILD_CREATIVE_PROMPT},
+                 'build_initial_prompt': build_story_prompt(
+                     BuildRecipe(), 60, DEFAULT_BUILD_CREATIVE_PROMPT)},
     )
 
 
 @router.post('/build/generate')
 async def generate_build_munge(payload: BuildStoryRequest):
     recipe = payload.recipe
-    if not payload.creative_prompt.strip():
-        raise HTTPException(status_code=422, detail='The creative prompt cannot be blank.')
+    if not payload.prompt.strip():
+        raise HTTPException(status_code=422, detail='The generation prompt cannot be blank.')
     ingredients = [
         item for key in ('stuff', 'swear', 'modifier', 'person', 'theme')
         for item in getattr(recipe, key)
@@ -106,7 +126,7 @@ async def generate_build_munge(payload: BuildStoryRequest):
         raise HTTPException(status_code=422, detail='The selected recipe is too large.')
 
     maximum_words = STORY_LENGTH_MAXIMUMS[payload.target_words]
-    prompt = build_story_prompt(recipe, payload.target_words, payload.creative_prompt)
+    prompt = apply_story_length(payload.prompt, payload.target_words)
     try:
         story = await run_in_threadpool(story_provider, prompt, maximum_words)
     except (APITimeoutError, TimeoutError) as exc:

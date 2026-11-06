@@ -88,8 +88,11 @@
     <div class="recipe-categories" data-recipe-categories></div>
 
     <section class="prompt-editor-panel">
-      <label for="buildCreativePrompt">Edit creative prompt</label>
-      <textarea id="buildCreativePrompt" class="build-prompt-editor" data-prompt-editor>{{ build_creative_prompt }}</textarea>
+      <div class="prompt-editor-heading">
+        <label for="buildCreativePrompt">Edit complete generation prompt</label>
+        <button type="button" class="mini-action" data-reset-prompt>RESET PROMPT</button>
+      </div>
+      <textarea id="buildCreativePrompt" class="build-prompt-editor" data-prompt-editor>{{ build_initial_prompt }}</textarea>
     </section>
 
     <div class="munge-action">

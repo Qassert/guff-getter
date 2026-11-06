@@ -27,10 +27,13 @@ def recipe(**overrides):
 
 
 def generation_payload(target=60, **overrides):
+    selected_recipe = recipe(**overrides)
+    model = build.BuildRecipe.model_validate(selected_recipe)
     return {
-        'recipe': recipe(**overrides),
+        'recipe': selected_recipe,
         'target_words': target,
-        'creative_prompt': build.DEFAULT_BUILD_CREATIVE_PROMPT,
+        'prompt': build.build_story_prompt(
+            model, target, build.DEFAULT_BUILD_CREATIVE_PROMPT),
     }
 
 
@@ -84,9 +87,9 @@ def test_build_generation_rejects_missing_or_invalid_story_lengths_without_provi
 
 def test_build_generation_rejects_blank_or_oversized_edited_prompts():
     blank = client().post('/build/generate', json={
-        **generation_payload(), 'creative_prompt': '   '})
+        **generation_payload(), 'prompt': '   '})
     oversized = client().post('/build/generate', json={
-        **generation_payload(), 'creative_prompt': 'x' * 6001})
+        **generation_payload(), 'prompt': 'x' * 10001})
     assert blank.status_code == 422
     assert oversized.status_code == 422
 
@@ -117,20 +120,24 @@ def test_provider_reuses_responses_api_model_and_word_limit_without_live_call():
     assert len(story.split()) == 85
 
 
-def test_build_generation_uses_edited_creative_prompt_with_server_owned_length_rules():
+def test_build_generation_uses_complete_edited_prompt_without_rebuilding_ingredients():
     original = build.story_provider
     seen = []
     build.story_provider = lambda prompt, maximum: seen.append((prompt, maximum)) or 'Edited prompt result.'
     try:
         response = client().post('/build/generate', json={
             **generation_payload(30),
-            'creative_prompt': 'Make the village fête obey malicious pastry physics.',
+            'prompt': 'Make the replacement gazebo obey malicious pastry physics.\n\n'
+                      'Story length: stale instruction',
         })
     finally:
         build.story_provider = original
     assert response.status_code == 200
     assert 'malicious pastry physics' in seen[0][0]
+    assert 'Transparent bipolar wrench projector' not in seen[0][0]
+    assert 'stale instruction' not in seen[0][0]
     assert 'Aim for about 30 words' in seen[0][0]
+    assert seen[0][0].count('Story length:') == 1
     assert seen[0][1] == 33
 
 
