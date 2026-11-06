@@ -8,6 +8,7 @@ from pathlib import Path
 import sqlite3
 import sys
 import threading
+from uuid import uuid4
 from types import SimpleNamespace, ModuleType
 from unittest.mock import AsyncMock, patch
 from concurrent.futures import ThreadPoolExecutor
@@ -236,6 +237,29 @@ def test_media_updates_do_not_change_chronological_order(setup):
                            image_generated_at='2099-01-01T00:00:00Z',
                            video={'status': 'complete'}, jingle_url='/generated-audio/new.mp3')
     assert service.select('viewer')['item']['id'] == expected
+
+
+def test_gallery_reads_image_and_video_from_shared_fallback(tmp_path):
+    db = Database()
+    image_id = uuid4()
+    entry_id = ObjectId()
+    local_images = tmp_path / 'local-images'; local_images.mkdir()
+    shared_images = tmp_path / 'shared-images'; shared_images.mkdir()
+    local_videos = tmp_path / 'local-videos'; local_videos.mkdir()
+    shared_videos = tmp_path / 'shared-videos'; shared_videos.mkdir()
+    (shared_images / f'{image_id}.png').write_bytes(b'image')
+    (shared_videos / f'{image_id}.mp4').write_bytes(b'video')
+    entry = {'_id': entry_id, 'nominated': True, 'rewrite_id': str(image_id),
+             'image_url': f'/generated-images/{image_id}.png',
+             'video': {'status': 'complete', 'rewrite_id': str(image_id),
+                       'storage_key': f'{image_id}.mp4'}}
+    service = PromotionGallery(Collection(db, [entry]), Collection(db),
+        (local_images, shared_images), tmp_path, tmp_path,
+        tmp_path / 'jingles.sqlite3', videos=(local_videos, shared_videos))
+
+    assert service.media_path(entry, 'image') == shared_images / f'{image_id}.png'
+    assert service.original_video_path(entry) == shared_videos / f'{image_id}.mp4'
+    assert not service.owns_video(shared_videos / f'{image_id}.mp4')
 
 
 def test_empty_and_single_entry_chronology(tmp_path):

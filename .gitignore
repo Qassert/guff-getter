@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+.newsmuncher-media-root
 .modal.toml
 
 # Local environments, editor metadata and operating-system files

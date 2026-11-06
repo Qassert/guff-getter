@@ -150,7 +150,7 @@ def media(key: str, kind: str, background_tasks: BackgroundTasks, user=Depends(v
             log.info('[pingpong] %s original found', rewrite_id)
             if path != original:
                 log.info('[pingpong] %s serving derivative', rewrite_id)
-            elif pingpong.can_attempt(original):
+            elif service.owns_video(original) and pingpong.can_attempt(original):
                 log.info('[pingpong] %s derivative missing - scheduling', rewrite_id)
                 # Serve the original immediately. A later request transparently receives
                 # the completed local derivative through a versioned authenticated URL.

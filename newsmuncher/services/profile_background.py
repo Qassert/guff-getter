@@ -2,10 +2,12 @@
 import random
 from uuid import UUID
 
-from newsmuncher.config import GENERATED_IMAGES_DIR
+from pathlib import Path
+
+from newsmuncher.config import GENERATED_IMAGES_READ_DIRS
 
 
-def random_nominated_background(collection, directory=GENERATED_IMAGES_DIR):
+def random_nominated_background(collection, directory=GENERATED_IMAGES_READ_DIRS):
     # Reservoir sampling stays uniform across available images using constant memory.
     # Projection avoids loading article text or image data.
     candidates = collection.find(
@@ -21,8 +23,11 @@ def random_nominated_background(collection, directory=GENERATED_IMAGES_DIR):
             image_id = UUID(filename.removesuffix(".png"))
             if url != f"/generated-images/{image_id}.png":
                 continue
-            path = directory / filename
-            if path.is_symlink() or not path.is_file() or path.stat().st_size == 0:
+            directories = ((Path(directory),) if isinstance(directory, (str, Path))
+                           else tuple(map(Path, directory)))
+            paths = (root / filename for root in directories)
+            if not any(not path.is_symlink() and path.is_file() and path.stat().st_size > 0
+                       for path in paths):
                 continue
         except (ValueError, OSError, AttributeError):
             continue

@@ -54,3 +54,34 @@ JINGLE_STATE_FILE = PREVIEWS_DIR / "jingles.sqlite3"
 GENERATED_NARRATION_DIR = DATA_DIR / "generated_narration"
 
 GENERATED_VIDEO_DIR = DATA_DIR / "generated_video"
+
+MEDIA_ROOT_ENV = "NEWSMUNCHER_MEDIA_ROOT"
+MEDIA_ROOT_POINTER = PROJECT_ROOT / ".newsmuncher-media-root"
+
+
+def shared_media_root(project_root=PROJECT_ROOT, environ=os.environ):
+    """Return an optional read-only media root for an isolated worktree."""
+    configured = environ.get(MEDIA_ROOT_ENV, "").strip()
+    pointer = project_root / MEDIA_ROOT_POINTER.name
+    if not configured and pointer.is_file():
+        configured = pointer.read_text(encoding="utf-8").strip()
+    return Path(configured).expanduser().resolve() if configured else None
+
+
+SHARED_MEDIA_ROOT = shared_media_root()
+
+
+def media_read_directories(local_directory, name):
+    directories = [Path(local_directory)]
+    if SHARED_MEDIA_ROOT:
+        shared = SHARED_MEDIA_ROOT / name
+        if shared != directories[0]:
+            directories.append(shared)
+    return tuple(directories)
+
+
+GENERATED_IMAGES_READ_DIRS = media_read_directories(GENERATED_IMAGES_DIR, "generated_images")
+GENERATED_AUDIO_READ_DIRS = media_read_directories(GENERATED_AUDIO_DIR, "generated_audio")
+GENERATED_NARRATION_READ_DIRS = media_read_directories(
+    GENERATED_NARRATION_DIR, "generated_narration")
+GENERATED_VIDEO_READ_DIRS = media_read_directories(GENERATED_VIDEO_DIR, "generated_video")

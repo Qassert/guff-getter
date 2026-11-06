@@ -14,8 +14,9 @@ from pymongo import ReturnDocument
 from pymongo.read_concern import ReadConcern
 from pymongo.write_concern import WriteConcern
 
-from newsmuncher.config import (GENERATED_IMAGES_DIR, GENERATED_AUDIO_DIR,
-                               GENERATED_NARRATION_DIR, GENERATED_VIDEO_DIR, JINGLE_STATE_FILE)
+from newsmuncher.config import (GENERATED_IMAGES_READ_DIRS, GENERATED_AUDIO_READ_DIRS,
+                               GENERATED_NARRATION_READ_DIRS, GENERATED_VIDEO_READ_DIRS,
+                               JINGLE_STATE_FILE)
 from newsmuncher.services.video_pingpong import service as pingpong
 
 # Same conservative legacy interpretation as nomination_state; explicit false wins.
@@ -55,14 +56,33 @@ def chronological_key(entry):
 
 
 class PromotionGallery:
-    def __init__(self, entries, receipts, images=GENERATED_IMAGES_DIR,
-                 narration=GENERATED_NARRATION_DIR, audio=GENERATED_AUDIO_DIR,
+    def __init__(self, entries, receipts, images=GENERATED_IMAGES_READ_DIRS,
+                 narration=GENERATED_NARRATION_READ_DIRS, audio=GENERATED_AUDIO_READ_DIRS,
                  jingles=JINGLE_STATE_FILE, choose=random.choice,
-                 videos=GENERATED_VIDEO_DIR):
+                 videos=GENERATED_VIDEO_READ_DIRS):
         self.entries, self.receipts = entries, receipts
-        self.images, self.narration, self.audio = map(Path, (images, narration, audio))
+        self.image_roots = self._directories(images)
+        self.narration_roots = self._directories(narration)
+        self.audio_roots = self._directories(audio)
+        self.images, self.narration, self.audio = (
+            self.image_roots[0], self.narration_roots[0], self.audio_roots[0])
         self.jingles, self.choose = Path(jingles), choose
-        self.videos = Path(videos)
+        self.video_roots = self._directories(videos)
+        self.videos = self.video_roots[0]
+
+    @staticmethod
+    def _directories(value):
+        return ((Path(value),) if isinstance(value, (str, Path))
+                else tuple(map(Path, value)))
+
+    def first_existing(self, directories, name):
+        return next((path for root in directories
+                     if self.exists(path := root / name)), None)
+
+    @staticmethod
+    def with_primary(primary, directories):
+        primary = Path(primary)
+        return (primary,) + tuple(root for root in directories if root != primary)
 
     def entry(self, key, session=None):
         if not ObjectId.is_valid(key):
@@ -91,7 +111,8 @@ class PromotionGallery:
                 return None
             if url != f'/generated-images/{image_id}.png':
                 return None
-            path = self.images / f'{image_id}.png'
+            path = self.first_existing(
+                self.with_primary(self.images, self.image_roots), f'{image_id}.png')
         elif kind == 'video':
             path = self.original_video_path(entry)
             if not path:
@@ -101,19 +122,21 @@ class PromotionGallery:
             state = entry.get('narration')
             if not isinstance(state, dict) or state.get('entry_id') != key:
                 return None
-            path = self.narration / f'{key}.mp3'
+            path = self.first_existing(
+                self.with_primary(self.narration, self.narration_roots), f'{key}.mp3')
         elif kind == 'jingle':
             url = entry.get('jingle_url')
             name = url.removeprefix('/generated-audio/') if isinstance(url, str) else ''
             if re.fullmatch(rf'{key}(?:\.[a-z0-9_-]+)?\.mp3', name):
-                path = self.audio / name
+                path = self.first_existing(
+                    self.with_primary(self.audio, self.audio_roots), name)
             else:
                 path = self._sidecar_jingle(key)
                 if not path:
                     return None
         else:
             return None
-        return path if self.exists(path) else None
+        return path if path and self.exists(path) else None
 
     def original_video_path(self, entry):
         state = entry.get('video')
@@ -125,8 +148,15 @@ class PromotionGallery:
             return None
         if state.get('rewrite_id') != rewrite_id or state.get('storage_key') != f'{rewrite_id}.mp4':
             return None
-        path = self.videos / f'{rewrite_id}.mp4'
-        return path if self.exists(path) else None
+        return self.first_existing(
+            self.with_primary(self.videos, self.video_roots), f'{rewrite_id}.mp4')
+
+    def owns_video(self, path):
+        """Only locally written videos may receive generated derivatives."""
+        try:
+            return Path(path).parent.resolve() == self.videos.resolve()
+        except OSError:
+            return False
 
     def _sidecar_jingle(self, key):
         """Recover existing legacy/versioned audio without generating or mutating."""
@@ -144,8 +174,9 @@ class PromotionGallery:
                 version = state_id.partition(':')[2]
                 if version and not re.fullmatch(r'[a-z0-9_-]+', version):
                     continue
-                candidate = self.audio / (f'{key}.{version}.mp3' if version else f'{key}.mp3')
-                if self.exists(candidate):
+                name = f'{key}.{version}.mp3' if version else f'{key}.mp3'
+                roots = self.with_primary(self.audio, self.audio_roots)
+                if candidate := self.first_existing(roots, name):
                     return candidate
         except (sqlite3.Error, ValueError, TypeError, OSError):
             return None

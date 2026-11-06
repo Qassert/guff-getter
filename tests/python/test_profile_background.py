@@ -32,3 +32,18 @@ class BackgroundTests(unittest.TestCase):
         self.assertIsNone(random_nominated_background(collection))
         collection.find.return_value = [{"image_url": f"/generated-images/{uuid4()}.png"}]
         self.assertIsNone(random_nominated_background(collection))
+
+    def test_uses_read_only_fallback_when_local_worktree_media_is_empty(self):
+        with tempfile.TemporaryDirectory() as folder:
+            local = Path(folder) / "local"
+            shared = Path(folder) / "shared"
+            local.mkdir()
+            shared.mkdir()
+            identifier = str(uuid4())
+            (shared / f"{identifier}.png").write_bytes(b"shared image")
+            collection = Mock()
+            collection.find.return_value = [
+                {"image_url": f"/generated-images/{identifier}.png"}
+            ]
+            result = random_nominated_background(collection, (local, shared))
+            self.assertEqual(result["rewrite_id"], identifier)

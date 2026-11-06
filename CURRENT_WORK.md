@@ -1,6 +1,6 @@
-STATUS: READY
+STATUS: REVIEW
 OWNER: CODEX
-BRANCH: feature/video-animation
+BRANCH: feature/build-workshop-20261106
 LAST_COMPLETED_FEATURE: MUNGE EXPERIMENTAL RADICAL MODE
 LAST_COMPLETED_COMMIT: 3e07e12 fix: refine Gallery navigation and rotation
 LAST_OWNER: CODEX
@@ -13,10 +13,24 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Stable checkpoint for completed NOMINATE media-safety, video-transformation and REDO IMAGE recovery work.
-APPROVAL: Andy explicitly approved a local checkpoint after final mocked-provider validation; no push.
-NEXT_STEP: Begin further development only from this reviewed checkpoint.
-VALIDATION: Full Python coverage completed in two segments: 851 tests plus 105 subtests pass. All 154 frontend tests pass. JavaScript syntax, Python compilation and `git diff --check` pass. No provider calls or production database writes.
+CURRENT_TASK: Repair Build-worktree Create and Gallery media regressions after rebase.
+APPROVAL: Andy explicitly assigned the isolated Build worktree; no push, merge or deployment.
+NEXT_STEP: Review the targeted read-only media fallback and perform manual browser QA if desired.
+VALIDATION: Focused Python and frontend suites pass. Build and existing generated image/audio routes return 200 using mocked/local routing; no provider calls or database writes.
+
+## Build worktree media repair — 2026-11-06
+
+- Confirmed Create/Gallery code and environment credentials matched the original checkout;
+  the regression was caused by checkout-relative generated-media paths pointing at the
+  Build worktree's empty media scaffolds.
+- Added an ignored per-worktree media-root pointer. Existing generated images, audio,
+  narration and video are read through a local-first, read-only fallback; all generation
+  writes remain in the Build worktree.
+- Create background selection and Gallery media lookup now inspect both roots. Shared
+  videos cannot trigger derivative writes in the original checkout.
+- Added a guarded setup utility which refuses to configure over nonempty worktree media.
+  No original media, databases, environment files or uncommitted source changes were
+  modified.
 
 ## NOMINATE repeated image failure and REDO recovery — 2026-10-21
 
