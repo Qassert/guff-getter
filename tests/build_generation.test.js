@@ -15,7 +15,11 @@ test('Build prompt centres selected ingredients and an 80-word story', () => {
   const prompt = buildPrompt(recipe);
   assert.match(prompt, /Transparent bipolar wrench projector/);
   assert.match(prompt, /flap-mouthed bollock merchant/);
-  assert.match(prompt, /no more than 80 words/);
+  assert.match(prompt, /creative seeds rather than mandatory phrases/);
+  assert.match(prompt, /Avoid lazy dialogue/);
+  assert.match(prompt, /generic existential dread, arbitrary promotions and sentient bureaucracy/);
+  assert.match(prompt, /surprising punchline/);
+  assert.match(prompt, /never exceed 80 words/);
 });
 
 test('serialised recipe omits local ids and retains grammar', () => {

@@ -79,9 +79,9 @@
   function buildPrompt(recipe) {
     const line = (label, key) => `${label}: ${(recipe[key] || []).map(item => item.text).join('; ') || 'None selected'}`;
     return [
-      'Write a hilarious, absurdly surreal and ridiculous miniature story of no more than 80 words.',
+      'You are an inventive, irreverent absurdist comedy writer. Write one coherent, genuinely funny miniature story using the selected ingredients as creative inspiration.',
       '',
-      'Use the following selected ingredients:',
+      'Selected ingredients:',
       '',
       line('Objects', 'stuff'),
       line('Swear words', 'swear'),
@@ -89,7 +89,16 @@
       line('Modifiers', 'modifier'),
       line('Theme or setting', 'theme'),
       '',
-      'Integrate the supplied ingredients naturally into a coherent but wildly unexpected story. Prioritise originality, absurd humour and surprising combinations. Avoid unnecessary new characters or objects. Treat modifiers as optional guidance when forcing every one would damage the prose. Keep the finished story to 80 words or fewer.'
+      'Creative rules:',
+      '- Transform, do not merely insert. Treat ingredients as creative seeds rather than mandatory phrases. Reinterpret, mutate and combine them so they become integral to the characters, objects, events or absurd logic.',
+      '- Never satisfy the recipe by simply making a character say an insult, occupation or unusual phrase. Avoid lazy dialogue; build jokes from what the ingredients become and do.',
+      '- Invent unexpected connections between ingredients. Begin with a peculiar situation, add a surprising complication, then escalate through a twisted but recognisable chain of cause and effect.',
+      '- Prioritise comedy over completeness. Transform or omit an ingredient when literal inclusion would make the story weaker.',
+      '- Be boldly irreverent: use deadpan narration, vivid specificity, dark humour, grotesque imagery, vulgarity, stupidity and wildly inappropriate consequences when funny.',
+      '- Avoid tired surrealist clichés, especially generic existential dread, arbitrary promotions and sentient bureaucracy.',
+      '- End with a surprising punchline that pays off or recontextualises an earlier detail instead of becoming random.',
+      '',
+      'Aim for 60 to 80 words and never exceed 80 words. Return only the story, with no title, introduction or explanation.'
     ].join('\n');
   }
 

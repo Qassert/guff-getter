@@ -30,10 +30,10 @@ def generate_build_story(prompt: str) -> str:
                 {
                     "role": "developer",
                     "content": (
-                        "Write only the requested miniature story. Keep it coherent, "
-                        "surreal, absurdly funny and at most 80 words. Use the supplied "
-                        "ingredients as the main material. Adult language supplied by "
-                        "the user is allowed. Do not add a heading or commentary."
+                        "Write only the requested miniature story. Transform the supplied "
+                        "ingredients into coherent absurd events rather than quoting them in "
+                        "dialogue. Adult language supplied by the user is allowed. Keep the "
+                        "story at most 80 words and add no heading or commentary."
                     ),
                 },
                 {"role": "user", "content": prompt},

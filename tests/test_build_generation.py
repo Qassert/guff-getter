@@ -38,7 +38,10 @@ def test_build_generation_uses_recipe_without_persistence_and_caps_response():
     assert len(response.json()['story'].split()) == 80
     assert 'Transparent bipolar wrench projector' in seen[0]
     assert 'flap-mouthed bollock merchant' in seen[0]
-    assert 'no more than 80 words' in seen[0]
+    assert 'creative seeds rather than mandatory phrases' in seen[0]
+    assert 'Avoid lazy dialogue' in seen[0]
+    assert 'surprising punchline' in seen[0]
+    assert 'never exceed 80 words' in seen[0]
 
 
 def test_build_generation_rejects_empty_and_oversized_payloads():
@@ -69,6 +72,7 @@ def test_provider_reuses_responses_api_model_and_word_limit_without_live_call():
     call = client_mock.responses.create.call_args.kwargs
     assert call['model'] == 'gpt-6-sol'
     assert call['input'][1] == {'role': 'user', 'content': 'local test prompt'}
+    assert 'rather than quoting them in dialogue' in call['input'][0]['content']
     assert len(story.split()) == 80
 
 

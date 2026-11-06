@@ -37,7 +37,10 @@ test('prompt preview groups structured recipe and enforces the 80-word limit', (
   assert.match(prompt, /Objects: Transparent bipolar wrench projector/);
   assert.match(prompt, /People: Agatha Crumble/);
   assert.match(prompt, /Theme or setting: A disastrous royal banquet/);
-  assert.match(prompt, /80 words or fewer/);
+  assert.match(prompt, /creative seeds rather than mandatory phrases/);
+  assert.match(prompt, /Avoid lazy dialogue/);
+  assert.match(prompt, /surprising punchline/);
+  assert.match(prompt, /never exceed 80 words/);
 });
 
 test('Build template is isolated and exposes bounded MUNGE generation', () => {
