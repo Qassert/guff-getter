@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {buildPrompt, applyStoryLength, serialiseRecipe, requestBuildStory, requestBuildDraft} = require('../newsmuncher/static/build-page.js');
+const {buildPrompt, applyStoryLength, serialiseRecipe, requestBuildStory, displayBuildStory, requestBuildDraft} = require('../newsmuncher/static/build-page.js');
 
 const recipe = {
   stuff: [{id: 'local-1', text: 'Transparent bipolar wrench projector'}],
@@ -55,6 +55,32 @@ test('story request surfaces safe backend errors', async () => {
   await assert.rejects(requestBuildStory(fetcher, '/build/generate', recipe, 30, 'Keep it odd.'), /timed out/);
 });
 
+test('all three MUNGE lengths visibly render successful stories in the editable result', async () => {
+  for (const target of [30, 60, 90]) {
+    const story = `Visible editable ${target}-word story.`;
+    const fetcher = async () => ({ok: true, json: async () => ({story})});
+    const generated = await requestBuildStory(fetcher, '/build/generate', recipe, target,
+      applyStoryLength(buildPrompt(recipe, 60), target));
+    const result = {hidden: true, style: {display: ''}};
+    const editor = {value: ''};
+    const element = {querySelector: selector => selector === '[data-build-result]' ? result : editor};
+    displayBuildStory(element, generated);
+    assert.equal(editor.value, story);
+    assert.equal(result.hidden, false);
+    assert.equal(result.style.display, 'block');
+  }
+});
+
+test('missing, blank and malformed story responses fail visibly instead of rendering', async () => {
+  for (const payload of [{}, {story: '   '}, {story: {text: 'wrong shape'}}]) {
+    const fetcher = async () => ({ok: true, json: async () => payload});
+    await assert.rejects(
+      requestBuildStory(fetcher, '/build/generate', recipe, 60, buildPrompt(recipe, 60)),
+      /returned no text/
+    );
+  }
+});
+
 test('length switching preserves all manual prompt edits and keeps one instruction', () => {
   let prompt = buildPrompt(recipe, 60).replace('Transparent bipolar wrench projector', 'Hand-edited gazebo');
   prompt = applyStoryLength(prompt, 30);
@@ -85,6 +111,8 @@ test('all MUNGE controls share one loading lock and preserve their targets', () 
   assert.match(source, /buttons\.forEach\(item => \{ item\.disabled = true; \}\)/);
   assert.match(source, /generateStory\(Number\(munge\.dataset\.mungeTarget\)\)/);
   assert.match(source, /button\.textContent = 'MUNGING…'/);
+  assert.match(source, /catch \(error\) \{[\s\S]*status\.classList\.add\('is-error'\)/);
+  assert.match(source, /finally \{[\s\S]*this\.generating = false;[\s\S]*this\.renderRecipe\(\)/);
 });
 
 test('edited story and CREATE-compatible action row remain authoritative', () => {

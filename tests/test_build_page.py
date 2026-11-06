@@ -126,3 +126,11 @@ def test_build_prompt_editor_auto_sizes_and_remains_the_only_prompt_surface():
     assert 'data-reset-prompt' in Path('newsmuncher/templates/build.html').read_text()
     assert 'overflow-y: hidden' in css
     assert '.prompt-preview pre' not in css
+
+
+def test_build_success_explicitly_overrides_shared_hidden_output_style():
+    script = Path('newsmuncher/static/build-page.js').read_text()
+    shared_css = Path('newsmuncher/static/css/shared/styles.css').read_text()
+    assert '#outputContainer { display: none;' in shared_css
+    assert "result.style.display = 'block'" in script
+    assert 'displayBuildStory(this.element, story)' in script

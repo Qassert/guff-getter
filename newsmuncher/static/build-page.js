@@ -132,8 +132,19 @@ Creative rules:
     let payload = {};
     try { payload = await response.json(); } catch (_) {}
     if (!response.ok) throw new Error(payload.detail || 'Story generation failed. Please try again.');
-    if (!payload.story) throw new Error('Story generation returned no text. Please try again.');
+    if (typeof payload.story !== 'string' || !payload.story.trim()) {
+      throw new Error('Story generation returned no text. Please try again.');
+    }
     return payload.story;
+  }
+
+  function displayBuildStory(element, story) {
+    const result = element.querySelector('[data-build-result]');
+    const editor = element.querySelector('[data-build-story]');
+    if (!result || !editor) throw new Error('The generated story could not be displayed. Please try again.');
+    editor.value = story;
+    result.hidden = false;
+    result.style.display = 'block';
   }
 
   async function requestBuildDraft(fetcher, url, story) {
@@ -426,13 +437,11 @@ Creative rules:
       try {
         const story = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe,
           targetWords, this.currentPrompt(), this.generateController.signal);
-        const result = this.element.querySelector('[data-build-result]');
         root.creationActions?.reset?.();
-        this.element.querySelector('[data-build-story]').value = story;
+        displayBuildStory(this.element, story);
         root.updateCopyButton?.();
         const nominate = this.element.querySelector('[data-build-nominate]');
         nominate.hidden = false; nominate.disabled = false; nominate.textContent = 'NOMINATE';
-        result.hidden = false;
         status.textContent = 'MUNGE complete. Press MUNGE again for another version.';
       } catch (error) {
         status.classList.add('is-error');
@@ -457,7 +466,7 @@ Creative rules:
     workshop.load(); return workshop;
   }
 
-  const api = {parseCSV, weightedStructure, phrase, buildPrompt, applyStoryLength, serialiseRecipe, requestBuildStory, requestBuildDraft, BuildWorkshop, mount,
+  const api = {parseCSV, weightedStructure, phrase, buildPrompt, applyStoryLength, serialiseRecipe, requestBuildStory, displayBuildStory, requestBuildDraft, BuildWorkshop, mount,
     DEFAULT_CREATIVE_PROMPT, STUFF_STRUCTURES, STUFF_WEIGHTS, SWEAR_STRUCTURES, INITIAL_COUNTS, FLICK_COUNT, FLICK_DELAY};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.NewsMuncherBuild = api;
