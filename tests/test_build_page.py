@@ -48,6 +48,7 @@ def test_build_reuses_create_udder_parchment_and_background_without_source_actio
     assert 'onclick="fetchAndDisplay' not in template
     assert 'data-source=' not in template
     assert 'js/creation/script.js' not in template
+    assert '<h1>BUILD A MUNGE</h1>' in template
 
 
 def test_build_uses_create_parchment_rules_instead_of_a_second_paper_surface():
@@ -57,6 +58,7 @@ def test_build_uses_create_parchment_rules_instead_of_a_second_paper_surface():
     assert '.profile-page :is(.profile-container, #outputContainer)::before' in shared
     assert '.build-parchment::before' not in css
     assert "url('parchment.png')" not in css
+    assert 'margin-top: clamp(70px, 8vw, 150px)' in css
 
 
 def test_build_is_centered_in_shared_furry_navigation_only():

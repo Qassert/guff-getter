@@ -33,6 +33,9 @@ VALIDATION: 10 focused Python tests and 28 focused frontend tests pass. Rendered
 - Native browser inspection was attempted, but neither Chrome nor the in-app browser was
   available. Rendered HTML, route, controller and responsive behavior remain covered by
   focused offline checks.
+- Screenshot follow-up renamed the heading to `BUILD A MUNGE` and reserves a responsive
+  70–150px intro offset beneath the udder's visual overhang. Six focused Python tests,
+  eight Build frontend tests and `git diff --check` pass.
 
 ## Build worktree media repair — 2026-11-06
 

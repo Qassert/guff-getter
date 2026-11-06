@@ -15,7 +15,7 @@
   font-family: var(--build-body); min-width: 0;
 }
 .build-page .build-cosmetic-udder { padding-bottom: 8px; }
-.build-page .build-cosmetic-udder + .build-intro { margin-top: 8px; }
+.build-page .build-cosmetic-udder + .build-intro { margin-top: clamp(70px, 8vw, 150px); }
 .build-intro { max-width: 760px; margin-bottom: 32px; }
 .build-intro h1, .recipe-heading h2 {
   margin: 0 0 8px; font-family: var(--build-head); font-style: normal;
