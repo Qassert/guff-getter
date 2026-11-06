@@ -48,3 +48,21 @@ test('Build template is isolated and generation is honestly marked pending', () 
   assert.match(template, /class="funky-button munch-button" disabled/);
   assert.doesNotMatch(template, /shizzalise_data|generate_image|confirm_data/);
 });
+
+test('Build teat controls are cosmetic and reuse Create interaction controllers', () => {
+  const template = fs.readFileSync('newsmuncher/templates/build.html', 'utf8');
+  assert.match(template, /id="sourceUdder" class="source-udder"/);
+  assert.match(template, /js\/creation\/source-udder\.js/);
+  assert.match(template, /js\/creation\/udder-sounds\.js/);
+  assert.doesNotMatch(template, /fetchAndDisplay|data-source=|js\/creation\/script\.js/);
+});
+
+test('Build background is the existing read-only Create background controller', () => {
+  const template = fs.readFileSync('newsmuncher/templates/build.html', 'utf8');
+  const controller = fs.readFileSync('newsmuncher/static/js/creation/image-background.js', 'utf8');
+  assert.match(template, /id="initialBackground"/);
+  assert.match(template, /id="generatedBackdrop"/);
+  assert.match(template, /js\/creation\/image-background\.js/);
+  assert.match(controller, /fetch\('\/profile-background', \{cache: 'no-store'\}\)/);
+  assert.doesNotMatch(controller, /POST|generate_image/);
+});

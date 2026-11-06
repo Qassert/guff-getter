@@ -32,6 +32,33 @@ def test_build_assets_and_csv_schemas_are_complete():
         assert all(row['word'].strip() for row in rows)
 
 
+def test_build_reuses_create_udder_parchment_and_background_without_source_actions():
+    template = Path('newsmuncher/templates/build.html').read_text()
+    create = Path('newsmuncher/templates/pet_profile.html').read_text()
+    assert 'class="profile-page build-page"' in template
+    assert 'id="initialBackground" class="initial-background"' in template
+    assert 'id="generatedBackdrop" class="generated-backdrop"' in template
+    assert 'container profile-container build-parchment' in template
+    assert 'id="sourceUdder" class="source-udder"' in template
+    assert template.count('class="source-choice udder-teat') == 1  # Jinja loop, five runtime buttons.
+    for asset in ('udder-master-body.png', 'udder-teat-1.png', 'udder-teat-5.png'):
+        assert asset in template and asset in create
+    for script in ('image-background.js', 'image-colors.js', 'source-udder.js', 'udder-sounds.js'):
+        assert script in template
+    assert 'onclick="fetchAndDisplay' not in template
+    assert 'data-source=' not in template
+    assert 'js/creation/script.js' not in template
+
+
+def test_build_uses_create_parchment_rules_instead_of_a_second_paper_surface():
+    css = Path('newsmuncher/static/build-page.css').read_text()
+    shared = Path('newsmuncher/static/css/shared/styles.css').read_text()
+    assert "border-image: url('../../images/backgrounds/parchment.png')" in shared
+    assert '.profile-page :is(.profile-container, #outputContainer)::before' in shared
+    assert '.build-parchment::before' not in css
+    assert "url('parchment.png')" not in css
+
+
 def test_build_is_centered_in_shared_furry_navigation_only():
     create = Path('newsmuncher/templates/pet_profile.html').read_text()
     build = Path('newsmuncher/templates/build.html').read_text()

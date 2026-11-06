@@ -13,10 +13,26 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Repair Build-worktree Create and Gallery media regressions after rebase.
+CURRENT_TASK: Add Create's cosmetic udder, parchment and stored-image background to Build.
 APPROVAL: Andy explicitly assigned the isolated Build worktree; no push, merge or deployment.
-NEXT_STEP: Review the targeted read-only media fallback and perform manual browser QA if desired.
-VALIDATION: Focused Python and frontend suites pass. Build and existing generated image/audio routes return 200 using mocked/local routing; no provider calls or database writes.
+NEXT_STEP: Review the Build visual refinement; manual browser QA remains available when a browser surface is enabled.
+VALIDATION: 10 focused Python tests and 28 focused frontend tests pass. Rendered `/build` returns 200 with five cosmetic teats, two shared parchment surfaces and the read-only background controller. `git diff --check` passes; no provider calls or database writes.
+
+## Build Create-visual reuse — 2026-11-06
+
+- Build now reuses Create's five-teat source udder assets, shared responsive CSS,
+  physical canvas animation and sound controller. Build teat markup intentionally omits
+  `data-source`, inline retrieval handlers and Create's action script, so interaction is
+  cosmetic and auditory only.
+- Both workshop panels use the same `profile-container` nine-slice parchment surface as
+  Create. The retired Build-only parchment pseudo-element was removed while Build's
+  controls, recipe and prompt layout remain intact.
+- Build includes Create's exact initial/generated background layers, stored-background
+  loader and colour wash. It performs the same read-only `/profile-background` selection
+  on page load and retains the existing missing-image fallback and crossfade code.
+- Native browser inspection was attempted, but neither Chrome nor the in-app browser was
+  available. Rendered HTML, route, controller and responsive behavior remain covered by
+  focused offline checks.
 
 ## Build worktree media repair — 2026-11-06
 

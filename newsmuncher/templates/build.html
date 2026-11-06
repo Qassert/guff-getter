@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Build — NewsMuncher{% endblock %}
 {% block header %}{% endblock %}
-{% block body_attributes %} class="build-page"{% endblock %}
+{% block body_attributes %} class="profile-page build-page"{% endblock %}
+{% block background %}
+<div id="initialBackground" class="initial-background" aria-hidden="true"></div>
+<div id="generatedBackdrop" class="generated-backdrop" aria-hidden="true"><div></div><div></div></div>
+{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', path='build-page.css') }}">
-<section class="build-workshop"
+<div id="imageAmbient" class="image-ambient" aria-hidden="true"><div class="wash-group"><span></span><span></span></div><div class="wash-group"><span></span><span></span></div></div>
+<section class="build-workshop workshop"
   data-build-workshop
   data-stuff-url="{{ url_for('static', path='data/build-stuff.csv') }}"
   data-swear-url="{{ url_for('static', path='data/build-swear.csv') }}"
@@ -17,7 +22,26 @@
     <a class="mode-nav-button mode-nav-gallery" href="/promotion-gallery/" aria-label="GALLERY" data-hover-voice="{{ url_for('static', path='audio/voices/Gallery_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_02_suction_slurp.wav') }}"><img src="{{ url_for('static', path='images/buttons/gallery-idle.png') }}" alt=""></a>
   </nav>
 
-  <div class="build-parchment build-selector-panel">
+  <div class="container profile-container build-parchment build-selector-panel">
+    <div class="container nonsense-container build-cosmetic-udder" role="group" aria-label="Play the Build udder">
+      <div id="sourceUdder" class="source-udder">
+        <img class="udder-master-body" src="{{ url_for('static', path='images/udders/source/udder-master-body.png') }}" alt="">
+        {% set cosmetic_teats = [
+          ('PINK TEAT', '#ea4f7a', 'udder-teat-1.png', '18.1%', '15.7%'),
+          ('GREEN TEAT', '#9acd32', 'udder-teat-2.png', '33.3%', '14.3%'),
+          ('BLUE TEAT', '#45a8e8', 'udder-teat-3.png', '50.9%', '12.9%'),
+          ('PURPLE TEAT', '#a96ee8', 'udder-teat-4.png', '68.5%', '13.8%'),
+          ('ORANGE TEAT', '#f1a33c', 'udder-teat-5.png', '84.7%', '15.7%')
+        ] %}
+        {% for label, colour, image, position, width in cosmetic_teats %}
+        <button type="button" class="source-choice udder-teat{% if loop.first %} udder-teat-cream-prototype{% endif %}"
+          style="--teat-x: {{ position }}; --teat-width: {{ width }}; --liquid: {{ colour }}"
+          data-liquid="{{ colour }}" aria-label="{{ label }}" title="{{ label }}">
+          <span class="teat-shape" aria-hidden="true"><img src="{{ url_for('static', path='images/udders/source/' ~ image) }}" alt=""></span>
+        </button>
+        {% endfor %}
+      </div>
+    </div>
     <header class="build-intro">
       <p class="eyebrow">ASSEMBLE YOUR OWN NONSENSE</p>
       <h1>Build a miniature disaster</h1>
@@ -55,7 +79,7 @@
     </div>
   </div>
 
-  <div class="build-parchment recipe-panel" data-recipe-panel hidden>
+  <div class="container profile-container build-parchment recipe-panel" data-recipe-panel hidden>
     <header class="recipe-heading"><p class="eyebrow">THE STORY RECIPE</p><h2>Ingredients committed to paper</h2></header>
     <div class="recipe-empty" data-recipe-empty>Use an ingredient above to begin.</div>
     <div class="recipe-categories" data-recipe-categories></div>
@@ -70,4 +94,4 @@
   </div>
 </section>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=build-nav-1" defer></script><script src="{{ url_for('static', path='build-page.js') }}" defer></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=build-nav-1" defer></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='build-page.js') }}" defer></script>{% endblock %}
