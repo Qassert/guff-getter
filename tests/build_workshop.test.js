@@ -26,7 +26,7 @@ test('Build starts with requested independent selector counts', () => {
   assert.deepEqual(build.INITIAL_COUNTS, {stuff: 3, swear: 2, modifier: 5, person: 1, theme: 1});
 });
 
-test('prompt preview groups structured recipe and defaults to the 60-word target', () => {
+test('provider prompt assembly groups the recipe and defaults to the 60-word target', () => {
   const prompt = build.buildPrompt({
     stuff: [{text: 'Transparent bipolar wrench projector'}],
     swear: [{text: 'Right old turnip licker'}],
@@ -48,7 +48,8 @@ test('Build template is isolated and exposes bounded MUNGE generation', () => {
   const template = fs.readFileSync('newsmuncher/templates/build.html', 'utf8');
   assert.match(template, /data-build-workshop/);
   assert.match(template, /data-slot-list="stuff"/);
-  assert.match(template, /data-prompt-preview/);
+  assert.match(template, /data-prompt-editor/);
+  assert.doesNotMatch(template, /data-prompt-preview|Complete prompt preview/);
   assert.match(template, /data-generate-url="\/build\/generate"/);
   assert.match(template, /for target in \(30, 60, 90\)/);
   assert.match(template, /class="funky-button munch-button" data-munge data-munge-target="\{\{ target \}\}" disabled/);

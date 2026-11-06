@@ -100,7 +100,9 @@ def test_build_offers_three_responsive_munge_story_lengths():
 
 def test_build_reuses_create_editors_and_bottom_action_order():
     template = Path('newsmuncher/templates/build.html').read_text()
-    assert 'data-prompt-editor' in template
+    assert template.count('data-prompt-editor') == 1
+    assert 'data-prompt-preview' not in template
+    assert 'Complete prompt preview' not in template
     assert 'id="responseBodyDraft" data-build-story' in template
     action_ids = [
         'copyMungeButton', 'bankButton', 'redoImageButton', 'deleteCreationButton',
@@ -111,3 +113,13 @@ def test_build_reuses_create_editors_and_bottom_action_order():
     for script in ('creation-meta.js', 'image-loading.js', 'embellish.js', 'video.js',
                    'jingles.js', 'script.js'):
         assert script in template
+
+
+def test_build_prompt_editor_auto_sizes_without_displaying_assembled_prompt():
+    script = Path('newsmuncher/static/build-page.js').read_text()
+    css = Path('newsmuncher/static/build-page.css').read_text()
+    assert "editor.style.height = 'auto'" in script
+    assert "editor.style.height = `${editor.scrollHeight}px`" in script
+    assert "creative_prompt: creativePrompt" in script
+    assert 'overflow-y: hidden' in css
+    assert '.prompt-preview pre' not in css

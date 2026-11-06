@@ -87,11 +87,10 @@
     <div class="recipe-empty" data-recipe-empty>Use an ingredient above to begin.</div>
     <div class="recipe-categories" data-recipe-categories></div>
 
-    <details class="prompt-preview" open>
-      <summary>Edit creative prompt</summary>
-      <textarea class="build-prompt-editor" data-prompt-editor aria-label="Build creative prompt">{{ build_creative_prompt }}</textarea>
-      <pre data-prompt-preview aria-label="Complete prompt preview"></pre>
-    </details>
+    <section class="prompt-editor-panel">
+      <label for="buildCreativePrompt">Edit creative prompt</label>
+      <textarea id="buildCreativePrompt" class="build-prompt-editor" data-prompt-editor>{{ build_creative_prompt }}</textarea>
+    </section>
 
     <div class="munge-action">
       <div class="munge-buttons" role="group" aria-label="Choose story length">

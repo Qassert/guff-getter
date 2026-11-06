@@ -67,14 +67,13 @@ button:disabled { cursor: not-allowed; opacity: .52; }
 .recipe-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 8px 7px 12px; background: #fff7df; border: 1px solid #8c795c; }
 .recipe-chip small { color: #746554; }
 .recipe-chip button { width: 28px; min-height: 28px; padding: 0; border: 0; box-shadow: none; background: transparent; color: #7d2d34; font-size: 1.2rem; }
-.prompt-preview { margin-top: 26px; border-top: 2px solid #7c6b5355; padding-top: 18px; }
-.prompt-preview summary { cursor: pointer; font: 800 1rem var(--build-head); text-transform: uppercase; }
+.prompt-editor-panel { margin-top: 26px; border-top: 2px solid #7c6b5355; padding-top: 18px; }
+.prompt-editor-panel label { display: block; font: 800 1rem var(--build-head); text-transform: uppercase; }
 .build-prompt-editor {
-  min-height: 260px; margin: 14px 0; padding: 16px; resize: vertical;
+  min-height: 260px; margin: 14px 0 0; padding: 16px; resize: none; overflow-y: hidden;
   border: 1px solid #7c6b5377; background: #fff9e680;
   font: 500 clamp(.9rem, 1.8vw, 1rem)/1.5 var(--build-body);
 }
-.prompt-preview pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; background: #fff8e680; border: 1px dashed #8c795c; font: .92rem/1.5 var(--build-body); }
 .munch-button { display: flex; margin: 26px auto 8px; min-width: 220px; justify-content: center; font-family: var(--build-head); background: var(--build-gold); }
 .munch-status { margin: 0 auto; max-width: 620px; text-align: center; color: #675c4e; font-size: .9rem; }
 @media (max-width: 700px) {

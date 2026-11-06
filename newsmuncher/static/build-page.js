@@ -151,7 +151,6 @@ Creative rules:
       this.nextId = 1;
       this.generating = false;
       this.generateController = null;
-      this.promptTarget = 60;
       this.recent = {stuff: new Set(), swear: new Set(), modifier: new Set(), person: new Set(), theme: new Set()};
     }
 
@@ -285,7 +284,9 @@ Creative rules:
     }
 
     bind() {
-      this.element.querySelector('[data-prompt-editor]')?.addEventListener('input', () => this.renderPrompt());
+      const promptEditor = this.element.querySelector('[data-prompt-editor]');
+      promptEditor?.addEventListener('input', () => this.resizePromptEditor());
+      (root.requestAnimationFrame || (callback => callback()))(() => this.resizePromptEditor());
       this.element.addEventListener('click', event => {
         const nominate = event.target.closest('[data-build-nominate]');
         if (nominate) return this.nominateStory();
@@ -343,7 +344,6 @@ Creative rules:
       container.innerHTML = Object.entries(this.recipe).filter(([, items]) => items.length).map(([category, items]) =>
         `<section class="recipe-category"><h3>${LABELS[category]}</h3><div class="recipe-items">${items.map(item =>
           `<span class="recipe-chip">${escapeHTML(item.text)}${item.grammar ? ` <small>(${escapeHTML(item.grammar)})</small>` : ''}<button type="button" data-remove-recipe="${item.id}" data-category="${category}" aria-label="Remove ${escapeHTML(item.text)}">×</button></span>`).join('')}</div></section>`).join('');
-      this.renderPrompt();
       const buttons = this.element.querySelectorAll('[data-munge]');
       buttons.forEach(button => { button.disabled = !populated || this.generating; });
       if (!this.generating) {
@@ -358,9 +358,11 @@ Creative rules:
       return this.element.querySelector('[data-prompt-editor]')?.value.trim() || DEFAULT_CREATIVE_PROMPT;
     }
 
-    renderPrompt() {
-      this.element.querySelector('[data-prompt-preview]').textContent =
-        buildPrompt(this.recipe, this.promptTarget, this.creativePrompt());
+    resizePromptEditor() {
+      const editor = this.element.querySelector('[data-prompt-editor]');
+      if (!editor) return;
+      editor.style.height = 'auto';
+      editor.style.height = `${editor.scrollHeight}px`;
     }
 
     async nominateStory() {
@@ -385,8 +387,6 @@ Creative rules:
       const populated = Object.values(this.recipe).some(items => items.length);
       if (!populated || this.generating) return;
       this.generating = true;
-      this.promptTarget = targetWords;
-      this.renderPrompt();
       const buttons = this.element.querySelectorAll('[data-munge]');
       const button = this.element.querySelector(`[data-munge-target="${targetWords}"]`);
       const status = this.element.querySelector('[data-munge-status]');

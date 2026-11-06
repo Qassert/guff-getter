@@ -13,10 +13,18 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: BUILD now reuses CREATE's editable result and complete creation-action lifecycle.
+CURRENT_TASK: BUILD now has one auto-sizing creative prompt editor with hidden request-time assembly.
 APPROVAL: Andy explicitly assigned the isolated Build worktree; no push, merge or deployment.
 NEXT_STEP: Review BUILD prompt/result editing and actions in a browser; perform live provider/media calls only with explicit approval.
-VALIDATION: 18 focused Python tests and 46 focused frontend/controller tests pass. Python and JavaScript syntax checks, local GET rendering, and `git diff --check` pass. Provider responses were mocked; no paid calls or database writes occurred.
+VALIDATION: 19 focused Python tests and 15 focused Build frontend tests pass. Python and JavaScript syntax checks and `git diff --check` pass. Provider responses were mocked; no paid calls or database writes occurred.
+
+## Build prompt editor cleanup — 2026-11-06
+
+- Removed the second, read-only assembled prompt block. BUILD now shows only the full
+  editable creative instructions and expands that textarea to its measured content height.
+- Ingredients and the selected 30/60/90 length contract remain separate and are combined
+  with the edited instructions only when the generation request is assembled.
+- The editable story and CREATE-compatible action lifecycle are unchanged.
 
 ## Build editing and CREATE action reuse — 2026-11-06
 
