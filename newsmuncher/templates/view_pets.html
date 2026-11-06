@@ -2,7 +2,6 @@
 {% block title %}Pet Gallery{% endblock %}
 {% block content %}
 <div class="page-heading"><p class="eyebrow">THE USUAL SUSPECTS</p><h1>Select or Adopt<br><span class="paint-underline">a Bogart</span></h1></div>
-<div class="mode-navigation" aria-label="Creative modes"><a class="funky-button" href="/pets/view_pets" aria-current="page">CREATE</a><a class="funky-button" href="/build">BUILD</a></div>
     <div class="gallery">
         {# Non-orphan pets first, sorted by name #}
         {% for pet in pets|selectattr('name')|sort(attribute='name') %}

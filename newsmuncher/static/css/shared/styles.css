@@ -60,9 +60,9 @@ button, .funky-button { display: inline-block; background: var(--button-backgrou
 button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
 button:active { transform: translate(2px, 2px); box-shadow: none; }
 :focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
-.mode-nav { --mode-nav-button-width: clamp(133px, 20.3vw, 210px);
+.mode-nav { --mode-nav-button-width: clamp(96px, 20.3vw, 210px);
   position: relative; top: -30px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
-  gap: 8px 69px; margin: 0 auto 18px; text-align: center; }
+  gap: 8px clamp(8px, 5vw, 48px); margin: 0 auto 18px; text-align: center; }
 .mode-nav-button {
   --fur-tilt: -.45deg;
   position: relative; display: inline-flex; align-items: center; justify-content: center;
@@ -73,6 +73,7 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
   transition: filter 120ms ease, box-shadow 120ms ease;
 }
 .mode-nav-button img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+.mode-nav-build { --fur-tilt: 0deg; }
 .mode-nav-gallery { --fur-tilt: .45deg; }
 .mode-nav-button:hover { filter: brightness(1.09) saturate(1.05) drop-shadow(0 7px 5px #2b160955); animation: mode-fur-hover 420ms ease-in-out infinite alternate; }
 .mode-nav-button:active, .mode-nav-button.mode-nav-clicked { animation: mode-fur-click 150ms ease-out both; }
@@ -96,7 +97,7 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
   100% { transform: rotate(var(--fur-tilt)) scale(1); }
 }
 @media (max-width: 620px) {
-  .mode-nav { --mode-nav-button-width: min(32.9vw, 161px); flex-wrap: nowrap; gap: 59px; }
+  .mode-nav { flex-wrap: nowrap; gap: clamp(8px, 5vw, 24px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .mode-nav-button, .mode-nav-button:hover, .mode-nav-button:active, .mode-nav-button.mode-nav-clicked {

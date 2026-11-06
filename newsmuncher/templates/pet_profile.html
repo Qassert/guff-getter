@@ -13,6 +13,7 @@
 <div class="workshop">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
     <span class="mode-nav-button mode-nav-create mode-nav-active" aria-current="page" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/voices/Create_Shout.mp3') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></span>
+    <a class="mode-nav-button mode-nav-build" href="/build" aria-label="BUILD" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"><img src="{{ url_for('static', path='images/buttons/build-idle.png') }}" alt=""></a>
     <a class="mode-nav-button mode-nav-gallery" href="/promotion-gallery/" aria-label="GALLERY" data-hover-voice="{{ url_for('static', path='audio/voices/Gallery_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_02_suction_slurp.wav') }}"><img src="{{ url_for('static', path='images/buttons/gallery-idle.png') }}" alt=""></a>
   </nav>
 

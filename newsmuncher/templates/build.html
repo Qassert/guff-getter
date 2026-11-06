@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Build — NewsMuncher{% endblock %}
+{% block header %}{% endblock %}
 {% block body_attributes %} class="build-page"{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', path='build-page.css') }}">
@@ -10,9 +11,10 @@
   data-modifier-url="{{ url_for('static', path='data/build-modifiers.csv') }}"
   data-person-url="{{ url_for('static', path='data/build-people.csv') }}"
   data-theme-url="{{ url_for('static', path='data/build-themes.csv') }}">
-  <nav class="mode-navigation" aria-label="Creative modes">
-    <a class="funky-button" href="/pets/view_pets">CREATE</a>
-    <a class="funky-button active" href="/build" aria-current="page">BUILD</a>
+  <nav class="mode-nav" aria-label="NewsMuncher mode">
+    <a class="mode-nav-button mode-nav-create" href="{{ creation_url }}" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/voices/Create_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></a>
+    <span class="mode-nav-button mode-nav-build mode-nav-active" aria-current="page" aria-label="BUILD"><img src="{{ url_for('static', path='images/buttons/build-idle.png') }}" alt=""></span>
+    <a class="mode-nav-button mode-nav-gallery" href="/promotion-gallery/" aria-label="GALLERY" data-hover-voice="{{ url_for('static', path='audio/voices/Gallery_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_02_suction_slurp.wav') }}"><img src="{{ url_for('static', path='images/buttons/gallery-idle.png') }}" alt=""></a>
   </nav>
 
   <div class="build-parchment build-selector-panel">
@@ -68,4 +70,4 @@
   </div>
 </section>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='build-page.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=build-nav-1" defer></script><script src="{{ url_for('static', path='build-page.js') }}" defer></script>{% endblock %}

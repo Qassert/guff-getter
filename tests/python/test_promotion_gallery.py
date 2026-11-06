@@ -416,6 +416,7 @@ def test_gallery_page_and_navigation(routes):
     assert '/pets/pet_profile/pet' in response.text
     assert 'mode-nav-gallery mode-nav-active" aria-current="page" aria-label="GALLERY"' in response.text
     assert 'mode-nav-create" href="/pets/pet_profile/pet" aria-label="CREATE"' in response.text
+    assert 'mode-nav-build" href="/build" aria-label="BUILD"' in response.text
     assert 'id="galleryEdit"' in response.text
     assert 'id="galleryBackdrop"' in response.text
     assert response.text.count('images/buttons/Coral Arrow on Cowhide Cushion.png') == 2
@@ -488,17 +489,20 @@ def test_creator_and_viewing_share_compact_mode_navigation():
     gallery_css = Path('newsmuncher/static/css/gallery/promotion-gallery.css').read_text()
 
     assert 'mode-nav-create mode-nav-active" aria-current="page" aria-label="CREATE"' in creator
+    assert 'mode-nav-build" href="/build" aria-label="BUILD"' in creator
     assert 'mode-nav-gallery" href="/promotion-gallery/" aria-label="GALLERY"' in creator
     assert 'href="/promotion-gallery/"' in creator
     assert 'mode-nav-create" href="{{ creation_url }}" aria-label="CREATE"' in gallery
+    assert 'mode-nav-build" href="/build" aria-label="BUILD"' in gallery
     assert 'mode-nav-gallery mode-nav-active" aria-current="page" aria-label="GALLERY"' in gallery
     for obsolete in ('BACK TO NEWSMUNCHER', 'THE NOMINATED COLLECTION', '<h1', 'gallery-intro'):
         assert obsolete not in gallery
     assert 'justify-content: center' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
     assert 'flex-wrap: wrap' in shared_css.split('.mode-nav {', 1)[1].split('}', 1)[0]
-    assert '--mode-nav-button-width: clamp(133px, 20.3vw, 210px)' in shared_css
+    assert '--mode-nav-button-width: clamp(96px, 20.3vw, 210px)' in shared_css
     assert 'width: var(--mode-nav-button-width)' in shared_css.split('.mode-nav-button {', 1)[1].split('}', 1)[0]
-    assert '--mode-nav-button-width: min(32.9vw, 161px)' in shared_css
+    assert '.mode-nav-build { --fur-tilt: 0deg; }' in shared_css
+    assert 'gap: clamp(8px, 5vw, 24px)' in shared_css
     assert '.workshop { max-width: 960px; margin-inline: auto; }' in shared_css
     creator_workshop = shared_css.split('.profile-page .workshop {', 1)[1].split('}', 1)[0]
     assert 'padding-top: 0' in creator_workshop
