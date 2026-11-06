@@ -95,6 +95,24 @@
 
   function wait(delay) { return new Promise(resolve => setTimeout(resolve, delay)); }
 
+  function serialiseRecipe(recipe) {
+    return Object.fromEntries(Object.entries(recipe).map(([category, items]) => [category,
+      items.map(item => ({text: item.text, ...(item.grammar ? {grammar: item.grammar} : {})}))]));
+  }
+
+  async function requestBuildStory(fetcher, url, recipe, signal) {
+    const response = await fetcher(url, {
+      method: 'POST', credentials: 'same-origin', signal,
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({recipe: serialiseRecipe(recipe)})
+    });
+    let payload = {};
+    try { payload = await response.json(); } catch (_) {}
+    if (!response.ok) throw new Error(payload.detail || 'Story generation failed. Please try again.');
+    if (!payload.story) throw new Error('Story generation returned no text. Please try again.');
+    return payload.story;
+  }
+
   class BuildWorkshop {
     constructor(element, options = {}) {
       this.element = element;
@@ -105,6 +123,8 @@
       this.slots = {stuff: [], swear: [], modifier: [], person: [], theme: []};
       this.recipe = {stuff: [], swear: [], modifier: [], person: [], theme: []};
       this.nextId = 1;
+      this.generating = false;
+      this.generateController = null;
       this.recent = {stuff: new Set(), swear: new Set(), modifier: new Set(), person: new Set(), theme: new Set()};
     }
 
@@ -239,6 +259,8 @@
 
     bind() {
       this.element.addEventListener('click', event => {
+        const munge = event.target.closest('[data-munge]');
+        if (munge) return this.generateStory();
         const add = event.target.closest('[data-add-slot]');
         if (add) return this.addSlot(add.dataset.addSlot);
         const remove = event.target.closest('[data-remove-slot]');
@@ -292,6 +314,45 @@
         `<section class="recipe-category"><h3>${LABELS[category]}</h3><div class="recipe-items">${items.map(item =>
           `<span class="recipe-chip">${escapeHTML(item.text)}${item.grammar ? ` <small>(${escapeHTML(item.grammar)})</small>` : ''}<button type="button" data-remove-recipe="${item.id}" data-category="${category}" aria-label="Remove ${escapeHTML(item.text)}">×</button></span>`).join('')}</div></section>`).join('');
       this.element.querySelector('[data-prompt-preview]').textContent = buildPrompt(this.recipe);
+      const button = this.element.querySelector('[data-munge]');
+      button.disabled = !populated || this.generating;
+      if (!this.generating) {
+        button.textContent = 'MUNGE';
+        const status = this.element.querySelector('[data-munge-status]');
+        if (!populated) status.textContent = 'Choose at least one ingredient to MUNGE.';
+        else if (!status.classList.contains('is-error')) status.textContent = 'Ready to turn this recipe into a miniature story.';
+      }
+    }
+
+    async generateStory() {
+      const populated = Object.values(this.recipe).some(items => items.length);
+      if (!populated || this.generating) return;
+      this.generating = true;
+      const button = this.element.querySelector('[data-munge]');
+      const status = this.element.querySelector('[data-munge-status]');
+      button.disabled = true; button.textContent = 'MUNGING…';
+      status.classList.remove('is-error');
+      status.textContent = 'Munging your ingredients into fresh nonsense…';
+      this.generateController?.abort();
+      this.generateController = new AbortController();
+      const timeout = root.setTimeout(() => this.generateController?.abort(), 35000);
+      try {
+        const story = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe, this.generateController.signal);
+        const result = this.element.querySelector('[data-build-result]');
+        this.element.querySelector('[data-build-story]').textContent = story;
+        result.hidden = false;
+        status.textContent = 'MUNGE complete. Press MUNGE again for another version.';
+      } catch (error) {
+        status.classList.add('is-error');
+        status.textContent = error.name === 'AbortError'
+          ? 'Story generation timed out. Your recipe is safe; please try again.'
+          : (error.message || 'Story generation failed. Your recipe is safe; please try again.');
+      } finally {
+        root.clearTimeout(timeout);
+        this.generateController = null;
+        this.generating = false;
+        this.renderRecipe();
+      }
     }
   }
 
@@ -304,7 +365,7 @@
     workshop.load(); return workshop;
   }
 
-  const api = {parseCSV, weightedStructure, phrase, buildPrompt, BuildWorkshop, mount,
+  const api = {parseCSV, weightedStructure, phrase, buildPrompt, serialiseRecipe, requestBuildStory, BuildWorkshop, mount,
     STUFF_STRUCTURES, STUFF_WEIGHTS, SWEAR_STRUCTURES, INITIAL_COUNTS, FLICK_COUNT, FLICK_DELAY};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.NewsMuncherBuild = api;

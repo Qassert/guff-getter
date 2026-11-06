@@ -40,12 +40,16 @@ test('prompt preview groups structured recipe and enforces the 80-word limit', (
   assert.match(prompt, /80 words or fewer/);
 });
 
-test('Build template is isolated and generation is honestly marked pending', () => {
+test('Build template is isolated and exposes bounded MUNGE generation', () => {
   const template = fs.readFileSync('newsmuncher/templates/build.html', 'utf8');
   assert.match(template, /data-build-workshop/);
   assert.match(template, /data-slot-list="stuff"/);
   assert.match(template, /data-prompt-preview/);
-  assert.match(template, /class="funky-button munch-button" disabled/);
+  assert.match(template, /data-generate-url="\/build\/generate"/);
+  assert.match(template, /class="funky-button munch-button" data-munge disabled/);
+  assert.match(template, />MUNGE<\/button>/);
+  assert.match(template, /data-build-result/);
+  assert.match(template, /block footer %}{% endblock/);
   assert.doesNotMatch(template, /shizzalise_data|generate_image|confirm_data/);
 });
 

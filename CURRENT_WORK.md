@@ -13,10 +13,26 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Add Create's cosmetic udder, parchment and stored-image background to Build.
+CURRENT_TASK: Enable bounded, asynchronous MUNGE story generation on Build and refine its action layout.
 APPROVAL: Andy explicitly assigned the isolated Build worktree; no push, merge or deployment.
-NEXT_STEP: Review the Build visual refinement; manual browser QA remains available when a browser surface is enabled.
-VALIDATION: 10 focused Python tests and 28 focused frontend tests pass. Rendered `/build` returns 200 with five cosmetic teats, two shared parchment surfaces and the read-only background controller. `git diff --check` passes; no provider calls or database writes.
+NEXT_STEP: Review the functional Build MUNGE prototype; perform a live provider call only with explicit approval.
+VALIDATION: 11 focused Python tests and 12 focused frontend tests pass. Python and JavaScript syntax checks and `git diff --check` pass. Provider responses were mocked; no paid calls or database writes occurred.
+
+## Build MUNGE generation — 2026-11-06
+
+- Build now submits its structured committed recipe asynchronously to a dedicated
+  `/build/generate` endpoint. The server reconstructs the existing preview prompt,
+  validates bounded ingredient lists and text lengths, and calls the established
+  OpenAI Responses API using `gpt-6-sol` with the repository's server-side credentials.
+- Provider output is capped to 80 whitespace-delimited words before returning. The
+  browser keeps all recipe selections, prevents duplicate requests, applies a 35-second
+  client timeout and displays safe timeout/failure messages without persistence.
+- The former MUNCH prototype control is now a centred primary MUNGE action with a
+  separated result panel. Build overrides only its footer block, removing the white
+  strip without changing Create or Gallery. The prior responsive heading clearance
+  beneath the unchanged udder remains in place.
+- Focused validation uses a mocked Responses client and route provider. No provider,
+  database, image, audio or Gallery operation ran during tests.
 
 ## Build Create-visual reuse — 2026-11-06
 

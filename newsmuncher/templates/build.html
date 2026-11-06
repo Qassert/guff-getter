@@ -15,7 +15,8 @@
   data-swear-url="{{ url_for('static', path='data/build-swear.csv') }}"
   data-modifier-url="{{ url_for('static', path='data/build-modifiers.csv') }}"
   data-person-url="{{ url_for('static', path='data/build-people.csv') }}"
-  data-theme-url="{{ url_for('static', path='data/build-themes.csv') }}">
+  data-theme-url="{{ url_for('static', path='data/build-themes.csv') }}"
+  data-generate-url="/build/generate">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
     <a class="mode-nav-button mode-nav-create" href="{{ creation_url }}" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/voices/Create_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></a>
     <span class="mode-nav-button mode-nav-build mode-nav-active" aria-current="page" aria-label="BUILD"><img src="{{ url_for('static', path='images/buttons/build-idle.png') }}" alt=""></span>
@@ -89,9 +90,16 @@
       <pre data-prompt-preview></pre>
     </details>
 
-    <button type="button" class="funky-button munch-button" disabled aria-describedby="munchStatus">MUNCH</button>
-    <p id="munchStatus" class="munch-status">AI story generation is pending for this prototype. Your complete prompt is available above.</p>
+    <div class="munge-action">
+      <button type="button" class="funky-button munch-button" data-munge disabled aria-describedby="munchStatus">MUNGE</button>
+      <p id="munchStatus" class="munch-status" data-munge-status role="status">Choose at least one ingredient to MUNGE.</p>
+    </div>
+    <section class="build-result" data-build-result aria-live="polite" hidden>
+      <p class="eyebrow">YOUR FRESH MUNGE</p>
+      <p data-build-story></p>
+    </section>
   </div>
 </section>
 {% endblock %}
+{% block footer %}{% endblock %}
 {% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=build-nav-1" defer></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='build-page.js') }}" defer></script>{% endblock %}
