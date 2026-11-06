@@ -134,3 +134,11 @@ def test_build_success_explicitly_overrides_shared_hidden_output_style():
     assert '#outputContainer { display: none;' in shared_css
     assert "result.style.display = 'block'" in script
     assert 'displayBuildStory(this.element, story)' in script
+
+
+def test_build_reuses_create_article_fitter_after_generation_and_manual_edits():
+    template = Path('newsmuncher/templates/build.html').read_text()
+    script = Path('newsmuncher/static/build-page.js').read_text()
+    assert "js/shared/article-text-fit.js" in template
+    assert 'oninput="autoResize(this); responseEdited(); updateCopyButton()"' in template
+    assert 'root.autoResize?.(editor)' in script

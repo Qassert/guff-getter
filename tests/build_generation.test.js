@@ -56,6 +56,8 @@ test('story request surfaces safe backend errors', async () => {
 });
 
 test('all three MUNGE lengths visibly render successful stories in the editable result', async () => {
+  const fitted = [];
+  globalThis.autoResize = editor => fitted.push(editor);
   for (const target of [30, 60, 90]) {
     const story = `Visible editable ${target}-word story.`;
     const fetcher = async () => ({ok: true, json: async () => ({story})});
@@ -68,7 +70,9 @@ test('all three MUNGE lengths visibly render successful stories in the editable 
     assert.equal(editor.value, story);
     assert.equal(result.hidden, false);
     assert.equal(result.style.display, 'block');
+    assert.equal(fitted.at(-1), editor);
   }
+  delete globalThis.autoResize;
 });
 
 test('missing, blank and malformed story responses fail visibly instead of rendering', async () => {

@@ -145,6 +145,7 @@ Creative rules:
     editor.value = story;
     result.hidden = false;
     result.style.display = 'block';
+    root.autoResize?.(editor);
   }
 
   async function requestBuildDraft(fetcher, url, story) {
