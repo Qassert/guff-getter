@@ -26,7 +26,7 @@ test('Build starts with requested independent selector counts', () => {
   assert.deepEqual(build.INITIAL_COUNTS, {stuff: 3, swear: 2, modifier: 5, person: 1, theme: 1});
 });
 
-test('prompt preview groups structured recipe and enforces the 80-word limit', () => {
+test('prompt preview groups structured recipe and defaults to the 60-word target', () => {
   const prompt = build.buildPrompt({
     stuff: [{text: 'Transparent bipolar wrench projector'}],
     swear: [{text: 'Right old turnip licker'}],
@@ -40,7 +40,8 @@ test('prompt preview groups structured recipe and enforces the 80-word limit', (
   assert.match(prompt, /creative seeds rather than mandatory phrases/);
   assert.match(prompt, /Avoid lazy dialogue/);
   assert.match(prompt, /surprising punchline/);
-  assert.match(prompt, /never exceed 80 words/);
+  assert.match(prompt, /Aim for about 60 words/);
+  assert.match(prompt, /never exceed 66 words/);
 });
 
 test('Build template is isolated and exposes bounded MUNGE generation', () => {
@@ -49,8 +50,9 @@ test('Build template is isolated and exposes bounded MUNGE generation', () => {
   assert.match(template, /data-slot-list="stuff"/);
   assert.match(template, /data-prompt-preview/);
   assert.match(template, /data-generate-url="\/build\/generate"/);
-  assert.match(template, /class="funky-button munch-button" data-munge disabled/);
-  assert.match(template, />MUNGE<\/button>/);
+  assert.match(template, /for target in \(30, 60, 90\)/);
+  assert.match(template, /class="funky-button munch-button" data-munge data-munge-target="\{\{ target \}\}" disabled/);
+  assert.match(template, />MUNGE \{\{ target \}\}<\/button>/);
   assert.match(template, /data-build-result/);
   assert.match(template, /block footer %}{% endblock/);
   assert.doesNotMatch(template, /shizzalise_data|generate_image|confirm_data/);

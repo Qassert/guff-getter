@@ -76,8 +76,11 @@
 
   function phrase(parts) { return capitalise(parts.map(part => part.word).join(' ')); }
 
-  function buildPrompt(recipe) {
+  function buildPrompt(recipe, targetWords = 60) {
     const line = (label, key) => `${label}: ${(recipe[key] || []).map(item => item.text).join('; ') || 'None selected'}`;
+    const maximum = {30: 33, 60: 66, 90: 99}[targetWords];
+    const minimum = Math.round(targetWords * 0.9);
+    const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
     return [
       'You are an inventive, irreverent absurdist comedy writer. Write one coherent, genuinely funny miniature story using the selected ingredients as creative inspiration.',
       '',
@@ -98,7 +101,9 @@
       '- Avoid tired surrealist clichés, especially generic existential dread, arbitrary promotions and sentient bureaucracy.',
       '- End with a surprising punchline that pays off or recontextualises an earlier detail instead of becoming random.',
       '',
-      'Aim for 60 to 80 words and never exceed 80 words. Return only the story, with no title, introduction or explanation.'
+      `Aim for about ${targetWords} words (roughly ${minimum} to ${maximum}). ${pacing} Coherence and the comic payoff matter more than an exact count, but never exceed ${maximum} words.`,
+      'When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.',
+      'Return only the story, with no title, introduction or explanation.'
     ].join('\n');
   }
 
@@ -109,11 +114,11 @@
       items.map(item => ({text: item.text, ...(item.grammar ? {grammar: item.grammar} : {})}))]));
   }
 
-  async function requestBuildStory(fetcher, url, recipe, signal) {
+  async function requestBuildStory(fetcher, url, recipe, targetWords, signal) {
     const response = await fetcher(url, {
       method: 'POST', credentials: 'same-origin', signal,
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({recipe: serialiseRecipe(recipe)})
+      body: JSON.stringify({recipe: serialiseRecipe(recipe), target_words: targetWords})
     });
     let payload = {};
     try { payload = await response.json(); } catch (_) {}
@@ -134,6 +139,7 @@
       this.nextId = 1;
       this.generating = false;
       this.generateController = null;
+      this.promptTarget = 60;
       this.recent = {stuff: new Set(), swear: new Set(), modifier: new Set(), person: new Set(), theme: new Set()};
     }
 
@@ -269,7 +275,7 @@
     bind() {
       this.element.addEventListener('click', event => {
         const munge = event.target.closest('[data-munge]');
-        if (munge) return this.generateStory();
+        if (munge) return this.generateStory(Number(munge.dataset.mungeTarget));
         const add = event.target.closest('[data-add-slot]');
         if (add) return this.addSlot(add.dataset.addSlot);
         const remove = event.target.closest('[data-remove-slot]');
@@ -322,31 +328,34 @@
       container.innerHTML = Object.entries(this.recipe).filter(([, items]) => items.length).map(([category, items]) =>
         `<section class="recipe-category"><h3>${LABELS[category]}</h3><div class="recipe-items">${items.map(item =>
           `<span class="recipe-chip">${escapeHTML(item.text)}${item.grammar ? ` <small>(${escapeHTML(item.grammar)})</small>` : ''}<button type="button" data-remove-recipe="${item.id}" data-category="${category}" aria-label="Remove ${escapeHTML(item.text)}">×</button></span>`).join('')}</div></section>`).join('');
-      this.element.querySelector('[data-prompt-preview]').textContent = buildPrompt(this.recipe);
-      const button = this.element.querySelector('[data-munge]');
-      button.disabled = !populated || this.generating;
+      this.element.querySelector('[data-prompt-preview]').textContent = buildPrompt(this.recipe, this.promptTarget);
+      const buttons = this.element.querySelectorAll('[data-munge]');
+      buttons.forEach(button => { button.disabled = !populated || this.generating; });
       if (!this.generating) {
-        button.textContent = 'MUNGE';
+        buttons.forEach(button => { button.textContent = `MUNGE ${button.dataset.mungeTarget}`; });
         const status = this.element.querySelector('[data-munge-status]');
         if (!populated) status.textContent = 'Choose at least one ingredient to MUNGE.';
         else if (!status.classList.contains('is-error')) status.textContent = 'Ready to turn this recipe into a miniature story.';
       }
     }
 
-    async generateStory() {
+    async generateStory(targetWords) {
       const populated = Object.values(this.recipe).some(items => items.length);
       if (!populated || this.generating) return;
       this.generating = true;
-      const button = this.element.querySelector('[data-munge]');
+      this.promptTarget = targetWords;
+      this.element.querySelector('[data-prompt-preview]').textContent = buildPrompt(this.recipe, targetWords);
+      const buttons = this.element.querySelectorAll('[data-munge]');
+      const button = this.element.querySelector(`[data-munge-target="${targetWords}"]`);
       const status = this.element.querySelector('[data-munge-status]');
-      button.disabled = true; button.textContent = 'MUNGING…';
+      buttons.forEach(item => { item.disabled = true; }); button.textContent = 'MUNGING…';
       status.classList.remove('is-error');
       status.textContent = 'Munging your ingredients into fresh nonsense…';
       this.generateController?.abort();
       this.generateController = new AbortController();
       const timeout = root.setTimeout(() => this.generateController?.abort(), 35000);
       try {
-        const story = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe, this.generateController.signal);
+        const story = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe, targetWords, this.generateController.signal);
         const result = this.element.querySelector('[data-build-result]');
         this.element.querySelector('[data-build-story]').textContent = story;
         result.hidden = false;

@@ -84,3 +84,13 @@ def test_build_button_asset_matches_existing_navigation_dimensions():
     build = png_size('newsmuncher/static/images/buttons/build-idle.png')
     assert build == create
     assert all(abs(width / height - 3) < .07 for width, height in (create, build, gallery))
+
+
+def test_build_offers_three_responsive_munge_story_lengths():
+    template = Path('newsmuncher/templates/build.html').read_text()
+    css = Path('newsmuncher/static/build-page.css').read_text()
+    assert 'for target in (30, 60, 90)' in template
+    assert 'data-munge-target="{{ target }}"' in template
+    assert 'role="group" aria-label="Choose story length"' in template
+    assert '.munge-buttons' in css
+    assert 'flex-wrap: wrap' in css

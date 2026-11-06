@@ -92,8 +92,9 @@ button:disabled { cursor: not-allowed; opacity: .52; }
 
 /* Build-only primary action and generated story. */
 .munge-action { display: grid; justify-items: center; margin-top: 30px; }
+.munge-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; width: 100%; }
 .munch-button {
-  min-width: clamp(220px, 32vw, 340px); min-height: 64px; margin: 0 auto 10px;
+  min-width: clamp(150px, 20vw, 220px); min-height: 64px; margin: 0 auto 10px;
   border: 3px solid #4b3826; border-radius: 8px;
   box-shadow: 0 5px 0 #4b3826, 0 10px 22px #2b1a1252;
   background: linear-gradient(#f3d86f, #dcae3f); color: #4f2026;

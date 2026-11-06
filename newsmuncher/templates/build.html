@@ -91,7 +91,11 @@
     </details>
 
     <div class="munge-action">
-      <button type="button" class="funky-button munch-button" data-munge disabled aria-describedby="munchStatus">MUNGE</button>
+      <div class="munge-buttons" role="group" aria-label="Choose story length">
+        {% for target in (30, 60, 90) %}
+        <button type="button" class="funky-button munch-button" data-munge data-munge-target="{{ target }}" disabled aria-describedby="munchStatus">MUNGE {{ target }}</button>
+        {% endfor %}
+      </div>
       <p id="munchStatus" class="munch-status" data-munge-status role="status">Choose at least one ingredient to MUNGE.</p>
     </div>
     <section class="build-result" data-build-result aria-live="polite" hidden>

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 from urllib.parse import quote
 
 from fastapi import APIRouter, HTTPException, Request
@@ -14,6 +14,7 @@ from newsmuncher.services.build_story import enforce_word_limit, generate_build_
 router = APIRouter()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 story_provider = generate_build_story
+STORY_LENGTH_MAXIMUMS = {30: 33, 60: 66, 90: 99}
 
 
 class BuildIngredient(BaseModel):
@@ -31,12 +32,17 @@ class BuildRecipe(BaseModel):
 
 class BuildStoryRequest(BaseModel):
     recipe: BuildRecipe
+    target_words: Literal[30, 60, 90]
 
 
-def build_story_prompt(recipe: BuildRecipe) -> str:
+def build_story_prompt(recipe: BuildRecipe, target_words: int) -> str:
     def line(label: str, key: str) -> str:
         values = [item.text.strip() for item in getattr(recipe, key) if item.text.strip()]
         return f"{label}: {'; '.join(values) if values else 'None selected'}"
+
+    minimum = round(target_words * 0.9)
+    maximum = STORY_LENGTH_MAXIMUMS[target_words]
+    pacing = ({30: "Keep it punchy and compressed.", 60: "Give the absurd situation room to escalate.", 90: "Develop a more elaborate absurd situation while keeping every sentence useful."})[target_words]
 
     return "\n".join((
         "You are an inventive, irreverent absurdist comedy writer. Write one coherent, genuinely funny miniature story using the selected ingredients as creative inspiration.",
@@ -58,7 +64,9 @@ def build_story_prompt(recipe: BuildRecipe) -> str:
         "- Avoid tired surrealist clichés, especially generic existential dread, arbitrary promotions and sentient bureaucracy.",
         "- End with a surprising punchline that pays off or recontextualises an earlier detail instead of becoming random.",
         "",
-        "Aim for 60 to 80 words and never exceed 80 words. Return only the story, with no title, introduction or explanation.",
+        f"Aim for about {target_words} words (roughly {minimum} to {maximum}). {pacing} Coherence and the comic payoff matter more than an exact count, but never exceed {maximum} words.",
+        "When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.",
+        "Return only the story, with no title, introduction or explanation.",
     ))
 
 
@@ -87,15 +95,16 @@ async def generate_build_munge(payload: BuildStoryRequest):
     if sum(len(item.text) for item in ingredients) > 4000:
         raise HTTPException(status_code=422, detail='The selected recipe is too large.')
 
-    prompt = build_story_prompt(recipe)
+    maximum_words = STORY_LENGTH_MAXIMUMS[payload.target_words]
+    prompt = build_story_prompt(recipe, payload.target_words)
     try:
-        story = await run_in_threadpool(story_provider, prompt)
+        story = await run_in_threadpool(story_provider, prompt, maximum_words)
     except (APITimeoutError, TimeoutError) as exc:
         raise HTTPException(status_code=504, detail='Story generation timed out. Please try again.') from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail='Story generation failed. Your recipe is still here.') from exc
 
-    story = enforce_word_limit(story)
+    story = enforce_word_limit(story, maximum_words)
     if not story:
         raise HTTPException(status_code=502, detail='Story generation returned no text. Please try again.')
     return {'story': story}
