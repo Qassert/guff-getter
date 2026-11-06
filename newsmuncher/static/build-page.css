@@ -1,0 +1,102 @@
+.build-page {
+  --build-ink: #30291f;
+  --build-paper: #eee5cf;
+  --build-red: #762e35;
+  --build-gold: #e4c562;
+  --build-head: Rockwell, 'Rockwell Nova', 'Roboto Slab', Georgia, 'Times New Roman', serif;
+  --build-body: Georgia, 'Times New Roman', serif;
+  background: #30352f radial-gradient(circle at 20% 10%, #59634f, transparent 38%) fixed;
+}
+.build-page .site-main { width: min(1180px, calc(100% - 40px)); padding-top: 30px; }
+.build-workshop { max-width: 1080px; margin: 0 auto; color: var(--build-ink); }
+.mode-navigation { display: flex; justify-content: center; gap: 8px; margin-bottom: 34px; }
+.mode-navigation .funky-button { text-decoration: none; font-family: var(--build-head); background: var(--build-paper); }
+.mode-navigation .active { background: var(--build-gold); }
+.build-parchment {
+  --paper-edge: clamp(34px, 5vw, 60px);
+  position: relative; isolation: isolate; margin: 0 0 54px;
+  padding: clamp(22px, 4vw, 42px); color: var(--build-ink);
+  font-family: var(--build-body); min-width: 0;
+}
+.build-parchment::before {
+  content: ''; position: absolute; pointer-events: none; z-index: -1;
+  inset: calc(-1.2 * var(--paper-edge)) calc(-1 * var(--paper-edge));
+  border: solid transparent;
+  border-width: calc(1.2 * var(--paper-edge)) var(--paper-edge) var(--paper-edge);
+  border-image: url('parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  background: var(--build-paper); background-clip: padding-box;
+  filter: drop-shadow(0 12px 10px #0008);
+}
+.build-intro { max-width: 760px; margin-bottom: 32px; }
+.build-intro h1, .recipe-heading h2 {
+  margin: 0 0 8px; font-family: var(--build-head); font-style: normal;
+  color: var(--build-ink); text-transform: uppercase; line-height: 1.08;
+  text-shadow: 0 .8px #fff5df, 0 -.5px #554632;
+}
+.build-intro h1 { font-size: clamp(2.2rem, 5vw, 4.2rem); }
+.build-intro p:last-child { margin: 0; font-size: 1.06rem; }
+.build-loading, .build-error { padding: 18px; border: 2px dashed #7f6d53; font-weight: 700; }
+.build-error { color: #842d38; }
+.ingredient-groups { display: grid; gap: 18px; }
+.ingredient-group { border-top: 2px solid #7c6b5355; padding-top: 18px; }
+.ingredient-heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; margin-bottom: 12px; }
+.ingredient-heading h2 { margin: 0; font: 800 clamp(1.35rem, 3vw, 2rem) var(--build-head); text-transform: uppercase; }
+.ingredient-heading p { margin: 2px 0 0; color: #675c4e; }
+.ingredient-list { display: grid; gap: 10px; }
+.ingredient-slot {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px;
+  align-items: center; min-height: 64px; padding: 9px 10px 9px 16px;
+  background: #fff8e695; border: 1px solid #8c795c66;
+}
+.ingredient-slot.is-busy { background: #f5e6b7a8; }
+.ingredient-phrase { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 8px; min-width: 0; }
+.ingredient-word {
+  display: inline-flex; flex-direction: column; align-items: start; min-height: 0;
+  padding: 3px 2px; border: 0; border-radius: 0; background: transparent;
+  color: var(--build-red); box-shadow: none; font: 800 clamp(1.05rem, 2.4vw, 1.5rem) var(--build-head);
+  text-align: left; text-transform: none;
+}
+.ingredient-word:hover { transform: none; box-shadow: none; background: #e9cb6738; }
+.ingredient-word:focus-visible { outline: 2px dashed var(--build-red); outline-offset: 2px; }
+.ingredient-word small { color: #6c6256; font: 600 .62rem/1.1 var(--body-font); letter-spacing: .06em; text-transform: uppercase; }
+.slot-actions { display: flex; align-items: center; gap: 6px; }
+.mini-action, .remove-action {
+  min-height: 38px; padding: 7px 11px; border: 1px solid #544834; box-shadow: 2px 2px #544834;
+  background: var(--build-paper); font: 800 .76rem var(--build-head);
+}
+.mini-action.use-action { background: var(--build-gold); }
+.remove-action { width: 38px; padding: 0; color: #7d2d34; font-size: 1.35rem; }
+.mini-action:hover, .remove-action:hover { box-shadow: 3px 3px #544834; }
+button:disabled { cursor: not-allowed; opacity: .52; }
+.recipe-panel { margin-top: 86px; }
+.recipe-heading { margin-bottom: 20px; }
+.recipe-heading h2 { font-size: clamp(1.8rem, 4vw, 3rem); }
+.recipe-empty { padding: 18px 0; color: #706657; font-style: italic; }
+.recipe-categories { display: grid; gap: 16px; }
+.recipe-category h3 { margin: 0 0 6px; font: 800 1rem var(--build-head); text-transform: uppercase; }
+.recipe-items { display: flex; flex-wrap: wrap; gap: 8px; }
+.recipe-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 8px 7px 12px; background: #fff7df; border: 1px solid #8c795c; }
+.recipe-chip small { color: #746554; }
+.recipe-chip button { width: 28px; min-height: 28px; padding: 0; border: 0; box-shadow: none; background: transparent; color: #7d2d34; font-size: 1.2rem; }
+.prompt-preview { margin-top: 26px; border-top: 2px solid #7c6b5355; padding-top: 18px; }
+.prompt-preview summary { cursor: pointer; font: 800 1rem var(--build-head); text-transform: uppercase; }
+.prompt-preview pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 16px; background: #fff8e680; border: 1px dashed #8c795c; font: .92rem/1.5 var(--build-body); }
+.munch-button { display: flex; margin: 26px auto 8px; min-width: 220px; justify-content: center; font-family: var(--build-head); background: var(--build-gold); }
+.munch-status { margin: 0 auto; max-width: 620px; text-align: center; color: #675c4e; font-size: .9rem; }
+@media (max-width: 700px) {
+  .build-page .site-main { width: calc(100% - 24px); }
+  .build-parchment { padding: 15px; }
+  .ingredient-slot { grid-template-columns: 1fr; }
+  .slot-actions { justify-content: flex-end; }
+  .ingredient-heading { align-items: center; }
+  .ingredient-heading p { font-size: .86rem; }
+}
+@media (max-width: 440px) {
+  .mode-navigation .funky-button { padding-inline: 14px; }
+  .ingredient-heading { align-items: stretch; flex-direction: column; gap: 8px; }
+  .ingredient-heading .mini-action { align-self: flex-start; }
+  .slot-actions { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .build-page *, .build-page *::before, .build-page *::after { animation: none !important; transition: none !important; }
+}

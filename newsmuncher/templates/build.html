@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Build — NewsMuncher{% endblock %}
+{% block body_attributes %} class="build-page"{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', path='build-page.css') }}">
+<section class="build-workshop"
+  data-build-workshop
+  data-stuff-url="{{ url_for('static', path='data/build-stuff.csv') }}"
+  data-swear-url="{{ url_for('static', path='data/build-swear.csv') }}"
+  data-modifier-url="{{ url_for('static', path='data/build-modifiers.csv') }}"
+  data-person-url="{{ url_for('static', path='data/build-people.csv') }}"
+  data-theme-url="{{ url_for('static', path='data/build-themes.csv') }}">
+  <nav class="mode-navigation" aria-label="Creative modes">
+    <a class="funky-button" href="/pets/view_pets">CREATE</a>
+    <a class="funky-button active" href="/build" aria-current="page">BUILD</a>
+  </nav>
+
+  <div class="build-parchment build-selector-panel">
+    <header class="build-intro">
+      <p class="eyebrow">ASSEMBLE YOUR OWN NONSENSE</p>
+      <h1>Build a miniature disaster</h1>
+      <p>Spin the ingredients, keep the good bits, and add them to the recipe.</p>
+    </header>
+
+    <div class="build-loading" data-build-loading role="status">Loading the ingredient cupboards…</div>
+    <div class="build-error" data-build-error role="alert" hidden></div>
+
+    <div class="ingredient-groups" data-build-controls hidden>
+      <section class="ingredient-group" data-category="stuff">
+        <div class="ingredient-heading"><div><h2>Stuff</h2><p>Click any word to rotate only that part.</p></div><button type="button" class="mini-action" data-add-slot="stuff">+ SLOT</button></div>
+        <div class="ingredient-list" data-slot-list="stuff"></div>
+      </section>
+
+      <section class="ingredient-group" data-category="swear">
+        <div class="ingredient-heading"><div><h2>Swear</h2><p>Old-fashioned verbal weaponry.</p></div><button type="button" class="mini-action" data-add-slot="swear">+ SLOT</button></div>
+        <div class="ingredient-list" data-slot-list="swear"></div>
+      </section>
+
+      <section class="ingredient-group" data-category="modifier">
+        <div class="ingredient-heading"><div><h2>Modifiers</h2><p>Adverbs and descriptions with grammatical labels.</p></div><button type="button" class="mini-action" data-add-slot="modifier">+ SLOT</button></div>
+        <div class="ingredient-list" data-slot-list="modifier"></div>
+      </section>
+
+      <section class="ingredient-group" data-category="person">
+        <div class="ingredient-heading"><div><h2>Person</h2><p>A locally generated suspect.</p></div><button type="button" class="mini-action" data-add-slot="person">+ SLOT</button></div>
+        <div class="ingredient-list" data-slot-list="person"></div>
+      </section>
+
+      <section class="ingredient-group" data-category="theme">
+        <div class="ingredient-heading"><div><h2>Theme / Scene</h2><p>The location of the impending embarrassment.</p></div><button type="button" class="mini-action" data-add-slot="theme">+ SLOT</button></div>
+        <div class="ingredient-list" data-slot-list="theme"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="build-parchment recipe-panel" data-recipe-panel hidden>
+    <header class="recipe-heading"><p class="eyebrow">THE STORY RECIPE</p><h2>Ingredients committed to paper</h2></header>
+    <div class="recipe-empty" data-recipe-empty>Use an ingredient above to begin.</div>
+    <div class="recipe-categories" data-recipe-categories></div>
+
+    <details class="prompt-preview">
+      <summary>Preview Prompt</summary>
+      <pre data-prompt-preview></pre>
+    </details>
+
+    <button type="button" class="funky-button munch-button" disabled aria-describedby="munchStatus">MUNCH</button>
+    <p id="munchStatus" class="munch-status">AI story generation is pending for this prototype. Your complete prompt is available above.</p>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='build-page.js') }}"></script>{% endblock %}

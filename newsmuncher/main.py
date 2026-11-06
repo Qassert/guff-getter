@@ -6,6 +6,7 @@ from newsmuncher.api.reusable import app as reusable_app
 from newsmuncher.api.entries import router as main_api_router
 from newsmuncher.api.pets import router as pet_router
 from newsmuncher.api.previews import router as temp_router
+from newsmuncher.api.build import router as build_router
 
 from newsmuncher.api.jingles import router as jingle_router
 from newsmuncher.api.narrations import router as narration_router
@@ -42,6 +43,7 @@ app.include_router(narration_router)
 app.include_router(main_api_router)
 app.include_router(pet_router, prefix="/pets", tags=["Pets"])
 app.include_router(temp_router, prefix="/temp", tags=["Temp Data"])
+app.include_router(build_router, tags=["Build"])
 
 # ✅ Mount reusable API
 app.mount("/reusable", reusable_app)
