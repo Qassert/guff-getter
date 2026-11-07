@@ -13,10 +13,16 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Placed the BUILD prompt editor on a nested parchment layer.
+CURRENT_TASK: Replaced the BUILD prompt title with an embossed EDIT PROMPT arrow.
 APPROVAL: Andy explicitly approved a local merge in the isolated BUILD worktree; no push or deployment.
-NEXT_STEP: Reload BUILD and browser-check the nested prompt parchment before any push, merge back or deployment.
-VALIDATION: 12 focused Python tests and 15 focused JavaScript tests pass. BUILD JavaScript syntax and diff checks pass. No provider calls or production database writes occurred.
+NEXT_STEP: Reload BUILD and browser-check the EDIT PROMPT arrow before any push, merge back or deployment.
+VALIDATION: 12 focused Python tests and 11 focused JavaScript tests pass. BUILD JavaScript syntax and diff checks pass. No provider calls or production database writes occurred.
+
+## BUILD prompt arrow — 2026-11-07
+
+- Replaced the plain prompt-editor title with a broad downward-pointing `EDIT PROMPT` label aimed at the nested parchment.
+- The label uses a muted ochre gradient, heavy NewsMuncher display type, raised dark shadow and embossed text highlights while retaining its accessible textarea association.
+- Advanced the BUILD stylesheet cache key so the arrow loads on refresh.
 
 ## BUILD nested prompt parchment — 2026-11-07
 

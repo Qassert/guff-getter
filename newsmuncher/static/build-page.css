@@ -74,7 +74,16 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
 }
 .prompt-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.prompt-editor-panel label { display: block; font: 800 1rem var(--build-head); text-transform: uppercase; }
+.prompt-editor-panel .prompt-arrow-label {
+  display: inline-grid; place-items: start center; min-width: 190px; min-height: 62px;
+  box-sizing: border-box; padding: 11px 24px 22px;
+  clip-path: polygon(0 0, 100% 0, 100% 66%, 68% 66%, 50% 100%, 32% 66%, 0 66%);
+  background: linear-gradient(#dfc36f, #c79d43); color: #4f3021;
+  filter: drop-shadow(0 5px 0 #4b3826) drop-shadow(0 0 1px #4b3826);
+  font: 900 1.05rem var(--build-head); letter-spacing: .045em; text-transform: uppercase;
+  text-shadow: 0 1px 0 #f7e7a5, 0 -1px 0 #8f682c;
+  cursor: text;
+}
 .build-prompt-editor {
   min-height: 260px; margin: 14px 0 0; padding: 8px 4px; resize: none; overflow-y: hidden;
   border: 0; background: transparent;
