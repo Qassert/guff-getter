@@ -1,4 +1,4 @@
-STATUS: READY
+STATUS: REVIEW
 OWNER: CODEX
 BRANCH: feature/video-animation
 LAST_COMPLETED_FEATURE: MUNGE EXPERIMENTAL RADICAL MODE
@@ -13,10 +13,64 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Stable checkpoint for completed NOMINATE media-safety, video-transformation and REDO IMAGE recovery work.
-APPROVAL: Andy explicitly approved a local checkpoint after final mocked-provider validation; no push.
-NEXT_STEP: Begin further development only from this reviewed checkpoint.
-VALIDATION: Full Python coverage completed in two segments: 851 tests plus 105 subtests pass. All 154 frontend tests pass. JavaScript syntax, Python compilation and `git diff --check` pass. No provider calls or production database writes.
+CURRENT_TASK: Replaced the DATING, POEM, and PEOPLE source teats with OpenAlex, NASA, and Hacker News.
+APPROVAL: Andy explicitly requested this source replacement, scoped text reduction, and loading lock without unrelated refactoring.
+NEXT_STEP: Andy review and optional browser smoke test of the three replacement source teats.
+VALIDATION: 66 focused Python tests and 159 frontend tests pass; Python compilation, JavaScript syntax, and git diff checks pass. Each adapter was also exercised once against its free live API without database writes or paid calls.
+
+## External source teat replacement — 2026-11-03
+
+- Preserved the historical teat action identifiers and all visual/audio interaction
+  geometry while replacing DATING with OpenAlex, POEM with NASA Images, and PEOPLE
+  with Hacker News.
+- Added shared local HTML cleanup and sentence-order reduction targeting 80 words,
+  bounded at roughly 100 words, plus one bounded `Retry-After`-aware HTTP 429 retry.
+- Source selection now locks every teat immediately, aborts after 35 seconds, rejects
+  stale responses, and always unlocks after success, failure, or timeout. The former
+  fixed post-request delay was removed.
+- Source title, URL, provider, author, and licence notes are carried into drafts without
+  entering the comedy prompt; existing sources retain their previous prompt shape.
+- Live read-only checks returned 95 NASA words, 86 Hacker News words, and 100 OpenAlex
+  words. Hacker News API access does not establish publication or derivative-use rights,
+  so its attribution explicitly records that reuse rights remain unconfirmed.
+
+## Free content API evaluation — 2026-11-02
+
+- Evaluated OpenAlex, arXiv, Hacker News, UK PlanIt, NASA Image and Video
+  Library, and the Guardian Open Platform using official documentation and live
+  unauthenticated requests.
+- Stored bounded representative samples and a failed Guardian HTTP 401 record
+  under `research/content-api-evaluation/`; no full papers or Guardian articles
+  were downloaded.
+- Recommended OpenAlex first, NASA second, and arXiv only behind a compatible
+  per-work licence filter. PlanIt is better suited to short British premise
+  ingredients, while Hacker News and Guardian present material reuse concerns.
+
+## MUNGE soundtrack/effect level parity — 2026-11-02
+
+- Teat effects use native `Audio` playback at the default `1.0` volume. The soundtrack
+  previously compounded a `0.22` voice gain with a `0.82` master gain (about `0.18`).
+- Set both soundtrack gains to `1.0`, removing the deliberate attenuation while retaining
+  all existing clip crossfades, master fade-out, mute routing and cleanup behavior.
+
+## Parchment and grouped udder visibility — 2026-10-22
+
+- Added a deep outline-following shadow plus three strong golden-orange and amber
+  `drop-shadow()` layers to both parchment artwork surfaces, the complete source udder,
+  and each complete MUNGE assembly.
+- Body and teat image layers no longer carry individual shadows. Each udder is composited
+  first and shadowed once at its outer wrapper, preventing internal shadows between the
+  body and teats.
+- Hover and keyboard focus intensify the glow and visually scale the complete
+  idle udder assembly by 7% over 250ms without touching rotor transforms, geometry or
+  processing animations. Reduced-motion mode keeps the glow but suppresses scaling.
+- Create/Gallery navigation, parchment action controls, Gallery arrows and furry controls,
+  master mute, and the Gallery parchment now use the same shared silhouette glow.
+- A seven-colour non-orange palette selects once on page load and advances to a different
+  random colour after each decorated control activation. Matching filter stacks transition
+  over 700ms; reduced-motion mode changes colour without the transition.
+- Reduced every shared shadow radius and opacity twice by approximately one third after
+  visual review, retaining the same layered treatment and stronger hover/focus state.
 
 ## NOMINATE repeated image failure and REDO recovery — 2026-10-21
 

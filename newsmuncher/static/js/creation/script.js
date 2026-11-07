@@ -5,6 +5,7 @@ let nominatedSnapshot = null;
 let draftSession = null;
 let creationNominated = false, currentImageUrl = null, imageRedoPending = false, imageGenerationFailed = false;
 let imageRetryAttemptId = null, imageRetryConfirmation = null;
+let sourceLoading = false;
 window.creationContext=()=>({rewrite_id:displayedRewriteId,sequence:rewriteSequence});
 function renderRedoImage() {
     renderNominationButton();
@@ -349,45 +350,58 @@ function hideLoader() {
     setMungeProcessing(false);
 }
 
-function populateTempData() {
-    fetch("/temp/temp_data", {
-        credentials: 'include'
-    })
-        .then(response => {
-            if (!response.ok) throw new Error("No temporary data found.");
-            return response.json();
-        })
-        .then(data => {
-            const title=document.getElementById('sourceTitleDraft'),body=document.getElementById('sourceBodyDraft');
-            title.value=[data.title,data.description].filter(Boolean).join(' - ');body.value=data.extract||'';
-            autoResize(title);autoResize(body);
-        })
-        .catch(error => {
-            console.error("Error populating temporary data:", error);
-        });
+async function populateTempData(sourceSequence = rewriteSequence) {
+    const response = await fetch("/temp/temp_data", {credentials:'include'});
+    if (!response.ok) throw new Error("No temporary data found.");
+    const data = await response.json();
+    if (sourceSequence !== rewriteSequence) return false;
+    const title=document.getElementById('sourceTitleDraft'),body=document.getElementById('sourceBodyDraft');
+    const url=document.getElementById('sourceUrlDraft'),name=document.getElementById('sourceNameDraft');
+    const author=document.getElementById('sourceAuthorDraft'),licence=document.getElementById('sourceLicenceDraft');
+    const attribution=document.getElementById('sourceAttribution');
+    title.value=[data.title,data.description].filter(Boolean).join(' - ');body.value=data.extract||'';
+    if(url)url.value=data.source_url||'';if(name)name.value=data.source_name||'';
+    if(author)author.value=data.source_author||'';if(licence)licence.value=data.source_licence||'';
+    if(attribution){
+        attribution.href=data.source_url||'';
+        const credit=data.source_author?`${data.source_name||'Source'} — ${data.source_author}`:(data.source_name||data.source_url);
+        attribution.textContent=data.source_url?`Source: ${credit}`:'';
+        attribution.hidden=!data.source_url;
+    }
+    autoResize(title);autoResize(body);
+    return true;
 }
 
-function fetchAndDisplay(scriptName) {
+function setSourceLoading(running) {
+    sourceLoading=running;
+    document.querySelectorAll('.source-choice').forEach(button=>{
+        button.disabled=running;button.setAttribute('aria-disabled',String(running));
+    });
+    document.querySelector('.nonsense-container')?.setAttribute('aria-busy',String(running));
+}
+
+async function fetchAndDisplay(scriptName) {
+    if(sourceLoading)return;
     const sourceSequence = beginNewCreation();
     document.querySelectorAll('.source-choice').forEach(button => {
         button.setAttribute('aria-pressed', String(button.dataset.source === scriptName));
     });
-    showLoader();
-    fetch(`/temp/run_script/${scriptName}`, {
-        credentials: 'include'
-    })
-        .then(response => response.json())
-        .then(() => {
-            setTimeout(() => {
-                if (sourceSequence !== rewriteSequence) return;
-                populateTempData();
-                hideLoader();
-            }, 2000);
-        })
-        .catch(error => {
-            console.error("Error fetching from source:", error);
-            if (sourceSequence === rewriteSequence) hideLoader();
+    setSourceLoading(true);showLoader();
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),35000);
+    try {
+        const response=await fetch(`/temp/run_script/${scriptName}`,{
+            credentials:'include',signal:controller.signal
         });
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(result.detail||`Source request failed (${response.status}).`);
+        await populateTempData(sourceSequence);
+    }catch(error){
+        console.error("Error fetching from source:",error);
+    }finally{
+        clearTimeout(timeout);
+        if(sourceSequence===rewriteSequence)hideLoader();
+        setSourceLoading(false);
+    }
 }
 
 function beginNewCreation() {
@@ -402,6 +416,12 @@ function beginNewCreation() {
     if (typeof embellishUI !== 'undefined') embellishUI.show(null);
     document.getElementById('responseTitleDraft').value = '';
     document.getElementById('responseBodyDraft').value = '';
+    const sourceUrl=document.getElementById('sourceUrlDraft'),sourceName=document.getElementById('sourceNameDraft');
+    const sourceAuthor=document.getElementById('sourceAuthorDraft'),sourceLicence=document.getElementById('sourceLicenceDraft');
+    const sourceAttribution=document.getElementById('sourceAttribution');
+    if(sourceUrl)sourceUrl.value='';if(sourceName)sourceName.value='';
+    if(sourceAuthor)sourceAuthor.value='';if(sourceLicence)sourceLicence.value='';
+    if(sourceAttribution){sourceAttribution.hidden=true;sourceAttribution.href='';sourceAttribution.textContent='';}
     updateCopyButton();
     const output = document.getElementById('outputContainer');
     output.style.display = 'none';
@@ -424,6 +444,10 @@ function confirmData(event) {
     showLoader();
     const sourceTitle=document.getElementById('sourceTitleDraft').value,[title,...parts]=sourceTitle.split(' - ');
     const description=parts.join(' - '),extract=document.getElementById('sourceBodyDraft').value;
+    const source_url=document.getElementById('sourceUrlDraft')?.value||null;
+    const source_name=document.getElementById('sourceNameDraft')?.value||null;
+    const source_author=document.getElementById('sourceAuthorDraft')?.value||null;
+    const source_licence=document.getElementById('sourceLicenceDraft')?.value||null;
 
     const engine = event?.currentTarget?.dataset?.mungeEngine || 'current';
     window.mungeMusic?.markApiDispatched();
@@ -433,7 +457,7 @@ function confirmData(event) {
             'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({title,description,extract,draft_session:workingSession(),engine})
+        body: JSON.stringify({title,description,extract,source_url,source_name,source_author,source_licence,draft_session:workingSession(),engine})
     })
         .then(async response => {
             const data = await response.json().catch(() => ({}));
@@ -719,7 +743,7 @@ document.getElementById('imageRetryDialog')?.addEventListener('cancel', event =>
 window.addEventListener('pageshow', renderDeleteCreation);
 
 window.onload = () => {
-    populateTempData();
+    populateTempData().catch(error=>console.error("Error populating temporary data:",error));
     restoreImageRewrite();
     if (typeof jingleUI !== "undefined") jingleUI.discover();
 };

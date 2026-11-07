@@ -1,0 +1,10 @@
+{
+  "source": "The Guardian Open Platform",
+  "retrieved_at": "2026-11-02T16:47:51.287304+00:00",
+  "request_urls": [
+    "https://content.guardianapis.com/search?api-key=test&page-size=10&show-fields=trailText,bodyText&order-by=newest"
+  ],
+  "record_count": 0,
+  "records": [],
+  "notes": "Live request returned HTTP 401 with {\"message\":\"Unauthorized\"}; no sample content was retrieved or stored."
+}

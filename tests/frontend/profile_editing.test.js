@@ -5,7 +5,7 @@ assert.match(html,/<input id="responseTitleDraft" type="hidden"/);
 assert.match(html,/<input id="sourceTitleDraft" type="hidden"/);
 assert(!html.includes('<textarea id="sourceTitleDraft"'));
 assert(!html.includes('<textarea id="responseTitleDraft"'));
-for(const label of ['DATING','DRIVEL','WIKIPEDIA','POEM','PEOPLE'])assert(html.includes(`'${label}'`));
+for(const label of ['OPENALEX','DRIVEL','WIKIPEDIA','NASA','HACKER NEWS'])assert(html.includes(`'${label}'`));
 assert(html.includes('aria-label="{{ label }}"'));
 assert(html.includes('aria-label="MUNGE engines"'));assert(html.includes('>NOMINATE<'));
 for(const removed of ['>EDIT<','>SAVE<','IMAGE GENERATION MODE','SHIZZALISE'])assert(!html.includes(removed));

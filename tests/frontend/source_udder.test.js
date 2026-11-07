@@ -88,8 +88,13 @@ test('template keeps five native accessible actions and page-level unclipped eff
  const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8'),css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
  assert.equal((html.match(/class="source-choice udder-teat/g)||[]).length,1); // Jinja loop source
  for(const action of ['fetch_dating_from_api','fetch_historicalFunny_from_api','fetch_wikipedia_into_api','fetch_poem_into_api','fetch_people_into_api'])assert(html.includes(`'${action}'`));
+ for(const label of ['OPENALEX','NASA','HACKER NEWS'])assert(html.includes(`'${label}'`));
  assert(html.includes("fetchAndDisplay('{{ action }}')"));
  assert(html.includes("images/udders/source/udder-master-body.png"));for(let i=1;i<=5;i++)assert(html.includes(`udder-teat-${i}.png`));
+ assert.match(css,/\.profile-page \.source-udder\s*\{[^}]*filter:\s*var\(--glow-rest-filter\)/s);
+ assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*filter:\s*none/s);
+ assert.match(css,/\.profile-page \.udder-teat \.teat-shape img\s*\{[^}]*filter:\s*none/s);
+ assert.match(css,/:is\(\.profile-container, #outputContainer\)::before\s*\{[^}]*filter:\s*var\(--glow-rest-filter\)/s);
  assert(!html.includes('<svg class="udder-body"'));assert.match(css,/transform-origin:\s*50% 5%/);
  assert(html.includes('--teat-width: {{ width }}'));assert.match(css,/width:\s*var\(--teat-width\)/);
  assert.match(css,/\.profile-page \.udder-master-body\s*\{[^}]*z-index:\s*2[^}]*pointer-events:\s*none/s);
@@ -102,6 +107,17 @@ test('template keeps five native accessible actions and page-level unclipped eff
  for(const socket of ['18.1%','33.3%','50.9%','68.5%','84.7%'])assert(html.includes(`'${socket}'`));
  assert(html.includes('aria-label="{{ label }}"'));assert.match(css,/\.udder-liquid-layer[^}]*position:\s*fixed[^}]*overflow:\s*visible[^}]*pointer-events:\s*none/);
  assert.match(css,/udder-blot-drain\s+4s/);assert.match(css,/opacity:1/);assert.match(css,/prefers-reduced-motion/);
+});
+
+test('source loading locks every teat, rejects failed responses and removes the fixed delay',()=>{
+ const script=fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8');
+ assert.match(script,/if\(sourceLoading\)return;/);
+ assert.match(script,/document\.querySelectorAll\('\.source-choice'\)[\s\S]*button\.disabled=running/);
+ assert.match(script,/if\(!response\.ok\)throw new Error\(result\.detail/);
+ assert.match(script,/await populateTempData\(sourceSequence\)/);
+ assert.match(script,/finally\{[\s\S]*setSourceLoading\(false\)/);
+ assert.match(script,/const controller=new AbortController\(\),timeout=setTimeout\(\(\)=>controller\.abort\(\),35000\)/);
+ assert.doesNotMatch(script,/setTimeout\(\(\) => \{[\s\S]{0,160}populateTempData\(\)/);
 });
 
 test('outer teat resting offsets move hit areas without touching animation transforms',()=>{

@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {MungeMusic,FADE_OUT_MS,CLIP_OVERLAP_SECONDS,SCHEDULE_LOOKAHEAD_SECONDS}=require('../../newsmuncher/static/js/creation/munge-music.js');
+const {MungeMusic,FADE_OUT_MS,CLIP_OVERLAP_SECONDS,SCHEDULE_LOOKAHEAD_SECONDS,VOICE_GAIN,MASTER_GAIN}=require('../../newsmuncher/static/js/creation/munge-music.js');
 
 class Param{constructor(){this.value=1;this.calls=[];}setValueAtTime(v,t){this.value=v;this.calls.push(['set',v,t]);}linearRampToValueAtTime(v,t){this.value=v;this.calls.push(['ramp',v,t]);}cancelScheduledValues(t){this.calls.push(['cancel',t]);}}
 class Context{
@@ -35,7 +35,7 @@ test('one recognisable pattern repeats without progressive chaos',async()=>{
  assert.equal(JSON.stringify(t.music.pattern),pattern);
  assert(t.music.tempo>=96&&t.music.tempo<=128);
  assert(t.context.starts.length<=41);
- assert.equal(t.music.master.gain.value,.82);
+ assert.equal(t.music.master.gain.value,MASTER_GAIN);
 });
 
 test('consecutive excerpts overlap by 500ms with complementary gain ramps',async()=>{
@@ -49,10 +49,10 @@ test('consecutive excerpts overlap by 500ms with complementary gain ramps',async
  const secondStart=t.context.starts[1][0];
  assert(Math.abs((firstStart+3.65)-secondStart-CLIP_OVERLAP_SECONDS)<.001);
  assert.deepEqual(firstVoice.gain.gain.calls.slice(-2),[
-  ['set',.22,firstStart+3.15],['ramp',0,firstStart+3.65]
+  ['set',VOICE_GAIN,firstStart+3.15],['ramp',0,firstStart+3.65]
  ]);
  assert.deepEqual(secondVoice.gain.gain.calls.slice(0,2),[
-  ['set',0,secondStart],['ramp',.22,secondStart+CLIP_OVERLAP_SECONDS]
+  ['set',0,secondStart],['ramp',VOICE_GAIN,secondStart+CLIP_OVERLAP_SECONDS]
  ]);
 });
 
@@ -66,7 +66,7 @@ test('very short clips use a bounded half-duration crossfade',async()=>{
  const secondStart=t.context.starts[1][0];
  const [initial,ramp]=second.gain.gain.calls;
  assert.deepEqual(initial,['set',0,secondStart]);
- assert.deepEqual(ramp.slice(0,2),['ramp',.22]);
+ assert.deepEqual(ramp.slice(0,2),['ramp',VOICE_GAIN]);
  assert(Math.abs(ramp[2]-(secondStart+.06))<.0001);
 });
 
@@ -81,7 +81,7 @@ test('stop fades for 1.5 seconds while sources play, then releases every source'
  assert.equal(t.music.running,false);assert(t.cancelled.length>0);
  assert(voices.every(voice=>!voice.source.stopped));
  assert.deepEqual(t.music.master.gain.calls.slice(-3),[
-  ['cancel',0],['set',.82,0],['ramp',0,1.5]
+  ['cancel',0],['set',MASTER_GAIN,0],['ramp',0,1.5]
  ]);
  const cleanup=t.timers.find(timer=>timer.ms===FADE_OUT_MS);assert(cleanup);cleanup.fn();
  assert.equal(t.music.sources.size,0);assert(voices.every(voice=>voice.source.stopped));
@@ -104,7 +104,7 @@ test('MUNGE Web Audio registers a dedicated master-mute gain and releases it',as
   const t=setup();await t.music.start();
   assert.equal(registered.length,1);assert.equal(registered[0].node,t.music.muteGain);
   assert.equal(registered[0].value,1);assert.equal(t.music.muteGain.gain.value,0);
-  assert.equal(t.music.master.gain.value,.82,'creative master volume remains independent');
+  assert.equal(t.music.master.gain.value,MASTER_GAIN,'creative master volume remains independent');
   const muteGain=t.music.muteGain;t.music.stop(true);
   assert.deepEqual(released,[muteGain]);assert.equal(muteGain.disconnected,true);
  } finally { globalThis.NewsMuncherAudio=previous; }

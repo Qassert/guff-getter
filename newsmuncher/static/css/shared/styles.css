@@ -20,6 +20,11 @@
   --display-font: Impact, 'Arial Black', 'Helvetica Neue', sans-serif;
   --button-background: var(--accent);
   --card-background: var(--surface);
+  --glow-r: 73;
+  --glow-g: 176;
+  --glow-b: 255;
+  --glow-rest-filter: drop-shadow(0 5px 5px rgb(0 0 0 / 36%)) drop-shadow(0 0 4px rgb(var(--glow-r) var(--glow-g) var(--glow-b) / 43%)) drop-shadow(0 0 10px rgb(var(--glow-r) var(--glow-g) var(--glow-b) / 36%)) drop-shadow(0 0 16px rgb(var(--glow-r) var(--glow-g) var(--glow-b) / 20%));
+  --glow-hover-filter: drop-shadow(0 6px 6px rgb(0 0 0 / 40%)) drop-shadow(0 0 5px rgb(var(--glow-r) var(--glow-g) var(--glow-b) / 45%)) drop-shadow(0 0 13px rgb(var(--glow-r) var(--glow-g) var(--glow-b) / 43%)) drop-shadow(0 0 20px rgb(var(--glow-r) var(--glow-g) var(--glow-b) / 29%));
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body-font); line-height: 1.5; }
@@ -70,16 +75,16 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
   border: 0; border-radius: 0; background: transparent; box-shadow: none; text-decoration: none;
   transform: rotate(var(--fur-tilt)); transform-origin: 50% 58%;
   animation: mode-fur-breathe 5.8s ease-in-out infinite;
-  transition: filter 120ms ease, box-shadow 120ms ease;
+  filter: var(--glow-rest-filter);
+  transition: filter 700ms ease, box-shadow 120ms ease;
 }
 .mode-nav-button img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 .mode-nav-gallery { --fur-tilt: .45deg; }
-.mode-nav-button:hover { filter: brightness(1.09) saturate(1.05) drop-shadow(0 7px 5px #2b160955); animation: mode-fur-hover 420ms ease-in-out infinite alternate; }
+.mode-nav-button:is(:hover, :focus-visible) { filter: brightness(1.09) saturate(1.05) var(--glow-hover-filter); }
+.mode-nav-button:hover { animation: mode-fur-hover 420ms ease-in-out infinite alternate; }
 .mode-nav-button:active, .mode-nav-button.mode-nav-clicked { animation: mode-fur-click 150ms ease-out both; }
 .mode-nav-button:focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
-.mode-nav-active {
-  cursor: default; filter: brightness(1.1) saturate(1.08) drop-shadow(0 8px 5px #2b160966);
-}
+.mode-nav-active { cursor: default; filter: brightness(1.1) saturate(1.08) var(--glow-rest-filter); }
 @keyframes mode-fur-breathe {
   0%,100% { transform: rotate(var(--fur-tilt)) scale(1); }
   50% { transform: rotate(var(--fur-tilt)) scale(1.012,.985); }
@@ -143,6 +148,10 @@ button:active { transform: translate(2px, 2px); box-shadow: none; }
 .master-mute-button.is-muted { background: #d8d4c8; }
 .master-mute-button:hover { transform: none; box-shadow: 2px 2px 0 var(--ink); }
 .master-mute-button:focus-visible { outline: 3px solid var(--purple); outline-offset: 4px; }
+.profile-page .master-mute-button,
+.promotion-gallery-page .master-mute-button { filter: var(--glow-rest-filter); transition: filter 700ms ease; }
+.profile-page .master-mute-button:is(:hover, :focus-visible),
+.promotion-gallery-page .master-mute-button:is(:hover, :focus-visible) { filter: var(--glow-hover-filter); }
 @media (max-width: 620px) {
   .site-header, .site-main, .site-footer { width: calc(100% - 36px); }
   .site-header { padding-block: 22px; }
@@ -344,8 +353,9 @@ body { isolation: isolate; }
   border: solid transparent; border-width: 15px 12px 12px;
   border-image: url('../../images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
   background: #eee5cf; background-clip: padding-box;
-  filter: var(--tab-tint) drop-shadow(1px 2px 1px #594b3540);
+  filter: var(--tab-tint) var(--glow-rest-filter); transition: filter 700ms ease;
 }
+.profile-page .funky-button:is(:hover, :focus-visible)::before { filter: var(--tab-tint) var(--glow-hover-filter); }
 .profile-page .nonsense-container button[aria-pressed="true"],
 .profile-page .generation-controls .shizzle-button,
 .profile-page .image-toggle input:checked + .funky-button {
@@ -408,6 +418,11 @@ body { isolation: isolate; }
   /* Remove the generic textarea tail; this is the final item on the first parchment. */
   margin-bottom: 0;
 }
+.profile-page .source-attribution {
+  display: block; margin-top: 3px; color: #67473d;
+  font: 600 12px/1.2 var(--print-body-font); text-align: right;
+}
+.profile-page .source-attribution[hidden] { display: none; }
 .profile-page #responseEditor {
   position: relative;
   top: -30px;
@@ -518,11 +533,8 @@ body { isolation: isolate; }
   border-width: calc(1.25 * var(--paper-edge)) var(--paper-edge) var(--paper-edge);
   border-image: url('../../images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
   background: #eee5cf; background-clip: padding-box;
+  filter: var(--glow-rest-filter); transition: filter 700ms ease;
 }
-.profile-page .funky-button::before {
-  filter: var(--tab-tint) drop-shadow(1px 3px 2px #49382266);
-}
-
 /* Hidden source elements for the meta line and empty control wrappers. */
 .profile-page .creation-meta-source[hidden],
 .profile-page .jingle-controls-hidden[hidden],
@@ -621,11 +633,13 @@ body { isolation: isolate; }
 .profile-page .source-udder {
   position: relative; width: min(94vw, 900px); height: clamp(185px, 24vw, 235px);
   overflow: visible; isolation: isolate;
+  filter: var(--glow-rest-filter); transition: filter 700ms ease;
 }
+.profile-page .source-udder:is(:hover, :has(:focus-visible)) { filter: var(--glow-hover-filter); }
 .profile-page .udder-master-body {
   position: absolute; z-index: 2; left: 0; top: 0;
   display: block; width: 100%; height: auto;
-  filter: drop-shadow(0 9px 6px #35151c55); pointer-events: none; user-select: none;
+  filter: none; pointer-events: none; user-select: none;
 }
 .profile-page .nonsense-container .udder-teat {
   --teat-offset-x: 0px; --teat-offset-y: 0px;
@@ -652,7 +666,7 @@ body { isolation: isolate; }
 }
 .profile-page .udder-teat .teat-shape img {
   display: block; width: 100%; height: 100%; object-fit: contain; object-position: 50% 0;
-  filter: drop-shadow(3px 6px 3px #5d263955); pointer-events: none; user-select: none;
+  filter: none; pointer-events: none; user-select: none;
 }
 .profile-page .udder-teat:focus-visible { outline: 3px solid var(--purple); outline-offset: 5px; border-radius: 45%; }
 .profile-page .udder-teat .teat-shape.squeezed { animation: teat-squeeze 240ms ease-out; }
@@ -677,7 +691,8 @@ body { isolation: isolate; }
 .profile-page .munge-control {
   position: relative; isolation: isolate; width: var(--munge-control-width); aspect-ratio: 1.18;
   margin-inline: auto; overflow: visible; transform-origin: 50% 50%;
-  transition: transform 150ms cubic-bezier(.2,.8,.3,1.35);
+  filter: var(--glow-rest-filter);
+  transition: transform 250ms cubic-bezier(.2,.8,.3,1.35), filter 250ms ease;
   pointer-events: none;
 }
 .profile-page .munge-rotor {
@@ -696,7 +711,13 @@ body { isolation: isolate; }
 }
 .profile-page .munge-body {
   display: block; width: 100%; height: auto; pointer-events: none; user-select: none;
-  filter: drop-shadow(0 16px 14px #35151caa);
+  filter: none;
+}
+.profile-page .munge-control:not(.munge-control-processing):not(.munge-control-decelerating):is(:hover, :has(:focus-visible)) {
+  transform: scale(1.07);
+}
+.profile-page .munge-control:is(:hover, :has(:focus-visible)) {
+  filter: var(--glow-hover-filter);
 }
 .profile-page .munge-control:not(.munge-control-processing):not(.munge-control-decelerating):has(.munge-body-button:active) { transform: scale(.92); }
 .profile-page .munge-teat {
@@ -718,7 +739,7 @@ body { isolation: isolate; }
 }
 .profile-page .munge-teat-shape img {
   display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none;
-  filter: drop-shadow(2px 5px 3px #35151c44);
+  filter: none;
 }
 .profile-page .munge-teat-shape.squeezed { animation: munge-teat-squeeze 240ms ease-out; }
 @keyframes munge-teat-squeeze {
@@ -786,7 +807,14 @@ body { isolation: isolate; }
   .profile-page .udder-teat .teat-shape.effect-squeezed { animation:teat-cream-squeeze 210ms ease-out !important; }
   .profile-page .munge-teat-shape { transform: rotate(var(--base-rotation)) !important; animation: none !important; }
   .profile-page .munge-control { transition: none; }
+  .profile-page .munge-control:not(.munge-control-processing):not(.munge-control-decelerating):is(:hover, :has(:focus-visible)) { transform: none; }
   .udder-liquid-layer { display: none; }
+  .profile-page :is(.profile-container, #outputContainer)::before,
+  .profile-page .source-udder,
+  .profile-page .funky-button::before,
+  .mode-nav-button,
+  .profile-page .master-mute-button,
+  .promotion-gallery-page .master-mute-button { transition: none; }
 }
 @keyframes l9 { to { background-position: calc(50% + 1.6em) 0, calc(50% + 3.2em) .8em; } }
 .page-loader, .image-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 4; }

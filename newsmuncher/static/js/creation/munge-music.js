@@ -4,6 +4,8 @@
     const FADE_OUT_MS = 1500;
     const CLIP_OVERLAP_SECONDS = .5;
     const SCHEDULE_LOOKAHEAD_SECONDS = .1;
+    const VOICE_GAIN = 1;
+    const MASTER_GAIN = 1;
     class MungeMusic {
         constructor({contextFactory=()=>new (root.AudioContext||root.webkitAudioContext)(),
                      fetcher=(url,options)=>fetch(url,options), random=Math.random,
@@ -51,8 +53,8 @@
             source.buffer=buffer;source.connect(gain);gain.connect(this.master);
             const overlap=Math.min(CLIP_OVERLAP_SECONDS,length/2);
             const fadeIn=this.sources.size?overlap:Math.min(.08,overlap);
-            gain.gain.setValueAtTime(0,when);gain.gain.linearRampToValueAtTime(.22,when+fadeIn);
-            gain.gain.setValueAtTime(.22,Math.max(when+fadeIn,when+length-overlap));
+            gain.gain.setValueAtTime(0,when);gain.gain.linearRampToValueAtTime(VOICE_GAIN,when+fadeIn);
+            gain.gain.setValueAtTime(VOICE_GAIN,Math.max(when+fadeIn,when+length-overlap));
             gain.gain.linearRampToValueAtTime(0,when+length);
             const voice={source,gain};this.sources.add(voice);
             source.onended=()=>{this.sources.delete(voice);source.disconnect?.();gain.disconnect?.();};
@@ -82,7 +84,7 @@
             if(!this.running||token!==this.revision||!Number.isFinite(buffer?.duration)||buffer.duration<.12)return false;
             this.buffers[index]=buffer;
             if(this.master)return true;
-            this.master=this.context.createGain();this.master.gain.setValueAtTime(.82,this.context.currentTime);
+            this.master=this.context.createGain();this.master.gain.setValueAtTime(MASTER_GAIN,this.context.currentTime);
             this.muteGain=this.context.createGain();this.muteGain.gain.setValueAtTime(1,this.context.currentTime);
             this.master.connect(this.muteGain);this.muteGain.connect(this.context.destination);
             root.NewsMuncherAudio?.registerGain(this.muteGain,1);
@@ -149,7 +151,7 @@
         }
     }
     if(typeof module!=='undefined')module.exports={MungeMusic,JINGLE_PATH,FADE_OUT_MS,
-        CLIP_OVERLAP_SECONDS,SCHEDULE_LOOKAHEAD_SECONDS};
+        CLIP_OVERLAP_SECONDS,SCHEDULE_LOOKAHEAD_SECONDS,VOICE_GAIN,MASTER_GAIN};
     if(typeof document==='undefined')return;
     root.mungeMusic=new MungeMusic();
     root.addEventListener('pagehide',()=>root.mungeMusic.stop(true));
