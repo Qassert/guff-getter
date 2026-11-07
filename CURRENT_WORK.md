@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Present BUILD image-generation rejection guidance on parchment.
+CURRENT_TASK: Reduced the BUILD story-to-image spacing after nomination.
 APPROVAL: Andy explicitly approved a local merge in the isolated BUILD worktree; no push or deployment.
-NEXT_STEP: Browser-check the BUILD 422 parchment guidance before any push, merge back or deployment.
-VALIDATION: 50 focused Python tests plus 6 subtests and 26 focused JavaScript tests pass. BUILD and shared CREATE JavaScript syntax and diff checks pass. No provider calls or production database writes occurred.
+NEXT_STEP: Browser-check the tighter BUILD story-to-image spacing before any push, merge back or deployment.
+VALIDATION: 22 focused JavaScript tests pass. BUILD JavaScript syntax and diff checks pass. No provider calls or production database writes occurred.
 
 ## BUILD rejected-image guidance — 2026-11-07
 

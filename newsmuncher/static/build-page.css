@@ -120,6 +120,12 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   margin: 0; color: var(--build-red);
   font: 800 clamp(1.3rem, 3vw, 2rem)/1.35 var(--build-head);
 }
+.build-page #responseEditor {
+  height: clamp(170px, 24vh, 260px);
+}
+.build-page #imagePanel {
+  margin-top: 8px;
+}
 .build-page .image-panel.image-generation-rejected {
   display: grid; place-items: center; box-sizing: border-box;
   padding: clamp(42px, 8vw, 90px); text-align: center;

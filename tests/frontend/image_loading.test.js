@@ -37,6 +37,8 @@ test('shared loader, centered redo/overlay, stable clipped pane and reduced moti
  assert.match(css,/\.page-loader, \.image-loader.*top: 50%; left: 50%/);
  assert.match(css,/\.image-loading.*position: absolute; inset: 0; overflow: hidden/);
  assert.match(buildCss,/\.build-page \.image-panel\.image-generation-rejected/);
+ assert.match(buildCss,/\.build-page #responseEditor\s*\{[^}]*height: clamp\(170px, 24vh, 260px\)/);
+ assert.match(buildCss,/\.build-page #imagePanel\s*\{[^}]*margin-top: 8px/);
  assert.match(buildCss,/place-items: center/);
  assert.match(buildCss,/border-image: url\('images\/backgrounds\/parchment\.png'\)/);
  assert.match(css,/\.image-panel.*aspect-ratio: 1/);
