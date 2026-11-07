@@ -125,5 +125,6 @@ test('edited story and CREATE-compatible action row remain authoritative', () =>
   assert.match(source, /JSON\.stringify\(\{story\}\)/);
   assert.match(source, /target_words: targetWords, prompt/);
   assert.match(source, /creationActions\?\.attachDraft/);
-  assert.match(source, /bankThisBeauty/);
+  assert.match(source, /creationActions\.nominate\(\)/);
+  assert.doesNotMatch(source, /root\.bankThisBeauty/);
 });

@@ -403,13 +403,17 @@ Creative rules:
     async nominateStory() {
       const story = this.element.querySelector('[data-build-story]')?.value.trim();
       if (!story) return;
-      if (root.creationActions?.hasDraft?.()) return root.bankThisBeauty?.();
       const button = this.element.querySelector('[data-build-nominate]');
       button.disabled = true; button.textContent = 'NOMINATING…';
       try {
-        const data = await requestBuildDraft(this.fetcher, this.element.dataset.draftUrl, story);
-        root.creationActions?.attachDraft?.(data);
-        root.bankThisBeauty?.();
+        if (!root.creationActions?.hasDraft?.()) {
+          const data = await requestBuildDraft(this.fetcher, this.element.dataset.draftUrl, story);
+          root.creationActions?.attachDraft?.(data);
+        }
+        if (typeof root.creationActions?.nominate !== 'function') {
+          throw new Error('Nomination controls are unavailable. Please reload and try again.');
+        }
+        root.creationActions.nominate();
       } catch (error) {
         const status = this.element.querySelector('[data-munge-status]');
         status.classList.add('is-error');

@@ -460,6 +460,7 @@ window.creationActions = {
     reset: resetCreationActionState,
     attachDraft: attachCreationDraft,
     hasDraft: () => Boolean(displayedRewriteId),
+    nominate: () => bankThisBeauty(),
 };
 
 function confirmData(event) {

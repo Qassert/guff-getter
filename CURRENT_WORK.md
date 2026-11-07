@@ -13,10 +13,16 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Integrated reviewed CREATE improvements into the BUILD feature branch.
+CURRENT_TASK: Restored CREATE NOMINATE picture-flicker parity on BUILD.
 APPROVAL: Andy explicitly approved a local merge in the isolated BUILD worktree; no push or deployment.
-NEXT_STEP: Perform final native-browser review of CREATE, BUILD and Gallery before any merge back or deployment.
-VALIDATION: 736 Python tests plus 105 subtests and 177 JavaScript tests pass. Python AST syntax passed for 181 files, JavaScript syntax for 47 files, mocked CREATE/BUILD/Gallery route renders returned 200, and merge-marker plus diff checks pass. Native browser control was unavailable. No provider calls or production database writes occurred.
+NEXT_STEP: Browser-check BUILD nomination flicker before any push, merge back or deployment.
+VALIDATION: 72 focused Python tests plus 6 subtests and 40 focused JavaScript tests pass. BUILD and shared CREATE JavaScript syntax, Python compilation and diff checks pass. No provider calls or production database writes occurred.
+
+## BUILD nomination flicker parity — 2026-11-07
+
+- BUILD now invokes nomination through the explicit shared `creationActions.nominate()` API instead of an optional incidental window global.
+- The shared action delegates unchanged to CREATE's `bankThisBeauty()` lifecycle, so BUILD uses the same embellishment controller, image shuffle, timing, cleanup and failure handling.
+- Missing shared nomination controls now produce a visible retryable error instead of silently stopping after draft preparation.
 
 ## CREATE-to-BUILD integration — 2026-11-07
 
