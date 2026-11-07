@@ -1,0 +1,141 @@
+{
+  "source": "UK PlanIt",
+  "retrieved_at": "2026-11-02T16:47:51.287304+00:00",
+  "request_urls": [
+    "https://www.planit.org.uk/api/applics/json?auth={authority}&start_date=2024-01-01&end_date=2024-12-31&pg_sz=10"
+  ],
+  "record_count": 10,
+  "records": [
+    {
+      "id": "Hackney/2024/1641",
+      "title": "Hackney/2024/1641: 3 Ufton Road, Hackney, London, N1 5BY",
+      "url": "https://www.planit.org.uk/planapplic/Hackney/2024/1641/",
+      "descriptive_text": "Cherry - Reduce the crown spread over the road to the east by 2.5-3m respectively Reduce any unruly height and spread to make a more compact shape (approx. 1-1.5m) Reduce branches growing towards property to give a clearance of 2m from property",
+      "word_count": 43,
+      "metadata": {
+        "authority": "Hackney",
+        "application_date": "2024-07-30",
+        "address": "3 Ufton Road, Hackney, London, N1 5BY",
+        "authority_reference": "2024/1641"
+      }
+    },
+    {
+      "id": "Hackney/2024/1605",
+      "title": "Hackney/2024/1605: 39 Riverside Close, Hackney, London, E5 9SP",
+      "url": "https://www.planit.org.uk/planapplic/Hackney/2024/1605/",
+      "descriptive_text": "Prior Approval for a Larger Homes Extension for the erection of a ground floor rear extension with a depth of 5.8 metres, an eaves height of 2.96 metres and a maximum height of 3.11 metres.",
+      "word_count": 38,
+      "metadata": {
+        "authority": "Hackney",
+        "application_date": "2024-07-25",
+        "address": "39 Riverside Close, Hackney, London, E5 9SP",
+        "authority_reference": "2024/1605"
+      }
+    },
+    {
+      "id": "Wiltshire/PL/2024/08681",
+      "title": "Wiltshire/PL/2024/08681: 5 CLARENDON COURT, MARLBOROUGH, SN8 1EJ",
+      "url": "https://www.planit.org.uk/planapplic/Wiltshire/PL/2024/08681/",
+      "descriptive_text": "T1 Hornbeam - Crown reduce by 1-2 metres for tidiness and to give clearance from car bay and access road. T2 T3 T4 Magnolia - Crown reduce by 1 metre on top, 0.5 metre on side to keep at an appropriate size for situation and allow more light into windows",
+      "word_count": 49,
+      "metadata": {
+        "authority": "Wiltshire",
+        "application_date": "2024-09-23",
+        "address": "5 CLARENDON COURT, MARLBOROUGH, SN8 1EJ",
+        "authority_reference": "PL/2024/08681"
+      }
+    },
+    {
+      "id": "Wiltshire/PL/2024/04109",
+      "title": "Wiltshire/PL/2024/04109: STRATHAVON FARMHOUSE, GREAT DURNFORD, SALISBURY, SP4 6AY",
+      "url": "https://www.planit.org.uk/planapplic/Wiltshire/PL/2024/04109/",
+      "descriptive_text": "Felling six Carpinus Betulus. To allow them to fill out into a better shape we would like to take down half of the trees, so the avenue has wider spacing. The remaining six trees will then have room to fill out into a more natural shape.",
+      "word_count": 46,
+      "metadata": {
+        "authority": "Wiltshire",
+        "application_date": "2024-05-01",
+        "address": "STRATHAVON FARMHOUSE, GREAT DURNFORD, SALISBURY, SP4 6AY",
+        "authority_reference": "PL/2024/04109"
+      }
+    },
+    {
+      "id": "Cornwall/PA24/06394",
+      "title": "Cornwall/PA24/06394: Burthy Row Farm Summercourt Newquay Cornwall TR8 5BP",
+      "url": "https://www.planit.org.uk/planapplic/Cornwall/PA24/06394/",
+      "descriptive_text": "'Construction of a Solar Farm and Battery Energy Storage System (BESS) facility together with all associated works, equipment and necessary infrastructure' without compliance of condition 2 of decision PA23/01893 dated 19/12/2023.",
+      "word_count": 34,
+      "metadata": {
+        "authority": "Cornwall",
+        "application_date": "2024-08-15",
+        "address": "Burthy Row Farm Summercourt Newquay Cornwall TR8 5BP",
+        "authority_reference": "PA24/06394"
+      }
+    },
+    {
+      "id": "Cornwall/PA24/07203",
+      "title": "Cornwall/PA24/07203: 33 Fore Street Redruth Cornwall TR15 2AE",
+      "url": "https://www.planit.org.uk/planapplic/Cornwall/PA24/07203/",
+      "descriptive_text": "Submission of details to discharge Conditions 3, 4, 5, 6, 7 and 9 in relation to Decision Notice PA21/10830 dated 27.01.22.",
+      "word_count": 24,
+      "metadata": {
+        "authority": "Cornwall",
+        "application_date": "2024-09-17",
+        "address": "33 Fore Street Redruth Cornwall TR15 2AE",
+        "authority_reference": "PA24/07203"
+      }
+    },
+    {
+      "id": "Leeds/24/01105/DPD",
+      "title": "Leeds/24/01105/DPD: John Charles Centre For Sport Aquatics Centre Middleton Grove Beeston Leeds LS11 5DJ",
+      "url": "https://www.planit.org.uk/planapplic/Leeds/24/01105/DPD/",
+      "descriptive_text": "Variation of condition 1 (approved plans) of previous approval 23/07465/DPD (Determination for installation of roof mounted solar PV equipment) to allow for a redesign of the PV system to a different plane of the existing roof",
+      "word_count": 38,
+      "metadata": {
+        "authority": "Leeds",
+        "application_date": "2024-03-06",
+        "address": "John Charles Centre For Sport Aquatics Centre Middleton Grove Beeston Leeds LS11 5DJ",
+        "authority_reference": "24/01105/DPD"
+      }
+    },
+    {
+      "id": "Leeds/24/01197/FU",
+      "title": "Leeds/24/01197/FU: 11 The Drive Bardsey Leeds LS17 9AE",
+      "url": "https://www.planit.org.uk/planapplic/Leeds/24/01197/FU/",
+      "descriptive_text": "Erection of a single storey infill extension to the rear, replacement roof to an existing conservatory, and a fenestration alteration on the south side of the existing conservatory.",
+      "word_count": 28,
+      "metadata": {
+        "authority": "Leeds",
+        "application_date": "2024-02-28",
+        "address": "11 The Drive Bardsey Leeds LS17 9AE",
+        "authority_reference": "24/01197/FU"
+      }
+    },
+    {
+      "id": "Edinburgh/24/05219/LBC",
+      "title": "Edinburgh/24/05219/LBC: 29A - 31 Frederick Street New Town Edinburgh EH2 2ND",
+      "url": "https://www.planit.org.uk/planapplic/Edinburgh/24/05219/LBC/",
+      "descriptive_text": "Shopfront repair works, decoration of and replacement of column bases. Excavation and replacement of existing defective below ground drainage run at basement level. Internal alterations to ground floor level with the addition of a new partition, new decorative screens, freestanding wine display and new timber flooring.",
+      "word_count": 46,
+      "metadata": {
+        "authority": "Edinburgh",
+        "application_date": "2024-10-23",
+        "address": "29A - 31 Frederick Street New Town Edinburgh EH2 2ND",
+        "authority_reference": "24/05219/LBC"
+      }
+    },
+    {
+      "id": "Edinburgh/23/01141/VARY",
+      "title": "Edinburgh/23/01141/VARY: 71 Silverknowes Gardens Silverknowes Edinburgh EH4 5ND",
+      "url": "https://www.planit.org.uk/planapplic/Edinburgh/23/01141/VARY/",
+      "descriptive_text": "Non Material Variation - The side elevation was approved with a roughcast finish to match the existing house. The proposed finish will be left as fare faced block without a roughcast finish. This variation was due to the objections raised and refusal of access.",
+      "word_count": 43,
+      "metadata": {
+        "authority": "Edinburgh",
+        "application_date": "2024-10-01",
+        "address": "71 Silverknowes Gardens Silverknowes Edinburgh EH4 5ND",
+        "authority_reference": "23/01141/VARY"
+      }
+    }
+  ],
+  "notes": "Two longest descriptions from each of Hackney, Wiltshire, Cornwall, Leeds and Edinburgh response sets. Planning descriptions are usually far below 100 words."
+}

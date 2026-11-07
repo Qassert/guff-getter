@@ -57,7 +57,7 @@ def test_dating_seed_and_persistent_usage(api):
     assert client.get('/get_all/?source=unknown').status_code == 400
 
 
-@pytest.mark.parametrize('source', [None, 'dating'])
+@pytest.mark.parametrize('source', [None])
 def test_shared_job_selection_preview_and_increment(api, tmp_path, source):
     from newsmuncher.jobs import fetch_historical_funny as job
     module, collections = api
@@ -70,13 +70,11 @@ def test_shared_job_selection_preview_and_increment(api, tmp_path, source):
     with patch.object(job, 'TEMP_FILE', target), patch.object(job.requests, 'get', side_effect=lambda url: client.get(url.split(job.REUSABLE_API_BASE_URL)[1])) as get, patch.object(job.requests, 'put', side_effect=lambda url: client.put(url.split(job.REUSABLE_API_BASE_URL)[1])) as put:
         result = job.fetch_historical_funny_from_api(source)
     assert result == json.loads(target.read_text())
-    assert result == (dict(title='First', description='First description', extract='First description') if source else dict(title='Drivel', description='History', extract='Story'))
+    assert result == dict(title='Drivel', description='History', extract='Story')
     get.assert_called_once_with(job.REUSABLE_API_BASE_URL + '/get_all/' + suffix)
     assert put.call_count == 1 and put.call_args.args[0].endswith(suffix)
     rows = client.get('/get_all/' + suffix).json()
     assert rows[0]['numberOftimesUsed'] == 1
-    if source:
-        assert collections['reusable_entries'].rows[key]['numberOftimesUsed'] == 0
 
 
 def test_real_seed_and_button_layout(api):
@@ -91,7 +89,7 @@ def test_real_seed_and_button_layout(api):
     html = env.get_template('pet_profile.html').render(pet={})
     import re
     labels = re.findall(r'<button[^>]*class="source-choice udder-teat[^"]*"[^>]*aria-label="([^"]+)"', html)
-    assert labels == ['DATING', 'DRIVEL', 'WIKIPEDIA', 'POEM', 'PEOPLE']
+    assert labels == ['OPENALEX', 'DRIVEL', 'WIKIPEDIA', 'NASA', 'HACKER NEWS']
     css = (ROOT / 'newsmuncher/static/css/shared/styles.css').read_text()
     block = css.split('.profile-page .nonsense-container, .profile-page .generation-controls {')[1].split('}')[0]
     assert 'justify-content: center' in block and 'left: 50%' in block

@@ -13,10 +13,21 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: BUILD generated and edited stories now reuse Create's article fitter.
-APPROVAL: Andy explicitly assigned the isolated Build worktree; no push, merge or deployment.
-NEXT_STEP: Review BUILD prompt/result editing and actions in a browser; perform live provider/media calls only with explicit approval.
-VALIDATION: 21 focused Python tests and 26 focused Build/text-fitting frontend tests pass. Python and JavaScript syntax checks and `git diff --check` pass. Provider responses were mocked; no paid calls or database writes occurred.
+CURRENT_TASK: Integrated reviewed CREATE improvements into the BUILD feature branch.
+APPROVAL: Andy explicitly approved a local merge in the isolated BUILD worktree; no push or deployment.
+NEXT_STEP: Perform final native-browser review of CREATE, BUILD and Gallery before any merge back or deployment.
+VALIDATION: 736 Python tests plus 105 subtests and 177 JavaScript tests pass. Python AST syntax passed for 181 files, JavaScript syntax for 47 files, mocked CREATE/BUILD/Gallery route renders returned 200, and merge-marker plus diff checks pass. Native browser control was unavailable. No provider calls or production database writes occurred.
+
+## CREATE-to-BUILD integration — 2026-11-07
+
+- Merged `feature/video-animation` at `956394c` into the isolated BUILD branch with
+  both histories preserved and pre-merge backup refs for each branch tip.
+- Retained BUILD's DOM guards for shared CREATE controllers while adding CREATE's
+  asynchronous source-load error handling, OpenAlex/NASA/Hacker News adapters,
+  attribution metadata, glow theme and full-volume MUNGE soundtrack.
+- Automatic merges preserved CREATE | BUILD | GALLERY navigation, BUILD's prompt/story
+  editing and persistence boundary, Gallery media fallback, and the shared responsive
+  layouts. The imported research report's trailing blank line was removed so diff checks pass.
 
 ## Build prompt editor cleanup — 2026-11-06
 
@@ -88,6 +99,60 @@ VALIDATION: 21 focused Python tests and 26 focused Build/text-fitting frontend t
 - Added a guarded setup utility which refuses to configure over nonempty worktree media.
   No original media, databases, environment files or uncommitted source changes were
   modified.
+
+## External source teat replacement — 2026-11-03
+
+- Preserved the historical teat action identifiers and all visual/audio interaction
+  geometry while replacing DATING with OpenAlex, POEM with NASA Images, and PEOPLE
+  with Hacker News.
+- Added shared local HTML cleanup and sentence-order reduction targeting 80 words,
+  bounded at roughly 100 words, plus one bounded `Retry-After`-aware HTTP 429 retry.
+- Source selection now locks every teat immediately, aborts after 35 seconds, rejects
+  stale responses, and always unlocks after success, failure, or timeout. The former
+  fixed post-request delay was removed.
+- Source title, URL, provider, author, and licence notes are carried into drafts without
+  entering the comedy prompt; existing sources retain their previous prompt shape.
+- Live read-only checks returned 95 NASA words, 86 Hacker News words, and 100 OpenAlex
+  words. Hacker News API access does not establish publication or derivative-use rights,
+  so its attribution explicitly records that reuse rights remain unconfirmed.
+
+## Free content API evaluation — 2026-11-02
+
+- Evaluated OpenAlex, arXiv, Hacker News, UK PlanIt, NASA Image and Video
+  Library, and the Guardian Open Platform using official documentation and live
+  unauthenticated requests.
+- Stored bounded representative samples and a failed Guardian HTTP 401 record
+  under `research/content-api-evaluation/`; no full papers or Guardian articles
+  were downloaded.
+- Recommended OpenAlex first, NASA second, and arXiv only behind a compatible
+  per-work licence filter. PlanIt is better suited to short British premise
+  ingredients, while Hacker News and Guardian present material reuse concerns.
+
+## MUNGE soundtrack/effect level parity — 2026-11-02
+
+- Teat effects use native `Audio` playback at the default `1.0` volume. The soundtrack
+  previously compounded a `0.22` voice gain with a `0.82` master gain (about `0.18`).
+- Set both soundtrack gains to `1.0`, removing the deliberate attenuation while retaining
+  all existing clip crossfades, master fade-out, mute routing and cleanup behavior.
+
+## Parchment and grouped udder visibility — 2026-10-22
+
+- Added a deep outline-following shadow plus three strong golden-orange and amber
+  `drop-shadow()` layers to both parchment artwork surfaces, the complete source udder,
+  and each complete MUNGE assembly.
+- Body and teat image layers no longer carry individual shadows. Each udder is composited
+  first and shadowed once at its outer wrapper, preventing internal shadows between the
+  body and teats.
+- Hover and keyboard focus intensify the glow and visually scale the complete
+  idle udder assembly by 7% over 250ms without touching rotor transforms, geometry or
+  processing animations. Reduced-motion mode keeps the glow but suppresses scaling.
+- Create/Gallery navigation, parchment action controls, Gallery arrows and furry controls,
+  master mute, and the Gallery parchment now use the same shared silhouette glow.
+- A seven-colour non-orange palette selects once on page load and advances to a different
+  random colour after each decorated control activation. Matching filter stacks transition
+  over 700ms; reduced-motion mode changes colour without the transition.
+- Reduced every shared shadow radius and opacity twice by approximately one third after
+  visual review, retaining the same layered treatment and stronger hover/focus state.
 
 ## NOMINATE repeated image failure and REDO recovery — 2026-10-21
 

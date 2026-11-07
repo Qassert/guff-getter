@@ -1,0 +1,124 @@
+{
+  "source": "Hacker News",
+  "retrieved_at": "2026-11-02T16:47:51.287304+00:00",
+  "request_urls": [
+    "https://hacker-news.firebaseio.com/v0/beststories.json",
+    "https://hacker-news.firebaseio.com/v0/item/{id}.json"
+  ],
+  "record_count": 8,
+  "records": [
+    {
+      "id": 50328896,
+      "title": "Ask HN: Which TV do you recommend for privacy?",
+      "url": "https://news.ycombinator.com/item?id=50328896",
+      "descriptive_text": "I haven’t owned a TV in years and would like one that respects my privacy. Are there any TV’s which do this well? I am looking for something in the 60”to 80”range and would like a 4k display with at least 60hz display. I don’t mind paying a premium. I have heard good things about Apple TV as a better alternative to most smart TV native apps. Would some TV’s pair better with this than others for privacy? I don’t want the TV doing anything other than being the display for Apple TV. I am curious what success others have had.",
+      "word_count": 103,
+      "metadata": {
+        "type": "story",
+        "author": "LecroJS",
+        "unix_time": 1793561727,
+        "parent": null,
+        "source_story_url": null
+      }
+    },
+    {
+      "id": 50327005,
+      "title": "Comment on Hacker News item 50319510",
+      "url": "https://news.ycombinator.com/item?id=50327005",
+      "descriptive_text": "I think there is a massive opportunity for this kind of feed disaggregation. Used to be the recommender and indexing of content was hard, now I believe we can likely build our own according to our own preferences. Haiku/Sonnet (or even Jev) can do a lot of the filtering work to rank and extend an RSS feed list. I think this gives us an opportunity to fully cut the cord from eyeball merchants who want us to maximally engage and therefore polarize their content. The big remaining hook will be the social graph; I am interested to see how far the EU push for mandatory interoperability will go. Another angle I’d support would be mandatory pluggable standards for your own ranking algorithm, but it captures less of the win than full disaggregation.",
+      "word_count": 133,
+      "metadata": {
+        "type": "comment",
+        "author": "theptip",
+        "unix_time": 1793549848,
+        "parent": 50319510,
+        "source_story_url": null
+      }
+    },
+    {
+      "id": 50334611,
+      "title": "Comment on Hacker News item 50328896",
+      "url": "https://news.ycombinator.com/item?id=50334611",
+      "descriptive_text": "Buy any tv with CEC support (almost all of them) and never connect it to the internet. Never. Never start any app on the tv. Hook a Kodi box to the hdmi port and use that, and only that. For the Kodi box get series-7 Intel NUC with Kabylake-era processors, gen 7. They don't run Windows 11, so come very cheap second hand, but decode h264 and hevc in hardware and drive a 4K screen like charm. You can install a modern Wifi card in the NUC and a PCIe SSD. Then buy one of these: https://www.pulse-eight.com/p/154/intel-nuc-hdmi-cec-adapter and put it in your NUC, so you can use the TV remote to control Kodi. That's it. Bonus, you can take your TV with you when travelling.",
+      "word_count": 131,
+      "metadata": {
+        "type": "comment",
+        "author": "kitestramuort",
+        "unix_time": 1793610877,
+        "parent": 50328896,
+        "source_story_url": null
+      }
+    },
+    {
+      "id": 50324750,
+      "title": "Comment on Hacker News item 50322173",
+      "url": "https://news.ycombinator.com/item?id=50324750",
+      "descriptive_text": "People will look at this and think \"bad lawyers, you should not do this.\" But please note that this is literally how the advertising (or, e.g., entire social media) industry works: humans are subtly (or not so subtly) manipulated to do things advantageous to third parties. Some might respond that \"advertising is not illegal,\" but this argument is tantamount to saying that you should expect ads to be minimally faithful and maximally manipulative. In other words, economic/ social participants can reasonably do anything within the allowance of the law (or worse, wherever cost/benefit makes it optimal). Eventually the absolute disregard for truth or any sort of higher level value was going to give way to our present state of corruption. AI just makes it easier.",
+      "word_count": 127,
+      "metadata": {
+        "type": "comment",
+        "author": "jsrozner",
+        "unix_time": 1793533878,
+        "parent": 50322173,
+        "source_story_url": null
+      }
+    },
+    {
+      "id": 50334486,
+      "title": "Comment on Hacker News item 50327058",
+      "url": "https://news.ycombinator.com/item?id=50334486",
+      "descriptive_text": "IIRC/IIUC, GaN could only deal with UV or at most deep-ish blue, for both input and output, due to bandgap or whatever quantum reasons I don't understand. To create white light from light emitted by a GaN device, it needs to be downconverted into visible range by use of either phosphorous materials or a nanoparticle resembling them that are activated by blue light and emit its own light. On most white LEDs, this is done by that yellow goop of plastic material dabbed on top of blue LEDs. Could this be like nanostructure based? Like nanoscale etching that messes with the light, created on top of UV LEDs?",
+      "word_count": 109,
+      "metadata": {
+        "type": "comment",
+        "author": "numpad0",
+        "unix_time": 1793609541,
+        "parent": 50327058,
+        "source_story_url": null
+      }
+    },
+    {
+      "id": 50326361,
+      "title": "Comment on Hacker News item 50325662",
+      "url": "https://news.ycombinator.com/item?id=50326361",
+      "descriptive_text": "I started playing the rs-sdk ( https://github.com/MaxBittker/rs-sdk ) with Claude after seeing it on HN the other day. I haven't looked at the Minecraft experiment but just letting an agent loose in the game and telling it to play did not work well. At first it really did not have a good feel for how the game actually plays and would routinely waste tons of time doing something that makes no sense — very reminiscent of the \"four agents spent 11 minutes appointing a ‘sole fertilizer operator’ for a single piece of bone meal on a single wheat block\" anecdote in this article. But, after several hours of correcting and directing Claude (build modular, re-usable snippets of useful code rather than one-off scripts for driving, document your learnings for future agents, etc., explicit guidance on playing more optimally) it can now play the game fully on its own. I just gave it a goal to play through the end of the \"Legends quest\" (nearing end game content, requires playing through lots of complex quests ) and it's breezing through it. I haven't experimented with swarms of agents yet, but I know if I had tried to create a swarm in 2004scape before the agent was actually good at playing the game, it would have failed horribly. So, I wonder how good the agents they were experimenting with are at Minecraft when playing alone.",
+      "word_count": 233,
+      "metadata": {
+        "type": "comment",
+        "author": "_vertigo",
+        "unix_time": 1793545664,
+        "parent": 50325662,
+        "source_story_url": null
+      }
+    },
+    {
+      "id": 50331562,
+      "title": "Comment on Hacker News item 50325454",
+      "url": "https://news.ycombinator.com/item?id=50331562",
+      "descriptive_text": "I haven't read this paper in details, but I have read papers about the platonic hypothesis in the past. Usually one of their weakness is about the design an experiment proving that \"neural networks converges towards the same latent space when scaling\". Usually authors are effectively proving a subset of the hypothesis, that can be explained by the size of the model and the transfer learning part, leaving not definite answer. Here it seems that their definition is more robust (the representation is defined up to a rotation), but I am wondering how much more re-training they need to perform.",
+      "word_count": 100,
+      "metadata": {
+        "type": "comment",
+        "author": "addag",
+        "unix_time": 1793579844,
+        "parent": 50325454,
+        "source_story_url": null
+      }
+    },
+    {
+      "id": 50334216,
+      "title": "Comment on Hacker News item 50334038",
+      "url": "https://news.ycombinator.com/item?id=50334216",
+      "descriptive_text": "I understand why China wants to restrict exports of their models. But I feel the only reason Chinese models have been able to gain such popularity is BECAUSE they are open source. I wouldn’t trust models from China enough to use them in important work unless they were open. Restricting any powerful Chinese model [that ranks in the global top 10] is going to make them very difficult to advocate for, and very hard for global users to adopt. Feels like this could be the beginning of the end of the democratisation of powerful AI. And yes, I appreciate the irony that Chinese models have been the ones enabling that democratisation!",
+      "word_count": 111,
+      "metadata": {
+        "type": "comment",
+        "author": "_fw",
+        "unix_time": 1793606557,
+        "parent": 50334038,
+        "source_story_url": null
+      }
+    }
+  ],
+  "notes": "Sampled every fifth best-story ID from the first 100 positions, then inspected each story and up to four leading comments; retained records of at least 100 words."
+}

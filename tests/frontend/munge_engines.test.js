@@ -8,7 +8,7 @@ test('Create exposes three ordered engines and sends the selected engine once',(
   assert(html.indexOf("('classic',")<html.indexOf("('current',"));
   assert(html.indexOf("('current',")<html.indexOf("('experimental',"));
   assert.match(script,/const engine = event\?\.currentTarget\?\.dataset\?\.mungeEngine \|\| 'current'/);
-  assert.match(script,/JSON\.stringify\(\{title,description,extract,draft_session:workingSession\(\),engine\}\)/);
+  assert.match(script,/JSON\.stringify\(\{title,description,extract,source_url,source_name,source_author,source_licence,draft_session:workingSession\(\),engine\}\)/);
   assert.match(script,/if \(mungeProcessing\) return/);
 });
 

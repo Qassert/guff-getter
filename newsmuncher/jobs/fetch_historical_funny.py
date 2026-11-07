@@ -4,10 +4,60 @@ import json
 import random
 import requests  # type: ignore
 
+from newsmuncher.jobs.source_content import get_json, reduce_description, source_session
+from newsmuncher.utils.source_preprocessing import preserve_source_text
+
 REUSABLE_API_BASE_URL = os.getenv("REUSABLE_API_BASE_URL", "http://127.0.0.1:8000/reusable")
+OPENALEX_URL = "https://api.openalex.org/works"
+
+
+def _openalex_abstract(inverted_index):
+    positioned = [
+        (position, word)
+        for word, positions in (inverted_index or {}).items()
+        for position in positions
+    ]
+    return " ".join(word for _, word in sorted(positioned))
+
+
+def fetch_openalex(min_words=60):
+    """Fetch an English OpenAlex abstract for the former Lonely Hearts teat."""
+    try:
+        with source_session() as client:
+            payload = get_json(client, OPENALEX_URL, params={
+                "filter": "has_abstract:true,language:en",
+                "sample": 50,
+                "per-page": 50,
+                "select": "id,doi,display_name,publication_year,type,abstract_inverted_index",
+            })
+        candidates = []
+        for work in payload.get("results", []):
+            abstract = _openalex_abstract(work.get("abstract_inverted_index"))
+            if work.get("display_name") and len(abstract.split()) >= min_words:
+                candidates.append((work, abstract))
+        if not candidates:
+            raise ValueError("OpenAlex returned no sufficiently descriptive abstracts")
+        work, abstract = random.choice(candidates)
+        year = work.get("publication_year")
+        temp_data = {
+            "title": preserve_source_text(work["display_name"]),
+            "description": "OpenAlex research abstract" + (f" ({year})" if year else ""),
+            "extract": preserve_source_text(reduce_description(abstract)),
+            "source_url": work.get("doi") or work.get("id"),
+            "source_name": "OpenAlex",
+            "source_licence": "CC0 (OpenAlex API data)",
+        }
+        with open(TEMP_FILE, "w", encoding="utf-8") as target:
+            json.dump(temp_data, target, ensure_ascii=False, indent=2)
+        return temp_data
+    except (requests.RequestException, KeyError, TypeError, ValueError) as error:
+        print(f"Could not fetch OpenAlex source content: {error}")
+        return None
 
 def fetch_historical_funny_from_api(source=None):
     """Fetch the least used historical funny entry from the API and store it temporarily."""
+    if source == "dating":
+        return fetch_openalex()
     suffix = "?source=dating" if source == "dating" else ""
     try:
         # Fetch all entries from the API
@@ -54,4 +104,5 @@ def fetch_historical_funny_from_api(source=None):
 
 if __name__ == "__main__":
     import sys
-    fetch_historical_funny_from_api(sys.argv[1] if len(sys.argv) > 1 else None)
+    raise SystemExit(0 if fetch_historical_funny_from_api(
+        sys.argv[1] if len(sys.argv) > 1 else None) else 1)

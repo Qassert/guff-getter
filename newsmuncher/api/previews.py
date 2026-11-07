@@ -178,7 +178,10 @@ def run_script(script_name: str):
     }
 
     if script_name in script_mapping:
-        result = subprocess.run(script_mapping[script_name], cwd=PROJECT_ROOT)
+        try:
+            result = subprocess.run(script_mapping[script_name], cwd=PROJECT_ROOT, timeout=30)
+        except subprocess.TimeoutExpired:
+            raise HTTPException(status_code=504, detail=f"Source {script_name} timed out.")
         if result.returncode == 0:
             return {"message": f"Script {script_name} executed successfully."}
         else:
@@ -191,6 +194,10 @@ class ShizzRequest(BaseModel):
     title: str
     description: str
     extract: str
+    source_url: str | None = Field(default=None, max_length=2048)
+    source_name: str | None = Field(default=None, max_length=120)
+    source_author: str | None = Field(default=None, max_length=120)
+    source_licence: str | None = Field(default=None, max_length=120)
     generate_images: bool = False
     draft_session: str = Field(default="legacy", min_length=1, max_length=100)
     engine: Literal["classic", "current", "experimental"] = "current"
@@ -211,7 +218,12 @@ def shizzalise_data(payload: ShizzRequest, creationUser: str = Cookie(None), act
     plan = engine_plan(payload.engine)
     radical_mode = plan.engine is MungeEngine.EXPERIMENTAL
     radical_audit_context = None
-    source = payload.model_dump(exclude={'generate_images', 'draft_session', 'engine'})
+    source = payload.model_dump(exclude={
+        'generate_images', 'draft_session', 'engine', 'source_url', 'source_name',
+        'source_author', 'source_licence'})
+    source.update(payload.model_dump(
+        include={'source_url', 'source_name', 'source_author', 'source_licence'},
+        exclude_none=True))
     rewrite_id = store.begin_draft({**source, 'creationUser': creationUser}, active_pet, payload.draft_session)
     with open(TEMP_FILE, "w") as f:
         json.dump({**source, "creationUser": creationUser}, f)

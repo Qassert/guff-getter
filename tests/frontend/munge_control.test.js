@@ -34,7 +34,11 @@ test('template uses branded engine bodies with the original animated teats',()=>
  assert(html.includes("path='js/creation/munge-music.js'"));
  for(const variable of ['--x','--y','--w','--axis-x','--axis-y','--origin-x','--origin-y','--base-rotation'])assert(html.includes(variable));
  assert.match(css,/\.munge-body-button\s*\{[^}]*z-index:\s*1/s);assert.match(css,/\.munge-body\s*\{[^}]*pointer-events:\s*none/s);assert.match(css,/\.munge-teat\s*\{[^}]*z-index:\s*2/s);assert.match(css,/prefers-reduced-motion/);
- assert.match(css,/\.profile-page \.munge-body\s*\{[^}]*drop-shadow\(0 16px 14px #35151caa\)/s);
+ assert.match(css,/\.profile-page \.munge-control\s*\{[^}]*filter:\s*var\(--glow-rest-filter\)[^}]*filter 250ms ease/s);
+ assert.match(css,/\.munge-control:not\(\.munge-control-processing\):not\(\.munge-control-decelerating\):is\(:hover, :has\(:focus-visible\)\)\s*\{[^}]*transform:\s*scale\(1\.07\)/s);
+ assert.match(css,/\.munge-control:is\(:hover, :has\(:focus-visible\)\)\s*\{[^}]*filter:\s*var\(--glow-hover-filter\)/s);
+ assert.match(css,/\.profile-page \.munge-body\s*\{[^}]*filter:\s*none/s);
+ assert.match(css,/\.profile-page \.munge-teat-shape img\s*\{[^}]*filter:\s*none/s);
  assert.match(css,/\.munge-control\s*\{[^}]*aspect-ratio:\s*1\.18/s);
  assert.match(css,/\.munge-body\s*\{[^}]*width:\s*100%[^}]*height:\s*auto/s);
  assert(!css.includes('.profile-page .munge-engine-label'));
