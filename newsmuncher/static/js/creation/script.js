@@ -6,7 +6,19 @@ let draftSession = null;
 let creationNominated = false, currentImageUrl = null, imageRedoPending = false, imageGenerationFailed = false;
 let imageRetryAttemptId = null, imageRetryConfirmation = null;
 let sourceLoading = false;
+const BUILD_IMAGE_REJECTION_GUIDANCE = "The image generator doesn't like your text, maybe there is something naughty in there? A Little Hack: You can replace those words by editing them, replacing them for something less naughty but equally descriptive! Then hit Redo image, and it might work, then you can put naughties back in after";
 window.creationContext=()=>({rewrite_id:displayedRewriteId,sequence:rewriteSequence});
+function showImageFailure(message, rejected = false) {
+    const panel = document.getElementById('imagePanel');
+    if (!panel) return;
+    panel.replaceChildren();
+    panel.classList.remove('hidden');
+    panel.classList.toggle('image-generation-rejected', rejected);
+    const copy = document.createElement('p');
+    copy.className = 'image-failure-copy';
+    copy.textContent = message;
+    panel.appendChild(copy);
+}
 function renderRedoImage() {
     renderNominationButton();
     const button = document.getElementById('redoImageButton');
@@ -626,6 +638,7 @@ function resetImagePanel() {
     if (typeof videoUI !== "undefined") videoUI.show(null);
     const panel = document.getElementById('imagePanel');
     panel.replaceChildren();
+    panel.classList.remove('image-generation-rejected');
     panel.classList.add('hidden');
 }
 
@@ -678,6 +691,7 @@ window.generateCreationImage=async(id,sequence,replace=false)=>{
    imageGenerationFailed=true;
    imageRetryAttemptId=failure.detail?.code==='image_outcome_uncertain'?(failure.detail.attempt_id||null):null;
    renderRedoImage();
+   if(response.status===422&&document.body.classList.contains('build-page'))showImageFailure(BUILD_IMAGE_REJECTION_GUIDANCE,true);
   }
   throw Error(failure.detail?.message||failure.detail||'Image generation failed');
  }
@@ -700,6 +714,7 @@ function displayRewriteImage(url, current, style = null) {
         if (!current()) return;
         if (typeof imageLoading !== 'undefined') imageLoading.stop();
         panel.classList.remove('hidden');
+        panel.classList.remove('image-generation-rejected');
         panel.replaceChildren(img);
         setImageStyle(style);
         currentImageUrl = url;

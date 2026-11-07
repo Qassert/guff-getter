@@ -120,3 +120,15 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   margin: 0; color: var(--build-red);
   font: 800 clamp(1.3rem, 3vw, 2rem)/1.35 var(--build-head);
 }
+.build-page .image-panel.image-generation-rejected {
+  display: grid; place-items: center; box-sizing: border-box;
+  padding: clamp(42px, 8vw, 90px); text-align: center;
+  border: clamp(20px, 4vw, 42px) solid transparent;
+  border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  background: var(--paper); color: var(--ink);
+}
+.build-page .image-panel.image-generation-rejected .image-failure-copy {
+  max-width: 38rem; margin: 0;
+  font: 700 clamp(1.05rem, 2.4vw, 1.5rem)/1.45 var(--serif);
+  text-wrap: balance;
+}

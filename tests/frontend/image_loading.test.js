@@ -30,11 +30,15 @@ test('completion freezes visuals until real image loads; late retrieval ignored 
 });
 test('shared loader, centered redo/overlay, stable clipped pane and reduced motion styles',()=>{
  const css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
+ const buildCss=fs.readFileSync('newsmuncher/static/build-page.css','utf8');
  assert.match(css,/\.loader \{/);assert(!css.includes('.spinner'));
  assert.match(css,/\.creation-actions\s*\{[^}]*justify-content:\s*center/);
  assert.match(css,/\.creation-actions\s*\{[^}]*flex-wrap:\s*wrap/);
  assert.match(css,/\.page-loader, \.image-loader.*top: 50%; left: 50%/);
  assert.match(css,/\.image-loading.*position: absolute; inset: 0; overflow: hidden/);
+ assert.match(buildCss,/\.build-page \.image-panel\.image-generation-rejected/);
+ assert.match(buildCss,/place-items: center/);
+ assert.match(buildCss,/border-image: url\('images\/backgrounds\/parchment\.png'\)/);
  assert.match(css,/\.image-panel.*aspect-ratio: 1/);
  assert.match(css,/prefers-reduced-motion/);
 });

@@ -13,10 +13,16 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Restored CREATE NOMINATE picture-flicker parity on BUILD.
+CURRENT_TASK: Present BUILD image-generation rejection guidance on parchment.
 APPROVAL: Andy explicitly approved a local merge in the isolated BUILD worktree; no push or deployment.
-NEXT_STEP: Browser-check BUILD nomination flicker before any push, merge back or deployment.
-VALIDATION: 72 focused Python tests plus 6 subtests and 40 focused JavaScript tests pass. BUILD and shared CREATE JavaScript syntax, Python compilation and diff checks pass. No provider calls or production database writes occurred.
+NEXT_STEP: Browser-check the BUILD 422 parchment guidance before any push, merge back or deployment.
+VALIDATION: 50 focused Python tests plus 6 subtests and 26 focused JavaScript tests pass. BUILD and shared CREATE JavaScript syntax and diff checks pass. No provider calls or production database writes occurred.
+
+## BUILD rejected-image guidance — 2026-11-07
+
+- A 422 from the initial nominated-image request now replaces the stopped flicker layer with user guidance instead of exposing an empty panel.
+- BUILD alone renders that guidance centred on the established parchment texture; CREATE and successful-image presentation remain unchanged.
+- REDO IMAGE remains available, successful retry removes the rejection presentation, and a new story resets it.
 
 ## BUILD nomination flicker parity — 2026-11-07
 
