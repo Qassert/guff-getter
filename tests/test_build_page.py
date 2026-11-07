@@ -98,6 +98,15 @@ def test_build_offers_three_responsive_munge_story_lengths():
     assert 'flex-wrap: wrap' in css
 
 
+def test_build_removes_theme_scene_selector_but_keeps_other_ingredient_groups():
+    template = Path('newsmuncher/templates/build.html').read_text()
+    assert 'Theme / Scene' not in template
+    assert 'data-theme-url' not in template
+    assert 'data-category="theme"' not in template
+    for category in ('stuff', 'swear', 'modifier', 'person'):
+        assert f'data-category="{category}"' in template
+
+
 def test_build_reuses_create_editors_and_bottom_action_order():
     template = Path('newsmuncher/templates/build.html').read_text()
     assert template.count('data-prompt-editor') == 1

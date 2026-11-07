@@ -13,10 +13,16 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Reduced the BUILD story-to-image spacing after nomination.
+CURRENT_TASK: Removed BUILD Theme / Scene and empty prompt-category declarations.
 APPROVAL: Andy explicitly approved a local merge in the isolated BUILD worktree; no push or deployment.
-NEXT_STEP: Browser-check the tighter BUILD story-to-image spacing before any push, merge back or deployment.
-VALIDATION: 22 focused JavaScript tests pass. BUILD JavaScript syntax and diff checks pass. No provider calls or production database writes occurred.
+NEXT_STEP: Browser-check the simplified BUILD ingredient selector and prompt before any push, merge back or deployment.
+VALIDATION: 23 focused Python tests and 19 focused JavaScript tests pass. Python and BUILD JavaScript syntax plus diff checks pass. No provider calls or production database writes occurred.
+
+## BUILD prompt category cleanup — 2026-11-07
+
+- Removed the Theme / Scene selector and its runtime vocabulary request from BUILD while retaining the underlying data and backend field for compatibility.
+- Frontend and backend canonical prompt builders now omit unselected categories entirely instead of sending `None selected` statements to the model.
+- Existing prompt-edit preservation, RESET PROMPT, ingredient selection and 30/60/90 length handling remain unchanged.
 
 ## BUILD rejected-image guidance — 2026-11-07
 

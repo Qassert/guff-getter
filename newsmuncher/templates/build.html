@@ -16,7 +16,6 @@
   data-swear-url="{{ url_for('static', path='data/build-swear.csv') }}"
   data-modifier-url="{{ url_for('static', path='data/build-modifiers.csv') }}"
   data-person-url="{{ url_for('static', path='data/build-people.csv') }}"
-  data-theme-url="{{ url_for('static', path='data/build-themes.csv') }}"
   data-generate-url="/build/generate"
   data-draft-url="/build/draft">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
@@ -75,10 +74,6 @@
         <div class="ingredient-list" data-slot-list="person"></div>
       </section>
 
-      <section class="ingredient-group" data-category="theme">
-        <div class="ingredient-heading"><div><h2>Theme / Scene</h2><p>The location of the impending embarrassment.</p></div><button type="button" class="mini-action" data-add-slot="theme">+ SLOT</button></div>
-        <div class="ingredient-list" data-slot-list="theme"></div>
-      </section>
     </div>
   </div>
 

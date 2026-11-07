@@ -53,9 +53,16 @@ class BuildDraftRequest(BaseModel):
 
 
 def build_story_prompt(recipe: BuildRecipe, target_words: int, creative_prompt: str) -> str:
-    def line(label: str, key: str) -> str:
+    def line(label: str, key: str) -> Optional[str]:
         values = [item.text.strip() for item in getattr(recipe, key) if item.text.strip()]
-        return f"{label}: {'; '.join(values) if values else 'None selected'}"
+        return f"{label}: {'; '.join(values)}" if values else None
+
+    ingredient_lines = filter(None, (
+        line("Objects", "stuff"),
+        line("Swear words", "swear"),
+        line("People", "person"),
+        line("Modifiers", "modifier"),
+    ))
 
     minimum = round(target_words * 0.9)
     maximum = STORY_LENGTH_MAXIMUMS[target_words]
@@ -66,11 +73,7 @@ def build_story_prompt(recipe: BuildRecipe, target_words: int, creative_prompt: 
         "",
         "Selected ingredients:",
         "",
-        line("Objects", "stuff"),
-        line("Swear words", "swear"),
-        line("People", "person"),
-        line("Modifiers", "modifier"),
-        line("Theme or setting", "theme"),
+        *ingredient_lines,
         "",
         "When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.",
         "Return only the story, with no title, introduction or explanation.",

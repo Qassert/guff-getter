@@ -61,6 +61,20 @@ def test_build_generation_uses_recipe_without_persistence_and_caps_each_length()
         assert f'never exceed {maximum} words' in prompt
 
 
+def test_build_prompt_omits_empty_categories_instead_of_describing_absences():
+    prompt = build.build_story_prompt(build.BuildRecipe.model_validate({
+        'stuff': [{'text': 'Leaf trowel espresso machine'}],
+        'swear': [{'text': 'Waffle prodder'}],
+        'modifier': [{'text': 'Romantically bankrupt'}],
+    }), 60, build.DEFAULT_BUILD_CREATIVE_PROMPT)
+    assert 'Objects: Leaf trowel espresso machine' in prompt
+    assert 'Swear words: Waffle prodder' in prompt
+    assert 'Modifiers: Romantically bankrupt' in prompt
+    assert 'People:' not in prompt
+    assert 'Theme or setting:' not in prompt
+    assert 'None selected' not in prompt
+
+
 def test_build_generation_rejects_empty_and_oversized_payloads():
     empty = client().post('/build/generate', json={**generation_payload(), 'recipe': {}})
     oversized = client().post('/build/generate', json={

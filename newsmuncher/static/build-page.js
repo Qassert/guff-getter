@@ -16,9 +16,9 @@
   ];
   const LABELS = {
     stuff: 'Stuff / Objects', swear: 'Swear words', modifier: 'Modifiers',
-    person: 'People', theme: 'Theme / Scene'
+    person: 'People'
   };
-  const INITIAL_COUNTS = {stuff: 3, swear: 2, modifier: 5, person: 1, theme: 1};
+  const INITIAL_COUNTS = {stuff: 3, swear: 2, modifier: 5, person: 1};
   const FLICK_COUNT = 5;
   const FLICK_DELAY = 100;
   const DEFAULT_CREATIVE_PROMPT = `You are an inventive, irreverent absurdist comedy writer. Write one coherent, genuinely funny miniature story using the selected ingredients as creative inspiration.
@@ -87,7 +87,12 @@ Creative rules:
   function phrase(parts) { return capitalise(parts.map(part => part.word).join(' ')); }
 
   function buildPrompt(recipe, targetWords = 60, creativePrompt = DEFAULT_CREATIVE_PROMPT) {
-    const line = (label, key) => `${label}: ${(recipe[key] || []).map(item => item.text).join('; ') || 'None selected'}`;
+    const ingredientLines = [
+      ['Objects', 'stuff'], ['Swear words', 'swear'], ['People', 'person'], ['Modifiers', 'modifier']
+    ].flatMap(([label, key]) => {
+      const values = (recipe[key] || []).map(item => item.text).filter(Boolean);
+      return values.length ? [`${label}: ${values.join('; ')}`] : [];
+    });
     const maximum = {30: 33, 60: 66, 90: 99}[targetWords];
     const minimum = Math.round(targetWords * 0.9);
     const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
@@ -96,11 +101,7 @@ Creative rules:
       '',
       'Selected ingredients:',
       '',
-      line('Objects', 'stuff'),
-      line('Swear words', 'swear'),
-      line('People', 'person'),
-      line('Modifiers', 'modifier'),
-      line('Theme or setting', 'theme'),
+      ...ingredientLines,
       '',
       'When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.',
       'Return only the story, with no title, introduction or explanation.',
@@ -165,21 +166,20 @@ Creative rules:
       this.fetcher = options.fetcher || root.fetch?.bind(root);
       this.reducedMotion = options.reducedMotion || (() => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
       this.vocabularies = {};
-      this.slots = {stuff: [], swear: [], modifier: [], person: [], theme: []};
-      this.recipe = {stuff: [], swear: [], modifier: [], person: [], theme: []};
+      this.slots = {stuff: [], swear: [], modifier: [], person: []};
+      this.recipe = {stuff: [], swear: [], modifier: [], person: []};
       this.nextId = 1;
       this.generating = false;
       this.generateController = null;
       this.promptDirty = false;
       this.promptTarget = 60;
-      this.recent = {stuff: new Set(), swear: new Set(), modifier: new Set(), person: new Set(), theme: new Set()};
+      this.recent = {stuff: new Set(), swear: new Set(), modifier: new Set(), person: new Set()};
     }
 
     async load() {
       const sources = {
         stuff: this.element.dataset.stuffUrl, swear: this.element.dataset.swearUrl,
-        modifier: this.element.dataset.modifierUrl, person: this.element.dataset.personUrl,
-        theme: this.element.dataset.themeUrl
+        modifier: this.element.dataset.modifierUrl, person: this.element.dataset.personUrl
       };
       try {
         const entries = await Promise.all(Object.entries(sources).map(async ([key, url]) => {

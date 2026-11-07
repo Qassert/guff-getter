@@ -26,6 +26,21 @@ test('Build prompt shares its creative rules across all three length targets', (
   }
 });
 
+test('Build prompt omits every unselected category instead of saying None selected', () => {
+  const prompt = buildPrompt({
+    stuff: [{text: 'Leaf trowel espresso machine'}],
+    swear: [{text: 'Waffle prodder'}],
+    modifier: [{text: 'Romantically bankrupt'}],
+    person: []
+  }, 60);
+  assert.match(prompt, /Objects: Leaf trowel espresso machine/);
+  assert.match(prompt, /Swear words: Waffle prodder/);
+  assert.match(prompt, /Modifiers: Romantically bankrupt/);
+  assert.doesNotMatch(prompt, /People:/);
+  assert.doesNotMatch(prompt, /Theme or setting:/);
+  assert.doesNotMatch(prompt, /None selected/);
+});
+
 test('serialised recipe omits local ids and retains grammar', () => {
   const output = serialiseRecipe(recipe);
   assert.deepEqual(output.modifier, [{text: 'ceremonially', grammar: 'adverb'}]);
