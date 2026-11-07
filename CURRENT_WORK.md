@@ -13,10 +13,15 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Removed BUILD Theme / Scene and empty prompt-category declarations.
+CURRENT_TASK: Fixed BUILD asset caching after Theme / Scene removal.
 APPROVAL: Andy explicitly approved a local merge in the isolated BUILD worktree; no push or deployment.
-NEXT_STEP: Browser-check the simplified BUILD ingredient selector and prompt before any push, merge back or deployment.
-VALIDATION: 23 focused Python tests and 19 focused JavaScript tests pass. Python and BUILD JavaScript syntax plus diff checks pass. No provider calls or production database writes occurred.
+NEXT_STEP: Reload BUILD and browser-check the simplified ingredient selector before any push, merge back or deployment.
+VALIDATION: 23 focused Python tests and 11 focused JavaScript tests pass. BUILD JavaScript syntax and diff checks pass. No provider calls or production database writes occurred.
+
+## BUILD cache mismatch repair — 2026-11-07
+
+- Bumped the BUILD JavaScript cache key after removing Theme / Scene so browsers no longer combine the new template with the old theme-loading controller.
+- Bumped the BUILD stylesheet cache key at the same time so the recent result spacing and rejected-image parchment styles load consistently.
 
 ## BUILD prompt category cleanup — 2026-11-07
 

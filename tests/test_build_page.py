@@ -105,6 +105,8 @@ def test_build_removes_theme_scene_selector_but_keeps_other_ingredient_groups():
     assert 'data-category="theme"' not in template
     for category in ('stuff', 'swear', 'modifier', 'person'):
         assert f'data-category="{category}"' in template
+    assert "path='build-page.js') }}?v=build-edit-2" in template
+    assert "path='build-page.css') }}?v=build-layout-2" in template
 
 
 def test_build_reuses_create_editors_and_bottom_action_order():
