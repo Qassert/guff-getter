@@ -106,7 +106,7 @@ def test_build_removes_theme_scene_selector_but_keeps_other_ingredient_groups():
     for category in ('stuff', 'swear', 'modifier', 'person'):
         assert f'data-category="{category}"' in template
     assert "path='build-page.js') }}?v=build-edit-2" in template
-    assert "path='build-page.css') }}?v=build-layout-2" in template
+    assert "path='build-page.css') }}?v=build-layout-3" in template
 
 
 def test_build_reuses_create_editors_and_bottom_action_order():
@@ -137,6 +137,9 @@ def test_build_prompt_editor_auto_sizes_and_remains_the_only_prompt_surface():
     assert 'data-reset-prompt' in Path('newsmuncher/templates/build.html').read_text()
     assert 'overflow-y: hidden' in css
     assert '.prompt-preview pre' not in css
+    assert ".prompt-editor-panel" in css
+    assert "border-image: url('images/backgrounds/parchment.png')" in css
+    assert "border: 0; background: transparent" in css
 
 
 def test_build_success_explicitly_overrides_shared_hidden_output_style():
