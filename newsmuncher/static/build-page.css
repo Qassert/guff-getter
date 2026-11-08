@@ -48,6 +48,8 @@
 .ingredient-word:hover { transform: none; box-shadow: none; background: #e9cb6738; }
 .ingredient-word:focus-visible { outline: 2px dashed var(--build-red); outline-offset: 2px; }
 .ingredient-word small { color: #6c6256; font: 600 .62rem/1.1 var(--body-font); letter-spacing: .06em; text-transform: uppercase; }
+/* SWEAR categories construct insults; they are not user-facing labels. */
+.ingredient-group[data-category="swear"] .ingredient-word small { display: none; }
 .slot-actions { display: flex; align-items: center; gap: 6px; }
 .mini-action, .remove-action {
   min-height: 38px; padding: 7px 11px; border: 1px solid #544834; box-shadow: 2px 2px #544834;
