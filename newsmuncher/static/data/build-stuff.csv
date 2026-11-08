@@ -2468,3 +2468,686 @@ object,drafting stool
 object,filing trolley
 object,mail-sorting rack
 object,cloakroom bench
+object,cat
+object,cattle
+object,dog
+object,donkey
+object,goat
+object,guinea pig
+object,horse
+object,pig
+object,rabbit
+object,aardvark
+object,aardwolf
+object,african buffalo
+object,african elephant
+object,african leopard
+object,albatross
+object,alligator
+object,alpaca
+object,amphibian
+object,anaconda
+object,angelfish
+object,anglerfish
+object,ant
+object,anteater
+object,antelope
+object,antlion
+object,ape
+object,aphid
+object,arabian leopard
+object,arctic fox
+object,arctic wolf
+object,armadillo
+object,arrow crab
+object,asp
+object,baboon
+object,badger
+object,bald eagle
+object,bandicoot
+object,barnacle
+object,barracuda
+object,basilisk
+object,bass
+object,bat
+object,beaked whale
+object,bear
+object,beaver
+object,bedbug
+object,bee
+object,beetle
+object,bird
+object,bison
+object,blackbird
+object,black panther
+object,black widow spider
+object,bluebird
+object,blue jay
+object,blue whale
+object,boa
+object,boar
+object,bobcat
+object,bobolink
+object,bonobo
+object,booby
+object,box jellyfish
+object,bovid
+object,buffalo
+object,bug
+object,butterfly
+object,buzzard
+object,camel
+object,canid
+object,cape buffalo
+object,capybara
+object,cardinal
+object,caribou
+object,carp
+object,catshark
+object,caterpillar
+object,catfish
+object,centipede
+object,cephalopod
+object,chameleon
+object,cheetah
+object,chickadee
+object,chicken
+object,chimpanzee
+object,chinchilla
+object,chipmunk
+object,clam
+object,clownfish
+object,cobra
+object,cockroach
+object,cod
+object,condor
+object,constrictor
+object,coral
+object,cougar
+object,cow
+object,coyote
+object,crab
+object,crane
+object,crane fly
+object,crawdad
+object,crayfish
+object,cricket
+object,crocodile
+object,crow
+object,cuckoo
+object,cicada
+object,damselfly
+object,deer
+object,dingo
+object,dolphin
+object,dormouse
+object,dove
+object,dragonfly
+object,duck
+object,dung beetle
+object,eagle
+object,earthworm
+object,earwig
+object,echidna
+object,eel
+object,egret
+object,elephant
+object,elephant seal
+object,elk
+object,emu
+object,english pointer
+object,ermine
+object,falcon
+object,ferret
+object,finch
+object,firefly
+object,fish
+object,flamingo
+object,flea
+object,fly
+object,flying fish
+object,fowl
+object,fox
+object,frog
+object,fruit bat
+object,gamefowl
+object,galliform
+object,gazelle
+object,gecko
+object,gerbil
+object,giant panda
+object,giant squid
+object,gibbon
+object,Gila monster
+object,giraffe
+object,goldfish
+object,goose
+object,gopher
+object,gorilla
+object,grasshopper
+object,great blue heron
+object,great white shark
+object,grizzly bear
+object,ground shark
+object,grouse
+object,guan
+object,guanaco
+object,guineafowl
+object,gull
+object,guppy
+object,haddock
+object,halibut
+object,hammerhead shark
+object,hamster
+object,hare
+object,harrier
+object,hawk
+object,hedgehog
+object,hermit crab
+object,heron
+object,herring
+object,hippopotamus
+object,hookworm
+object,hornet
+object,hoverfly
+object,hummingbird
+object,humpback whale
+object,hyena
+object,iguana
+object,impala
+object,Irukandji jellyfish
+object,jackal
+object,jaguar
+object,jay
+object,jellyfish
+object,junglefowl
+object,kangaroo
+object,kangaroo mouse
+object,kangaroo rat
+object,kingfisher
+object,kiwi
+object,koala
+object,koi
+object,Komodo dragon
+object,krill
+object,ladybug
+object,lamprey
+object,landfowl
+object,land snail
+object,lark
+object,leech
+object,lemming
+object,lemur
+object,leopard
+object,limpet
+object,lion
+object,lizard
+object,llama
+object,lobster
+object,locust
+object,loon
+object,lungfish
+object,lynx
+object,macaw
+object,mackerel
+object,magpie
+object,mammal
+object,manatee
+object,mandrill
+object,manta ray
+object,marlin
+object,marmoset
+object,marmot
+object,marsupial
+object,marten
+object,meadowlark
+object,meerkat
+object,mink
+object,minnow
+object,mite
+object,mockingbird
+object,mole
+object,mollusk
+object,mongoose
+object,monitor lizard
+object,monkey
+object,moose
+object,mosquito
+object,moth
+object,mountain goat
+object,mouse
+object,mule
+object,muskox
+object,narwhal
+object,newt
+object,new world quail
+object,nightingale
+object,ocelot
+object,octopus
+object,old world quail
+object,opossum
+object,orangutan
+object,orca
+object,ostrich
+object,otter
+object,owl
+object,ox
+object,panda
+object,panther
+object,parakeet
+object,parrot
+object,parrotfish
+object,partridge
+object,peacock
+object,peafowl
+object,pelican
+object,penguin
+object,perch
+object,peregrine falcon
+object,pheasant
+object,pigeon
+object,pike
+object,pilot whale
+object,pinniped
+object,piranha
+object,planarian
+object,platypus
+object,polar bear
+object,pony
+object,porcupine
+object,porpoise
+object,Portuguese man-of-war
+object,possum
+object,prairie dog
+object,prawn
+object,praying mantis
+object,primate
+object,puffin
+object,puma
+object,python
+object,quail
+object,quelea
+object,quokka
+object,raccoon
+object,rainbow trout
+object,rat
+object,rattlesnake
+object,raven
+object,red panda
+object,reindeer
+object,reptile
+object,rhinoceros
+object,roadrunner
+object,rodent
+object,rook
+object,rooster
+object,roundworm
+object,sailfish
+object,salamander
+object,salmon
+object,sawfish
+object,scale insect
+object,scallop
+object,scorpion
+object,seahorse
+object,sea lion
+object,sea slug
+object,sea snail
+object,shark
+object,sheep
+object,shrew
+object,shrimp
+object,silkworm
+object,silverfish
+object,skink
+object,skunk
+object,sloth
+object,slug
+object,smelt
+object,snail
+object,snake
+object,snipe
+object,snow leopard
+object,sockeye salmon
+object,sole
+object,sparrow
+object,sperm whale
+object,spider
+object,spider monkey
+object,spoonbill
+object,squid
+object,squirrel
+object,starfish
+object,star-nosed mole
+object,steelhead trout
+object,stingray
+object,stoat
+object,stork
+object,sturgeon
+object,sugar glider
+object,swallow
+object,swan
+object,swift
+object,swordfish
+object,swordtail
+object,tahr
+object,takin
+object,tapir
+object,tarantula
+object,tarsier
+object,tasmanian devil
+object,termite
+object,tern
+object,thrush
+object,tick
+object,tiger
+object,tiger shark
+object,toad
+object,tortoise
+object,toucan
+object,tree frog
+object,trout
+object,tuna
+object,turkey
+object,turtle
+object,urial
+object,vampire bat
+object,vampire squid
+object,vicuna
+object,viper
+object,vole
+object,vulture
+object,wallaby
+object,walrus
+object,wasp
+object,warbler
+object,water boa
+object,water buffalo
+object,weasel
+object,whale
+object,whippet
+object,whitefish
+object,whooping crane
+object,wildcat
+object,wildebeest
+object,wildfowl
+object,wolf
+object,wolverine
+object,wombat
+object,woodpecker
+object,worm
+object,wren
+object,X-ray tetra
+object,yak
+object,yellow perch
+object,zebra
+object,zebra finch
+object,axolotl
+object,naked mole-rat
+object,shoebill stork
+object,blobfish
+object,aye-aye
+object,pangolin
+object,mantis shrimp
+object,secretary bird
+object,proboscis monkey
+object,giant isopod
+object,saiga antelope
+object,seagull
+object,okapi
+object,binturong
+object,fossa
+object,tenrec
+object,solenodon
+object,bilby
+object,numbat
+object,quoll
+object,dugong
+object,babirusa
+object,gerenuk
+object,markhor
+object,dik-dik
+object,klipspringer
+object,sitatunga
+object,bongo
+object,nyala
+object,kudu
+object,oryx
+object,addax
+object,blackbuck
+object,chiru
+object,pudu
+object,muntjac
+object,tufted deer
+object,water deer
+object,sambar
+object,chital
+object,suni
+object,paca
+object,agouti
+object,coypu
+object,mara
+object,viscacha
+object,degu
+object,jerboa
+object,springhare
+object,hutia
+object,gundi
+object,pika
+object,hyrax
+object,sengi
+object,zorilla
+object,tayra
+object,grison
+object,kinkajou
+object,coati
+object,cacomistle
+object,ringtail
+object,olingo
+object,raccoon dog
+object,bat-eared fox
+object,fennec fox
+object,maned wolf
+object,dhole
+object,bush dog
+object,African wild dog
+object,serval
+object,caracal
+object,jaguarundi
+object,margay
+object,sand cat
+object,fishing cat
+object,Pallas's cat
+object,clouded leopard
+object,Sunda colugo
+object,slow loris
+object,potto
+object,galago
+object,indri
+object,sifaka
+object,uakari
+object,gelada
+object,golden lion tamarin
+object,cotton-top tamarin
+object,pygmy marmoset
+object,emperor tamarin
+object,golden snub-nosed monkey
+object,snubfin dolphin
+object,vaquita
+object,beluga whale
+object,bowhead whale
+object,leopard seal
+object,crabeater seal
+object,Weddell seal
+object,ribbon seal
+object,hooded seal
+object,kakapo
+object,kea
+object,kagu
+object,hoatzin
+object,tawny frogmouth
+object,potoo
+object,oilbird
+object,lyrebird
+object,bowerbird
+object,bird-of-paradise
+object,cassowary
+object,rhea
+object,seriema
+object,sunbittern
+object,trumpeter
+object,limpkin
+object,jacana
+object,avocet
+object,stilt
+object,oystercatcher
+object,curlew
+object,godwit
+object,sandpiper
+object,turnstone
+object,phalarope
+object,plover
+object,lapwing
+object,skua
+object,auk
+object,razorbill
+object,guillemot
+object,gannet
+object,cormorant
+object,anhinga
+object,frigatebird
+object,tropicbird
+object,petrel
+object,shearwater
+object,fulmar
+object,ibis
+object,hamerkop
+object,marabou stork
+object,saddle-billed stork
+object,roseate spoonbill
+object,great bustard
+object,sandgrouse
+object,turaco
+object,hornbill
+object,hoopoe
+object,bee-eater
+object,roller
+object,trogon
+object,quetzal
+object,motmot
+object,tody
+object,king vulture
+object,bearded vulture
+object,harpy eagle
+object,Steller's sea eagle
+object,burrowing owl
+object,elf owl
+object,great grey owl
+object,saiga
+object,thorny devil
+object,frilled lizard
+object,tuatara
+object,mata mata
+object,alligator snapping turtle
+object,pig-nosed turtle
+object,Mary River turtle
+object,Chinese giant salamander
+object,olm
+object,hellbender
+object,mudpuppy
+object,caecilian
+object,glass frog
+object,purple frog
+object,Surinam toad
+object,Darwin's frog
+object,African bullfrog
+object,goliath frog
+object,red-lipped batfish
+object,goblin shark
+object,frilled shark
+object,cookiecutter shark
+object,wobbegong
+object,whale shark
+object,basking shark
+object,oarfish
+object,sunfish
+object,barreleye
+object,fangtooth
+object,viperfish
+object,dragonfish
+object,tripod fish
+object,frogfish
+object,lumpfish
+object,lumpsucker
+object,wolffish
+object,sarcastic fringehead
+object,leafy seadragon
+object,weedy seadragon
+object,ribbon eel
+object,garden eel
+object,electric eel
+object,electric ray
+object,coelacanth
+object,arapaima
+object,alligator gar
+object,stargazer
+object,stonefish
+object,lionfish
+object,scorpionfish
+object,flying gurnard
+object,sea robin
+object,mudskipper
+object,archerfish
+object,pufferfish
+object,porcupinefish
+object,triggerfish
+object,boxfish
+object,cuttlefish
+object,nautilus
+object,dumbo octopus
+object,blanket octopus
+object,mimic octopus
+object,blue-ringed octopus
+object,colossal squid
+object,bobtail squid
+object,yeti crab
+object,coconut crab
+object,Japanese spider crab
+object,decorator crab
+object,pistol shrimp
+object,peacock mantis shrimp
+object,horseshoe crab
+object,tardigrade
+object,velvet worm
+object,tiger beetle
+object,giraffe weevil
+object,Hercules beetle
+object,goliath beetle
+object,orchid mantis
+object,spiny flower mantis
+object,leaf insect
+object,stick insect
+object,thorn bug
+object,treehopper
+object,lanternfly
+object,assassin bug
+object,whip scorpion
+object,vinegaroon
+object,ogre-faced spider
+object,peacock spider
+object,diving bell spider
+object,sea pig
+object,sea cucumber
+object,feather star
+object,basket star
+object,brittle star
+object,Christmas tree worm
+object,Bobbit worm
+object,peanut worm
+object,ribbon worm
+object,comb jelly
+object,sea gooseberry
+object,sea angel
+object,blue dragon sea slug
+object,Spanish dancer sea slug
+object,flamboyant cuttlefish
