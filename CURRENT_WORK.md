@@ -1,8 +1,8 @@
-STATUS: REVIEW
+STATUS: READY
 OWNER: CODEX
-BRANCH: feature/build-workshop-20261106
-LAST_COMPLETED_FEATURE: MUNGE EXPERIMENTAL RADICAL MODE
-LAST_COMPLETED_COMMIT: 3e07e12 fix: refine Gallery navigation and rotation
+BRANCH: develop
+LAST_COMPLETED_FEATURE: BUILD CONSOLIDATION FOR DEVELOP
+LAST_COMPLETED_COMMIT: See latest BUILD consolidation and merge commits in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,26 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Replaced the BUILD prompt title with an embossed EDIT PROMPT arrow.
-APPROVAL: Andy explicitly approved a local merge in the isolated BUILD worktree; no push or deployment.
-NEXT_STEP: Reload BUILD and browser-check the EDIT PROMPT arrow before any push, merge back or deployment.
-VALIDATION: 12 focused Python tests and 11 focused JavaScript tests pass. BUILD JavaScript syntax and diff checks pass. No provider calls or production database writes occurred.
+CURRENT_TASK: Consolidate verified BUILD prompts, headline generation and SPIN ALL into develop.
+APPROVAL: Andy explicitly authorized committing verified BUILD work, merging into develop and pushing develop. No production deployment.
+NEXT_STEP: Review BUILD visually from develop; live paid generation and production deployment remain unperformed.
+VALIDATION: 199 JavaScript tests; 133 Python tests plus six subtests pass. Generation/media providers and database operations are mocked. See docs/build-consolidation.md.
+
+## BUILD consolidation — 2026-11-09
+
+- Consolidated Maximum Mungery, separate generated headlines with safe edited-story fallback, and all-category SPIN ALL.
+- Retained animal OBJECTS, two-word MODIFIERS and hidden SWEAR metadata labels.
+- Advanced BUILD frontend cache versions and verified recipe/prompt/story preservation.
+- develop did not exist locally or remotely; integration starts from origin/main, preserving main unchanged.
+- Other worktree prompt edits and untracked media remain excluded and untouched.
+- Detailed review, validation and integration handover: docs/build-consolidation.md.
+
+## Maximum Mungery prompt — 2026-11-08
+
+- Replaced the BUILD creative instructions in the frontend and backend defaults with Maximum Mungery.
+- Preserved dynamic non-empty ingredient insertion and the editable complete-prompt workflow.
+- Kept 30/60/90 as dynamic ranges; MUNGE 60 produces the requested 54–66 wording without imposing that range on the other buttons.
+- The existing endpoint, `gpt-6-sol` model, Responses API request, validation, timeout, response cap and editable story display are unchanged.
 
 ## BUILD prompt arrow — 2026-11-07
 

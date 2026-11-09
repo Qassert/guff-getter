@@ -21,16 +21,21 @@
   const INITIAL_COUNTS = {stuff: 3, swear: 2, modifier: 5, person: 1};
   const FLICK_COUNT = 5;
   const FLICK_DELAY = 100;
-  const DEFAULT_CREATIVE_PROMPT = `You are an inventive, irreverent absurdist comedy writer. Write one coherent, genuinely funny miniature story using the selected ingredients as creative inspiration.
+  const DEFAULT_CREATIVE_PROMPT = `You are a dangerously unhinged comedy writer with impeccable comic timing and absolutely no respect for reality.
 
-Creative rules:
-- Transform, do not merely insert. Treat ingredients as creative seeds rather than mandatory phrases. Reinterpret, mutate and combine them so they become integral to the characters, objects, events or absurd logic.
-- Never satisfy the recipe by simply making a character say an insult, occupation or unusual phrase. Avoid lazy dialogue; build jokes from what the ingredients become and do.
-- Invent unexpected connections between ingredients. Begin with a peculiar situation, add a surprising complication, then escalate through a twisted but recognisable chain of cause and effect.
-- Prioritise comedy over completeness. Transform or omit an ingredient when literal inclusion would make the story weaker.
-- Be boldly irreverent: use deadpan narration, vivid specificity, dark humour, grotesque imagery, vulgarity, stupidity and wildly inappropriate consequences when funny.
-- Avoid tired surrealist clichés, especially generic existential dread, arbitrary promotions and sentient bureaucracy.
-- End with a surprising punchline that pays off or recontextualises an earlier detail instead of becoming random.`;
+Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels like someone has accidentally combined a fever dream, a filthy British comedy sketch and a catastrophic misunderstanding of how the universe works.
+
+**The rules of lunacy:**
+
+- **Mutate everything.** The ingredients are raw genetic material for a comedic monstrosity. Fuse them, corrupt them, misunderstand them and invent things that should never have existed. Nothing needs to retain its original purpose.
+- **Start in the middle of madness.** The opening sentence should immediately establish something spectacularly stupid as an ordinary fact of life. No introductions, explanations or scene-setting.
+- **Make the impossible inevitable.** Every ridiculous event must cause an even more ridiculous consequence. The logic can be insane, but the chain reaction must be understandable.
+- **Commit to the stupidity.** Characters must take the most outrageously inappropriate actions with absolute conviction. Nobody should acknowledge how bizarre anything is.
+- **Weaponise specificity.** Ridiculously precise details, revolting physical transformations, petty grievances, bodily indignities and wildly disproportionate punishments are your friends.
+- **Be magnificently inappropriate.** Embrace vulgarity, grotesque slapstick, dark humour, humiliation, stupidity, bad taste and outrageous social transgressions whenever they make the joke funnier.
+- **Surprise yourself.** Avoid predictable surrealism, talking household appliances, corporate satire, existential philosophy, random royalty and anything that resembles a conventional whimsical fairy tale.
+- **Don't explain the joke.** No moral, no reflection, no clever concluding observation. Let the absurdity speak for itself.
+- **Finish with a detonation.** The final sentence should deliver a brutally funny reversal, escalation or revelation that makes the preceding nonsense even more ridiculous. A proper comic payoff, not a random non sequitur.`;
 
   function parseCSV(text) {
     const rows = [];
@@ -99,13 +104,20 @@ Creative rules:
     return [
       creativePrompt.trim(),
       '',
-      'Selected ingredients:',
+      '**Selected ingredients:**',
       '',
       ...ingredientLines,
       '',
-      'When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.',
-      'Return only the story, with no title, introduction or explanation.',
-      `Story length: Aim for about ${targetWords} words (roughly ${minimum} to ${maximum}). ${pacing} Coherence and the comic payoff matter more than an exact count, but never exceed ${maximum} words.`
+      '**Ingredient handling:**',
+      '',
+      'Use whichever ingredients produce the most explosive comedy. Combine several into one hideous invention if necessary. Never mechanically list or name-drop them. The ingredients should be responsible for the disaster, not merely present at the scene.',
+      '',
+      '**Output:**',
+      '',
+      'Write exactly one miniature comic catastrophe. Every sentence must earn its place through a joke, escalation or payoff.',
+      '',
+      'Return only the story. No title, commentary or explanation.',
+      `Story length: Aim for ${minimum}–${maximum} words, never exceeding ${maximum}. ${pacing}`
     ].join('\n');
   }
 
@@ -114,7 +126,7 @@ Creative rules:
     const minimum = Math.round(targetWords * 0.9);
     const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
     const cleaned = String(prompt || '').replace(/^Story length:.*(?:\n|$)/gm, '').trimEnd();
-    return `${cleaned}\n\nStory length: Aim for about ${targetWords} words (roughly ${minimum} to ${maximum}). ${pacing} Coherence and the comic payoff matter more than an exact count, but never exceed ${maximum} words.`;
+    return `${cleaned}\n\nStory length: Aim for ${minimum}–${maximum} words, never exceeding ${maximum}. ${pacing}`;
   }
 
   function wait(delay) { return new Promise(resolve => setTimeout(resolve, delay)); }
@@ -136,7 +148,10 @@ Creative rules:
     if (typeof payload.story !== 'string' || !payload.story.trim()) {
       throw new Error('Story generation returned no text. Please try again.');
     }
-    return payload.story;
+    return {
+      story: payload.story.trim(),
+      headline: typeof payload.headline === 'string' ? payload.headline.trim() : ''
+    };
   }
 
   function displayBuildStory(element, story) {
@@ -149,10 +164,10 @@ Creative rules:
     root.autoResize?.(editor);
   }
 
-  async function requestBuildDraft(fetcher, url, story) {
+  async function requestBuildDraft(fetcher, url, story, headline = '', headlineStory = '') {
     const response = await fetcher(url, {
       method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({story})
+      body: JSON.stringify({story, headline, headline_story: headlineStory})
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.detail || 'Nomination could not be prepared.');
@@ -173,6 +188,8 @@ Creative rules:
       this.generateController = null;
       this.promptDirty = false;
       this.promptTarget = 60;
+      this.generatedHeadline = '';
+      this.headlineStory = '';
       this.recent = {stuff: new Set(), swear: new Set(), modifier: new Set(), person: new Set()};
     }
 
@@ -260,11 +277,31 @@ Creative rules:
       }
     }
 
-    async randomiseSlot(category, id) {
+    async spinAll() {
+      if (this.spinningAll) return;
+      this.spinningAll = true;
+      const button = this.element.querySelector('[data-spin-all]');
+      if (button) button.disabled = true;
+      try {
+        await Promise.all(Object.entries(this.slots).flatMap(([category, slots]) =>
+          slots.map(slot => this.randomiseSlot(category, slot.id, true))));
+      } finally {
+        this.spinningAll = false;
+        if (button) button.disabled = false;
+      }
+    }
+
+    async randomiseSlot(category, id, avoidRepeat = false) {
       const slot = this.slots[category].find(item => item.id === id);
       if (!slot || slot.busy) return;
       slot.busy = true; const generation = ++slot.generation;
-      const targets = this.candidate(category, id);
+      let targets = this.candidate(category, id);
+      if (avoidRepeat) {
+        const previous = phrase(slot.parts);
+        for (let attempt = 0; attempt < 5 && phrase(targets) === previous; attempt++) {
+          targets = this.candidate(category, id);
+        }
+      }
       slot.parts = targets.map(target => ({...target}));
       this.renderSlot(slot);
       await Promise.all(targets.map((target, index) => this.flickPart(slot, index, target, generation, index * 200)));
@@ -318,6 +355,8 @@ Creative rules:
         if (nominate) return this.nominateStory();
         const munge = event.target.closest('[data-munge]');
         if (munge) return this.generateStory(Number(munge.dataset.mungeTarget));
+        const spinAll = event.target.closest('[data-spin-all]');
+        if (spinAll) return this.spinAll();
         const add = event.target.closest('[data-add-slot]');
         if (add) return this.addSlot(add.dataset.addSlot);
         const remove = event.target.closest('[data-remove-slot]');
@@ -407,7 +446,8 @@ Creative rules:
       button.disabled = true; button.textContent = 'NOMINATING…';
       try {
         if (!root.creationActions?.hasDraft?.()) {
-          const data = await requestBuildDraft(this.fetcher, this.element.dataset.draftUrl, story);
+          const data = await requestBuildDraft(this.fetcher, this.element.dataset.draftUrl, story,
+            this.generatedHeadline, this.headlineStory);
           root.creationActions?.attachDraft?.(data);
         }
         if (typeof root.creationActions?.nominate !== 'function') {
@@ -440,10 +480,12 @@ Creative rules:
       this.generateController = new AbortController();
       const timeout = root.setTimeout(() => this.generateController?.abort(), 35000);
       try {
-        const story = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe,
+        const generated = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe,
           targetWords, this.currentPrompt(), this.generateController.signal);
         root.creationActions?.reset?.();
-        displayBuildStory(this.element, story);
+        this.generatedHeadline = generated.headline;
+        this.headlineStory = generated.story;
+        displayBuildStory(this.element, generated.story);
         root.updateCopyButton?.();
         const nominate = this.element.querySelector('[data-build-nominate]');
         nominate.hidden = false; nominate.disabled = false; nominate.textContent = 'NOMINATE';

@@ -31,6 +31,8 @@
 .ingredient-heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; margin-bottom: 12px; }
 .ingredient-heading h2 { margin: 0; font: 800 clamp(1.35rem, 3vw, 2rem) var(--build-head); text-transform: uppercase; }
 .ingredient-heading p { margin: 2px 0 0; color: #675c4e; }
+.ingredient-heading-actions { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; max-width: 100%; }
+.ingredient-heading-actions .mini-action { white-space: nowrap; }
 .ingredient-list { display: grid; gap: 10px; }
 .ingredient-slot {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px;

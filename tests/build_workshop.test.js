@@ -23,7 +23,7 @@ test('Swear preserves all six original phrase structures and flick timing', () =
 });
 
 test('Build starts with requested independent selector counts', () => {
-  assert.deepEqual(build.INITIAL_COUNTS, {stuff: 3, swear: 2, modifier: 5, person: 1, theme: 1});
+  assert.deepEqual(build.INITIAL_COUNTS, {stuff: 3, swear: 2, modifier: 5, person: 1});
 });
 
 test('provider prompt assembly groups the recipe and defaults to the 60-word target', () => {
@@ -32,16 +32,15 @@ test('provider prompt assembly groups the recipe and defaults to the 60-word tar
     swear: [{text: 'Right old turnip licker'}],
     modifier: [{text: 'Suspiciously', grammar: 'adverb'}],
     person: [{text: 'Agatha Crumble'}],
-    theme: [{text: 'A disastrous royal banquet'}]
   });
   assert.match(prompt, /Objects: Transparent bipolar wrench projector/);
   assert.match(prompt, /People: Agatha Crumble/);
-  assert.match(prompt, /Theme or setting: A disastrous royal banquet/);
-  assert.match(prompt, /creative seeds rather than mandatory phrases/);
-  assert.match(prompt, /Avoid lazy dialogue/);
-  assert.match(prompt, /surprising punchline/);
-  assert.match(prompt, /Aim for about 60 words/);
-  assert.match(prompt, /never exceed 66 words/);
+  assert.match(prompt, /dangerously unhinged comedy writer/);
+  assert.match(prompt, /raw genetic material for a comedic monstrosity/);
+  assert.match(prompt, /Make the impossible inevitable/);
+  assert.match(prompt, /Finish with a detonation/);
+  assert.match(prompt, /Aim for 54–66 words/);
+  assert.match(prompt, /never exceeding 66/);
 });
 
 test('Build template is isolated and exposes bounded MUNGE generation', () => {

@@ -10,23 +10,28 @@ from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from newsmuncher.config import TEMPLATES_DIR
-from newsmuncher.services.build_story import enforce_word_limit, generate_build_story
+from newsmuncher.services.build_story import bounded_headline, enforce_word_limit, generate_build_story
 from newsmuncher.services.image_generation import store
 
 router = APIRouter()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 story_provider = generate_build_story
 STORY_LENGTH_MAXIMUMS = {30: 33, 60: 66, 90: 99}
-DEFAULT_BUILD_CREATIVE_PROMPT = """You are an inventive, irreverent absurdist comedy writer. Write one coherent, genuinely funny miniature story using the selected ingredients as creative inspiration.
+DEFAULT_BUILD_CREATIVE_PROMPT = """You are a dangerously unhinged comedy writer with impeccable comic timing and absolutely no respect for reality.
 
-Creative rules:
-- Transform, do not merely insert. Treat ingredients as creative seeds rather than mandatory phrases. Reinterpret, mutate and combine them so they become integral to the characters, objects, events or absurd logic.
-- Never satisfy the recipe by simply making a character say an insult, occupation or unusual phrase. Avoid lazy dialogue; build jokes from what the ingredients become and do.
-- Invent unexpected connections between ingredients. Begin with a peculiar situation, add a surprising complication, then escalate through a twisted but recognisable chain of cause and effect.
-- Prioritise comedy over completeness. Transform or omit an ingredient when literal inclusion would make the story weaker.
-- Be boldly irreverent: use deadpan narration, vivid specificity, dark humour, grotesque imagery, vulgarity, stupidity and wildly inappropriate consequences when funny.
-- Avoid tired surrealist clichés, especially generic existential dread, arbitrary promotions and sentient bureaucracy.
-- End with a surprising punchline that pays off or recontextualises an earlier detail instead of becoming random."""
+Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels like someone has accidentally combined a fever dream, a filthy British comedy sketch and a catastrophic misunderstanding of how the universe works.
+
+**The rules of lunacy:**
+
+- **Mutate everything.** The ingredients are raw genetic material for a comedic monstrosity. Fuse them, corrupt them, misunderstand them and invent things that should never have existed. Nothing needs to retain its original purpose.
+- **Start in the middle of madness.** The opening sentence should immediately establish something spectacularly stupid as an ordinary fact of life. No introductions, explanations or scene-setting.
+- **Make the impossible inevitable.** Every ridiculous event must cause an even more ridiculous consequence. The logic can be insane, but the chain reaction must be understandable.
+- **Commit to the stupidity.** Characters must take the most outrageously inappropriate actions with absolute conviction. Nobody should acknowledge how bizarre anything is.
+- **Weaponise specificity.** Ridiculously precise details, revolting physical transformations, petty grievances, bodily indignities and wildly disproportionate punishments are your friends.
+- **Be magnificently inappropriate.** Embrace vulgarity, grotesque slapstick, dark humour, humiliation, stupidity, bad taste and outrageous social transgressions whenever they make the joke funnier.
+- **Surprise yourself.** Avoid predictable surrealism, talking household appliances, corporate satire, existential philosophy, random royalty and anything that resembles a conventional whimsical fairy tale.
+- **Don't explain the joke.** No moral, no reflection, no clever concluding observation. Let the absurdity speak for itself.
+- **Finish with a detonation.** The final sentence should deliver a brutally funny reversal, escalation or revelation that makes the preceding nonsense even more ridiculous. A proper comic payoff, not a random non sequitur."""
 
 
 class BuildIngredient(BaseModel):
@@ -50,6 +55,14 @@ class BuildStoryRequest(BaseModel):
 
 class BuildDraftRequest(BaseModel):
     story: str = Field(min_length=1, max_length=4000)
+    headline: Optional[str] = Field(default=None, max_length=300)
+    headline_story: Optional[str] = Field(default=None, max_length=4000)
+
+
+def fallback_headline(story: str) -> str:
+    """Derive a safe current-story title when the generated headline is stale or absent."""
+    first_sentence = re.split(r"(?<=[.!?])\s+", story.strip(), maxsplit=1)[0]
+    return bounded_headline(first_sentence) or "Build MUNGE"
 
 
 def build_story_prompt(recipe: BuildRecipe, target_words: int, creative_prompt: str) -> str:
@@ -71,13 +84,20 @@ def build_story_prompt(recipe: BuildRecipe, target_words: int, creative_prompt: 
     return "\n".join((
         creative_prompt.strip(),
         "",
-        "Selected ingredients:",
+        "**Selected ingredients:**",
         "",
         *ingredient_lines,
         "",
-        "When the recipe is too crowded for the selected length, choose the funniest ingredients and combine, transform or omit the rest.",
-        "Return only the story, with no title, introduction or explanation.",
-        f"Story length: Aim for about {target_words} words (roughly {minimum} to {maximum}). {pacing} Coherence and the comic payoff matter more than an exact count, but never exceed {maximum} words.",
+        "**Ingredient handling:**",
+        "",
+        "Use whichever ingredients produce the most explosive comedy. Combine several into one hideous invention if necessary. Never mechanically list or name-drop them. The ingredients should be responsible for the disaster, not merely present at the scene.",
+        "",
+        "**Output:**",
+        "",
+        "Write exactly one miniature comic catastrophe. Every sentence must earn its place through a joke, escalation or payoff.",
+        "",
+        "Return only the story. No title, commentary or explanation.",
+        f"Story length: Aim for {minimum}–{maximum} words, never exceeding {maximum}. {pacing}",
     ))
 
 
@@ -92,9 +112,7 @@ def apply_story_length(prompt: str, target_words: int) -> str:
     })[target_words]
     cleaned = re.sub(r"(?m)^Story length:.*(?:\n|$)", "", prompt).rstrip()
     instruction = (
-        f"Story length: Aim for about {target_words} words (roughly {minimum} to {maximum}). "
-        f"{pacing} Coherence and the comic payoff matter more than an exact count, "
-        f"but never exceed {maximum} words."
+        f"Story length: Aim for {minimum}–{maximum} words, never exceeding {maximum}. {pacing}"
     )
     return f"{cleaned}\n\n{instruction}"
 
@@ -131,16 +149,21 @@ async def generate_build_munge(payload: BuildStoryRequest):
     maximum_words = STORY_LENGTH_MAXIMUMS[payload.target_words]
     prompt = apply_story_length(payload.prompt, payload.target_words)
     try:
-        story = await run_in_threadpool(story_provider, prompt, maximum_words)
+        generated = await run_in_threadpool(story_provider, prompt, maximum_words)
     except (APITimeoutError, TimeoutError) as exc:
         raise HTTPException(status_code=504, detail='Story generation timed out. Please try again.') from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail='Story generation failed. Your recipe is still here.') from exc
 
-    story = enforce_word_limit(story, maximum_words)
+    if isinstance(generated, dict):
+        story = enforce_word_limit(generated.get('story'), maximum_words)
+        headline = bounded_headline(generated.get('headline'))
+    else:  # Keep injected test/legacy providers safe while the live provider is structured.
+        story = enforce_word_limit(generated, maximum_words)
+        headline = ''
     if not story:
         raise HTTPException(status_code=502, detail='Story generation returned no text. Please try again.')
-    return {'story': story}
+    return {'story': story, 'headline': headline or fallback_headline(story)}
 
 
 @router.post('/build/draft')
@@ -150,8 +173,10 @@ async def prepare_build_draft(payload: BuildDraftRequest, request: Request):
     if not active_pet:
         raise HTTPException(status_code=401, detail='No active pet selected.')
     story = payload.story.strip()
-    title_words = story.split()[:8]
-    title = ' '.join(title_words).rstrip('.,;:!?') or 'Build MUNGE'
+    generated_headline = bounded_headline(payload.headline)
+    headline_is_current = (isinstance(payload.headline_story, str)
+                           and payload.headline_story.strip() == story)
+    title = generated_headline if headline_is_current and generated_headline else fallback_headline(story)
     result = store.create({
         'title': 'Build workshop',
         'description': '',
