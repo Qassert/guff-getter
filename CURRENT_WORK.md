@@ -1,7 +1,7 @@
-STATUS: REVIEW
+STATUS: READY
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: BUILD PROVIDER REQUEST AND FAILURE HANDLING
+LAST_COMPLETED_FEATURE: BUILD QUOTA DIAGNOSTICS AND REAL-BROWSER VERIFICATION
 LAST_COMPLETED_COMMIT: See latest BUILD consolidation and merge commits in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Quota classifications reviewed and verified; commit, restart and real-browser BUILD test in progress.
+CURRENT_TASK: Quota diagnostic fix committed; restarted local server and real-browser BUILD generation/recipe preservation passed.
 APPROVAL: Andy authorized committing the diagnostic fix, restarting local Uvicorn and real-browser BUILD generation; push develop only if browser generation and recipe preservation pass. No production deployment.
-NEXT_STEP: Restart local Uvicorn and perform the authorized browser BUILD test before pushing develop.
-VALIDATION: 77 focused Python tests and 209 JavaScript tests pass. Exactly one authorized live OpenAI request completed (HTTP 200). See docs/build-quota-diagnostics.md.
+NEXT_STEP: Push verified develop as authorized; production deployment remains prohibited.
+VALIDATION: 77 focused Python tests and 209 JavaScript tests pass. One real-browser MUNGE 30 succeeded with HTTP 200 and all three selected recipe items preserved. See docs/build-quota-diagnostics.md.
 
 ## Early adoption access — 2026-11-09
 

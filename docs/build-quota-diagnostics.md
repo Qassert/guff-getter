@@ -1,6 +1,6 @@
 # BUILD quota diagnostics follow-up — 2026-11-09
 
-STATUS: REVIEW — completion authorised
+STATUS: VERIFIED — real-browser generation passed
 
 ## Changes
 
@@ -61,8 +61,8 @@ cover specific quota/spend/usage/rate codes, type fallback, unknown errors and s
 logging, including keeping credentials, headers, prompt and recipe text out of logs.
 Python syntax and diff checks pass.
 
-All follow-up changes remain uncommitted and unstaged on develop at 96fc6fa. No push,
-merge, deployment, credential rotation, credit purchase or billing-setting change.
+At the original diagnostic handover, these changes were uncommitted on develop at
+96fc6fa. No credential rotation, credit purchase or billing-setting change occurred.
 Unrelated work in the original checkout was not touched.
 
 ## Completion approval
@@ -72,3 +72,24 @@ development server and performing a real-browser BUILD MUNGE test. develop may b
 pushed only after generation succeeds and the selected recipe is verified intact.
 No production deployment is authorized. This supersedes the earlier uncommitted-only
 instructions recorded above.
+
+## Completion verification
+
+- Implementation commit: 815d2ce (classification, safe diagnostics and associated tests).
+- Restarted the existing local Uvicorn service from NewsMuncher-Build on
+  http://127.0.0.1:8000 with the verified develop code and existing dotenv settings.
+- Browser: native Google Chrome, fresh BUILD tab, existing adopted pet session.
+- Selected three recipe items: one OBJECTS phrase, one MODIFIER and one PERSON.
+- Clicked MUNGE 30 exactly once through the normal browser UI. The generated story
+  appeared in the editable result field; COPY and NOMINATE appeared. No nomination,
+  image, audio or video generation action was invoked.
+- Server log confirms GET /pets/adoption-status 200 and POST /build/generate 200.
+- Verified all three original recipe items remained present, selected ingredients
+  remained in the prompt and all three MUNGE controls were enabled after completion.
+- 77 Python tests and 209 JavaScript tests pass. The initial sandboxed Python rerun
+  encountered blocked Mongo SRV DNS during module import; rerunning with the dummy
+  MONGO_URI=mongodb://127.0.0.1:27017 kept the mocked tests offline and passed.
+- Local runtime log: /private/tmp/newsmuncher-build-dev-20261109.log (not committed).
+- Browser success satisfies Andy's condition for pushing develop. Production
+  deployment remains prohibited; the unrelated original-worktree edits/media are
+  preserved and excluded.
