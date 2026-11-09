@@ -1,0 +1,459 @@
+"""App jingle tests use local temp files and mocked providers/Mongo only."""
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone, timedelta
+import json
+from pathlib import Path
+import tempfile
+import threading
+import unittest
+from unittest.mock import Mock, patch
+
+from jingle_service.contract import MusicBrief
+from newsmuncher.services.jingles import (GENERATION_VERSION, Jingles, LocalAudio,
+                                          JingleError, elevenlabs_audio)
+
+MP3 = b"ID3" + b"\0" * 2000
+
+
+class JingleTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.path = Path(self.tmp.name)
+        self.entry = {"_id": "a" * 24, "rewrite_id": "rewrite-1", "nominated": True,
+                      "image_owner": "pet", "crazyReplacement1Title": "Teapot mayor",
+                      "crazyReplacement1Extract": "Biscuits take the bus."}
+        self.collection = Mock()
+        self.collection.update_one.return_value.matched_count = 1
+        self.collection.find_one.side_effect = lambda query: self.entry.copy()
+        self.brief = Mock(return_value=(MusicBrief(music_prompt="Brass", lyrics="Toot",
+                                                  duration_seconds=10), {"input_tokens": 10}))
+        self.provider = Mock(return_value=MP3)
+        self.today = datetime(2026, 9, 10, tzinfo=timezone.utc)
+        self.limit = 20
+        self.service = Jingles(self.path / "state.db", LocalAudio(self.path / "audio"),
+            self.brief, self.provider, enabled=lambda: True, limit=lambda: self.limit,
+            now=lambda: self.today)
+
+    def generate(self):
+        return self.service.generate(self.collection, "rewrite-1", "pet")
+
+    def test_saved_genre_survives_status_and_legacy_is_unknown(self):
+        from jingle_service.genres import GENRE_PROFILES
+        self.brief.return_value = (MusicBrief(music_prompt='Funk', lyrics='Sing it',
+            genre_profile=GENRE_PROFILES['Funk']), {})
+        result = self.generate()
+        self.assertEqual(result['jingle_genre'], 'Funk')
+        self.assertEqual(self.service.status(self.collection, 'rewrite-1', 'pet')['jingle_genre'], 'Funk')
+        self.brief.assert_called_once()
+
+    def test_success_storage_and_nomination_snapshot(self):
+        result = self.generate()
+        self.assertEqual(result["jingle_status"], "complete")
+        self.assertIsNone(result["jingle_genre"])
+        self.assertEqual(self.service.audio.path("a"*24).read_bytes(), MP3)
+        metadata = self.collection.update_one.call_args.args[1]["$set"]
+        self.assertEqual(metadata["jingle_text_snapshot"]["title"], "Teapot mayor")
+        self.assertEqual(metadata["jingle_provider"], "elevenlabs")
+        self.assertEqual(metadata["jingle_generation_version"], GENERATION_VERSION)
+        self.assertEqual(metadata["jingle_prompt"]["duration_seconds"], 10)
+        self.brief.assert_called_once()
+        self.provider.assert_called_once()
+
+    def test_draft_foreign_and_missing_owner_never_generate(self):
+        for nominated, owner in [(False, "pet"), (True, "other"), (True, None)]:
+            self.entry["nominated"] = nominated
+            with self.assertRaises(JingleError):
+                self.service.generate(self.collection, "rewrite-1", owner)
+        self.provider.assert_not_called()
+        self.brief.assert_not_called()
+
+    def test_missing_nomination_is_rejected(self):
+        self.collection.find_one.side_effect = None
+        self.collection.find_one.return_value = None
+        with self.assertRaises(JingleError):
+            self.generate()
+        self.provider.assert_not_called()
+
+    def test_repeated_generate_and_status_do_not_spend(self):
+        first = self.generate()
+        self.limit = 0
+        second = self.generate()
+        restored = self.service.status(self.collection, "rewrite-1", "pet")
+        self.assertEqual(first["jingle_url"], second["jingle_url"])
+        self.assertEqual(restored["jingle_url"], first["jingle_url"])
+        self.provider.assert_called_once()
+        with self.service.transaction() as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM jingle_claims").fetchone()[0], 1)
+
+    def test_legacy_jingle_does_not_satisfy_current_fingerprint(self):
+        key = "a" * 24
+        legacy = self.service.audio.directory / f"{key}.mp3"
+        legacy.parent.mkdir(parents=True, exist_ok=True)
+        legacy.write_bytes(MP3)
+        with self.service.transaction() as db:
+            db.execute("INSERT INTO jingles(id,state) VALUES (?,?)",
+                       (key, json.dumps({"status": "complete", "brief": {"lyrics": "legacy"}})))
+        self.entry.update(jingle_url=f"/generated-audio/{key}.mp3", jingle_provider="modal")
+        result = self.generate()
+        self.assertIn(GENERATION_VERSION, result["jingle_url"])
+        self.assertTrue(legacy.exists())
+        self.provider.assert_called_once()
+
+    def test_saved_url_supports_legacy_and_earlier_fingerprints(self):
+        key = "a" * 24
+        self.service.audio.directory.mkdir(parents=True, exist_ok=True)
+        legacy = self.service.audio.directory / f"{key}.mp3"
+        legacy.write_bytes(MP3)
+        with self.service.transaction() as db:
+            db.execute("INSERT INTO jingles(id,state) VALUES (?,?)",
+                       (key, json.dumps({"status": "complete"})))
+        self.assertEqual(self.service.saved_url(key), f"/generated-audio/{key}.mp3")
+        earlier = "elevenlabs-music_v2_5-title-v1"
+        (self.service.audio.directory / f"{key}.{earlier}.mp3").write_bytes(MP3)
+        with self.service.transaction() as db:
+            db.execute("INSERT INTO jingles(id,state) VALUES (?,?)",
+                       (f"{key}:{earlier}", json.dumps({"status": "complete"})))
+        self.assertEqual(self.service.saved_url(key), f"/generated-audio/{key}.{earlier}.mp3")
+
+    def test_explicit_replace_retires_old_audio_and_uses_new_claim(self):
+        first = self.generate()
+        first_request = self.provider.call_args.args[1]
+        self.entry.update(jingle_url=first['jingle_url'])
+        self.service.replace(self.collection, 'rewrite-1', 'pet')
+        self.entry.pop('jingle_url')
+        second = self.generate()
+        self.assertEqual(second['jingle_url'], first['jingle_url'])
+        self.assertNotEqual(self.provider.call_args.args[1], first_request)
+        self.assertEqual(self.provider.call_count, 2)
+        self.assertIn('$unset', self.collection.update_one.call_args_list[-2].args[1])
+
+    def test_two_workers_share_claim(self):
+        entered, release = threading.Event(), threading.Event()
+        def slow(*args):
+            entered.set()
+            release.wait(5)
+            return MP3
+        self.provider.side_effect = slow
+        other = Jingles(self.service.database, self.service.audio, self.brief, self.provider,
+                        enabled=lambda: True, limit=lambda: 20, now=lambda: self.today)
+        with ThreadPoolExecutor(2) as pool:
+            running = pool.submit(self.generate)
+            self.assertTrue(entered.wait(3))
+            duplicate = other.generate(self.collection, "rewrite-1", "pet")
+            self.assertFalse(duplicate["can_generate"])
+            release.set()
+            self.assertEqual(running.result()["jingle_status"], "complete")
+        self.provider.assert_called_once()
+
+    def test_global_daily_cap_and_utc_reset(self):
+        self.limit = 1
+        self.generate()
+        self.entry["_id"] = "b"*24
+        with self.assertRaises(JingleError) as caught:
+            self.generate()
+        self.assertEqual(caught.exception.status, 429)
+        self.provider.assert_called_once()
+        self.today += timedelta(days=1)
+        self.generate()
+        self.assertEqual(self.provider.call_count, 2)
+
+    def test_provider_timeout_blocks_blind_retry(self):
+        self.provider.side_effect = TimeoutError()
+        result = self.generate()
+        self.assertEqual(result["jingle_status"], "uncertain")
+        self.assertFalse(result["can_generate"])
+        self.generate()
+        self.provider.assert_called_once()
+        self.assertFalse(self.service.audio.exists("a"*24))
+        self.assertTrue(self.entry["nominated"])
+
+    def test_brief_failure_explicit_retry_and_quota(self):
+        self.brief.side_effect = ValueError("refusal")
+        result = self.generate()
+        self.assertEqual(result["jingle_status"], "brief_failed")
+        self.assertTrue(result["can_generate"])
+        self.provider.assert_not_called()
+        self.brief.side_effect = None
+        self.generate()
+        self.provider.assert_called_once()
+        with self.service.transaction() as db:
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM jingle_claims").fetchone()[0], 2)
+
+    def test_nomination_update_keeps_existing_jingle(self):
+        original = self.generate()
+        self.entry["crazyReplacement1Title"] = "Edited later"
+        result = self.generate()
+        self.assertEqual(original["jingle_url"], result["jingle_url"])
+        self.assertTrue(result["text_changed"])
+        self.provider.assert_called_once()
+
+    def test_file_survives_metadata_sync_failure(self):
+        self.collection.update_one.side_effect = OSError("Mongo unavailable")
+        result = self.generate()
+        self.assertTrue(result["metadata_pending"])
+        self.collection.update_one.side_effect = None
+        self.assertFalse(self.service.status(self.collection, "rewrite-1", "pet")["metadata_pending"])
+        self.provider.assert_called_once()
+
+    def test_file_recovery_and_missing_file_never_regenerate(self):
+        self.generate()
+        with self.service.transaction() as db:
+            state = self.service.read(db, "a"*24)
+            state["status"] = "submitted"
+            self.service.save(db, "a"*24, state)
+        self.assertEqual(self.service.status(self.collection, "rewrite-1", "pet")["jingle_status"], "complete")
+        self.entry["jingle_url"] = "/generated-audio/" + "a"*24 + ".mp3"
+        self.service.audio.path("a"*24).unlink()
+        result = self.generate()
+        self.assertEqual(result["jingle_status"], "unavailable")
+        self.provider.assert_called_once()
+
+    def test_persistent_discovery_repairs_pending_metadata_without_generation(self):
+        self.collection.update_one.side_effect = OSError("Mongo unavailable")
+        self.generate()
+        self.collection.update_one.side_effect = None
+        self.collection.find.return_value.sort.return_value = [self.entry.copy()]
+        result = self.service.discover(self.collection, "pet")
+        self.assertEqual(len(result["jingles"]), 1)
+        self.assertFalse(result["jingles"][0]["metadata_pending"])
+        self.assertEqual(result["jingles"][0]["rewrite_id"], "rewrite-1")
+        self.provider.assert_called_once()
+        self.brief.assert_called_once()
+        with self.assertRaises(JingleError):
+            self.service.discover(self.collection, None)
+        self.assertEqual(self.service.discover(self.collection, "other"), {"jingles": []})
+
+    def test_mongo_only_metadata_restores_text_mismatch(self):
+        original = self.generate()
+        self.entry.update(self.collection.update_one.call_args.args[1]["$set"])
+        with self.service.transaction() as db:
+            db.execute("DELETE FROM jingles")
+        self.entry["crazyReplacement1Title"] = "New title"
+        self.collection.find.return_value.sort.return_value = [self.entry.copy()]
+        result = self.service.discover(self.collection, "pet")["jingles"][0]
+        self.assertTrue(result["text_changed"])
+        self.assertEqual(result["jingle_url"], original["jingle_url"])
+        self.assertEqual(self.entry["jingle_text_snapshot"]["title"], "Teapot mayor")
+        self.provider.assert_called_once()
+
+    def test_deleted_entry_retires_owned_audio_but_keeps_quota(self):
+        self.generate()
+        self.collection.find_one.side_effect = lambda q: None
+        self.service.retire_deleted(self.collection, self.entry)
+        self.assertFalse(self.service.audio.path("a"*24).exists())
+        with self.service.transaction() as db:
+            self.assertEqual(self.service.read(db, "a"*24)["status"], "retired")
+            self.assertEqual(db.execute("SELECT COUNT(*) FROM jingle_claims").fetchone()[0], 1)
+
+    def test_ambiguous_audio_and_symlink_are_not_deleted(self):
+        self.service.audio.save("a"*24, MP3)
+        self.collection.find_one.side_effect = lambda q: None
+        self.service.retire_deleted(self.collection, self.entry)
+        self.assertTrue(self.service.audio.exists("a"*24))
+        with self.service.transaction() as db:
+            self.assertIsNone(self.service.read(db, "a"*24))
+        path = self.service.audio.path("a"*24)
+        path.unlink()
+        other = self.path / "legacy.mp3"
+        other.write_bytes(MP3)
+        path.symlink_to(other)
+        self.entry.update(jingle_provider="elevenlabs", jingle_url=self.service.audio.url("a"*24))
+        self.service.retire_deleted(self.collection, self.entry)
+        self.assertTrue(path.is_symlink())
+        self.assertEqual(other.read_bytes(), MP3)
+
+    def test_entry_still_exists_is_not_retired(self):
+        self.generate()
+        self.service.retire_deleted(self.collection, self.entry)
+        self.assertTrue(self.service.audio.exists("a"*24))
+
+    def test_delete_during_provider_call_blocks_late_file(self):
+        def deleting_provider(*args):
+            self.collection.find_one.side_effect = lambda q: None
+            self.service.retire_deleted(self.collection, self.entry)
+            return MP3
+        self.provider.side_effect = deleting_provider
+        with self.assertRaises(JingleError) as caught:
+            self.generate()
+        self.assertEqual(caught.exception.status, 404)
+        self.assertFalse(self.service.audio.path("a"*24).exists())
+        self.collection.update_one.assert_not_called()
+
+    def test_external_deletion_after_generation_retires_file(self):
+        def deleting_provider(*args):
+            self.collection.find_one.side_effect = lambda q: None
+            return MP3
+        self.provider.side_effect = deleting_provider
+        with self.assertRaises(JingleError):
+            self.generate()
+        self.assertFalse(self.service.audio.path("a"*24).exists())
+
+    def test_zero_match_sync_never_reports_complete(self):
+        def unmatched(*args):
+            self.collection.find_one.side_effect = lambda q: None
+            return Mock(matched_count=0)
+        self.collection.update_one.side_effect = unmatched
+        with self.assertRaises(JingleError) as caught:
+            self.generate()
+        self.assertEqual(caught.exception.status, 404)
+        self.assertFalse(self.service.audio.path("a"*24).exists())
+
+    def test_delete_during_brief_never_submits_music(self):
+        def deleting_brief(*args):
+            self.collection.find_one.side_effect = lambda q: None
+            self.service.retire_deleted(self.collection, self.entry)
+            return MusicBrief(music_prompt="Brass", lyrics="Toot"), {}
+        self.brief.side_effect = deleting_brief
+        with self.assertRaises(JingleError):
+            self.generate()
+        self.provider.assert_not_called()
+
+    def test_discovery_sort_and_duplicate_rewrite_identity(self):
+        entries = [{**self.entry, "_id": key*24, "crazyReplacement1Title": key,
+                    "jingle_url": self.service.audio.url(key*24),
+                    "jingle_generation_version": GENERATION_VERSION} for key in "ba"]
+        for entry in entries:
+            self.service.audio.save(entry["_id"], MP3)
+        self.collection.find.return_value.sort.return_value = entries
+        result = self.service.discover(self.collection, "pet")["jingles"]
+        self.collection.find.return_value.sort.assert_called_once_with(
+            [("creationDate", -1), ("_id", -1)])
+        self.assertEqual([row["title"] for row in result], ["b", "a"])
+        self.assertEqual([row["jingle_url"] for row in result],
+                         [self.service.audio.url(key*24) for key in "ba"])
+        self.collection.find_one.assert_not_called()
+        self.provider.assert_not_called()
+
+    def test_soundtrack_library_is_read_only_and_skips_full_discovery(self):
+        expected = self.service.audio.url("a" * 24)
+        entries = [
+            {"_id": "a" * 24, "jingle_url": expected},
+            {"_id": "b" * 24, "jingle_url": "/generated-audio/stale.mp3"},
+        ]
+        self.collection.find.return_value.sort.return_value = entries
+        with patch.object(self.service, "entry_status") as status:
+            result = self.service.soundtrack_library(self.collection, "pet")
+        self.assertEqual(result, {"jingles": [{"jingle_url": expected}]})
+        status.assert_not_called()
+        self.collection.update_one.assert_not_called()
+        with self.assertRaises(JingleError):
+            self.service.soundtrack_library(self.collection, None)
+
+    def test_zero_match_cleanup_failure_remains_404(self):
+        self.collection.update_one.return_value.matched_count = 0
+        with patch.object(self.service, "retire_deleted", side_effect=OSError("unavailable")):
+            with self.assertRaises(JingleError) as caught:
+                self.generate()
+        self.assertEqual(caught.exception.status, 404)
+
+    def test_invalid_audio_and_identity(self):
+        self.provider.return_value = b"<html>Error</html>"
+        self.assertEqual(self.generate()["jingle_status"], "uncertain")
+        self.assertFalse(self.service.audio.exists("a"*24))
+        with self.assertRaises(ValueError):
+            self.service.audio.path("../../secret")
+
+    def test_provider_makes_one_post_and_checks_content(self):
+        response = Mock()
+        response.status_code = 200
+        response.headers = {"Content-Type": "audio/mpeg"}
+        response.iter_content.return_value = [MP3]
+        with patch("newsmuncher.services.jingles.configured", return_value=True), patch.dict(
+                "os.environ", {"ELEVENLABS_API_KEY": "fake"}), patch(
+                "newsmuncher.services.jingles.requests.post") as post:
+            post.return_value.__enter__.return_value = response
+            self.assertEqual(elevenlabs_audio(self.brief.return_value[0], "id"), MP3)
+            payload = post.call_args.kwargs["json"]
+            self.assertEqual(payload["model_id"], "music_v2_5")
+            self.assertEqual(payload["composition_plan"]["chunks"][0]["text"], "[Jingle]\nToot")
+            self.assertEqual(payload["composition_plan"]["chunks"][0]["duration_ms"], 10000)
+            self.assertNotIn("id", payload)
+            post.assert_called_once()
+            self.assertFalse(post.call_args.kwargs["allow_redirects"])
+            self.assertTrue(post.call_args.kwargs["stream"])
+
+class JingleRouteTests(unittest.TestCase):
+    def test_routes_call_service_with_cookie_and_never_accept_client_text(self):
+        import importlib.util
+        import sys
+        import types
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        fake_entries = types.ModuleType("newsmuncher.api.entries")
+        fake_entries.collection = Mock()
+        spec = importlib.util.spec_from_file_location("jingle_test_routes", "newsmuncher/api/jingles.py")
+        module = importlib.util.module_from_spec(spec)
+        with patch.dict(sys.modules, {"newsmuncher.api.entries": fake_entries}):
+            spec.loader.exec_module(module)
+        module.service = Mock()
+        module.service.generate.return_value = {"jingle_status": "complete", "jingle_url": "/generated-audio/a.mp3"}
+        module.service.discover.return_value = {"jingles": []}
+        module.service.soundtrack_library.return_value = {"jingles": []}
+        module.service.status.return_value = {"jingle_status": "none", "can_generate": True}
+        app = FastAPI()
+        app.include_router(module.router)
+        with TestClient(app) as client:
+            client.cookies.set("active_pet", "pet")
+            self.assertEqual(client.get("/jingles/").json(), {"jingles": []})
+            module.service.discover.assert_called_once_with(fake_entries.collection, "pet")
+            self.assertEqual(client.get("/jingles/soundtrack").json(), {"jingles": []})
+            module.service.soundtrack_library.assert_called_once_with(
+                fake_entries.collection, "pet")
+            response = client.post("/jingles/rewrite", json={"nominated": True, "title": "untrusted"})
+            self.assertEqual(response.status_code, 200)
+            module.service.generate.assert_called_once_with(fake_entries.collection, "rewrite", "pet")
+            self.assertEqual(client.get("/jingles/rewrite").status_code, 200)
+            self.assertEqual(module.service.generate.call_count, 1)
+            module.service.generate.side_effect = JingleError(429, "Daily limit reached")
+            self.assertEqual(client.post("/jingles/rewrite").status_code, 429)
+
+    def test_delete_routes_cleanup_only_deleted_entries(self):
+        import importlib.util
+        from bson import ObjectId
+        with patch("pymongo.MongoClient"), patch("dotenv.load_dotenv"):
+            spec = importlib.util.spec_from_file_location("jingle_delete_routes", "newsmuncher/api/entries.py")
+            routes = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(routes)
+        entry = {"_id": ObjectId("a"*24), "rewrite_id": "rewrite", "nominated": True}
+        routes.collection = Mock()
+        routes.collection.find.return_value = [entry]
+        routes.collection.delete_one.return_value.deleted_count = 1
+        with patch("newsmuncher.services.jingles.service") as service:
+            routes.delete_entry(str(entry["_id"]))
+            service.retire_deleted.assert_called_once_with(routes.collection, entry)
+            routes.collection.delete_one.assert_called_with(
+                {"$and": [{"_id": entry["_id"]}, {"_id": entry["_id"]}]})
+            service.reset_mock()
+            routes.delete_all_entries_for_user("pet")
+            service.retire_deleted.assert_called_once_with(routes.collection, entry)
+            routes.collection.find.assert_called_with({"creationUser": "pet", "crazyReplacement1done": False})
+            service.reset_mock()
+            routes.delete_all_entries()
+            service.retire_deleted.assert_called_once_with(routes.collection, entry)
+            service.reset_mock()
+            routes.collection.delete_one.return_value.deleted_count = 0
+            routes.delete_all_entries()
+            service.retire_deleted.assert_not_called()
+
+    def test_cap_concurrent_distinct_nominations(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)
+            brief = Mock(return_value=(MusicBrief(music_prompt="Brass", lyrics="Toot"), {}))
+            provider = Mock(return_value=MP3)
+            service = Jingles(path/"state.db", LocalAudio(path/"audio"), brief, provider,
+                               enabled=lambda: True, limit=lambda: 1)
+            entries = [{"_id": c*24, "rewrite_id": c, "nominated": True, "image_owner": "pet",
+                        "crazyReplacement1Title": "A", "crazyReplacement1Extract": "B"} for c in "ab"]
+            collection = Mock()
+            collection.find_one.side_effect = lambda q: next(e for e in entries if e["rewrite_id"] == q["rewrite_id"])
+            def run(key):
+                try:
+                    return service.generate(collection, key, "pet")["jingle_status"]
+                except JingleError as exc:
+                    return exc.status
+            with ThreadPoolExecutor(2) as pool:
+                results = list(pool.map(run, "ab"))
+            self.assertIn(429, results)
+            self.assertIn("complete", results)
+            provider.assert_called_once()

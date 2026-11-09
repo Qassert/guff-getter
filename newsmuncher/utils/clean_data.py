@@ -1,6 +1,9 @@
+from newsmuncher.services.word_shuffle import BANK_FILES, read_bank, shared_bags
 from newsmuncher.utils.source_preprocessing import preserve_source_text, preprocess_source, replacement_guidance, filter_word_banks
-from newsmuncher.config import ENV_FILE, WORDS_DIR
+from newsmuncher.config import ENV_FILE, WORDS_DIR, comedy_editor_model
+from newsmuncher.services.noun_exclusion import blocked_entries, NounExclusionExhausted
 import os, re, random, json
+from time import monotonic
 from openai import OpenAI  # type: ignore
 from dotenv import load_dotenv  # type: ignore
 
@@ -19,8 +22,8 @@ JSON_FORMAT = {
     "schema": {
         "type": "object",
         "properties": {
-            "title": {"type": "string"},
             "extract": {"type": "string"},
+            "title": {"type": "string"},
         },
         "required": ["title", "extract"],
         "additionalProperties": False,
@@ -36,6 +39,21 @@ CSV_FILES = {
     "names": "names.csv",
     "places": "places.csv"
 }
+
+
+class RewriteProviderQuotaExhausted(RuntimeError):
+    """The rewrite provider rejected the request because account credit is exhausted."""
+
+
+def _is_credit_exhaustion(exc):
+    body = getattr(exc, "body", None)
+    error = body.get("error", body) if isinstance(body, dict) else {}
+    code = error.get("code") if isinstance(error, dict) else None
+    error_type = error.get("type") if isinstance(error, dict) else None
+    return getattr(exc, "status_code", None) == 429 and (
+        code in {"credit_balance_exhausted", "insufficient_quota"}
+        or error_type == "insufficient_quota"
+    )
 
 
 def clean_data(data):
@@ -143,12 +161,17 @@ def extract_unique_words(file_path, num_words):
 # --------------
 
 # Function to load all random words into a dictionary
-def load_random_words(NumberOfWords):
-    """Load a fresh batch of random words, ensuring uniqueness across prompts."""
+def load_random_words(NumberOfWords, excluded=()):
+    """Load unclaimed prompt candidates without permanently consuming them."""
     random_words = {}
     for category, filename in CSV_FILES.items():
+        if category in excluded:
+            random_words[category] = []
+            continue
         file_path = os.path.join(WORDS_FOLDER, filename)
-        random_words[category] = extract_unique_words(file_path, NumberOfWords)  # removed category
+        random_words[category] = (shared_bags().draw(category, read_bank(file_path), NumberOfWords)
+                                  if category in BANK_FILES else
+                                  extract_unique_words(file_path, NumberOfWords))
     print(f"[DEBUG] Looking for word files in: {WORDS_FOLDER}")
     for category, filename in CSV_FILES.items():
         file_path = os.path.join(WORDS_FOLDER, filename)
@@ -157,39 +180,15 @@ def load_random_words(NumberOfWords):
     return random_words
 
 
-# --------------
+def claim_used_words(contenders, result):
+    """Claim only supplied bank words present in the accepted final rewrite."""
+    return shared_bags().claim_used(
+        contenders,
+        result['crazyReplacement1Title'],
+        result['crazyReplacement1Extract'],
+    )
 
-def process_batch(data, generate_replacements, flag_name, batch_size):
-    """Process a batch of entries and update them."""
-    skipped_entries = []
-    processed_count = 0
 
-    for key, entry in data.items():  # Iterate through dictionary items
-        # Check if entry is a dictionary
-        if not isinstance(entry, dict):
-            print(f"Skipping invalid entry with key {key}: {entry}")
-            skipped_entries.append(key)
-            continue
-
-        # Skip entries already processed
-        if entry.get(flag_name, False):
-            continue
-
-        # Generate replacements for the entry
-        replacements = generate_replacements(entry)
-        if replacements:
-            # Update the entry in the original dictionary
-            data[key].update(replacements)
-            processed_count += 1
-        else:
-            # Add to skipped entries if generation failed
-            skipped_entries.append(key)
-
-        # Stop after processing the batch size
-        if processed_count >= batch_size:
-            break
-
-    return skipped_entries
 
 
 # --------------
@@ -204,7 +203,11 @@ def split_list(lst, num_parts=3):
 
 # --------------
 
-def prepare_prompt(entry, NumberOfWords, prompt_template):
+def prepare_prompt(entry, NumberOfWords, prompt_template, names_override=None, name_guidance="",
+                   concept_overrides=None, concept_guidance="", descriptor_overrides=None,
+                   descriptor_guidance="", final_joke_guidance="", topic_guidance="",
+                   diagnostics=None, word_banks_override=None, theme_sparks=None,
+                   noun_exclusions=()):
     """
     Prepares the prompt by cleaning the input data, loading random words, and formatting the prompt template.
 
@@ -218,6 +221,8 @@ def prepare_prompt(entry, NumberOfWords, prompt_template):
               Returns None if there's an error.
     """
     # Clean the input data
+    diagnostics = diagnostics if diagnostics is not None else {}
+    stage = monotonic()
     original_entry = preserve_source_text(entry)
     preprocessing = preprocess_source(original_entry)
     cleaned_entry = preprocessing["masked"]
@@ -226,11 +231,57 @@ def prepare_prompt(entry, NumberOfWords, prompt_template):
     extract_to_change = cleaned_entry.get("extract", "No extract provided").strip()
 
     # Get fresh, unique words for this prompt
-    random_words = load_random_words(NumberOfWords)
+    diagnostics["source_preprocessing_ms"] = round((monotonic() - stage) * 1000, 2)
+    stage = monotonic()
+    excluded = set()
+    if concept_overrides:
+        excluded.update({"nouns", "animals"})
+    if descriptor_overrides is not None:
+        excluded.add("adverbs")
+    requested_words = max(NumberOfWords * 4, 40) if noun_exclusions else NumberOfWords
+    random_words = (load_random_words(requested_words, excluded=excluded)
+                    if word_banks_override is None else
+                    {key: list(values) for key, values in word_banks_override.items()})
     # Avoid offering a detected original expression back as a bank ingredient.
     random_words = filter_word_banks(preprocessing, random_words)
-    print("[DEBUG] Random Words Loaded:", json.dumps(random_words, indent=2))
-
+    if noun_exclusions:
+        source_text = "\n".join(str(original_entry.get(key, ""))
+                                for key in ("title", "description", "extract"))
+        rejected = 0
+        for bank in tuple(random_words):
+            values = random_words.get(bank, [])
+            eligible = [value for value in values
+                        if not blocked_entries(value, noun_exclusions, source_text)]
+            rejected += len(values) - len(eligible)
+            if bank in {"nouns", "animals"} and bank not in excluded and len(eligible) < NumberOfWords:
+                raise NounExclusionExhausted(
+                    f"Not enough eligible legacy {bank} ingredients. Please try MUNGE IT again.")
+            random_words[bank] = eligible[:NumberOfWords]
+        diagnostics["noun_exclusion_legacy_rejected"] = rejected
+    diagnostics["other_csv_selection_ms"] = round((monotonic() - stage) * 1000, 2)
+    stage = monotonic()
+    if names_override is not None:
+        # Invented slates are server-created identities rather than source-derived
+        # word-bank values, and must remain exactly ten after source filtering.
+        random_words["names"] = list(names_override)
+    contenders = {key: list(values) for key, values in random_words.items()}
+    if concept_overrides:
+        for bank in ("nouns", "animals"):
+            concepts = list(concept_overrides.get(bank, []))
+            if not concepts:
+                raise ValueError(f"Concept override for {bank} cannot be empty")
+            random_words[bank] = concepts
+            contenders[bank] = []
+    if descriptor_overrides is not None:
+        descriptors = list(descriptor_overrides)
+        spark_descriptor_count = sum(
+            item.get("kind") == "descriptor" for item in (theme_sparks or ()))
+        if len(descriptors) + spark_descriptor_count != 10:
+            raise ValueError("Generated descriptor override must contain ten values")
+        random_words["adverbs"] = descriptors
+        # Generated descriptors have their own temporary registry and never
+        # enter permanent CSV claims.
+        contenders["adverbs"] = []
     # Split word lists into 3 unique parts
     noun_parts = split_list(random_words.get("nouns", []))
     adverb_parts = split_list(random_words.get("adverbs", []))
@@ -272,16 +323,31 @@ def prepare_prompt(entry, NumberOfWords, prompt_template):
     )
 
     # Format the final prompt
-    guidance = replacement_guidance(preprocessing, random_words)
-    full_prompt = f"{filled_prompt_template}\n\n{guidance}\n\nText to Transform:\nTitle: {title_to_change}\nExtract: {extract_to_change}"
-
-    print("\n********************************")
-    print("[DEBUG] Final Prompt (Check if placeholders are replaced with UNIQUE words):")
-    print(full_prompt)
-    print("********************************\n")
+    assignment_words = dict(random_words)
+    if descriptor_overrides is not None:
+        # Role-aware generated descriptors are optional prompt ingredients, not
+        # direct adjective substitutions for a masked DESCRIPTION placeholder.
+        assignment_words["adverbs"] = []
+    guidance = replacement_guidance(preprocessing, assignment_words)
+    spark_block = ""
+    if theme_sparks:
+        spark_lines = [str(item.get("text", "")).strip() for item in theme_sparks]
+        spark_lines = [line for line in spark_lines if line]
+        if spark_lines:
+            spark_block = ("Optional thematic sparks:\n" +
+                           "\n".join(f"- {line}" for line in spark_lines) +
+                           "\nThese are creative ingredients, not mandatory content. "
+                           "Freely combine, distort, ignore or reinterpret them.")
+    full_prompt = (f"{filled_prompt_template}\n\n{name_guidance}\n\n{concept_guidance}\n\n"
+                   f"{descriptor_guidance}\n\n{final_joke_guidance}\n\n{topic_guidance}\n\n{guidance}\n\n"
+                   f"{spark_block}\n\n"
+                   f"Text to Transform:\nTitle: {title_to_change}\nExtract: {extract_to_change}")
+    diagnostics["prompt_construction_ms"] = round((monotonic() - stage) * 1000, 2)
+    diagnostics["prompt_characters"] = len(full_prompt)
 
     return {
         "full_prompt": full_prompt,
+        "contenders": contenders,
         "preprocessing": preprocessing,  # Local only; never passed to send_prompt().
         "title_to_change": title_to_change,
         "extract_to_change": extract_to_change
@@ -305,7 +371,7 @@ def send_prompt(full_prompt):
         # Single API call with the improved prompt
         with OpenAI(max_retries=0, timeout=30.0) as client:
             response = client.responses.create(
-                model="gpt-5.6-luna",
+                model="gpt-6-sol",
                 input=[
                     {"role": "system", "content": "You are an assistant that transforms text into absurd versions in strict JSON format."},
                     {"role": "user", "content": full_prompt}
@@ -323,15 +389,14 @@ def send_prompt(full_prompt):
         response_content = response.output_text
         response_data = json.loads(response_content)
 
-        print("\n********************************")
-        print("[DEBUG] Initial Response Data:")
-        print(json.dumps(response_data, indent=4))
-        print("********************************\n")
-
         return response_data
 
     except Exception as e:
         print(f"Error sending prompt: {e}")
+        if _is_credit_exhaustion(e):
+            raise RewriteProviderQuotaExhausted(
+                "The OpenAI API account has no credits remaining. Add API credits, then try MUNGE IT again."
+            ) from e
         return None
 
 
@@ -345,8 +410,10 @@ def format_shizzalise_result(response_data):
         for key in ("title", "extract"):
             if not isinstance(response_data.get(key), str) or not response_data[key].strip():
                 raise ValueError(f"Generated {key} must be a nonempty string.")
+        title = sanitize_text(response_data["title"])
+        title = " ".join(title.split()[:18])
         return {
-            "crazyReplacement1Title": sanitize_text(response_data["title"]),
+            "crazyReplacement1Title": title,
             "crazyReplacement1Extract": sanitize_text(response_data["extract"]),
             "crazyReplacement1done": True,
             "flagForDeleteCount": 0,
@@ -358,52 +425,223 @@ def format_shizzalise_result(response_data):
         return None
 
 
-def correct_grammar(response_data):
-    """
-    Sends the initial response to the OpenAI API for grammar correction.
+def copy_edit_pass(pass1_result, repetition_replacement=None, radical_mode=False):
+    """Second AI pass: copy-edit pass-1 output only.
 
-    Args:
-        response_data (dict): The initial response data to correct.
+    Receives ONLY the extract produced by pass 1.  The original
+    source text is never included.  The purpose is to fix grammar, broken
+    sentence structure, subject-verb agreement, and flow while preserving
+    all absurdity, bizarre events, rude/slang words, strange names, surreal
+    imagery, invented relationships, and overall ridiculousness.
 
-    Returns:
-        dict: A dictionary containing the sanitized and corrected response.
-              Returns None if there's an error.
+    The model is instructed to act as a highly competent copy editor who
+    accepts that every insane thing in the article is completely true.
+
+    Parameters
+    ----------
+    pass1_result : dict
+        Must contain 'crazyReplacement1Title' and 'crazyReplacement1Extract'
+        (the sanitised pass-1 output from format_shizzalise_result).
+
+    Returns
+    -------
+    dict | None
+        A result dict in the same schema as format_shizzalise_result, or
+        None if the call fails.  The caller falls back to pass1_result on None.
     """
+    title = pass1_result.get('crazyReplacement1Title', '')
+    extract = pass1_result.get('crazyReplacement1Extract', '')
+    if not title or not extract:
+        return None
+
+    system_prompt = (
+        "You are a highly competent copy editor. "
+        "Your task is to improve the grammar, sentence structure, subject-verb agreement, "
+        "flow and readability of the text you are given. "
+        "You must accept that every single event, person, object and situation in the text "
+        "is completely and literally true. "
+        "Do NOT make the story sensible, sanitise it, revert it toward normal journalism, "
+        "remove any weird or absurd details, or explain any jokes. "
+        "Preserve: absurdity, bizarre events, rude or slang words, strange names, "
+        "surreal imagery, invented relationships and details, and overall ridiculousness. "
+        "Fix only: grammar, broken sentence structure, agreement, flow and readability. "
+        "First finish the extract. It is the canonical content. Then derive the title "
+        "ONLY from that final extract, never using the preliminary title. "
+        "Write a punchy, funny, grammatical headline-like summary that also works naturally "
+        "as one sung or rapped lyric. Aim for 12–18 words, with a hard maximum of 18 words and 180 characters. "
+        "Use only words present in the final extract; introduce no new subjects, "
+        "objects, events or ideas. Return JSON with extract first, then title. "
+        "Do not add commentary, markdown or code fences."
+    )
+
+    if radical_mode:
+        system_prompt += (
+            "\n\nRADICAL MODE: Preserve each fresh conceptual collision, transformation, "
+            "invented custom, category mistake and strange relationship. Improve only the "
+            "local prose needed to make those premises land. Do not replace them with familiar "
+            "animal occupations, bureaucracy, power-source compounds or conventional jokes."
+        )
+
+    if repetition_replacement:
+        targets = [item["text"] for item in repetition_replacement.get("targets", ())][:3]
+        alternatives = [item["text"] for item in
+                        repetition_replacement.get("alternatives", ())][:2]
+        maximum = min(2, int(repetition_replacement.get("maximum_substitutions", 2)))
+        phrase_mode = bool(repetition_replacement.get("phrase_replacement"))
+        fallback_cues = repetition_replacement.get("fallback_domain_cues", ())
+        system_prompt += (
+            "\n\nBOUNDED PHRASE-REPLACEMENT EXPERIMENT: " if phrase_mode else
+            "\n\nBOUNDED REPETITION-REPLACEMENT EXPERIMENT: "
+        )
+        action = (
+            f"Make one or two targeted substitutions when safe and grammatically feasible, "
+            f"with a hard maximum of {maximum}. Prioritise the highest-confidence repeated "
+            "comic phrases. " if phrase_mode else
+            f"You may make at most {maximum} targeted vocabulary substitutions. "
+        )
+        fallback = (
+            "Otherwise invent one fresh, grammatically compatible and equally absurd replacement "
+            "inspired loosely by these thematic domains: " + ", ".join(fallback_cues) + ". "
+            if phrase_mode and repetition_replacement.get("inventive_fallback") else ""
+        )
+        system_prompt += (
+            action + "Recently repeated comic targets: " + ", ".join(targets) + ". " +
+            "Optional fresher thematic alternatives: " + ", ".join(alternatives) + ". " +
+            "Prefer a supplied alternative when it fits naturally. " + fallback +
+            "Leave a target unchanged if replacement would weaken grammar, continuity or the joke. "
+            "Change only the necessary phrase and local grammatical agreement. Preserve the "
+            "surrounding sentence, original narrative sequence, story structure, every "
+            "source-derived event and relationship, sentence density, ridiculous combinations, "
+            "dense surreal combinations, outrageous British humour, profanity, innuendo, surreal "
+            "intensity, existing joke density and comic timing. Do not change names or protected "
+            "source details. Do not make the "
+            "article more coherent, conventional, realistic, polite or restrained. Do not "
+            "rewrite the whole article, remove unrelated jokes, invent a different story or add "
+            "another recurring motif. The listed alternatives"
+            + (" or the single explicitly allowed fresh fallback" if
+               phrase_mode and repetition_replacement.get("inventive_fallback") else "") +
+            " are the sole exception to the rule against introducing words absent from the extract."
+        )
+
+    user_content = json.dumps({'extract': extract}, ensure_ascii=False)
+
     try:
-        # Secondary call to correct grammar and pluralization
         with OpenAI(max_retries=0, timeout=30.0) as client:
-            corrected_response = client.responses.create(
-                model="gpt-5.6-luna",
+            response = client.responses.create(
+                model="gpt-6-sol",
                 input=[
-                    {"role": "system", "content": "You are an assistant that corrects grammar, spelling, case and pluralization in JSON text."},
-                    {"role": "user", "content": json.dumps(response_data)}
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_content},
                 ],
                 reasoning={"effort": "none"},
                 text={"format": JSON_FORMAT},
-                max_output_tokens=250,
+                max_output_tokens=750,
                 store=False,
             )
 
-        if corrected_response.status != "completed":
-            raise ValueError("OpenAI grammar response was incomplete.")
+        if response.status != "completed":
+            raise ValueError("Copy-edit response was incomplete.")
 
-        corrected_content = corrected_response.output_text
-        corrected_data = json.loads(corrected_content)
+        corrected = json.loads(response.output_text)
 
-        print("\n********************************")
-        print("[DEBUG] Corrected Response Data:")
-        print(json.dumps(corrected_data, indent=4))
-        print("********************************\n")
+        return format_shizzalise_result(corrected)
 
-        return {
-            "crazyReplacement1Title": sanitize_text(corrected_data["title"]),
-            "crazyReplacement1Extract": sanitize_text(corrected_data["extract"]),
-            "crazyReplacement1done": True,
-            "flagForDeleteCount": 0,
-            "flagForFunnyCount": 0,
-            "chatHistory": []
-        }
+    except Exception as exc:
+        print(f"Copy-edit pass 2 failed (falling back to pass 1): {exc}")
+        return None
 
-    except Exception as e:
-        print(f"Error correcting grammar: {e}")
+
+def comedy_editor_word_target(text):
+    """Return the body-only half-length target and its narrow tolerance."""
+    first_pass_words = len(re.findall(r"\b[\w'-]+\b", str(text or "")))
+    if not first_pass_words:
+        return {"first_pass_word_count": 0, "target_word_count": 0,
+                "target_min_word_count": 0, "target_max_word_count": 0}
+    return {
+        "first_pass_word_count": first_pass_words,
+        "target_word_count": max(1, round(first_pass_words * .50)),
+        "target_min_word_count": max(1, round(first_pass_words * .45)),
+        "target_max_word_count": max(1, round(first_pass_words * .55)),
+    }
+
+
+def comedy_editor_pass(source, pass1_result, word_target=None, radical_mode=False):
+    """Optional concise comedy edit; callers retain pass one on failure."""
+    title = pass1_result.get("crazyReplacement1Title", "")
+    extract = pass1_result.get("crazyReplacement1Extract", "")
+    if not title or not extract:
+        return None
+    word_target = word_target or comedy_editor_word_target(extract)
+    target = word_target["target_word_count"]
+    minimum = word_target["target_min_word_count"]
+    maximum = word_target["target_max_word_count"]
+    system_prompt = (
+        "You are the final editor of an outrageously surreal British comedy article. "
+        f"The first-pass ARTICLE BODY contains {word_target['first_pass_word_count']} words. "
+        f"Produce a final ARTICLE BODY of approximately {target} words, normally within "
+        f"{minimum}-{maximum} words. This range excludes the title and is the normal editorial "
+        "requirement, with only modest flexibility for exceptionally funny material. "
+        "Aggressively remove repetitive concepts, unnecessary explanations, weaker jokes, "
+        "excessive descriptions and padding. "
+        "Preserve the strongest absurd imagery, bizarre noun collisions, "
+        "unexpected animal occupations, profanity, innuendo, irreverence, wonderfully "
+        "nonsensical combinations and unpredictable humour. Improve sentence flow, "
+        "comic timing and narrative continuity without rationalising the nonsense, making "
+        "it realistic, sanitising it or turning it into conventional comedy. "
+        "Preserve the strongest jokes whether they use animals, objects or stranger material; "
+        "remove them for repetition or weakness, not to meet a category count. Favour vivid, "
+        "readily imaginable absurd situations, while keeping specialist language when its "
+        "meaning or contrast is funny. Untangle excessively nested compounds without sanding "
+        "away their best collision. Preserve the "
+        "source article's principal events, chronology and narrative backbone. Brief invented "
+        "fictional connective humour, adjusted relationships and small additional jokes are allowed "
+        "when they make the existing absurdity work better. Do not introduce major new events, "
+        "characters, storylines or lengthy digressions. Return only strict JSON containing "
+        "title and extract. Write a short, absurd, relevant title derived only from the final "
+        "edited article, preferably naming its rewritten main subject, person, place or work. "
+        "Do not reuse the source title merely because it is available. Return no explanations, "
+        "commentary, markdown or code fences."
+    )
+    if radical_mode:
+        system_prompt += (
+            " RADICAL MODE: Preserve the first pass's freshest conceptual relationships, "
+            "transformations, invented customs, category mistakes and physical impossibilities. "
+            "Cut repetition and padding without replacing unfamiliar premises with established "
+            "NewsMuncher patterns such as official animals, bureaucracy or powered objects."
+        )
+    source_article = {
+        key: str(source.get(key, ""))
+        for key in ("title", "description", "extract") if source.get(key)
+    }
+    user_content = json.dumps({
+        "original_source_article": source_article,
+        "first_pass_comedy_rewrite": {"title": title, "extract": extract},
+    }, ensure_ascii=False)
+
+    try:
+        with OpenAI(max_retries=0, timeout=30.0) as client:
+            response = client.responses.create(
+                model=comedy_editor_model(),
+                input=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_content},
+                ],
+                reasoning={"effort": "none"},
+                text={"format": JSON_FORMAT},
+                max_output_tokens=750,
+                store=False,
+            )
+        if response.status != "completed":
+            raise ValueError("Comedy-editor response was incomplete.")
+        corrected = json.loads(response.output_text)
+        if not isinstance(corrected, dict) or not isinstance(corrected.get("extract"), str):
+            raise ValueError("Comedy-editor article was invalid.")
+        if not isinstance(corrected.get("title"), str) or not corrected["title"].strip():
+            # Keep a successful article edit when only its title is malformed.
+            first_sentence = re.split(
+                r"(?<=[.!?])\s+", corrected["extract"].strip(), maxsplit=1)[0]
+            corrected["title"] = " ".join(first_sentence.split()[:12]) or title
+        return format_shizzalise_result(corrected)
+    except Exception as exc:
+        print(f"Comedy editor failed (falling back to pass 1): {type(exc).__name__}")
         return None

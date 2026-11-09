@@ -1,0 +1,209 @@
+{
+  "source": "NASA Image and Video Library",
+  "retrieved_at": "2026-11-02T16:47:51.287304+00:00",
+  "request_urls": [
+    "https://images-api.nasa.gov/search?q=experiment&media_type=image,video&page_size=100"
+  ],
+  "record_count": 10,
+  "records": [
+    {
+      "id": "iss040e073120",
+      "title": "BASS-II Experiment",
+      "url": "https://images.nasa.gov/details/iss040e073120",
+      "descriptive_text": "ISS040-E-073120 (23 July 2014) --- This is a close-up image photographed during a run of the Burning and Suppression of Solids (BASS) experiment onboard the Earth-orbiting International Space Station. Following a series of preparations, NASA astronaut Reid Wiseman (out of frame), Expedition 40 flight engineer, conducted runs of the experiment, which examines the burning and extinction characteristics of a wide variety of fuel samples in microgravity. The experiment is planned for guiding strategies for extinguishing fires in microgravity. BASS results contribute to the combustion computational models used in the design of fire detection and suppression systems in microgravity and on Earth.",
+      "word_count": 100,
+      "metadata": {
+        "date_created": "2014-07-23T00:00:00Z",
+        "center": "JSC",
+        "media_type": "image",
+        "keywords": [
+          "SPACEBORNE EXPERIMENTS",
+          "TWEETED PHOTO",
+          "SOCIAL MEDIA"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "s77e5022",
+      "title": "Inflatable Antenna Experiment (IAE)",
+      "url": "https://images.nasa.gov/details/s77e5022",
+      "descriptive_text": "S77-E-5022 (20 May 1996)--- Following its deployment from the Space Shuttle Endeavour, the Spartan 207/Inflatable Antenna Experiment (IAE) payload is backdropped over clouds and water. The view was photographed with an Electronic Still Camera (ESC) and downlinked to flight controllers on the first full day of orbital operations by the six-member crew. Managed by Goddard Space Flight Center (GSFC), Spartan is designed to provide short-duration, free-flight opportunities for a variety of scientific studies. The Spartan configuration on this flight is unique in that the IAE is part of an additional separate unit which is ejected once the experiment is completed. The IAE experiment will lay the groundwork for future technology development in inflatable space structures, which will be launched and then inflated like a balloon on-orbit.",
+      "word_count": 127,
+      "metadata": {
+        "date_created": "1996-05-20T00:00:00Z",
+        "center": "JSC",
+        "media_type": "image",
+        "keywords": [
+          "ANTENNAS INFLATABLE STRUCTURES PROTOTYPES STS-77  ENDEAVOUR (ORBITER) SPACEBORNE EXPERIMENTS"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "KSC-20260617-PH-AJN01_0275",
+      "title": "Administrator Flight Experience Awards",
+      "url": "https://images.nasa.gov/details/KSC-20260617-PH-AJN01_0275",
+      "descriptive_text": "As part of NASA Administrator Jared Isaacman’s Flight Experience Award program and dressed in blue flight suits next to family members, NASA employees Charles Meilbye, Aaron Smith, and Matthew Kufner receive awards from NASA Kennedy’s Director of Human Capital Office, Mike Beaupre (far left), on Wednesday, June 17, 2026, at the Launch and Landing Facility at the agency’s Kennedy Space Center in Florida. The awardees suited up in NASA flight suits, completed preflight briefings, and experienced a unique flight aboard the administrator’s personal F-5 aircraft. The ride-along flight experience award program highlights NASA’s commitment to celebrating excellence across the workforce.",
+      "word_count": 100,
+      "metadata": {
+        "date_created": "2026-06-17T00:00:00Z",
+        "center": "KSC",
+        "media_type": "image",
+        "keywords": [
+          "Flight Experience Awards",
+          "Jared Isaacman",
+          "Kennedy Space Center",
+          "NASA Administrator"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "iss038e000264",
+      "title": "CFE-2 Experiment Run",
+      "url": "https://images.nasa.gov/details/iss038e000264",
+      "descriptive_text": "View of Flight Engineer (FE) Mike Hopkins initiating a CFE-2 (Capillary Flow Experiment - 2) Interior Corner Flow - 5 (ICF-5) test run. Liquids behave differently in space than they do on Earth, so containers that can process, hold or transport them must be designed carefully to work in microgravity. The Capillary Flow Experiment-2 furthers research on wetting, which is a liquid's ability to spread across a surface, and its impact over large length scales in strange container shapes in microgravity environments. This work will improve our capabilities to quickly and accurately predict how related processes occur, and allow us to design better systems to process liquids aboard spacecraft (i.e., liquid fuel tanks, thermals fluids, and water processing for life support). Image was released by astronaut on Twitter.",
+      "word_count": 127,
+      "metadata": {
+        "date_created": "2013-11-11T00:00:00Z",
+        "center": "JSC",
+        "media_type": "image",
+        "keywords": [
+          "EXPEDITION 38",
+          "SPACEBORNE EXPERIMENTS",
+          "TWEETED PHOTO",
+          "SOCIAL MEDIA"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "GSFC_20171208_Archive_e001994",
+      "title": "GRIP Experiment 2010",
+      "url": "https://images.nasa.gov/details/GSFC_20171208_Archive_e001994",
+      "descriptive_text": "Errol Korn, lower left, explains the dropsonde experiment to Janel Thomas, a University of Maryland Baltimore County (UMBC) graduate student, seated, as Bob Pasken, standing left, and Jeff Halverson, a GRIP project scientist from UMBC, look on inside NASA's DC-8 airplane, at Fort Lauderdale International Airport in Fort Lauderdale, Fla., Sunday, Aug. 15, 2010. The Genesis and Rapid Intensification Processes (GRIP) experiment is a NASA Earth science field experiment in 2010 that is being conducted to better understand how tropical storms form and develop into major hurricanes. Credit: NASA/Paul E. Alers To read more about the GRIP Mission go here or here for an interactive feature NASA Goddard Space Flight Center is home to the nation's largest organization of combined scientists, engineers and technologists that build spacecraft, instruments and new technology to study the Earth, the sun, our solar system, and the universe. Follow us on Twitter Join us on Facebook",
+      "word_count": 152,
+      "metadata": {
+        "date_created": "2017-12-08T00:00:00Z",
+        "center": "GSFC",
+        "media_type": "image",
+        "keywords": [
+          "GRIP Experiment 2010",
+          "usa",
+          "airplane",
+          "hurricane",
+          "experiment",
+          "fortlauderdale",
+          "fla",
+          "dc8",
+          "fortlauderdaleinternationalairport",
+          "genesisandrapidintensificationprocessesgrip",
+          "despondeexperiment",
+          "errolkorn"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "KSC-20171002-PH_LCH01_0045",
+      "title": "Materials International Space Station Experiment (MISSE) Arrival",
+      "url": "https://images.nasa.gov/details/KSC-20171002-PH_LCH01_0045",
+      "descriptive_text": "The Materials International Space Station Experiment-Flight Facility, or MISSE-FF, hardware arrived at the Space Station Processing Facility low bay at NASA's Kennedy Space Center in Florida. Technicians assist as a crane is used to lift MISSE out of its shipping container. MISSE will be used to test various materials and computing elements on the exterior of the space station. They will be exposed to the harsh environment of low-Earth orbit, including to a vacuum, atomic oxygen, ultraviolet radiation, direct sunlight and extreme heat and cold. The experiment will provide a better understanding of material durability, from coatings to electronic sensors, which could be applied to future spacecraft designs. MISSE will be delivered to the space station on a future commercial resupply mission.",
+      "word_count": 122,
+      "metadata": {
+        "date_created": "2017-10-02T00:00:00Z",
+        "center": "KSC",
+        "media_type": "image",
+        "keywords": [
+          "MISSE-FF",
+          "experiment",
+          "ISS",
+          "space station",
+          "research and technology"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "KSC-20171002-PH_LCH01_0095",
+      "title": "Materials International Space Station Experiment (MISSE) Arrival",
+      "url": "https://images.nasa.gov/details/KSC-20171002-PH_LCH01_0095",
+      "descriptive_text": "The Materials International Space Station Experiment-Flight Facility, or MISSE-FF, hardware arrived at the Space Station Processing Facility low bay at NASA's Kennedy Space Center in Florida. Technicians assist as one of the components is lowered and secured onto another MISSE component. MISSE will be used to test various materials and computing elements on the exterior of the space station. They will be exposed to the harsh environment of low-Earth orbit, including to a vacuum, atomic oxygen, ultraviolet radiation, direct sunlight and extreme heat and cold. The experiment will provide a better understanding of material durability, from coatings to electronic sensors, which could be applied to future spacecraft designs. MISSE will be delivered to the space station on a future commercial resupply mission.",
+      "word_count": 122,
+      "metadata": {
+        "date_created": "2017-10-02T00:00:00Z",
+        "center": "KSC",
+        "media_type": "image",
+        "keywords": [
+          "MISSE-FF",
+          "experiment",
+          "ISS",
+          "space station",
+          "research and technology"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "KSC-20171002-PH_LCH01_0059",
+      "title": "Materials International Space Station Experiment (MISSE) Arrival",
+      "url": "https://images.nasa.gov/details/KSC-20171002-PH_LCH01_0059",
+      "descriptive_text": "The Materials International Space Station Experiment-Flight Facility, or MISSE-FF, hardware arrived at the Space Station Processing Facility low bay at NASA's Kennedy Space Center in Florida. Technicians assist as MISSE is lifted by crane from its shipping container. MISSE will be used to test various materials and computing elements on the exterior of the space station. They will be exposed to the harsh environment of low-Earth orbit, including to a vacuum, atomic oxygen, ultraviolet radiation, direct sunlight and extreme heat and cold. The experiment will provide a better understanding of material durability, from coatings to electronic sensors, which could be applied to future spacecraft designs. MISSE will be delivered to the space station on a future commercial resupply mission.",
+      "word_count": 119,
+      "metadata": {
+        "date_created": "2017-10-02T00:00:00Z",
+        "center": "KSC",
+        "media_type": "image",
+        "keywords": [
+          "MISSE-FF",
+          "experiment",
+          "ISS",
+          "space station",
+          "research and technology"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "GSFC_20171208_Archive_e000135",
+      "title": "The Polar Night Nitric Oxide Experiment",
+      "url": "https://images.nasa.gov/details/GSFC_20171208_Archive_e000135",
+      "descriptive_text": "The Polar Night Nitric Oxide or PolarNOx experiment from Virginia Tech is launched aboard a NASA Black Brant IX sounding rocket at 8:45 a.m. EST, Jan. 27, from the Poker Flat Research Range in Alaska. PolarNOx is measuring nitric oxide in the polar night sky. Nitric oxide in the polar night sky is created by auroras. Under appropriate conditions it can be transported to the stratosphere where it may destroy ozone resulting in possible changes in stratospheric temperature and wind and may even impact the circulation at Earth’s surface. Credit: NASA/Wallops/Jamie Adkins NASA image use policy. NASA Goddard Space Flight Center enables NASA’s mission through four scientific endeavors: Earth Science, Heliophysics, Solar System Exploration, and Astrophysics. Goddard plays a leading role in NASA’s accomplishments by contributing compelling scientific knowledge to advance the Agency’s mission. Follow us on Twitter Like us on Facebook Find us on Instagram",
+      "word_count": 150,
+      "metadata": {
+        "date_created": "2017-12-08T00:00:00Z",
+        "center": "GSFC",
+        "media_type": "image",
+        "keywords": [
+          "The Polar Night Nitric Oxide Experiment"
+        ],
+        "secondary_creator": null
+      }
+    },
+    {
+      "id": "201008150002HQ",
+      "title": "GRIP Experiment 2010",
+      "url": "https://images.nasa.gov/details/201008150002HQ",
+      "descriptive_text": "Jeffrey Beyon, lower right, and Paul Joseph Petzar, right, researchers from NASA's Langley Research Center, speak with Ramesh Kakar right, of the NASA Earth Science Division as they work with DAWN Air Data Acquisition and Processing software aboard NASA's DC-8 research aircraft, Sunday, Aug. 15, 2010, in support of the GRIP experiment at Fort Lauderdale International Airport in Fort Lauderdale, Fla. The Genesis and Rapid Intensification Processes (GRIP) experiment is a NASA Earth science field experiment in 2010 that is being conducted to better understand how tropical storms form and develop into major hurricanes. Photo Credit: (NASA/Paul E. Alers)",
+      "word_count": 100,
+      "metadata": {
+        "date_created": "2010-08-14T00:00:00Z",
+        "center": "HQ",
+        "media_type": "image",
+        "keywords": [
+          "Airplane",
+          "Experiment",
+          "Florida",
+          "Fort Lauderdale",
+          "Fort Lauderdale Hollywood International Airport",
+          "Genesis and Rapid Intensification Processes (GRIP)",
+          "Jeffrey Beyon",
+          "Paul Joseph Petzar",
+          "Ramesh Kakar"
+        ],
+        "secondary_creator": null
+      }
+    }
+  ]
+}

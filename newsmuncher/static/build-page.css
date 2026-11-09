@@ -1,0 +1,158 @@
+.build-page {
+  --build-ink: #30291f;
+  --build-paper: #eee5cf;
+  --build-red: #762e35;
+  --build-gold: #e4c562;
+  --build-head: Rockwell, 'Rockwell Nova', 'Roboto Slab', Georgia, 'Times New Roman', serif;
+  --build-body: Georgia, 'Times New Roman', serif;
+}
+.build-page .site-main { width: min(1200px, calc(100% - 64px)); padding-top: 24px; }
+.build-workshop { max-width: 1200px; margin: 0 auto; color: var(--build-ink); }
+.build-page .mode-nav { margin-bottom: 0; }
+.build-parchment {
+  position: relative; margin: 0 0 54px;
+  padding: clamp(22px, 4vw, 42px); color: var(--build-ink);
+  font-family: var(--build-body); min-width: 0;
+}
+.build-page .build-cosmetic-udder { padding-bottom: 8px; }
+.build-page .build-cosmetic-udder + .build-intro { margin-top: clamp(70px, 8vw, 150px); }
+.build-intro { max-width: 760px; margin-bottom: 32px; }
+.build-intro h1, .recipe-heading h2 {
+  margin: 0 0 8px; font-family: var(--build-head); font-style: normal;
+  color: var(--build-ink); text-transform: uppercase; line-height: 1.08;
+  text-shadow: 0 .8px #fff5df, 0 -.5px #554632;
+}
+.build-intro h1 { font-size: clamp(2.2rem, 5vw, 4.2rem); }
+.build-intro p:last-child { margin: 0; font-size: 1.06rem; }
+.build-loading, .build-error { padding: 18px; border: 2px dashed #7f6d53; font-weight: 700; }
+.build-error { color: #842d38; }
+.ingredient-groups { display: grid; gap: 18px; }
+.ingredient-group { border-top: 2px solid #7c6b5355; padding-top: 18px; }
+.ingredient-heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; margin-bottom: 12px; }
+.ingredient-heading h2 { margin: 0; font: 800 clamp(1.35rem, 3vw, 2rem) var(--build-head); text-transform: uppercase; }
+.ingredient-heading p { margin: 2px 0 0; color: #675c4e; }
+.ingredient-heading-actions { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; max-width: 100%; }
+.ingredient-heading-actions .mini-action { white-space: nowrap; }
+.ingredient-list { display: grid; gap: 10px; }
+.ingredient-slot {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px;
+  align-items: center; min-height: 64px; padding: 9px 10px 9px 16px;
+  background: #fff8e695; border: 1px solid #8c795c66;
+}
+.ingredient-slot.is-busy { background: #f5e6b7a8; }
+.ingredient-phrase { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 8px; min-width: 0; }
+.ingredient-word {
+  display: inline-flex; flex-direction: column; align-items: start; min-height: 0;
+  padding: 3px 2px; border: 0; border-radius: 0; background: transparent;
+  color: var(--build-red); box-shadow: none; font: 800 clamp(1.05rem, 2.4vw, 1.5rem) var(--build-head);
+  text-align: left; text-transform: none;
+}
+.ingredient-word:hover { transform: none; box-shadow: none; background: #e9cb6738; }
+.ingredient-word:focus-visible { outline: 2px dashed var(--build-red); outline-offset: 2px; }
+.ingredient-word small { color: #6c6256; font: 600 .62rem/1.1 var(--body-font); letter-spacing: .06em; text-transform: uppercase; }
+/* SWEAR categories construct insults; they are not user-facing labels. */
+.ingredient-group[data-category="swear"] .ingredient-word small { display: none; }
+.slot-actions { display: flex; align-items: center; gap: 6px; }
+.mini-action, .remove-action {
+  min-height: 38px; padding: 7px 11px; border: 1px solid #544834; box-shadow: 2px 2px #544834;
+  background: var(--build-paper); font: 800 .76rem var(--build-head);
+}
+.mini-action.use-action { background: var(--build-gold); }
+.remove-action { width: 38px; padding: 0; color: #7d2d34; font-size: 1.35rem; }
+.mini-action:hover, .remove-action:hover { box-shadow: 3px 3px #544834; }
+button:disabled { cursor: not-allowed; opacity: .52; }
+.recipe-panel { margin-top: 86px; }
+.recipe-heading { margin-bottom: 20px; }
+.recipe-heading h2 { font-size: clamp(1.8rem, 4vw, 3rem); }
+.recipe-empty { padding: 18px 0; color: #706657; font-style: italic; }
+.recipe-categories { display: grid; gap: 16px; }
+.recipe-category h3 { margin: 0 0 6px; font: 800 1rem var(--build-head); text-transform: uppercase; }
+.recipe-items { display: flex; flex-wrap: wrap; gap: 8px; }
+.recipe-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 8px 7px 12px; background: #fff7df; border: 1px solid #8c795c; }
+.recipe-chip small { color: #746554; }
+.recipe-chip button { width: 28px; min-height: 28px; padding: 0; border: 0; box-shadow: none; background: transparent; color: #7d2d34; font-size: 1.2rem; }
+.prompt-editor-panel {
+  box-sizing: border-box; margin-top: 30px;
+  padding: clamp(8px, 2vw, 20px);
+  border: clamp(22px, 3.5vw, 40px) solid transparent;
+  border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
+}
+.prompt-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.prompt-editor-panel .prompt-arrow-label {
+  display: inline-grid; place-items: start center; min-width: 190px; min-height: 62px;
+  box-sizing: border-box; padding: 11px 24px 22px;
+  clip-path: polygon(0 0, 100% 0, 100% 66%, 68% 66%, 50% 100%, 32% 66%, 0 66%);
+  background: linear-gradient(#dfc36f, #c79d43); color: #4f3021;
+  filter: drop-shadow(0 5px 0 #4b3826) drop-shadow(0 0 1px #4b3826);
+  font: 900 1.05rem var(--build-head); letter-spacing: .045em; text-transform: uppercase;
+  text-shadow: 0 1px 0 #f7e7a5, 0 -1px 0 #8f682c;
+  cursor: text;
+}
+.build-prompt-editor {
+  min-height: 260px; margin: 14px 0 0; padding: 8px 4px; resize: none; overflow-y: hidden;
+  border: 0; background: transparent;
+  font: 500 clamp(.9rem, 1.8vw, 1rem)/1.5 var(--build-body);
+}
+.munch-button { display: flex; margin: 26px auto 8px; min-width: 220px; justify-content: center; font-family: var(--build-head); background: var(--build-gold); }
+.munch-status { margin: 0 auto; max-width: 620px; text-align: center; color: #675c4e; font-size: .9rem; }
+@media (max-width: 700px) {
+  .build-page .site-main { width: calc(100% - 24px); }
+  .build-parchment { padding: 15px; }
+  .ingredient-slot { grid-template-columns: 1fr; }
+  .slot-actions { justify-content: flex-end; }
+  .ingredient-heading { align-items: center; }
+  .ingredient-heading p { font-size: .86rem; }
+}
+@media (max-width: 440px) {
+  .ingredient-heading { align-items: stretch; flex-direction: column; gap: 8px; }
+  .ingredient-heading .mini-action { align-self: flex-start; }
+  .slot-actions { flex-wrap: wrap; }
+  .prompt-editor-heading { align-items: flex-start; flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .build-page *, .build-page *::before, .build-page *::after { animation: none !important; transition: none !important; }
+}
+
+
+/* Build-only primary action and generated story. */
+.munge-action { display: grid; justify-items: center; margin-top: 30px; }
+.munge-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; width: 100%; }
+.munch-button {
+  min-width: clamp(150px, 20vw, 220px); min-height: 64px; margin: 0 auto 10px;
+  border: 3px solid #4b3826; border-radius: 8px;
+  box-shadow: 0 5px 0 #4b3826, 0 10px 22px #2b1a1252;
+  background: linear-gradient(#f3d86f, #dcae3f); color: #4f2026;
+  font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: .05em;
+}
+.munch-button:not(:disabled):hover, .munch-button:focus-visible {
+  transform: translateY(-2px); box-shadow: 0 7px 0 #4b3826, 0 14px 28px #2b1a1266;
+}
+.munch-status.is-error { color: #842d38; font-weight: 700; }
+.build-result {
+  margin-top: 30px; padding: clamp(20px, 4vw, 34px);
+  border-block: 2px solid #7c6b5366; background: #fff7df70;
+}
+.build-result .eyebrow { margin: 0 0 10px; }
+.build-result [data-build-story] {
+  width: 100%; min-height: 150px; resize: vertical; border: 0; background: transparent;
+  margin: 0; color: var(--build-red);
+  font: 800 clamp(1.3rem, 3vw, 2rem)/1.35 var(--build-head);
+}
+.build-page #responseEditor {
+  height: clamp(170px, 24vh, 260px);
+}
+.build-page #imagePanel {
+  margin-top: 8px;
+}
+.build-page .image-panel.image-generation-rejected {
+  display: grid; place-items: center; box-sizing: border-box;
+  padding: clamp(42px, 8vw, 90px); text-align: center;
+  border: clamp(20px, 4vw, 42px) solid transparent;
+  border-image: url('images/backgrounds/parchment.png') 300 240 240 240 fill / 1 / 0 round;
+  background: var(--paper); color: var(--ink);
+}
+.build-page .image-panel.image-generation-rejected .image-failure-copy {
+  max-width: 38rem; margin: 0;
+  font: 700 clamp(1.05rem, 2.4vw, 1.5rem)/1.45 var(--serif);
+  text-wrap: balance;
+}

@@ -1,7 +1,10 @@
 """Image providers and durable rewrite association; no paid-call retries."""
 from contextlib import contextmanager, closing
 from datetime import datetime, timezone
+import random
+import re
 import base64
+import hashlib
 import os
 import tempfile
 import json
@@ -21,19 +24,130 @@ IMAGE_QUALITY = "low"
 IMAGE_SIZE = "1024x1024"
 IMAGE_TIMEOUT = 180.0
 
-IMAGE_FIELDS = ('image_url', 'image_prompt', 'image_model', 'image_provider', 'image_generated_at')
-STYLE = ('Absurd editorial illustration, underground zine artwork, graffiti and stencil '
+IMAGE_FIELDS = ('image_url', 'image_prompt', 'image_model', 'image_provider', 'image_generated_at', 'image_style')
+# Previous style retained for reference only; not included in generated prompts.
+ORIGINAL_IMAGE_STYLE = ('Absurd editorial illustration, underground zine artwork, graffiti and stencil '
          'influences, screen-print texture, bold composition, strange surreal humour, '
          'visually chaotic but readable composition, no text, captions, logos or lettering in the image.')
+PREVIOUS_IMAGE_STYLE = ('Create a flat graphic editorial illustration using bold simplified shapes and a '
+         'restrained palette of 4 to 5 strong colours. Show oddly proportioned, slightly '
+         'caricatured human-like figures that still loosely resemble the described subject. '
+         'Place them in expansive, connected environments and landscapes with strong '
+         'composition and visual storytelling, forming one unified scene. Keep the scene '
+         'playful, surreal, absurd, artistic, stylised and clean, with a slightly eccentric '
+         'French-cartoon / European editorial and gallery-poster feel. Avoid comic-book '
+         'panel styling, photorealism, hyper-detailed realism, cyberpunk aesthetics and '
+         'floating disconnected objects. No text, captions, logos or lettering in the image.')
+IMAGE_STYLES = (
+    'Minimalism', 'Maximalism', 'Vector art', 'Glass Morphism', 'Hand written',
+    'Aurora', 'Swiss design', 'Y2K design', 'Pixel art', 'Clay style', 'Cyberpunk',
+    'Pop art', 'Retro', 'Collage art', 'Surreal art', 'Futuristic', 'Bohemian',
+    'Graffiti', 'Editorial', 'Victorian style',
+)
+STYLE = ('Prioritize the rewritten scene, its recognisable subjects and objects, and '
+         'coherent composition. Depict believable real-world surrealism with an editorial '
+         'sensibility rather than generic cartoon caricature. Use a strong palette of '
+         '4 to 6 dominant colours. Apply the selected visual style to the rendering '
+         'without replacing the scene or its specific absurd events. '
+         'No text, captions, logos or lettering in the image.')
 
 
-def build_image_prompt(result):
-    return (f'{STYLE}\nScene title: {result["crazyReplacement1Title"][:200]}\n'
-            f'Scene: {result["crazyReplacement1Extract"][:1200]}')
+def choose_image_style(exclude=None):
+    return random.choice(tuple(style for style in IMAGE_STYLES if style != exclude))
+
+
+def visual_concept(result, media_description=None):
+    if isinstance(media_description, dict) and media_description.get('concept'):
+        return str(media_description['concept'])[:1400]
+    return (f'{result.get("crazyReplacement1Title", "")[:240]}. '
+            f'{result.get("crazyReplacement1Extract", "")[:1200]}').strip()
+
+
+def build_image_prompt(result, image_style=None, media_description=None):
+    prompt = (f'{STYLE}\nMedia-safe visual concept: '
+              f'{visual_concept(result, media_description)}\n'
+              f'Scene: Establish this exact visual concept with recognisable subjects, setting and key objects.\n'
+              f'{build_composition_map()}')
+    return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
+
+
+TRANSFORMATION_TARGETS = (
+    'moves forward in its existing action', 'reacts physically to the same event',
+    'tilts or shifts while remaining the same object', 'shows natural secondary motion',
+    'changes gesture without changing identity', 'continues the established movement',
+    'leans into the action', 'settles or bounces from the preceding motion',
+    'turns slightly within the same composition', 'responds with a stronger expression',
+)
+
+
+def build_composition_map():
+    return ('Composition map: centre foreground = dominant subject and action; '
+            'left midground = secondary subject; right foreground = important object; '
+            'background centre = principal environment or structure; '
+            'upper background = sky, ceiling or distant atmosphere.')
+
+
+def build_transformation_map(result):
+    text = str(result.get('crazyReplacement1Extract') or '')
+    offset = int(hashlib.sha256(text.encode()).hexdigest()[:8], 16) % len(TRANSFORMATION_TARGETS)
+    targets = TRANSFORMATION_TARGETS[offset:] + TRANSFORMATION_TARGETS[:offset]
+    regions = ('centre foreground', 'left midground', 'right foreground',
+               'background centre', 'upper background')
+    return [{'region': region, 'source': f'visible visual mass at {region}',
+             'destination': targets[index]} for index, region in enumerate(regions)]
+
+
+def format_transformation_map(mapping):
+    return '\n'.join(f'{item["region"]}: {item["source"]} -> {item["destination"]}'
+                     for item in mapping)
+
+
+def build_end_image_prompt(result, image_style=None, transformation_map=None,
+                           media_description=None, transformation=None):
+    """Create a later action state while preserving the supplied scene and style."""
+    transformation_map = transformation_map or build_transformation_map(result)
+    prompt = (
+        'Create a coherent, visually rich surreal scene with recognisable subjects and objects. '
+        'Use a strong palette of 4 to 6 dominant colours and apply the selected visual style '
+        'consistently. No text, captions, logos or lettering in the image.\n'
+        'Use the supplied image as the exact start of the same shot. Preserve the same characters, '
+        'subjects, objects, clothing, props, environment, camera, framing, perspective and proportions. '
+        'Render this later moment in exactly the same visual style, palette, medium, texture and lighting. '
+        'Do not replace the principal characters, key objects or setting. Show a clearly later moment with '
+        'a meaningful visible change, while maintaining character and object identity.\n'
+        f'Shared visual concept: {visual_concept(result, media_description)}\n'
+        f'Development: {(transformation or {}).get("end_direction", "Advance the established action into a clear harmless comic payoff.")}\n'
+        f'{build_composition_map()}\nContinuity map:\n{format_transformation_map(transformation_map)}'
+    )
+    return prompt + (f'\nVisual style: {image_style}.' if image_style else '')
 
 
 class ImageProvider(Protocol):
     def generate_image(self, prompt: str, rewrite_id: str) -> dict: ...
+    def generate_referenced_image(self, prompt: str, rewrite_id: str, reference) -> dict: ...
+
+
+class DefinitiveImageFailure(RuntimeError):
+    """Provider positively returned without a usable image; no request is in flight."""
+
+
+def safe_provider_failure(exc):
+    """Persist bounded provider diagnostics without prompts, secrets or request IDs."""
+    body = getattr(exc, 'body', None)
+    error = body.get('error', body) if isinstance(body, dict) else {}
+    def text(value, limit):
+        if not isinstance(value, str):
+            return None
+        value = re.sub(r'\breq_[A-Za-z0-9_-]+\b', '[request id omitted]', value)
+        return ' '.join(value.split())[:limit]
+    return {
+        'failure_category': type(exc).__name__,
+        'failure_http_status': getattr(exc, 'status_code', None),
+        'failure_code': text(error.get('code') if isinstance(error, dict) else None, 80),
+        'failure_param': text(error.get('param') if isinstance(error, dict) else None, 80),
+        'failure_message': text(error.get('message') if isinstance(error, dict) else None, 240)
+                           or 'Provider rejected the image request.',
+    }
 
 
 class LocalStubProvider:
@@ -42,6 +156,9 @@ class LocalStubProvider:
         return dict(image_url='/static/image-stub.svg', image_prompt=prompt,
                     image_model='local-placeholder-v1', image_provider='local-stub',
                     image_generated_at=datetime.now(timezone.utc).isoformat())
+
+    def generate_referenced_image(self, prompt, rewrite_id, reference):
+        return self.generate_image(prompt, rewrite_id)
 
 
 def image_path(rewrite_id):
@@ -61,23 +178,15 @@ def recover_image(rewrite_id, attempt):
     with path.open('rb') as file:
         if file.read(8) != b'\x89PNG\r\n\x1a\n':
             raise ValueError('Existing generated image is invalid; refusing to regenerate.')
-    return image_metadata(rewrite_id, attempt['prompt'], attempt['model'],
-                          datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat())
+    return {**image_metadata(rewrite_id, attempt['prompt'], attempt['model'],
+                            datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).isoformat()),
+            'image_style': attempt.get('image_style')}
 
 
 class OpenAIImageProvider:
-    def generate_image(self, prompt: str, rewrite_id: str) -> dict:
-        path = image_path(rewrite_id)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        existing = recover_image(rewrite_id, {'prompt': prompt, 'model': IMAGE_MODEL})
-        if existing:
-            return existing
-        load_dotenv(ENV_FILE)
-        with OpenAI(max_retries=0, timeout=IMAGE_TIMEOUT) as client:
-            response = client.images.generate(model=IMAGE_MODEL, quality=IMAGE_QUALITY,
-                size=IMAGE_SIZE, n=1, output_format='png', prompt=prompt)
+    def _save(self, response, path, rewrite_id, prompt):
         if not response.data or len(response.data) != 1 or not response.data[0].b64_json:
-            raise ValueError('Expected one generated image.')
+            raise DefinitiveImageFailure('Provider returned no usable image.')
         image = base64.b64decode(response.data[0].b64_json, validate=True)
         if not image.startswith(b'\x89PNG\r\n\x1a\n'):
             raise ValueError('Expected PNG image data.')
@@ -93,6 +202,31 @@ class OpenAIImageProvider:
             if temporary and os.path.exists(temporary):
                 os.unlink(temporary)
         return image_metadata(rewrite_id, prompt)
+
+    def generate_image(self, prompt: str, rewrite_id: str) -> dict:
+        path = image_path(rewrite_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        existing = recover_image(rewrite_id, {'prompt': prompt, 'model': IMAGE_MODEL})
+        if existing:
+            return existing
+        load_dotenv(ENV_FILE)
+        with OpenAI(max_retries=0, timeout=IMAGE_TIMEOUT) as client:
+            response = client.images.generate(model=IMAGE_MODEL, quality=IMAGE_QUALITY,
+                size=IMAGE_SIZE, n=1, output_format='png', prompt=prompt)
+        return self._save(response, path, rewrite_id, prompt)
+
+    def generate_referenced_image(self, prompt: str, rewrite_id: str, reference) -> dict:
+        path = image_path(rewrite_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        existing = recover_image(rewrite_id, {'prompt': prompt, 'model': IMAGE_MODEL})
+        if existing:
+            return existing
+        load_dotenv(ENV_FILE)
+        with OpenAI(max_retries=0, timeout=IMAGE_TIMEOUT) as client, reference.open('rb') as image:
+            response = client.images.edit(model=IMAGE_MODEL, quality=IMAGE_QUALITY,
+                size=IMAGE_SIZE, n=1, output_format='png', input_fidelity='high',
+                image=image, prompt=prompt)
+        return self._save(response, path, rewrite_id, prompt)
 
 
 def get_provider() -> ImageProvider:
@@ -132,7 +266,8 @@ class RewriteStore:
         image_path(rewrite_id).unlink(missing_ok=True)
         # Retain only a tombstone: late workers cannot resurrect the draft or pay again.
         self.save(db, rewrite_id, dict(owner=state['owner'], entry_id=None, discarded=True,
-                                      result={'rewrite_id': rewrite_id}))
+                                      result={'rewrite_id': rewrite_id},
+                                      **({'video': state['video']} if 'video' in state else {})))
 
     def begin_draft(self, source, owner, session):
         rewrite_id = str(uuid4())
@@ -155,11 +290,13 @@ class RewriteStore:
             db.execute('INSERT OR REPLACE INTO draft_slots VALUES (?, ?, ?)', (owner, session, rewrite_id))
         return rewrite_id
 
-    def complete_draft(self, rewrite_id, owner, result):
+    def complete_draft(self, rewrite_id, owner, result, before_save=None):
         with self.transaction() as db:
             state = self.read(db, rewrite_id, owner)
             if state.get('discarded'):
                 return None
+            if before_save:
+                before_save()
             state['result'] = {**result, 'rewrite_id': rewrite_id, 'nominated': False}
             state['generating'] = False
             self.save(db, rewrite_id, state)

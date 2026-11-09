@@ -1,68 +1,57 @@
-from newsmuncher.utils.source_preprocessing import preserve_source_text
-from newsmuncher.config import TEMP_FILE
+"""NASA source adapter retained behind the historical POEM teat action."""
+
 import json
+import random
+
 import requests
-import time
-import os
+
+from newsmuncher.config import TEMP_FILE
+from newsmuncher.jobs.source_content import get_json, reduce_description, source_session
+from newsmuncher.utils.source_preprocessing import preserve_source_text
 
 
-from newsmuncher.utils.clean_data import *
-
-API_URL = "https://poetrydb.org/random"
-
-def extract_valid_verses(lines, max_chars=500):
-    """Extract valid verses within the max character limit."""
-    current_block = []
-    total_chars = 0
-
-    for line in lines:
-        if line == "":
-            if total_chars + len(" ".join(current_block)) > max_chars:
-                break
-            current_block.append("")
-        else:
-            if total_chars + len(line) + 1 > max_chars:
-                break
-            current_block.append(line)
-            total_chars += len(line) + 1
-    return " ".join(current_block).strip()
+API_URL = "https://images-api.nasa.gov/search"
+SEARCH_TERMS = ("experiment", "prototype", "deployment", "repair", "crew training", "test flight")
 
 
-def fetch_data(min_chars=160, max_chars=500, max_retries=10):
-    """Fetch a random poem and store it temporarily."""
-    for attempt in range(max_retries):
-        try:
-            response = requests.get(API_URL)
-            response.raise_for_status()
-            poem_data = response.json()[0]
+def fetch_data(min_words=35):
+    """Fetch one descriptive NASA library record and store it temporarily."""
+    try:
+        with source_session() as client:
+            payload = get_json(client, API_URL, params={
+                "q": random.choice(SEARCH_TERMS),
+                "media_type": "image,video",
+                "page_size": 100,
+            })
+        candidates = []
+        for item in payload.get("collection", {}).get("items", []):
+            metadata = (item.get("data") or [{}])[0]
+            original = metadata.get("description") or metadata.get("description_508") or ""
+            if len(original.split()) < min_words:
+                continue
+            nasa_id = metadata.get("nasa_id")
+            title = metadata.get("title")
+            if nasa_id and title:
+                candidates.append((metadata, original, nasa_id, title))
+        if not candidates:
+            raise ValueError("NASA returned no sufficiently descriptive records")
 
-            poem_title = preserve_source_text(poem_data.get("title", "Untitled"))
-            poem_author = preserve_source_text(poem_data.get("author", "Unknown Author"))
-            valid_excerpt = extract_valid_verses(poem_data.get("lines", []), max_chars)
+        metadata, original, nasa_id, title = random.choice(candidates)
+        year = str(metadata.get("date_created") or "")[:4]
+        temp_data = {
+            "title": preserve_source_text(title),
+            "description": "NASA Image and Video Library" + (f" ({year})" if year else ""),
+            "extract": preserve_source_text(reduce_description(original)),
+            "source_url": f"https://images.nasa.gov/details/{nasa_id}",
+            "source_name": "NASA Image and Video Library",
+        }
+        with open(TEMP_FILE, "w", encoding="utf-8") as target:
+            json.dump(temp_data, target, ensure_ascii=False, indent=2)
+        return temp_data
+    except (requests.RequestException, KeyError, TypeError, ValueError) as error:
+        print(f"Could not fetch NASA source content: {error}")
+        return None
 
-            if min_chars <= len(valid_excerpt) <= max_chars:
-                temp_data = {
-                    "title": poem_title,
-                    "description": poem_author,
-                    "extract": preserve_source_text(valid_excerpt)
-                }
-
-                # Save data to temp file instead of posting
-                with open(TEMP_FILE, "w") as file:
-                    json.dump(temp_data, file, indent=4)
-
-                print(f"Fetched poem stored in {TEMP_FILE}. Run confirm_data.py to store it in the API.")
-                return temp_data
-
-            print(f"Retry {attempt + 1}/{max_retries}: Invalid excerpt length.")
-
-        except requests.RequestException as e:
-            print(f"Retry {attempt + 1}/{max_retries}: {e}")
-
-        time.sleep(1)
-
-    print("Failed to fetch a valid poem after retries.")
-    return None
 
 if __name__ == "__main__":
-    fetch_data()
+    raise SystemExit(0 if fetch_data() else 1)

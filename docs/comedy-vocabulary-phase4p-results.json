@@ -1,0 +1,903 @@
+{
+  "baseline": {
+    "category_distribution": {
+      "animals": 5000,
+      "descriptor": 5000,
+      "nouns": 5000
+    },
+    "conceptual_domains_represented": 0,
+    "conceptual_families_selected": 0,
+    "cross_domain_ingredients": 0,
+    "examples": [],
+    "familiar_distribution": {
+      "bunting": 191,
+      "crumpet": 46,
+      "custard": 134,
+      "float": 11,
+      "gravy": 170,
+      "kettle": 88,
+      "marmalade": 58,
+      "milk": 58,
+      "parliamentary": 111,
+      "queue": 38,
+      "royal": 189
+    },
+    "familiar_word_share": 0.01908,
+    "generations": 500,
+    "ingredients_offered": 15000,
+    "mean_ingredient_characters_per_generation": 1159.29,
+    "mean_local_transformation_ms": 0.152,
+    "ranking_stage_losses": 0,
+    "rolling_10_phrase_repetition": 0.624,
+    "rolling_5_construction_repetition": 15.54,
+    "rolling_5_phrase_repetition": 0.3,
+    "seed_kind_distribution": {},
+    "stored_domain_events": 0,
+    "stored_ingredient_events": 0,
+    "theme_domains_before_ranking": 0,
+    "theme_ingredients_after_ranking": 0,
+    "unique_constructions": 47,
+    "unique_ingredients": 10420,
+    "unique_vocabulary": 2323
+  },
+  "combined": {
+    "category_distribution": {
+      "animals": 5000,
+      "descriptor": 5000,
+      "nouns": 5000
+    },
+    "conceptual_domains_represented": 100,
+    "conceptual_families_selected": 11,
+    "cross_domain_ingredients": 1499,
+    "examples": [
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "celestial-navigation",
+          "anthropology-gifts"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "fermented biscuit barrel using ceremonial gifts"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "anthropology-gifts",
+          "puppet-theatre"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "bolster in ritual transformation with shadow theatre"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "celestial-navigation",
+          "anthropology-gifts"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "sextant-ceremonial-gifts-adapted"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "architecture",
+          "animal-navigation"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "structural bravado-adapted bioluminescent lap tray"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "fluid-dynamics",
+          "architecture"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "pressure dynamics-adapted counterweighted hand whisk"
+      },
+      {
+        "construction_id": "role_predicate",
+        "domain_ids": [
+          "architecture",
+          "prosthetics"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "responsive to staircase during joint dynamics"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "aurora-science",
+          "lighthouse-engineering"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "volcanic toilet articles using fog signals"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "divination-practices",
+          "aurora-science"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "radar in mythic inheritance with solar wind"
+      },
+      {
+        "construction_id": "role_predicate",
+        "domain_ids": [
+          "divination-practices",
+          "aurora-science"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "responsive to divination during magnetic storms"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "early-computing",
+          "sewer-history"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "calculation dynamics-adapted subterranean rear light"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "sewer-history",
+          "palaeontology"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "modular yellow hornet using ancient footprints"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "palaeontology",
+          "early-computing"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "excavation-punched-cards-adapted"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "information-theory",
+          "lighthouse-engineering"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "plunger in topological equivalence with fog signal"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "thermodynamics",
+          "information-theory"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "flying robin in harmonic interference with signal"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "information-theory",
+          "ornithology"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "noise-migration-adapted"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "botany",
+          "mycology"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "lab bench in predator mimicry with spore"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "clockwork-machinery",
+          "mycology"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "automata-adapted dormant butter paddle"
+      },
+      {
+        "construction_id": "role_predicate",
+        "domain_ids": [
+          "quantum-physics",
+          "clockwork-machinery"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "responsive to quantum during gear trains"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "sewer-history",
+          "writing-systems"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "bed warmer in water diversion with glyph"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "writing-systems",
+          "sewer-history"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "landing deck in collective memory with sewer"
+      },
+      {
+        "construction_id": "role_behavioural",
+        "domain_ids": [
+          "folklore-customs",
+          "polar-exploration"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "performing expedition dynamics with ritual"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "viking-navigation",
+          "genetics"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "clinker-built ships-adapted migratory jump suit"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "viking-navigation",
+          "folklore-customs"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "excavated sea cradle using seasonal rites"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "viking-navigation",
+          "genetics"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "viking-mutations-adapted"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "silk-road",
+          "astronomy"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "multilingual merchants-adapted turbulent commission"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "mountaineering",
+          "astronomy"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "rope teams-adapted resonant bun steamer"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "mountaineering",
+          "astronomy"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "rope-wandering-planets-adapted"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "sleep-science",
+          "comparative-mythology"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "prosthetic brick-making machine using divine transformations"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "stone-carving",
+          "sleep-science"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "annealed meat tenderiser using circadian clocks"
+      },
+      {
+        "construction_id": "role_predicate",
+        "domain_ids": [
+          "comparative-mythology",
+          "ornithology"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "responsive to trickster during nest dynamics"
+      }
+    ],
+    "familiar_distribution": {
+      "bunting": 174,
+      "crumpet": 46,
+      "custard": 126,
+      "float": 11,
+      "gravy": 152,
+      "kettle": 81,
+      "marmalade": 52,
+      "milk": 58,
+      "parliamentary": 99,
+      "queue": 34,
+      "royal": 169
+    },
+    "familiar_word_share": 0.01741,
+    "generations": 500,
+    "ingredients_offered": 15000,
+    "mean_ingredient_characters_per_generation": 1170.29,
+    "mean_local_transformation_ms": 1.078,
+    "ranking_stage_losses": 10970,
+    "rolling_10_phrase_repetition": 0.498,
+    "rolling_5_construction_repetition": 16.25,
+    "rolling_5_phrase_repetition": 0.238,
+    "seed_kind_distribution": {
+      "entity": 823,
+      "process": 1175,
+      "property": 676,
+      "relationship": 324
+    },
+    "stored_domain_events": 20,
+    "stored_ingredient_events": 20,
+    "theme_domains_before_ranking": 2000,
+    "theme_ingredients_after_ranking": 1499,
+    "unique_constructions": 54,
+    "unique_ingredients": 11110,
+    "unique_vocabulary": 3480
+  },
+  "interpretation": {
+    "combined_ingredient_equivalence_expected": "Combined and Phase 4P use the same ingredient architecture; only combined adds Phase 4N prompt guidance, whose final-text effect needs human/provider evaluation.",
+    "humour_limit": "These selection metrics cannot establish which configuration is funniest.",
+    "phase4n_ingredient_equivalence_expected": "Phase 4N changes optional prompt guidance, so provider-free ingredient metrics remain baseline-equivalent."
+  },
+  "phase4n": {
+    "category_distribution": {
+      "animals": 5000,
+      "descriptor": 5000,
+      "nouns": 5000
+    },
+    "conceptual_domains_represented": 0,
+    "conceptual_families_selected": 11,
+    "cross_domain_ingredients": 0,
+    "examples": [],
+    "familiar_distribution": {
+      "bunting": 191,
+      "crumpet": 46,
+      "custard": 134,
+      "float": 11,
+      "gravy": 170,
+      "kettle": 88,
+      "marmalade": 58,
+      "milk": 58,
+      "parliamentary": 111,
+      "queue": 38,
+      "royal": 189
+    },
+    "familiar_word_share": 0.01908,
+    "generations": 500,
+    "ingredients_offered": 15000,
+    "mean_ingredient_characters_per_generation": 1159.29,
+    "mean_local_transformation_ms": 0.491,
+    "ranking_stage_losses": 0,
+    "rolling_10_phrase_repetition": 0.624,
+    "rolling_5_construction_repetition": 15.54,
+    "rolling_5_phrase_repetition": 0.3,
+    "seed_kind_distribution": {},
+    "stored_domain_events": 20,
+    "stored_ingredient_events": 0,
+    "theme_domains_before_ranking": 2000,
+    "theme_ingredients_after_ranking": 0,
+    "unique_constructions": 47,
+    "unique_ingredients": 10420,
+    "unique_vocabulary": 2323
+  },
+  "phase4p": {
+    "category_distribution": {
+      "animals": 5000,
+      "descriptor": 5000,
+      "nouns": 5000
+    },
+    "conceptual_domains_represented": 100,
+    "conceptual_families_selected": 11,
+    "cross_domain_ingredients": 1499,
+    "examples": [
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "celestial-navigation",
+          "anthropology-gifts"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "fermented biscuit barrel using ceremonial gifts"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "anthropology-gifts",
+          "puppet-theatre"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "bolster in ritual transformation with shadow theatre"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "celestial-navigation",
+          "anthropology-gifts"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "sextant-ceremonial-gifts-adapted"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "architecture",
+          "animal-navigation"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "structural bravado-adapted bioluminescent lap tray"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "fluid-dynamics",
+          "architecture"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "pressure dynamics-adapted counterweighted hand whisk"
+      },
+      {
+        "construction_id": "role_predicate",
+        "domain_ids": [
+          "architecture",
+          "prosthetics"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "responsive to staircase during joint dynamics"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "aurora-science",
+          "lighthouse-engineering"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "volcanic toilet articles using fog signals"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "divination-practices",
+          "aurora-science"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "radar in mythic inheritance with solar wind"
+      },
+      {
+        "construction_id": "role_predicate",
+        "domain_ids": [
+          "divination-practices",
+          "aurora-science"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "responsive to divination during magnetic storms"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "early-computing",
+          "sewer-history"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "calculation dynamics-adapted subterranean rear light"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "sewer-history",
+          "palaeontology"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "modular yellow hornet using ancient footprints"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "palaeontology",
+          "early-computing"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "excavation-punched-cards-adapted"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "information-theory",
+          "lighthouse-engineering"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "plunger in topological equivalence with fog signal"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "thermodynamics",
+          "information-theory"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "flying robin in harmonic interference with signal"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "information-theory",
+          "ornithology"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "noise-migration-adapted"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "botany",
+          "mycology"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "lab bench in predator mimicry with spore"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "clockwork-machinery",
+          "mycology"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "automata-adapted dormant butter paddle"
+      },
+      {
+        "construction_id": "role_predicate",
+        "domain_ids": [
+          "quantum-physics",
+          "clockwork-machinery"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "responsive to quantum during gear trains"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "sewer-history",
+          "writing-systems"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "bed warmer in water diversion with glyph"
+      },
+      {
+        "construction_id": "base_relationship_entity",
+        "domain_ids": [
+          "writing-systems",
+          "sewer-history"
+        ],
+        "seed_kinds": [
+          "relationship",
+          "entity"
+        ],
+        "text": "landing deck in collective memory with sewer"
+      },
+      {
+        "construction_id": "role_behavioural",
+        "domain_ids": [
+          "folklore-customs",
+          "polar-exploration"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "performing expedition dynamics with ritual"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "viking-navigation",
+          "genetics"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "clinker-built ships-adapted migratory jump suit"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "viking-navigation",
+          "folklore-customs"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "excavated sea cradle using seasonal rites"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "viking-navigation",
+          "genetics"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "viking-mutations-adapted"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "silk-road",
+          "astronomy"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "multilingual merchants-adapted turbulent commission"
+      },
+      {
+        "construction_id": "process_adapted_base",
+        "domain_ids": [
+          "mountaineering",
+          "astronomy"
+        ],
+        "seed_kinds": [
+          "process",
+          "property"
+        ],
+        "text": "rope teams-adapted resonant bun steamer"
+      },
+      {
+        "construction_id": "role_pre_noun",
+        "domain_ids": [
+          "mountaineering",
+          "astronomy"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "rope-wandering-planets-adapted"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "sleep-science",
+          "comparative-mythology"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "prosthetic brick-making machine using divine transformations"
+      },
+      {
+        "construction_id": "property_base_process",
+        "domain_ids": [
+          "stone-carving",
+          "sleep-science"
+        ],
+        "seed_kinds": [
+          "property",
+          "process"
+        ],
+        "text": "annealed meat tenderiser using circadian clocks"
+      },
+      {
+        "construction_id": "role_predicate",
+        "domain_ids": [
+          "comparative-mythology",
+          "ornithology"
+        ],
+        "seed_kinds": [
+          "entity",
+          "process"
+        ],
+        "text": "responsive to trickster during nest dynamics"
+      }
+    ],
+    "familiar_distribution": {
+      "bunting": 174,
+      "crumpet": 46,
+      "custard": 126,
+      "float": 11,
+      "gravy": 152,
+      "kettle": 81,
+      "marmalade": 52,
+      "milk": 58,
+      "parliamentary": 99,
+      "queue": 34,
+      "royal": 169
+    },
+    "familiar_word_share": 0.01741,
+    "generations": 500,
+    "ingredients_offered": 15000,
+    "mean_ingredient_characters_per_generation": 1170.29,
+    "mean_local_transformation_ms": 1.106,
+    "ranking_stage_losses": 10970,
+    "rolling_10_phrase_repetition": 0.498,
+    "rolling_5_construction_repetition": 16.25,
+    "rolling_5_phrase_repetition": 0.238,
+    "seed_kind_distribution": {
+      "entity": 823,
+      "process": 1175,
+      "property": 676,
+      "relationship": 324
+    },
+    "stored_domain_events": 20,
+    "stored_ingredient_events": 20,
+    "theme_domains_before_ranking": 2000,
+    "theme_ingredients_after_ranking": 1499,
+    "unique_constructions": 54,
+    "unique_ingredients": 11110,
+    "unique_vocabulary": 3480
+  }
+}

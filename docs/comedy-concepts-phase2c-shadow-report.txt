@@ -1,0 +1,241 @@
+## MOCK SLATE 1
+Strategy A: concepts=10 categories={'absurd_invention': 2, 'cheeky_object': 2, 'ridiculous_creature': 2, 'everyday_british': 2, 'bureaucratic_nonsense': 1, 'emergency_equipment': 1} intensities={2: 5, 3: 1, 1: 4} repeated_bases=0 approx_token_delta=+126 candidate_delta=+42
+  Nouns: marmalade-launching vacuum cleaner, pillow with intercontinental pumping clearance, shoplifting sheep, passive-aggressive cake stand, village advisory council for municipal gossip, compost-powered salad spinner, parliament-storming frog, crisis periscope for minor queue containment, indecently buoyant jelly mould, deeply theatrical garden shed
+  Animals/objects: notepad holder, grilling apron, gumballmachine, lamp timer, candle warmer, shit poetry balls, alligator, clownfish, dinner bell, hand soap
+Strategy B: concepts=20 categories={'bureaucratic_nonsense': 3, 'ridiculous_creature': 4, 'ceremonial_object': 1, 'everyday_british': 3, 'emergency_equipment': 1, 'cheeky_object': 4, 'absurd_invention': 4} intensities={3: 6, 1: 5, 2: 9} repeated_bases=0 approx_token_delta=+195 candidate_delta=+111
+  Nouns: supreme inspection order for thermos accreditation, constitutionally protected chicken, plunger of state-approved pudding defence, doorstop awaiting a public inquiry, signal megaphone for cardigan apocalypse survival, filibustering heron, footstool with an enthusiastic release valve, self-warming trouser press, unreasonably buoyant traffic cone, zip fastener approved for gentle handling
+  Animals/objects: weasel with a disputed sandwich patent, operating beyond recommended thrust cream horn, banned after the vicarage incident crumpet, planetary notice for inappropriate bunting, argument-winning soup dispenser, marmalade-launching leaf blower, dimension-puncturing pie warmer, national inspectorate for gazebo licensing, plant pot with a secret allotment, picketing fox
+Strategy C: concepts=6 categories={'ridiculous_creature': 1, 'absurd_invention': 1, 'bureaucratic_nonsense': 1, 'cheeky_object': 1, 'everyday_british': 1, 'ceremonial_object': 1} intensities={3: 1, 1: 2, 2: 3} repeated_bases=0 approx_token_delta=+116 candidate_delta=+32
+  Nouns: curd boot, taint puppet, toenail snowplough, testicle zeppelin of static, slobber cementmixer, scrote satnav, stink fishbowl of shame, constitutionally protected beetle, self-folding hand dryer, national subcommittee for hostile umbrellas
+  Animals/objects: notepad holder, grilling apron, gumballmachine, lamp timer, candle warmer, shit poetry balls, alligator, alarmingly firm sausage warmer, queue-certified bird bath, soap dish of constitutional gravy service
+
+## MOCK SLATE 2
+Strategy A: concepts=10 categories={'absurd_invention': 2, 'cheeky_object': 2, 'ceremonial_object': 1, 'ridiculous_creature': 2, 'everyday_british': 1, 'emergency_equipment': 1, 'bureaucratic_nonsense': 1} intensities={1: 6, 2: 3, 3: 1} repeated_bases=0 approx_token_delta=+127 candidate_delta=+43
+  Nouns: elastic-band-powered photocopier, precision-cut tin basting brush, hand-cranked-powered desk fan, mop of hereditary allotment rights, parliament-storming haddock, mop bucket capable of minor prophecy, disaster gravy boat for drizzle evacuation, cream dispenser with adjustable firmness, constitutionally protected cow, national licence for hedge-trimmer diplomacy
+  Animals/objects: penis ornament, cookie sheet, screwdriver, domestic goose, cooking stone, shark, car seat cover, artificial turf, crib mobile, bubble blower
+Strategy B: concepts=20 categories={'absurd_invention': 4, 'bureaucratic_nonsense': 3, 'cheeky_object': 4, 'ridiculous_creature': 4, 'ceremonial_object': 1, 'everyday_british': 3, 'emergency_equipment': 1} intensities={2: 11, 3: 4, 1: 5} repeated_bases=0 approx_token_delta=+190 candidate_delta=+106
+  Nouns: queue-jumping desk fan, interdepartmental tribunal for unauthorised garden gnomes, capable of unauthorised swelling love seat, blackmailing cow, custard ladle operating beyond recommended thrust, cross-party inspection order for gravy procurement, warm-handed trouser hanger, antimatter-powered slow cooker, national ombudsman for milk-float intelligence, bicycle-powered electric blanket
+  Animals/objects: allotment bench of royal plumbing emergencies, desk lamp with delusions of grandeur, cod commanding a volunteer fire brigade, legally sentient tea cosy, reinforced rubber rump cushion, dormouse working as licensed royal footman, constitutionally protected yak, hazard apron for feral wheelie-bin control, reinforced rubber coat rack, neighbour-alarming bread maker
+Strategy C: concepts=6 categories={'absurd_invention': 1, 'bureaucratic_nonsense': 1, 'ridiculous_creature': 1, 'everyday_british': 1, 'cheeky_object': 1, 'ceremonial_object': 1} intensities={2: 4, 3: 2} repeated_bases=0 approx_token_delta=+110 candidate_delta=+26
+  Nouns: arse carousel, grunt zeppelin of broken promises, nipple vacuum, crust caravan of crumbs, measles, stink lawnmower of panic, tuberculosis, queue-jumping leaf blower, statutory certificate for footstool licensing, filibustering moth
+  Animals/objects: penis ornament, cookie sheet, screwdriver, domestic goose, cooking stone, shark, car seat cover, county-banned office fan, professionally throbbing rump cushion, ladle for ancient sovereign biscuit dunking
+
+## MOCK SLATE 3
+Strategy A: concepts=10 categories={'cheeky_object': 2, 'everyday_british': 2, 'emergency_equipment': 1, 'ridiculous_creature': 2, 'absurd_invention': 2, 'bureaucratic_nonsense': 1} intensities={1: 3, 2: 5, 3: 2} repeated_bases=0 approx_token_delta=+130 candidate_delta=+46
+  Nouns: garden hose approved for gentle handling, mildly judgmental greenhouse, mobile toast rack for badger evacuation, heron bending reality at council meetings, weather-predicting hole punch, interdepartmental certificate for unlicensed teapots, reinforced rubber vacuum cleaner, overexcited bun steamer, constitutionally protected seagull, marmalade-powered pencil sharpener
+  Animals/objects: double sided tape, toaster oven, salamander, brush holder, inflatable mattress, computer mouse, basketball hoop for the toilet, garden hose, rolling stool, bird bath
+Strategy B: concepts=20 categories={'cheeky_object': 4, 'ridiculous_creature': 4, 'bureaucratic_nonsense': 3, 'absurd_invention': 4, 'emergency_equipment': 1, 'everyday_british': 3, 'ceremonial_object': 1} intensities={3: 7, 2: 7, 1: 6} repeated_bases=0 approx_token_delta=+186 candidate_delta=+102
+  Nouns: lap tray with intercontinental pumping clearance, shoplifting yak, emergency sovereign subcommittee for rogue lunchboxes, interdepartmental standards board for wheelbarrow taxation, raven working as court-appointed divorce mediator, self-polishing leaf blower, constitutionally protected chicken, emergency deckchair for runaway moon recovery, reinforced rubber bus shelter, crumpet wanted by the upholstery police
+  Animals/objects: public licensing authority for pigeon misconduct, automatically buttering desk fan, filibustering crab, nuclear-powered hand dryer, queue-jumping alarm clock, frantically extendable pocket warmer, deeply theatrical thermos flask, mildly judgmental coat hanger, operating beyond recommended thrust bolster, soap dish for mayoral sandwich inspection
+Strategy C: concepts=6 categories={'ridiculous_creature': 1, 'absurd_invention': 1, 'bureaucratic_nonsense': 1, 'emergency_equipment': 1, 'cheeky_object': 1, 'everyday_british': 1} intensities={1: 3, 2: 2, 3: 1} repeated_bases=0 approx_token_delta=+113 candidate_delta=+29
+  Nouns: taint fish of horror, rump satnav of paperwork, scrote compass, cheek banjo, sack volcano, fart radiator of tiny violins, jizz cart, parliament-storming yak, automatically buttering salad spinner, national certificate for aggressive doormats
+  Animals/objects: double sided tape, toaster oven, salamander, brush holder, inflatable mattress, computer mouse, basketball hoop for the toilet, backup cardigan for shed first aid, double-jointed butter paddle, paperwork-haunted filing cabinet
+
+## MOCK SLATE 4
+Strategy A: concepts=10 categories={'cheeky_object': 2, 'ceremonial_object': 1, 'bureaucratic_nonsense': 1, 'absurd_invention': 2, 'ridiculous_creature': 2, 'emergency_equipment': 1, 'everyday_british': 1} intensities={1: 6, 2: 3, 3: 1} repeated_bases=0 approx_token_delta=+116 candidate_delta=+32
+  Nouns: warm-handed corset stretcher, basting brush with adjustable firmness, picnic hamper for parish biscuit dunking, county inquiry for ceremonial damp, chip-fat-powered waffle iron, picketing lizard, riot shield for emergency biscuit protection, shoplifting wallaby, volcanic-powered cement mixer, stapler with an aggressive pension plan
+  Animals/objects: detergent pods, quail, wok, horse, car dust brush, aardwolf, gingergrater, extension cord, llama, pike
+Strategy B: concepts=20 categories={'emergency_equipment': 1, 'absurd_invention': 4, 'bureaucratic_nonsense': 3, 'cheeky_object': 4, 'everyday_british': 3, 'ridiculous_creature': 4, 'ceremonial_object': 1} intensities={1: 6, 2: 10, 3: 4} repeated_bases=0 approx_token_delta=+185 candidate_delta=+101
+  Nouns: crisis periscope for minor queue containment, marmalade-launching alarm clock, statutory review panel for hedge-trimmer diplomacy, garden hose capable of unauthorised swelling, frantically extendable rolling pin, national commission for kettle emissions, self-warming sandwich press, committee-approved bus shelter, structurally aroused pickle fork, weather-predicting salad spinner
+  Animals/objects: vole working as licensed royal footman, aerospace wicker stepladder, slightly damp desk lamp, blackmailing eel, constitutionally protected lobster, quietly rotating desk fan, tax-avoiding cow, hand whisk with intercontinental pumping clearance, interdepartmental waiver for gazebo licensing, doorstop of royal plumbing emergencies
+Strategy C: concepts=6 categories={'cheeky_object': 1, 'absurd_invention': 1, 'ceremonial_object': 1, 'everyday_british': 1, 'ridiculous_creature': 1, 'bureaucratic_nonsense': 1} intensities={2: 5, 3: 1} repeated_bases=0 approx_token_delta=+116 candidate_delta=+32
+  Nouns: crust dustbin, chunder crossbow, dick trombone of chaos, vagina fork, chunder goose of mourning, bollock gondola, clunge satellite of suspicion, double-jointed hand whisk, chip-fat-powered forklift, thermos flask of repelling intergalactic auditors
+  Animals/objects: detergent pods, quail, wok, horse, car dust brush, aardwolf, gingergrater, bird table licensed to inspect sandwiches, parliament-storming haddock, national licence for marmalade smuggling
+
+## MOCK SLATE 5
+Strategy A: concepts=10 categories={'everyday_british': 2, 'ceremonial_object': 1, 'ridiculous_creature': 2, 'cheeky_object': 2, 'absurd_invention': 2, 'bureaucratic_nonsense': 1} intensities={3: 3, 2: 6, 1: 1} repeated_bases=0 approx_token_delta=+118 candidate_delta=+34
+  Nouns: combat-trained folding chair, towel rail for imperial state emergencies, unreasonably buoyant greenhouse, blackmailing wasp, licensed for vigorous plunging biscuit barrel, pigeon-repelling shopping trolley, gravy-powered shoe polisher, constitutionally protected goose, statutory licence for shed sovereignty, professionally throbbing ball cock
+  Animals/objects: medicine dropper, reading glasses, salad spinner, cephalopod, pigeon breeds, harrier, color pencil set, mammal, scallop, bicycle basket
+Strategy B: concepts=20 categories={'everyday_british': 3, 'ceremonial_object': 1, 'cheeky_object': 4, 'ridiculous_creature': 4, 'absurd_invention': 4, 'bureaucratic_nonsense': 3, 'emergency_equipment': 1} intensities={3: 8, 2: 7, 1: 5} repeated_bases=0 approx_token_delta=+170 candidate_delta=+86
+  Nouns: militantly unionised hose reel, mop for ancient sovereign biscuit dunking, milk jug licensed for vigorous plunging, goat working as freelance queue consultant, lightning-powered waffle iron, marmalade-launching label maker, overstuffed bun steamer, municipal licensing authority for pigeon misconduct, blackmailing ferret, self-heating felt tent pole
+  Animals/objects: public inspectorate for milk-float intelligence, socially awkward watering can, paperwork-haunted bus shelter, inflatable shelter for rainy picnic recovery, tax-avoiding guinea pig, shed-inflating pepper mill, county licence for thermos accreditation, parliament-dissolving fondue pot, meteorite-plated butter paddle, tax-avoiding swan
+Strategy C: concepts=6 categories={'everyday_british': 1, 'emergency_equipment': 1, 'bureaucratic_nonsense': 1, 'cheeky_object': 1, 'absurd_invention': 1, 'ridiculous_creature': 1} intensities={1: 4, 3: 2} repeated_bases=0 approx_token_delta=+115 candidate_delta=+31
+  Nouns: clunge jug, minge kazoo of headaches, jizz teapot of melancholy, goo boot of grief, rim zeppelin of poor judgement, rump satnav of poor judgement, arse pagoda, lawn mower on unofficial tea duty, hazard apron for pigeon riot control, village subcommittee for gazebo licensing
+  Animals/objects: medicine dropper, reading glasses, salad spinner, cephalopod, pigeon breeds, harrier, color pencil set, ceremonial wicker hand whisk, gravity-cancelling shopping trolley, blackmailing haddock
+
+## MOCK SLATE 6
+Strategy A: concepts=10 categories={'bureaucratic_nonsense': 1, 'absurd_invention': 2, 'ridiculous_creature': 2, 'ceremonial_object': 1, 'everyday_british': 2, 'cheeky_object': 2} intensities={3: 3, 1: 4, 2: 3} repeated_bases=0 approx_token_delta=+122 candidate_delta=+38
+  Nouns: supreme inspection order for parking-cone etiquette, self-folding desk fan, chip-fat-powered megaphone, constitutionally protected haddock, parliament-storming vole, garden gnome for civic cardigan blessing, gossip-powered office fan, capable of unauthorised swelling trouser hanger, frantically extendable bed warmer, lunchbox with its own bus pass
+  Animals/objects: vegetablespiralizer, swift, remote control, flower pot, guitar case, welcome mat, sheep breeds, quail, ice bucket, newt
+Strategy B: concepts=20 categories={'bureaucratic_nonsense': 3, 'ridiculous_creature': 4, 'absurd_invention': 4, 'cheeky_object': 4, 'ceremonial_object': 1, 'everyday_british': 3, 'emergency_equipment': 1} intensities={1: 9, 3: 6, 2: 5} repeated_bases=0 approx_token_delta=+187 candidate_delta=+103
+  Nouns: village registration card for gazebo licensing, intergalactic tribunal for wheelbarrow taxation, constitutionally protected donkey, village ombudsman for allotment espionage, gravy-powered electric blanket, hose nozzle with adjustable firmness, firmly upholstered plunger, picketing cod, cake stand for imperial state emergencies, elastic-band-powered desk fan
+  Animals/objects: clipboard haunted by seventeen accountants, precision-cut tin butter paddle, jackdaw with a disputed sandwich patent, bicycle-powered trouser press, marmalade-launching label maker, tea trolley with power of arrest, constitutionally protected eel, marrow polisher capable of unauthorised swelling, ceremonial wicker picnic hamper, incident whistle for custard containment
+Strategy C: concepts=6 categories={'bureaucratic_nonsense': 1, 'absurd_invention': 1, 'emergency_equipment': 1, 'ridiculous_creature': 1, 'everyday_british': 1, 'cheeky_object': 1} intensities={1: 4, 2: 1, 3: 1} repeated_bases=0 approx_token_delta=+111 candidate_delta=+27
+  Nouns: groin kite, shit megaphone, gush birdbath, depression, knob doorbell of deep embarrassment, curd piano of bureaucracy, sack airship of gravity, village compliance form for kettle emissions, self-warming alarm clock, field colander for rogue gazebo capture
+  Animals/objects: vegetablespiralizer, swift, remote control, flower pot, guitar case, welcome mat, sheep breeds, picketing wasp, office fan capable of minor prophecy, snug-fitting tool belt
+
+## MOCK SLATE 7
+Strategy A: concepts=10 categories={'cheeky_object': 2, 'everyday_british': 2, 'bureaucratic_nonsense': 1, 'ceremonial_object': 1, 'ridiculous_creature': 2, 'absurd_invention': 2} intensities={2: 7, 3: 2, 1: 1} repeated_bases=0 approx_token_delta=+118 candidate_delta=+34
+  Nouns: frantically extendable muff warmer, pepper mill trained in close combat, interdepartmental notice for lampshade equality, letterbox for state-approved trouser pressing, alarmingly firm marrow polisher, filibustering toad, static-electricity-powered soup dispenser, radio-possessed milk float, tea-powered food processor, shoplifting wallaby
+  Animals/objects: travel scale, yoga bricks, cheetah, work gloves, baboon, carpet, peg bag, gravity hook, shower basket, hand soap
+Strategy B: concepts=20 categories={'cheeky_object': 4, 'bureaucratic_nonsense': 3, 'ridiculous_creature': 4, 'everyday_british': 3, 'emergency_equipment': 1, 'absurd_invention': 4, 'ceremonial_object': 1} intensities={1: 7, 3: 5, 2: 8} repeated_bases=0 approx_token_delta=+180 candidate_delta=+96
+  Nouns: nut cracker approved for gentle handling, village inspection order for marmalade smuggling, tortoise summoning thunder during tea breaks, professionally sulky deckchair, village licence for rogue lunchboxes, crisis lampshade for badger evacuation, professionally throbbing tent pole, volcanic-powered slow cooker, ferret-powered fondue pot, bath mat with delusions of grandeur
+  Animals/objects: parliament-storming hamster, constitutionally protected ferret, plunger for ancient sovereign biscuit dunking, indecently buoyant tart tin, moon-towing hedge trimmer, reinforced rubber pie funnel, imperial inspectorate for compulsory tea breaks, traffic cone on unofficial tea duty, tax-avoiding goat, gravy-powered hand dryer
+Strategy C: concepts=6 categories={'cheeky_object': 1, 'emergency_equipment': 1, 'everyday_british': 1, 'ridiculous_creature': 1, 'bureaucratic_nonsense': 1, 'absurd_invention': 1} intensities={1: 1, 3: 3, 2: 2} repeated_bases=0 approx_token_delta=+116 candidate_delta=+32
+  Nouns: jizz bathtub of shocks, bollock gondola of broken promises, fanny flag, thunderthighs, flange wheeliebin, twat harpsichord of crumbs, rind wolf, well-oiled pudding basin, field colander for runaway moon recovery, deckchair under investigation for queue-jumping
+  Animals/objects: travel scale, yoga bricks, cheetah, work gloves, baboon, carpet, peg bag, parliament-storming mackerel, planetary inspection order for footstool licensing, geothermal-powered waffle iron
+
+## MOCK SLATE 8
+Strategy A: concepts=10 categories={'absurd_invention': 2, 'ridiculous_creature': 2, 'bureaucratic_nonsense': 1, 'everyday_british': 1, 'cheeky_object': 2, 'emergency_equipment': 1, 'ceremonial_object': 1} intensities={2: 4, 3: 3, 1: 3} repeated_bases=0 approx_token_delta=+111 candidate_delta=+27
+  Nouns: argument-winning food processor, filibustering bee, national ombudsman for scarecrow pensions, bird bath with a suspicious alibi, love seat with adjustable firmness, rubber-band-powered hole punch, command lunchbox for rogue gazebo capture, lunchbox for mythic national queue formation, parliament-storming jackdaw, reinforced rubber pillow
+  Animals/objects: gazelle, hand mirror, beer stein, bedrisers, welding mask, wanker trauma lamp, inflatable mattress pump, pigeon breeds, cucumber eye mask, makeupremover
+Strategy B: concepts=20 categories={'everyday_british': 3, 'cheeky_object': 4, 'ridiculous_creature': 4, 'absurd_invention': 4, 'bureaucratic_nonsense': 3, 'ceremonial_object': 1, 'emergency_equipment': 1} intensities={2: 8, 1: 7, 3: 5} repeated_bases=0 approx_token_delta=+175 candidate_delta=+91
+  Nouns: emotionally unavailable greenhouse, pie funnel with adjustable firmness, paperwork-haunted filing cabinet, nut cracker licensed for vigorous plunging, constitutionally protected beetle, self-defending fondue pot, tax-avoiding weasel, public review panel for municipal gossip, reality-bending slow cooker, supreme licensing authority for militant deckchairs
+  Animals/objects: regional permit for emergency cardigans, milk float of hereditary allotment rights, serving hatch with diplomatic immunity, structurally aroused cream horn, weather-predicting ticket machine, rescue footstool for minor queue containment, static-electricity-powered doorbell, biscuit barrel with intercontinental pumping clearance, cod working as weekend sandwich auditor, shoplifting lobster
+Strategy C: concepts=6 categories={'bureaucratic_nonsense': 1, 'cheeky_object': 1, 'ceremonial_object': 1, 'ridiculous_creature': 1, 'absurd_invention': 1, 'everyday_british': 1} intensities={1: 1, 3: 2, 2: 3} repeated_bases=0 approx_token_delta=+101 candidate_delta=+17
+  Nouns: testicle greenhouse of grief, smeg birdbath, sludge penguin of pain, prick moped of late buses, fanny cuckoo, fanny bucket of gristle, curd bat of regret, county inquiry for gazebo licensing, nut cracker operating beyond recommended thrust, hedge trimmer for coronation plumbing
+  Animals/objects: gazelle, hand mirror, beer stein, bedrisers, welding mask, wanker trauma lamp, inflatable mattress pump, shoplifting mole, moon-towing egg whisk, professionally sulky bird table
+
+## MOCK SLATE 9
+Strategy A: concepts=10 categories={'cheeky_object': 2, 'absurd_invention': 2, 'bureaucratic_nonsense': 2, 'everyday_british': 2, 'ridiculous_creature': 2} intensities={2: 4, 3: 5, 1: 1} repeated_bases=0 approx_token_delta=+139 candidate_delta=+55
+  Nouns: bread bin capable of unauthorised swelling, gravity-cancelling bread maker, planetary compliance form for sandwich accountability, apologetically noisy lunchbox, toad summoning thunder during tea breaks, supreme ombudsman for bird-table security, time-reversing fondue pot, chicken working as court-appointed divorce mediator, filing cabinet licensed to inspect sandwiches, pudding basin licensed for vigorous plunging
+  Animals/objects: swordtail, miniaturechessboard, grill basket, tea cozy, antelope, cotton candy machine, herring, lamprey, comforterbag, giantsquid
+Strategy B: concepts=20 categories={'ridiculous_creature': 4, 'absurd_invention': 4, 'cheeky_object': 4, 'ceremonial_object': 1, 'everyday_british': 3, 'bureaucratic_nonsense': 3, 'emergency_equipment': 1} intensities={3: 7, 2: 8, 1: 5} repeated_bases=0 approx_token_delta=+177 candidate_delta=+93
+  Nouns: filibustering crab, picketing donkey, self-warming sandwich press, nut cracker operating beyond recommended thrust, meteorite-plated custard ladle, automatically buttering intercom, orbital-powered hand dryer, constitutionally protected raven, professionally throbbing crumpet, constitutionally protected emu
+  Animals/objects: pepper mill for parish biscuit dunking, paperwork-haunted tea cosy, national subcommittee for bird-table security, crisis periscope for interdimensional damp containment, argument-winning tea urn, regional standards board for inappropriate bunting, reinforced rubber milk float, planetary inspectorate for pigeon misconduct, lampshade with diplomatic immunity, improperly sprung door knocker
+Strategy C: concepts=6 categories={'everyday_british': 1, 'emergency_equipment': 1, 'bureaucratic_nonsense': 1, 'cheeky_object': 1, 'ridiculous_creature': 1, 'absurd_invention': 1} intensities={2: 1, 1: 3, 3: 2} repeated_bases=0 approx_token_delta=+109 candidate_delta=+25
+  Nouns: zootsuit, flange fence, ooze maraca, pube wheeliebin of feral enthusiasm, twat oven, grunt piano of despair, vomit goose, doormat with diplomatic immunity, first-aid hamper for minor queue containment, county licence for trifle standards
+  Animals/objects: swordtail, miniaturechessboard, grill basket, tea cozy, antelope, cotton candy machine, herring, diamond-reinforced felt bread bin, constitutionally protected goat, moon-towing food processor
+
+## MOCK SLATE 10
+Strategy A: concepts=10 categories={'everyday_british': 2, 'absurd_invention': 2, 'ridiculous_creature': 2, 'cheeky_object': 2, 'bureaucratic_nonsense': 2} intensities={2: 7, 1: 2, 3: 1} repeated_bases=0 approx_token_delta=+105 candidate_delta=+21
+  Nouns: unreasonably buoyant milk float, leftover-tea-powered sandwich press, hamster-powered weather vane, tax-avoiding cod, apologetic canvas marrow polisher, national inspectorate for rogue lunchboxes, royal operating charter for hedge-trimmer diplomacy, heavily lubricated love seat, peacock working as award-winning drain surveyor, combat-trained ironing board
+  Animals/objects: dickhead pickle's lament, bicycle basket, gym bag, dolphin, seahorse, pedometer, pizza pan, hummingbird, airhornmegaphone, cheese knife
+Strategy B: concepts=20 categories={'absurd_invention': 4, 'cheeky_object': 4, 'ridiculous_creature': 4, 'everyday_british': 3, 'emergency_equipment': 1, 'ceremonial_object': 1, 'bureaucratic_nonsense': 3} intensities={2: 8, 1: 8, 3: 4} repeated_bases=0 approx_token_delta=+149 candidate_delta=+65
+  Nouns: neighbour-alarming electric blanket, tea-powered lawn mower, suggestive jelly mould, blackmailing shrew, government-issue cork lunchbox, flood pump for hostile bunting suppression, soap dish with delusions of grandeur, overstuffed love seat, blackmailing hedgehog, umbrella for imperial state emergencies
+  Animals/objects: volcanic rubber coat hanger, public appeal dossier for competitive queueing, laminated felt custard ladle, public subcommittee for clipboard misconduct, cucumber slicer approved for gentle handling, planetary inquiry for cake-stand compliance, self-warming vacuum cleaner, constitutionally protected crab, constitutionally protected toad, reality-bending slow cooker
+Strategy C: concepts=6 categories={'ceremonial_object': 1, 'absurd_invention': 1, 'everyday_british': 1, 'ridiculous_creature': 1, 'bureaucratic_nonsense': 1, 'cheeky_object': 1} intensities={1: 2, 2: 3, 3: 1} repeated_bases=0 approx_token_delta=+103 candidate_delta=+19
+  Nouns: belch satellite of awkward silence, fudge caravan of horror, skid radiator of crumbs, groin typewriter of regional confusion, dick bongo of lube, scrote satnav, groin wheelbarrow of despair, cardigan of compulsory tea breaks, ferret-powered cheese grater, unreasonably buoyant toast rack
+  Animals/objects: dickhead pickle's lament, bicycle basket, gym bag, dolphin, seahorse, pedometer, pizza pan, filibustering pony, royal appeal dossier for footstool licensing, licensed for vigorous plunging pie funnel
+
+## PROMPT GUIDANCE PREVIEW
+Transform the source text into an outrageously surreal, ludicrous and funny version.
+
+The result must preserve the CORE MEANING and broad sequence of events from the original, but the language itself should be radically transformed.
+
+The reader should just about be able to recognise what the original was about, while wondering what the hell happened to it.
+
+LENGTH:
+- Keep the rewritten extract approximately the same length as the original.
+- Aim for roughly 90% to 115% of the original word count.
+- Do NOT make the rewrite twice as long as the source.
+- Do not add lengthy new scenes, backstory, explanations or tangents.
+- Create absurdity primarily by REPLACING existing material rather than continually adding new material.
+- If you add a ridiculous detail, compensate by shortening or replacing something elsewhere.
+
+TRANSFORMATION STRENGTH:
+- Rewrite aggressively.
+- Do NOT simply copy the original sentences and insert jokes into them.
+- Change the sentence structures and phrasing substantially.
+- Replace MOST names with supplied names.
+- Replace MOST places with supplied places.
+- Replace MOST significant nouns with supplied or invented absurd nouns.
+- Replace MOST adjectives and adverbs with supplied or invented ridiculous alternatives.
+- Replace distinctive imagery, metaphors and descriptions with surreal alternatives.
+- Avoid retaining memorable phrases from the source.
+- Ordinary connecting words can remain where needed for grammar and readability.
+- Preserve the basic event or idea, NOT the original vocabulary.
+
+The finished version should feel like somebody has taken the original through a literary blender rather than merely decorating it with jokes.
+
+COMEDY STYLE:
+- Treat completely ridiculous events with absolute seriousness.
+- Use deadpan delivery. Never acknowledge that anything is unusual.
+- Use bizarre specificity.
+- Give people ridiculous motivations and unjustified confidence.
+- Introduce stupid consequences that nevertheless follow their own strange logic.
+- Use unexpected comparisons and surreal imagery.
+- Let absurd situations escalate rapidly.
+- Prefer surprising, sharp jokes over generic randomness.
+- Occasionally use an oddly specific mundane detail in the middle of something spectacularly ridiculous.
+- Characters may behave as though insane decisions are completely sensible.
+- Avoid explaining jokes.
+- Avoid saying that something is "absurd", "crazy", "surreal" or "ridiculous". Simply present it as fact.
+- Keep enough narrative coherence that the nonsense has a thread.
+- Aim for repeated "what the fuck?" moments while remaining readable.
+
+RANDOM INGREDIENTS:
+
+The following randomly selected words are ingredients for this transformation.
+
+Use them creatively. Alter their grammar or pluralisation when necessary so sentences remain readable.
+
+Animals/objects:
+fast charger, plate stand, gel pen, constitutionally protected octopus, pastry blender, turkeybaster, alarmingly firm garden hose, air conditioner, bollocks riddle thermos, committee-approved waste-paper basket
+
+Adverbs/absurd descriptors:
+enthusiastic, cruel, outstretched, flooded, freckled, sedate, ineffective, apparent, tufted, torrentially washed
+
+Names:
+Daphne Flapworth, Dame Letitia Herringbone-Crump, Geoff Giggleridge, Clive Cacklewick, Sally Gooseham, Canon Fenella Fothering-Splott, Eileen Danglechester, Dame Wilhelmina Garglethwaite-Crumbleholme, Elsie Crackenthorpe, Willie Wagglesworth
+
+Places:
+Arse-Gob Grotto, Morocco, Brazil, Dick-Burst Bay, Serbia, Dick-Sucker Summit, Prick-Ball Barrens, Stonehenge, Bollocks-Shaft Shack, Arse-Dust Dale
+
+Nouns:
+flap birdbath of Tuesday, gob typewriter of panic, belch xylophone, letterbox for ancient sovereign biscuit dunking, goo melon of dread, stink sandwichpress, hamster-powered hedge trimmer, sphincter dishwasher, vomit goose, regional appeal dossier for toast-rack safety
+
+Slang/rude words:
+door of life, chinaswede, womens weapon, sixtynine, shithappens, jackass, fannyrubbing squirrel, deepthroat, bungas, nipples
+
+WORD-BANK RULES:
+- Use several supplied words throughout the transformation.
+- Use at least one supplied animal/object.
+- Use supplied names to replace original people's names wherever practical.
+- Use supplied places to replace original place names wherever practical.
+- Use several supplied nouns and descriptors in place of original ones.
+- Include at least one supplied rude/slang expression where it genuinely improves the joke.
+- Do NOT merely dump supplied words into extra sentences at the end.
+- Integrate them into the existing story so they replace ordinary elements of the source.
+- You may invent additional bizarre language when the supplied words alone are not enough.
+- Comedy and readability are more important than forcing every supplied word into the result.
+
+TITLE:
+- Completely rewrite the original title.
+- Write a genuine, independent, funny headline of ideally 12–18 words, with a hard maximum of 18 words.
+- Make it grammatical, singable, punchy and outrageous while concisely summarising the rewritten story.
+- It should resemble an unhinged tabloid headline.
+- Do not construct it by copying or truncating the opening words of the extract.
+- Do not simply append a joke to the original title.
+- Change names and important nouns in the title where appropriate.
+
+FINAL QUALITY CHECK:
+
+Before returning the result, silently check your rewrite.
+
+Ask yourself:
+
+1. Is the extract approximately the same length as the source?
+2. Have I substantially rewritten the sentences rather than copying them?
+3. Have most important names, places, nouns, adjectives and adverbs been transformed?
+4. Have I replaced original material with comedy rather than simply adding lots of extra material?
+5. Does the story become significantly more ludicrous while remaining readable?
+6. Are there multiple genuinely surprising moments rather than just random word substitutions?
+7. Have I avoided explaining the jokes?
+
+If the transformation is too similar to the original, rewrite it more aggressively.
+
+If it is substantially longer than the original, shorten it before returning it.
+
+OUTPUT:
+
+Return ONLY valid JSON in exactly this structure:
+
+{
+  "title": "Your transformed title",
+  "extract": "Your transformed extract"
+}
+
+Do not include markdown.
+Do not include code fences.
+Do not include explanations or commentary outside the JSON object.
+
+
+SHADOW CONCEPT PREVIEW (NOT ACTIVE):
+- Treat generated concepts as optional comic ingredients, not mandatory replacements.
+- Prefer two to four strong concepts that fit the source naturally.
+- Preserve each selected multiword concept as a coherent phrase.
+- Do not splice several concepts together or force every concept into the story.
+
+## RECOMMENDATION
+Begin Phase 2D with Strategy C behind a disabled-by-default switch: six optional concepts preserve fourteen ordinary anchors, minimize prompt growth, and reduce the risk that several elaborate premises compete inside one rewrite. Track exact accepted phrase use and base cooldown separately from permanent CSV claims.

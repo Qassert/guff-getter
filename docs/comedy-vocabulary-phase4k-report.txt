@@ -1,0 +1,272 @@
+NewsMuncher Phase 4K — restore randomness and surprise
+Date: 2026-10-12
+
+Scope and safety
+================
+
+Phase 4K adds four opt-in prompt-supply experiments. The default is variant A,
+which passes the complete Phase 4J concept slate and guidance through unchanged.
+No variant adds a provider call, changes the two-pass rewrite, writes a new
+database record type, changes a hard lease/cooldown, or promotes itself. All
+implementation and automated evaluation was local and provider-free. Existing
+uncommitted work remains uncommitted.
+
+Evidence from the local audit
+=============================
+
+The available ignored JSONL audit contained twelve completed articles. Exact
+final-text inspection found powered constructions in 8/12, parliament wording
+in 7/12, royal wording and crumpet wording in 5/12 each, kettle in 2/12 and
+gravy in 2/12. Cream horn, bunting, marmalade, milk float and queue consultant
+each occurred in one. These counts describe this small source-dependent sample;
+they are evidence of concentration, not population rates.
+
+The audit explains why a large nominal vocabulary still produces narrow humour:
+
+* The prompt offered 240 unique concept phrases, but 57/240 carried the
+  institutional-control semantic theme and 42/240 impossible technology.
+  Powered constructions were offered 24 times and parliament wording 11 times.
+* All 12 audited prompts offered a disputed-bunting descriptor. Descriptor and
+  concept modifiers therefore form a much smaller effective space than the
+  thousands of possible base identities.
+* Quality ranking repeatedly raises clear, compact templates. Large animal and
+  object catalogues change the noun inside a joke while quotas still allocate
+  the same mechanisms and the model prefers the most legible constructions.
+* The model is selective: it develops memorable relationships from a subset of
+  offers. Nominal phrase uniqueness therefore overstates reader-visible variety.
+* Invented names were exact-unique in the sample, but their titles, food words,
+  and shared phonetic roots repeated. Combination capacity is larger than the
+  perceived family space.
+
+Original CSV contribution
+=========================
+
+The packaged banks contain 1,710 nouns and 2,175 animal/object identities,
+along with large descriptor, slang, place and name lists. Their strength is not
+prewritten humour. They expose unrelated, familiar identities that the model can
+connect to the source or to one strong premise, producing collisions that a
+fixed template did not prescribe. Their weaknesses are flat classification,
+uneven editorial quality and limited provenance. Phase 4K consequently uses raw
+CSV identities only as optional sparks, mixes them with typed reviewed catalogue
+entries, and retains generated premises as the comic scaffold.
+
+Classification finding
+======================
+
+The Phase 4J audit confirmed that `target_bank=animals` means the historical
+prompt slot, not necessarily an animal: seat, hot-water bag, oil paint and other
+objects appeared there. More seriously, machine WordNet imports can carry false
+species metadata. Examples include hood classified as an invertebrate because
+its definition describes an animal body marking, game classified from hunted
+animals, survivor, and the generic phrase predatory animal. This arises from
+coarse ancestor labels rather than the CSV system.
+
+Phase 4K does not change the Phase 4J baseline or globally rewrite that taxonomy.
+Hybrid provenance labels the old animal/object CSV as `legacy_mixed_identity`
+and never invents `animal_species`. The hybrid admits only the catalogue's
+editorially reviewed identities unless a future phase explicitly changes that
+policy. This prevents the known machine classifications from entering the new
+raw path while preserving the evidence for a later catalogue correction.
+
+Implemented variants
+====================
+
+A — Phase 4J baseline
+  20 generated premises: ten per historical noun/animal prompt bank. Ordering,
+  prompt guidance, tracking and default behaviour are unchanged.
+
+B — hybrid, current ingredient count
+  10 generated premises plus 10 raw identities, evenly split by prompt bank.
+  Raw entries alternate between original CSV and reviewed typed catalogue
+  sources. Total concept ingredients remain twenty.
+
+C — fewer generated premises
+  10 generated premises and no raw identities. This isolates comic density from
+  vocabulary source.
+
+D — hybrid with fewer generated premises
+  6 generated premises plus 10 raw identities. This supplies sixteen concept
+  ingredients while leaving more relationship-building freedom to the model.
+
+Generated subsets are deterministically sampled from the already leased,
+quality-gated slate while spreading mechanisms. All unprompted leased candidates
+are released through the existing registry lifecycle. Experimental raw values do
+not enter the generated registry or permanent CSV claims; the audit records raw
+offers and exact final matches separately, with provenance. This avoids changing
+existing memories while the variants are under evaluation.
+
+Offline comparison
+==================
+
+The provider-free command was:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_vocabulary_phase4k.py --rewrites 250 --seed phase4k-final
+
+                                A        B        C        D
+Concept ingredients          5,000    5,000    2,500    4,000
+Unique complete ingredients  3,852    3,431    2,158    2,643
+Unique ingredient words        777    1,683      772    1,669
+Mechanisms                      19       19       19       18
+Combined semantic domains       13       21       13       20
+Rolling-five exact repeats     0.27     0.65     0.05     0.62
+Rolling-ten exact repeats      0.55     1.27     0.11     1.21
+Mean concept characters      750.54   510.97   376.87   356.69
+Generated quality proxy        7.233    7.229    7.229    7.236
+
+The hybrids more than doubled word breadth and added eight raw semantic domains.
+They repeated slightly more complete ingredients in short windows because some
+legacy identities are selected independently from a smaller eligible slice;
+maximum lexical novelty was not used as a goal. C most cleanly reduces premise
+density. D combines nearly C's prompt size with the broad vocabulary of B.
+
+The variant assembler's 500-call local benchmark averaged 0.001 ms for A,
+0.990 ms for B, 0.021 ms for C and 0.595 ms for D. B's maximum was 193.95 ms on
+the first catalogue/CSV cache fill; warm calls remained below one millisecond in
+this run. Provider latency is unchanged in call count and was not measured.
+
+These figures do not measure source relevance, prose readability, coherence,
+innuendo, British absurdism or humour. The offline quality number covers only
+the retained generated candidates. It cannot score relationships the model has
+not written, and cannot establish which variant is funniest. Human comparison
+is the decision gate.
+
+Live comparison
+===============
+
+Use the same base configuration and change only the final variant value. For A:
+
+  NEWSMUNCHER_EXPANDED_VOCABULARY=evaluation \
+  NEWSMUNCHER_EXPANDED_DESCRIPTORS=evaluation \
+  NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY=evaluation \
+  NEWSMUNCHER_FINAL_JOKE_MEMORY=evaluation \
+  NEWSMUNCHER_COMEDY_TOPIC_MEMORY=evaluation \
+  NEWSMUNCHER_COMEDY_AUDIT_LOG=on \
+  NEWSMUNCHER_COMEDY_VARIANT=A \
+  ./.venv/bin/python -m uvicorn newsmuncher.main:app --reload
+
+Repeat with `NEWSMUNCHER_COMEDY_VARIANT=B`, `C` and `D`, restarting the server
+between modes. Reuse the same original source article for one MUNGE in each mode
+where practical. The comparison label, exact enabled flags, complete source,
+complete final article and ingredient provenance are written to the ignored
+local audit. Audit logging remains optional and default-off.
+
+Create the blind review document and its separate key with:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/export_comedy_comparison.py \
+    local_audits/comedy_audit.jsonl \
+    --output local_audits/comedy_phase4k_blind.md \
+    --key-output local_audits/comedy_phase4k_key.csv
+
+Upload `local_audits/comedy_phase4k_blind.md` only after reviewing its news and
+generated text. Keep `local_audits/comedy_phase4k_key.csv` closed until ratings
+are complete. Neither file is uploaded automatically and the whole directory is
+Git-ignored.
+
+Limitations
+===========
+
+The comparison does not guarantee that all four runs see identical model state,
+topic-memory history or randomness. Sequential real tests may influence the
+evaluation memories, so record run order and rotate it across source articles.
+Raw catalogue identities are reviewed but their humour depends on the model's
+relationship-building. Exact matching misses paraphrases. The legacy CSV banks
+have weaker taxonomy and provenance than the typed catalogue. No variant is
+recommended for promotion until blind human review confirms humour and coherence.
+
+Automated real-article comparison
+=================================
+
+After explicit approval for the bounded provider spend, the automated experiment
+ran seven fixed neutral source articles through each of A, B, C and D on
+2026-10-12. It used the application's authentic two-pass gpt-6-sol rewrite and
+copy-edit functions. The 56 calls produced all 28 requested articles without a
+retry, source substitution or error record. No image, audio or video generation
+ran, and no production database was read or written.
+
+Each variant started with fresh in-memory name, concept, descriptor, semantic,
+final-joke and topic-memory stores. Its seven articles shared those stores in
+source order. This prevents cross-variant contamination while retaining the
+sequential memory behaviour being evaluated. All variants used the same source
+manifest:
+
+  politics-civic-budget
+  technology-library-robots
+  science-seabird-survey
+  entertainment-community-film
+  business-bakery-expansion
+  sport-rowing-regatta
+  human-interest-lost-parrot
+
+The complete ignored run is:
+
+  local_audits/phase4k_experiment/20261012T_phase4k_abcd/
+
+Review `blind_comparison.md` and enter ratings in `scorecard.md` before opening
+`answer_key.csv`. `combined.jsonl` and the four per-variant JSONL files preserve
+complete source/final text, configuration, offered ingredients, exact final-text
+matches and raw ingredient provenance. Nothing is uploaded automatically.
+
+Objective run measurements
+--------------------------
+
+                                  A       B       C       D
+Successful articles               7       7       7       7
+Mean final article words       164.57  140.00  138.00  132.00
+Unique final output words         688     589     575     556
+Generated premises offered        140      70      70      42
+Raw identities offered              0      70       0      70
+Generated phrases found exactly    61      31      31      21
+Raw identities found exactly        0      41       0      34
+Semantic themes offered            12      12      12       9
+Repeated detected-topic events     19       9       9       7
+
+The lower-density modes produced shorter articles and fewer detected topic-repeat
+events in this small run. A had the greatest final-word breadth, partly because
+its articles were longer. B and D demonstrate that raw identities reach final
+copy, but these counts do not measure the surprise or quality of the relationship
+the model created. Canonical-family detection found no repeated occurrence in any
+variant, which also shows the limits of the narrow detector against paraphrase.
+The blind human scorecard remains the decision gate; no variant is promoted.
+
+Reproduction
+------------
+
+The runner and fixed source manifest are:
+
+  scripts/diagnostics/run_comedy_phase4k_experiment.py
+  scripts/diagnostics/fixtures/phase4k_sources.json
+
+A fresh paid run requires explicit approval under AGENTS.md and can be started
+with a new output directory:
+
+  PYTHONPATH=. .venv/bin/python \
+    scripts/diagnostics/run_comedy_phase4k_experiment.py \
+    --output-dir local_audits/phase4k_experiment/<new-run-name>
+
+Use `--dry-run` for a provider-free structural check. The completed run did not
+capture provider response usage because the existing send functions return text
+rather than response usage metadata. Prompt character counts and timings remain
+in the JSONL records; exact token cost is therefore unavailable.
+
+Post-run validation
+-------------------
+
+* All four variants contain seven records and all 28 variant/source pairs.
+* The blind document contains 28 randomized versions; the separate key and
+  scorecard contain 28 corresponding rows.
+* No experiment error log was produced.
+* Python: 472 passed, 0 failed, 105 subtests passed.
+* JavaScript: 84 passed, 0 failed.
+* Python compilation and production JavaScript syntax passed.
+* No production database operation or media generation occurred.
+
+Validation
+==========
+
+* Python: 469 passed, 0 failed, 105 subtests passed.
+* Focused Phase 4K, selection, audit and rewrite coverage: 56 passed.
+* JavaScript: 84 passed, 0 failed.
+* Python compilation and production JavaScript syntax passed.
+* Local audit and comparison outputs are Git-ignored.
+* `git diff --check` passed.
+* No provider call or production database operation was made.

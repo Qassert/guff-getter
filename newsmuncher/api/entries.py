@@ -22,9 +22,11 @@ collection = db["entries"]
 router = APIRouter()
 
 from newsmuncher.services.moderation import nomination_state
+from newsmuncher.services.promotion_gallery import minimum_seen_count
 
 
 class ImageMetadata(BaseModel):
+    image_style: str | None = None
     image_url: str | None = None
     image_prompt: str | None = None
     image_model: str | None = None
@@ -76,7 +78,8 @@ def create_entry(post: Post, request: Request):
         "flagForDeleteCount": 0,
         "flagForFunnyCount": 0,
         "chatHistory": [],
-        "creationDate": datetime.datetime.utcnow(),
+        "creationDate": creation_date,
+        "nominated_at": creation_date,
         "creationUser": post.creationUser or request.cookies.get("active_pet")
     }
 
@@ -89,11 +92,14 @@ def create_entry(post: Post, request: Request):
         # Stable Mongo identity makes retry after an uncertain insert safe, including
         # across workers, without requiring a live index migration.
         inserted_id = ObjectId(hashlib.sha256(f'{creation_user}:{post.rewrite_id}'.encode()).hexdigest()[:24])
+        new_entry['promotion_gallery_seen_count'] = minimum_seen_count(collection, exclude=inserted_id)
         response_fields = {key: new_entry.pop(key) for key in
                            ('crazyReplacement1Title', 'crazyReplacement1Extract')}
         collection.update_one({'_id': inserted_id},
                               {'$setOnInsert': new_entry, '$set': response_fields}, upsert=True)
     else:
+        # This document is not in Mongo yet, so it is inherently excluded from the floor.
+        new_entry['promotion_gallery_seen_count'] = minimum_seen_count(collection)
         inserted_id = collection.insert_one(new_entry).inserted_id
 
     return {
@@ -160,6 +166,7 @@ def update_crazy_fields(
     request: Request = None
 ):
     update_fields = {}
+    existing_entry = collection.find_one({"_id": ObjectId(id)})
     if crazyReplacement1Title is not None:
         update_fields["crazyReplacement1Title"] = crazyReplacement1Title
         update_fields["crazyReplacement1Extract"] = crazyReplacement1Extract
@@ -170,37 +177,54 @@ def update_crazy_fields(
     creation_user = request.cookies.get("active_pet")
     if creation_user:
         # Only set creationUser if it doesn't already exist
-        existing_entry = collection.find_one({"_id": ObjectId(id)})
         if existing_entry and not existing_entry.get("creationUser"):
             update_fields["creationUser"] = creation_user
 
-    result = collection.update_one({"_id": ObjectId(id)}, {"$set": update_fields})
+    update = {"$set": update_fields}
+    if existing_entry and any(
+            existing_entry.get(field) != update_fields.get(field)
+            for field in ("crazyReplacement1Title", "crazyReplacement1Extract")):
+        update["$unset"] = {field: "" for field in ImageMetadata.model_fields}
+    result = collection.update_one({"_id": ObjectId(id)}, update)
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Post not found or nothing to update")
     return {"message": "Post updated successfully", "creationDate": update_fields.get("creationDate")}
 
 
+def delete_with_jingles(query):
+    # Snapshot exact IDs before deleting; never clean a concurrently inserted entry.
+    from newsmuncher.services.jingles import service
+    entries = list(collection.find(query))
+    deleted = 0
+    for entry in entries:
+        result = collection.delete_one({"$and": [query, {"_id": entry["_id"]}]})
+        deleted += result.deleted_count
+        if result.deleted_count:
+            service.retire_deleted(collection, entry)
+    return deleted
+
+
 @router.delete("/entry/{id}")
 def delete_entry(id: str):
-    result = collection.delete_one({"_id": ObjectId(id)})
-    if result.deleted_count == 0:
+    deleted = delete_with_jingles({"_id": ObjectId(id)})
+    if deleted == 0:
         raise HTTPException(status_code=404, detail="Post not found")
     return {"message": "Post deleted successfully"}
 
 @router.delete("/entries/all_for_user")
 def delete_all_entries_for_user(current_user: str = Depends(get_active_pet)):
-    result = collection.delete_many({
+    deleted = delete_with_jingles({
         "creationUser": current_user,
         "crazyReplacement1done": False
     })
     return {
-        "message": f"{result.deleted_count} unprocessed entries deleted for user {current_user}"
+        "message": f"{deleted} unprocessed entries deleted for user {current_user}"
     }
 
 @router.delete("/entries/all")
 def delete_all_entries():
-    result = collection.delete_many({})
-    return {"message": f"All entries deleted. Total: {result.deleted_count}"}
+    deleted = delete_with_jingles({})
+    return {"message": f"All entries deleted. Total: {deleted}"}
 
 class ImageUpdate(ImageMetadata):
     rewrite_id: str

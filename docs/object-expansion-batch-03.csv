@@ -1,0 +1,101 @@
+category,word,domain,form,source_file,review_status
+device,motor scooter,road_transport,powered_device,curated_batch_03,proposed
+device,motorcycle,road_transport,powered_device,curated_batch_03,proposed
+device,sidecar,road_transport,powered_device,curated_batch_03,proposed
+device,taxicab,road_transport,powered_device,curated_batch_03,proposed
+device,minibus,road_transport,powered_device,curated_batch_03,proposed
+device,double-decker bus,road_transport,powered_device,curated_batch_03,proposed
+device,trolleybus,road_transport,powered_device,curated_batch_03,proposed
+device,tramcar,road_transport,powered_device,curated_batch_03,proposed
+device,ambulance,road_transport,powered_device,curated_batch_03,proposed
+device,hearse,road_transport,powered_device,curated_batch_03,proposed
+device,breakdown truck,road_transport,powered_device,curated_batch_03,proposed
+device,tow truck,road_transport,powered_device,curated_batch_03,proposed
+device,tipper lorry,road_transport,powered_device,curated_batch_03,proposed
+device,concrete mixer truck,road_transport,powered_device,curated_batch_03,proposed
+device,refuse lorry,road_transport,powered_device,curated_batch_03,proposed
+device,road sweeper,road_transport,powered_device,curated_batch_03,proposed
+device,snowplough,road_transport,powered_device,curated_batch_03,proposed
+device,motorised rickshaw,road_transport,powered_device,curated_batch_03,proposed
+device,golf cart,road_transport,powered_device,curated_batch_03,proposed
+device,mobility scooter,road_transport,powered_device,curated_batch_03,proposed
+device,quad bike,road_transport,powered_device,curated_batch_03,proposed
+device,go-kart,road_transport,powered_device,curated_batch_03,proposed
+device,camper van,road_transport,powered_device,curated_batch_03,proposed
+device,caravan,road_transport,powered_device,curated_batch_03,proposed
+device,tractor unit,road_transport,powered_device,curated_batch_03,proposed
+device,steam locomotive,rail_transport,powered_device,curated_batch_03,proposed
+device,diesel locomotive,rail_transport,powered_device,curated_batch_03,proposed
+device,electric locomotive,rail_transport,powered_device,curated_batch_03,proposed
+device,shunting locomotive,rail_transport,powered_device,curated_batch_03,proposed
+device,passenger carriage,rail_transport,powered_device,curated_batch_03,proposed
+device,dining car,rail_transport,powered_device,curated_batch_03,proposed
+device,sleeping carriage,rail_transport,powered_device,curated_batch_03,proposed
+device,guard's van,rail_transport,powered_device,curated_batch_03,needs_review
+device,box wagon,rail_transport,powered_device,curated_batch_03,proposed
+device,hopper wagon,rail_transport,powered_device,curated_batch_03,proposed
+device,tanker wagon,rail_transport,powered_device,curated_batch_03,proposed
+device,flat wagon,rail_transport,powered_device,curated_batch_03,proposed
+device,rail crane,rail_transport,powered_device,curated_batch_03,proposed
+device,track inspection trolley,rail_transport,powered_device,curated_batch_03,proposed
+device,handcar,rail_transport,powered_device,curated_batch_03,proposed
+device,funicular car,rail_transport,powered_device,curated_batch_03,proposed
+device,cable car,rail_transport,powered_device,curated_batch_03,proposed
+device,monorail car,rail_transport,powered_device,curated_batch_03,proposed
+device,underground train,rail_transport,powered_device,curated_batch_03,proposed
+device,railway turntable,rail_transport,powered_device,curated_batch_03,proposed
+object,buffer stop,rail_transport,fixture,curated_batch_03,proposed
+device,railway signal,rail_transport,powered_device,curated_batch_03,proposed
+object,points lever,rail_transport,fixture,curated_batch_03,needs_review
+object,pantograph,rail_transport,component,curated_batch_03,proposed
+object,cowcatcher,rail_transport,component,curated_batch_03,proposed
+object,canoe,maritime_equipment,passive_object,curated_batch_03,proposed
+object,kayak,maritime_equipment,passive_object,curated_batch_03,proposed
+object,rowing boat,maritime_equipment,passive_object,curated_batch_03,proposed
+object,dinghy,maritime_equipment,passive_object,curated_batch_03,proposed
+object,lifeboat,maritime_equipment,passive_object,curated_batch_03,proposed
+object,tugboat,maritime_equipment,passive_object,curated_batch_03,proposed
+object,barge,maritime_equipment,passive_object,curated_batch_03,proposed
+object,ferry,maritime_equipment,passive_object,curated_batch_03,proposed
+object,trawler,maritime_equipment,passive_object,curated_batch_03,proposed
+object,schooner,maritime_equipment,passive_object,curated_batch_03,proposed
+object,catamaran,maritime_equipment,passive_object,curated_batch_03,proposed
+object,hovercraft,maritime_equipment,passive_object,curated_batch_03,proposed
+object,gondola,maritime_equipment,passive_object,curated_batch_03,proposed
+object,punt,maritime_equipment,passive_object,curated_batch_03,needs_review
+object,coracle,maritime_equipment,passive_object,curated_batch_03,proposed
+object,ship's wheel,maritime_equipment,passive_object,curated_batch_03,proposed
+object,capstan,maritime_equipment,passive_object,curated_batch_03,proposed
+object,anchor windlass,maritime_equipment,passive_object,curated_batch_03,proposed
+object,mooring bollard,maritime_equipment,passive_object,curated_batch_03,proposed
+object,life ring,maritime_equipment,passive_object,curated_batch_03,proposed
+object,sextant,maritime_equipment,passive_object,curated_batch_03,proposed
+object,signal buoy,maritime_equipment,passive_object,curated_batch_03,proposed
+object,diving bell,maritime_equipment,passive_object,curated_batch_03,proposed
+object,diving helmet,maritime_equipment,passive_object,curated_batch_03,proposed
+object,ship's telegraph,maritime_equipment,passive_object,curated_batch_03,needs_review
+device,biplane,aviation_equipment,powered_device,curated_batch_03,proposed
+device,glider,aviation_equipment,powered_device,curated_batch_03,proposed
+device,seaplane,aviation_equipment,powered_device,curated_batch_03,proposed
+device,helicopter,aviation_equipment,powered_device,curated_batch_03,proposed
+device,autogyro,aviation_equipment,powered_device,curated_batch_03,proposed
+device,airship,aviation_equipment,powered_device,curated_batch_03,proposed
+device,hot-air balloon,aviation_equipment,powered_device,curated_batch_03,proposed
+device,paraglider,aviation_equipment,powered_device,curated_batch_03,proposed
+device,hang glider,aviation_equipment,powered_device,curated_batch_03,proposed
+device,jet airliner,aviation_equipment,powered_device,curated_batch_03,proposed
+device,cargo aircraft,aviation_equipment,powered_device,curated_batch_03,proposed
+device,air ambulance,aviation_equipment,powered_device,curated_batch_03,proposed
+device,ejection seat,aviation_equipment,powered_device,curated_batch_03,proposed
+device,flight recorder,aviation_equipment,powered_device,curated_batch_03,proposed
+device,airspeed indicator,aviation_equipment,powered_device,curated_batch_03,proposed
+device,altimeter,aviation_equipment,powered_device,curated_batch_03,proposed
+device,artificial horizon,aviation_equipment,powered_device,curated_batch_03,proposed
+device,control yoke,aviation_equipment,powered_device,curated_batch_03,proposed
+device,rudder pedal,aviation_equipment,powered_device,curated_batch_03,proposed
+object,landing gear,aviation_equipment,component,curated_batch_03,proposed
+object,propeller,aviation_equipment,component,curated_batch_03,proposed
+device,jet engine,aviation_equipment,powered_device,curated_batch_03,proposed
+object,windsock,aviation_equipment,passive_object,curated_batch_03,proposed
+device,runway light,aviation_equipment,fixture,curated_batch_03,proposed
+device,aircraft tug,aviation_equipment,powered_device,curated_batch_03,needs_review

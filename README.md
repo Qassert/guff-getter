@@ -6,11 +6,10 @@ application's adoption and login interface.
 
 ## Current status
 
-The recovered project has completed three phases of folder cleanup. A local Git
-repository exists. Syntax and static path/import checks have been performed;
-application startup, dependency compatibility, and external service connections
-have not been verified. No packages were installed or services contacted during
-this cleanup.
+Repository storage was audited and cleaned on 2026-09-29 on
+`feature/video-animation`. Persistent media, user data and SQLite state were preserved.
+See `CURRENT_WORK.md` for validation and current handover status. No live providers,
+database services or deployment were used for this cleanup.
 
 ## Project structure
 
@@ -21,14 +20,52 @@ this cleanup.
 - `newsmuncher/utils/`: prompt preparation, rewriting, and file utilities.
 - `newsmuncher/endpoints.py`: API URL definitions.
 - `newsmuncher/templates/`: HTML templates.
-- `newsmuncher/static/`: JavaScript and CSS, served at `/static`.
+- `newsmuncher/static/js/`: active Creation, Gallery and shared browser modules.
+- `newsmuncher/static/css/`: shared/base and Gallery stylesheets.
+- `newsmuncher/static/images/`: button artwork, source/MUNGE udder assemblies and backgrounds.
+- `newsmuncher/static/audio/`: spoken control voices and interaction effects grouped by purpose.
 - `newsmuncher/resources/prompts/rewrite.txt`: rewrite prompt.
 - `newsmuncher/resources/words/`: CSV word banks.
 - `data/seeds/`: historical funnies and lonely-hearts JSON source data.
 - `data/avatars/`: existing and uploaded pet images, served at `/avatars`.
-- `data/previews/`: generated preview JSON, excluded from Git.
-- `scripts/`: local password recovery and database connectivity commands.
-- `examples/index.html`: standalone example; not an application homepage.
+- `data/previews/`: live preview JSON and durable rewrite/jingle SQLite state, excluded from Git.
+- `docs/status/`: feature handovers and implementation history.
+- `docs/diagnostics/`: operator guidance for standalone diagnostic tools.
+- `scripts/`: administrative, diagnostic and explicitly opt-in comparison tools.
+
+## Repository storage and cleanup boundaries
+
+| Area | Purpose and retention |
+| --- | --- |
+| `newsmuncher/` | Production Python, APIs, provider integrations, templates and static JS/CSS/artwork. |
+| `newsmuncher/resources/`, `data/seeds/` | Tracked prompts, word banks and reusable source JSON. These are source data, not generated artifacts. |
+| `jingle_service/` | Shared persisted jingle wire contracts; legacy Modal experiment source remains inactive for historical reference. |
+| `data/avatars/` | Real pet/user images. Preserve, including existing tracked images. |
+| `data/previews/` | Live preview JSON **and persistent SQLite claims/associations** (`image_rewrites.sqlite3`, `jingles.sqlite3`, including journals/WAL/SHM). Preserve and back up; never clear as a cache. |
+| `data/generated_images/`, `data/generated_audio/`, `data/generated_narration/`, `data/generated_video/` | Reusable application media. Preserve these paths and files, including empty directory scaffolds. Ignoring them only prevents accidental commits. |
+| `tmp/` | Local throwaway experiments, including `video-smoke-test/`. Media/comparison pages may be removed after review; retained `results.json` records are paid-attempt diagnostics, not new-run authorization. |
+| `data/tts-comparison/` | Standalone TTS comparison samples, recreated by the tool as needed; old samples removed. Not used by production. |
+| `data/jingle-reference-comparison/` | A/B recovery audio, manifests, locks and submitted-state markers. Retained together: removing them can erase evidence of paid work or defeat duplicate-spend guards. |
+| `scripts/` | Keep password/claim reset, database checks, word-bank maintenance, benchmark, TTS/reference comparison and video diagnostics. Tools are documented and/or tested; do not run live/reset commands as cleanup. |
+| `tests/` | Python and Node regression tests; fixtures are inline or generated in temporary directories. They do not depend on old comparison output. |
+| `.venv/`, `.venv-modal/` | Installed development environments, retained. Project `__pycache__`, `.pytest_cache` and `.DS_Store` are disposable. |
+
+2026-09-29 audit: removed four smoke-test input copies, four comparison HTML pages,
+one smoke-test Wan MP4, four TTS samples, project caches/OS metadata, empty legacy
+`code/` and root `words/`, and the unused `examples/index.html` calling obsolete
+`/main/get_all`. No application code or useful scripts were deleted. No separate
+image-comparison output or additional provider/model-cache folders were found.
+
+Deliberately retained ambiguous/historical evidence: four smoke-test `results.json`
+files (three failed/uncertain attempts), all narration-reference A/B files, and jingle
+benchmark markers/diagnostics plus the documented `data/generated_audio/l4-approved/`
+proof. Do not infer that old-looking media is orphaned without checking its runtime
+association. This audit did not contact MongoDB or inspect remote Modal storage.
+
+Offline validation runs the full Python suite with socket/DNS connections blocked,
+all `tests/frontend/*.test.js` with Node network entry points blocked, and an app import with
+Mongo constructors mocked and `.env` loading disabled. Importing admin/reset scripts
+is **not** a safe startup check (`check_database.py` contacts Mongo on import).
 
 ## Local settings and dependencies
 
@@ -36,6 +73,143 @@ Keep credentials in the root `.env`; application and maintenance commands use
 its path from `newsmuncher.config`. Keep credentials out of Git. Existing
 process environment values retain precedence where `load_dotenv` is used.
 Password recovery reads the root `.env` directly.
+
+New rewrites use invented comedy names by default. Set
+`NEWSMUNCHER_NAME_MODE=legacy` to restore the original `names.csv` selection path.
+The invented slate defaults to ten names at 70% cheeky / 30% absurd; optional
+`NEWSMUNCHER_CHEEKY_NAME_WEIGHT`, `NEWSMUNCHER_ABSURD_NAME_WEIGHT`,
+`NEWSMUNCHER_NAME_COOLDOWN_DAYS` and `NEWSMUNCHER_NAME_OFFER_MINUTES` values tune
+selection without changing historical creations.
+
+New rewrites also use ten grammar-aware comedy descriptors by default. Set
+`NEWSMUNCHER_DESCRIPTOR_MODE=legacy` to restore the original `adverbs.csv`
+selection and permanent-claim path. Generated descriptor cooldown and temporary
+offer lifetimes can be tuned with `NEWSMUNCHER_DESCRIPTOR_COOLDOWN_DAYS` and
+`NEWSMUNCHER_DESCRIPTOR_OFFER_MINUTES`; historical creations are unaffected.
+
+Expanded comedy-concept vocabulary is disabled by default. Set
+`NEWSMUNCHER_EXPANDED_VOCABULARY=reviewed` to use only prior human-reviewed
+catalogue animals and objects. For deliberate local editorial testing,
+`NEWSMUNCHER_EXPANDED_VOCABULARY=evaluation` also admits machine-checked entries
+that pass the safety, grammar, familiarity and classification gate. Unset it or
+use `off` for existing production behaviour. Evaluation mode never relabels an
+entry as editorially approved and adds no prompt slots.
+
+Phase 4E descriptor and invented-name expansions are independently disabled by
+default. Use `NEWSMUNCHER_EXPANDED_DESCRIPTORS=evaluation` or
+`NEWSMUNCHER_EXPANDED_NAMES=evaluation` for deliberate local review; `off` and
+`reviewed` currently preserve the approved generators because the new material
+is machine-checked. The slang and fictional-place experiments remain offline
+and have no live feature flag.
+
+Phase 4F improves descriptor evaluation selection without changing that flag or
+its default. Names remain evaluation-only; experimental slang and fictional
+places remain offline because they have not beaten the live banks on all
+relevant short- and long-window diversity measures.
+
+Phase 4G semantic-family memory is independently disabled by default. For local
+comparison, set `NEWSMUNCHER_COMEDY_SEMANTIC_MEMORY=evaluation` alongside the
+Phase 4F evaluation flags. It softly deprioritizes recently accepted descriptor
+mechanisms and invented-name sound families, while retaining exact cooldowns,
+active leases and all editorial eligibility rules. Unset it or use `off` to
+preserve Phase 4F selection. Slang and fictional places remain unaffected.
+
+Phase 4H accepted final-article joke memory is also independently disabled by
+default. Set `NEWSMUNCHER_FINAL_JOKE_MEMORY=evaluation` for local review. It
+adds a short prompt note for specific constructions found in recently persisted
+articles, such as the same numbered group or queue-containment scenario. It
+does not ban broad subjects, add a provider call or alter failed rewrites.
+Unset it or use `off` to preserve existing behaviour.
+
+Phase 4I local comedy audit logging is diagnostic and disabled by default. Set
+`NEWSMUNCHER_COMEDY_AUDIT_LOG=on` to append successfully persisted MUNGEs to
+`local_audits/comedy_audit.jsonl`. Override the local path with
+`NEWSMUNCHER_COMEDY_AUDIT_PATH`. The ignored JSONL file contains complete source
+and rewritten articles, so review it before sharing. Export one readable file
+with `PYTHONPATH=. .venv/bin/python scripts/diagnostics/export_comedy_audit.py`.
+No file is uploaded automatically.
+
+Phase 4J completed-offer and topic memory is independently disabled by default.
+Set `NEWSMUNCHER_COMEDY_TOPIC_MEMORY=evaluation` for local review. It reads one
+short rolling history, softly deprioritizes recently completed offers, and adds
+concise guidance only when the same high-confidence final subject or
+construction appears at least twice in five articles. Source-required matches
+are exempt. It changes no hard quota, lease, cooldown or provider-call count.
+
+Phase 4K prompt comparisons are opt-in with `NEWSMUNCHER_COMEDY_VARIANT=A|B|C|D`.
+Unset or `A` preserves Phase 4J. `B` keeps twenty concept ingredients but mixes
+ten generated premises with ten provenance-labelled raw identities; `C` uses
+ten generated premises; `D` mixes six generated premises with ten raw
+identities. These modes do not add provider calls or select a winner. Enable
+the local comedy audit when comparing them, then create the blind report with:
+
+```bash
+PYTHONPATH=. ./.venv/bin/python scripts/diagnostics/export_comedy_comparison.py
+```
+
+Phase 4M lexical diversity is independently disabled by default. Set
+`NEWSMUNCHER_LEXICAL_DIVERSITY=evaluation` to enable a bounded, per-pet,
+persistent exposure history. It softly reduces the sampling probability of
+recently offered and final-used content words while preserving a nonzero chance
+of reuse and exempting vocabulary present in the current source. It also adds a
+short soft prompt preference when recent final vocabulary is unusually
+prominent; it adds no provider call. Optional bounds are
+`NEWSMUNCHER_LEXICAL_WINDOW` (default 10) and
+`NEWSMUNCHER_LEXICAL_GUIDANCE_ITEMS` (default 4). Use `off` or unset the flag to
+retain the exact pre-Phase-4M selection path. With local audit logging enabled,
+the JSONL additionally distinguishes first-pass and final text and records the
+lexical penalties active during selection.
+
+Phase 4N thematic diversity is also independently disabled by default. Set
+`NEWSMUNCHER_THEMATIC_DIVERSITY=evaluation` to select four optional creative
+springboards from a curated 100-domain catalogue. A bounded per-pet history
+softly reduces recent domain and family exposure without banning reuse. The
+guidance is appended to the existing first-pass prompt and adds no provider
+call. Optional settings are `NEWSMUNCHER_THEMATIC_COUNT` (3–5, default 4) and
+`NEWSMUNCHER_THEMATIC_WINDOW` (10–50, default 20). It can run with Phase 4M or
+on its own. With local audit logging enabled, JSONL records include selected
+domains, their active penalties and conservatively detected final influence.
+
+Phase 4P theme-informed ingredients are separately disabled by default. Set
+`NEWSMUNCHER_THEME_INGREDIENTS=evaluation` to replace at most two of the twenty
+concepts and one of the ten descriptors with generic cross-domain combinations
+drawn from typed entity, process, property and relationship seeds. Existing
+objects, creatures, quotas and grammatical roles remain in place. A bounded
+per-pet memory gives less-recent seeds and constructions more opportunity while
+retaining a nonzero chance of reuse. Phase 4P works alone or alongside Phase 4M
+and Phase 4N and adds no provider call. Optional conservative limits are
+`NEWSMUNCHER_THEME_CONCEPT_COUNT` (0–2),
+`NEWSMUNCHER_THEME_DESCRIPTOR_COUNT` (0–1), and
+`NEWSMUNCHER_THEME_INGREDIENT_WINDOW` (10–50). Local audit records include the
+selected seeds, domains, construction IDs and active selection penalties.
+
+Phase 4R theme-spark presentation is independently disabled by default. With
+Phase 4P enabled, set `NEWSMUNCHER_THEME_SPARKS=evaluation` to move the same two
+selected thematic concepts and one selected thematic descriptor out of the
+ordinary ingredient lists and into one compact optional block immediately
+before the source text. It does not select, rank or add ingredients, and it
+adds no provider call. If Phase 4P is off, this flag has no effect. Local audit
+records identify the prompt placement and exact first-pass and final matches.
+
+Phase 4T selective repetition replacement is disabled by default. Set
+`NEWSMUNCHER_REPETITION_REPLACEMENT=evaluation` to let the existing second-pass
+copy editor consider at most three recently exposed, source-exempt ingredient
+identities and at most two unused current Phase 4P alternatives. It may perform
+no more than two substitutions and may leave every target unchanged. Phase 4T
+reuses the bounded per-pet Phase 4M ledger even when Phase 4M ingredient ranking
+is off, but it needs Phase 4P enabled to provide controlled thematic
+alternatives. It adds no provider call. Local audit records contain conservative
+exact before/after evidence and do not claim semantic replacement.
+
+Phase 4U phrase-aware replacement is a separate refinement switch. Enable both
+`NEWSMUNCHER_REPETITION_REPLACEMENT=evaluation` and
+`NEWSMUNCHER_PHRASE_REPLACEMENT=evaluation` to treat provenance-backed concept
+bases and descriptor subjects as atomic targets, suppress overlapping component
+words, and offer short Phase 4P bases/subjects instead of entire cross-domain
+constructions. With the Phase 4U flag off, Phase 4T behavior is unchanged. If no
+compatible current-slate alternative exists, Phase 4U may give the same copy
+editor one explicit, auditable fresh-replacement fallback guided only by the
+current Phase 4P domains. It adds no provider call.
 
 Use Python 3.10 or newer. `requirements.txt` lists runtime dependencies identified
 from imports and framework features, including template rendering, multipart
@@ -45,9 +219,10 @@ Passlib/bcrypt constraints preserve a conservative legacy pairing. Dependency
 installation and runtime verification remain separate work.
 
 `.gitignore` excludes local environment files, virtual environments, Python and
-tool caches, logs, build output, and preview JSON. Seed JSON and packaged resources
-remain eligible for version control. Avatar images remain eligible too; review
-uploaded images before staging. Ignore rules do not untrack existing files.
+tool caches, logs, build output, runtime SQLite/JSON, uploaded avatars, generated media
+and local experiment output. Seed JSON and packaged resources remain eligible for
+version control. Existing tracked avatars remain tracked; new uploads stay ignored.
+Ignore rules do not untrack existing files or make application data disposable.
 
 ## Running locally
 
@@ -75,7 +250,7 @@ available without `sys.path` workarounds.
 To reset an adopted pet's password, substitute its exact name:
 
 ```sh
-python -B -m scripts.reset_pet_password Andy
+python -B -m scripts.maintenance.reset_pet_password Andy
 ```
 
 Enter and repeat the new password in the terminal; input is hidden. This command
@@ -86,7 +261,7 @@ are preserved. Existing login cookies are not revoked.
 To check database connectivity:
 
 ```sh
-python -B -m scripts.check_database
+python -B -m scripts.maintenance.check_database
 ```
 
 This command contacts MongoDB and sends a ping. Its existing code also executes
@@ -97,8 +272,6 @@ Neither maintenance command was executed during cleanup.
 
 - Runtime startup and dependency compatibility require verification.
 - `error.html` is referenced by the pet API but is missing.
-- `examples/index.html` still calls the old `/main/get_all` endpoint and is not
-  wired into the application.
 - Preview JSON is shared across users; generated `shizz_data.json` is created by
   the rewrite workflow. Keep the `data/previews/` directory available and writable.
 - Authentication and unrestricted mutation endpoints need review before public
@@ -127,6 +300,75 @@ and is not an anonymization guarantee. Actions, quantities and connective langua
 are intentionally retained. Existing stored text that was lowercased by older
 fetchers cannot recover its original capitalization; newly fetched text preserves it.
 Overlap logging is diagnostic only and does not reject or regenerate output.
+
+### Canonical rewrite flow
+
+Source → rewritten body → copy-edited final body and short derived title. The
+existing second text call finishes the body before summarising it into a singable 12–18-word headline.
+A local hard cap keeps newly generated titles to 18 words; existing saved titles remain unchanged. This check is conservative, not a semantic entailment guarantee. No extra
+text call is added. Word claims use the accepted final title/body as before.
+
+Images use only the rewritten body plus the persisted visual style and composition
+guidance. Jingle lyrics use the saved title unchanged, with the existing random genre profile. Historical narration remains stored and readable, but new narration is retired from the active experience.
+Existing saved titles and generated media are not modified or regenerated.
+
+### Creation Page media controls
+
+EMBELLISH and animation controls appear only after successful persisted nomination,
+including restore. Nomination never starts paid media generation. Video stops and
+unloads automatically on creation/page changes; there are no visible Stop Animation
+buttons. Existing saved video may still play before nomination.
+
+EMBELLISH is an explicit user action that coordinates the existing video and jingle controls. Saved media is reused; in-progress work is polled; missing media uses the guarded generation APIs once. Nomination has no success popup and never starts these paid requests. The final media experience is the WaveSpeed video plus the sung jingle.
+
+Jingles display `GENRE` from their persisted genre profile (unknown legacy genres
+stay hidden). Loading, discovery and generation completion remain silent unless they
+belong to the current explicit EMBELLISH sequence. PLAY JINGLE remains available.
+
+REDO IMAGE is an explicit paid action available for an un-nominated image or after a
+terminal initial-image failure. It preserves the rewrite ID, body, title and word claims, chooses a different
+random style, and stores a new UUID PNG. While waiting, temporary images shuffle in the same pane until the new
+one loads. Superseded files are retained for later audited cleanup. Any historical
+animation is detached, retaining its paid claim/file without showing it on the new
+image; no automatic video generation or new claim is allowed for that old animation.
+
+A durable SQLite attempt keyed to the prior image URL prevents duplicate submissions
+and stale clicks. Nomination and replacement are serialized; unresolved replacement
+attempts block nomination and further paid retries. Reload can recover a completed
+PNG without generating again. If no completed file exists, operator review is needed.
+The current image and style are nominated together; the gallery uses that saved URL.
+
+Initial generation automatically retries once only when the provider positively
+returns without a usable image. The second paid claim is persisted before submission.
+Timeouts, network ambiguity, local write failures and all other uncertain outcomes
+never retry automatically. The saved-image shuffle remains active across the single
+safe retry. A second definite failure exposes REDO IMAGE and never loops.
+
+During initial image generation and Redo Image, a read-only endpoint samples up to
+five distinct current saved images belonging to the active pet from the existing
+rewrite store. Temporary images are never attached to the new creation. A shuffled
+500ms card animation loops in the clipped image pane under the shared LOADING
+indicator. No available images falls back to the loader; reduced motion uses one
+static image and a static loader. Completion, failure, rewrite changes and page exit
+cancel timers. The former generic page spinner uses the same shared loader CSS.
+
+Loading-image records also carry an optional saved jingle URL, resolved through the
+owner's rewrite → nomination ID → existing local jingle record. Only completed,
+valid saved MP3s are reused; missing/retired music is normal. An independent temporary
+player seeks to 2 seconds (0 for tracks no longer than 2 seconds), with 100ms volume
+ramps on switches. Images without music leave the audible previous track running.
+Late loads cannot start old selections; completion/failure/teardown unload all audio.
+Autoplay rejection silences that loading session. Reduced motion disables temporary
+audio entirely. No jingle generation, provider calls or visible-player state changes.
+
+### Random image styles
+
+Each new image gets one uniformly random visual style from the 20-style pool in
+`newsmuncher/services/image_generation.py`. The prompt remains scene-led. The style
+is recorded before the image request, then stored as `image_style` with the image
+metadata and nomination, exposed to the gallery and shown near the Creation Page
+image. Restore/reload reuses it without another selection or model call. Older
+images keep an unknown/null style; they are never restyled or regenerated.
 
 ### Drafts, nomination, and future moderation
 
@@ -164,3 +406,64 @@ The current pet-password login sets an `active_pet` cookie; it is not a signed,
 server-validated admin session. Before moderation can be exposed, implement genuine
 server-side session validation, an explicit privileged role, ownership/authorization
 checks, and an authenticated moderation endpoint. No gallery or video system exists.
+
+## Nominated-entry jingles
+
+After nomination, MAKE JINGLE submits one approximately ten-second song using ElevenLabs Music `music_v2_5`. PLAY JINGLE and STOP reuse the stored MP3; nomination and restore never auto-generate music.
+
+The saved hidden headline is passed unchanged as the composition lyric. The existing random genre profile supplies positive style guidance, alongside immediate intelligible vocals, comedy-ad energy and a clean ending. Negative styles reject instrumental-only output, long intros, indistinct vocals and extended outros. This deterministic plan makes no extra text-model call.
+
+Configure `ELEVENLABS_API_KEY` only in the server-side root `.env`. `NEWSMUNCHER_JINGLE_ENABLED` can disable new generation while preserving playback, and `NEWSMUNCHER_JINGLE_DAILY_LIMIT` defaults to 20 new claims per UTC day.
+
+The durable SQLite claim is committed before the single paid request. Duplicate requests reuse status/audio, and ambiguous submitted outcomes never auto-retry. MP3s remain in `data/generated_audio/<Mongo nomination ID>.mp3`; Mongo retains provider/model, prompt plan, genre and the nominated text snapshot. Historical Modal/ACE-Step records and files remain readable. The old Modal deployment/benchmark utilities are inactive legacy tooling and are not part of the application path.
+
+New narration generation is retired (POST returns 410). Historical narration state and authenticated audio retrieval remain available, while Creator, EMBELLISH and Gallery use jingle audio only. WaveSpeed video generation is unchanged.
+
+### Actual benchmark and cost
+
+2026-09-09: one T4 attempt failed with NaN float16 latents before decoding.
+A separately approved L4 attempt succeeded:
+
+- Client wall time: 53.869 seconds (cold request, excludes image build).
+- Model-load measurement: 8.216 seconds (excludes Python/container startup).
+- Generation + encoding measurement: 13.137 seconds.
+- MP3 duration: 25.032 seconds; 400,941 file bytes; stereo 48kHz, 128kbps.
+- File: data/generated_audio/l4-approved/309c2077-c511-4a36-8729-2e29d327425e.mp3.
+- Benchmark used a fixed dummy brief, so OpenAI usage/cost was ZERO.
+- Modal workspace rounded metered usage rose from $0.02 after T4 to $0.06 after
+  L4/builds; credits covered $0.06, billed $0.00.
+- Deployed-app meter rose from $0.00748483 to $0.03541200: approximately $0.02793
+  incremental deployed compute for this cold proof, not a guaranteed unit price.
+  The total $0.04 increment includes build/setup. Warm per-jingle cost is unmeasured.
+
+Official L4 rate at review: $0.000222/GPU-second. Applying that rate only to the
+13.137-second generation measurement gives about $0.00292 GPU compute, but EXCLUDES
+startup, other allocated time, CPU/RAM and storage. The cold test did not establish
+a one-penny total cost. Pricing and allowances can change.
+
+No further live OpenAI or GPU calls were used for application integration.
+Audio format/duration were locally verified; subjective musical quality is for
+listening review, not asserted by automated tests.
+
+### Offline testing
+
+    .venv/bin/python -B -m unittest discover -s tests -q
+    node tests/frontend/jingles.test.js
+    .venv/bin/python -m scripts.diagnostics.benchmark_jingle
+
+The benchmark defaults to dry-run. --generate is a LIVE cost-incurring request.
+Existing attempt markers prevent reruns. Never use another attempt identifier
+without explicit authorization. All automated provider tests are mocked.
+
+For cloud hosting, move audio to durable shared storage, replace local quota/claim
+SQLite with a shared transactional ledger, retain the existing authenticated-owner
+checks, protect/rotate proxy credentials, and add operational reconciliation and
+monitoring. No Cloudflare/R2 or other new account is needed locally.
+
+Official references:
+- [ACE-Step inference](https://ace-step.github.io/ACE-Step-1.5/en/INFERENCE)
+- [ACE-Step GPU compatibility](https://ace-step.github.io/ACE-Step-1.5/en/GPU_COMPATIBILITY)
+- [Modal pricing](https://modal.com/pricing)
+- [Modal scaling](https://modal.com/docs/guide/scale)
+- [Modal proxy authentication](https://modal.com/docs/guide/webhook-proxy-auth)
+- [OpenAI brief model](https://developers.openai.com/api/docs/models/gpt-4.1-mini)

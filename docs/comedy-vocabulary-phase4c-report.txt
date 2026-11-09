@@ -1,0 +1,307 @@
+NewsMuncher Phase 4C — large-scale comedy vocabulary expansion
+Date: 2026-10-10
+
+Scope and safety
+================
+
+Phase 4C expands the offline typed catalogue established in Phase 4B. It does
+not alter live MUNGE selectors, prompts, leases, cooldowns, claims, MongoDB,
+Gallery or media generation. The audit made zero database or provider calls.
+One bounded development-time download used the official Open English WordNet
+2025 JSON release; the archive was extracted under /tmp and is not stored in
+the repository.
+
+Why Phase 4B was small
+======================
+
+Phase 4B contained 134 animals and 508 objects because it admitted the 60 and
+200 previously reviewed generator bases, 74 explicitly labelled animal review
+candidates and only 308 legacy entries that a conservative physical-object
+filter could identify. It did not pretend that all 2,119 mixed values in
+animalsAndObjects.csv were distinct usable identities.
+
+Its 708 descriptors were the structured generator components whose insertion
+roles were known. Phase 4A's 2,389 figure included flat adverbs.csv candidates
+that mix adjectives, participles, adverbs, spelling variants and ordinary
+qualities without grammatical or provenance metadata. The 30 slang entries
+were a small safe sample because the legacy slang file contains substantial
+graphic and discriminatory material. The 58 place entries were original
+fictional morphology samples; places.csv mixes real geography, businesses,
+landmarks, fiction and explicit invented locations and cannot safely be called
+a fictional-component bank.
+
+The exclusions were therefore primarily editorial, grammatical, licensing and
+semantic, not architectural. Phase 4C recovers suitable physical-object and
+descriptor material through typed imports, but deliberately does not bulk-admit
+the unsafe slang or real-place CSVs.
+
+Architecture and sources
+========================
+
+The schema remains version 1.0; the catalogue becomes phase4c-1. The existing
+stable ID, grammar, semantic class, compatible mechanisms, familiarity,
+provenance, licence, flags and approval fields remain. Category-specific fields
+now include OEWN synset IDs and definitions, object affordances, slang register,
+meaning and safety state, and fictional-place construction markers.
+
+Open English WordNet 2025 Edition
+---------------------------------
+
+The official 2025 JSON release supplied taxonomic/common animal labels,
+artifact nouns, adjectives and adverbs. Open English WordNet is CC BY 4.0 and
+derived from Princeton WordNet; both attribution and upstream synset identity
+are retained. The reproducible importer records the source URL, release,
+filters and attribution. Familiarity ranking uses wordfreq 3.1.1 (Apache 2.0),
+recorded separately from entry provenance and required only by the importer.
+It rejects malformed labels, obvious anatomical and
+taxonomic groupings, a conservative unsafe-term set and very low-recognition
+entries, then ranks candidates locally. All 7,046 imported entries remain
+machine_checked and needs_review.
+
+  https://en-word.net/
+  https://en-word.net/static/english-wordnet-2025-json.zip
+  https://github.com/globalwordnet/english-wordnet/blob/master/LICENSE.md
+
+Local sources
+-------------
+
+The 1,438 previously reviewed NewsMuncher entries retain their earlier status.
+There are 308 conservatively filtered legacy objects, 186 Phase 4A samples and
+1,002 original Phase 4C components. Original additions include safe labelled
+colloquialisms, surname-root candidates, fictional morphology and institutions.
+They are machine_checked, never represented as human-reviewed, and retain
+INTERNAL-UNVERIFIED provenance.
+
+Wikidata's structured data was confirmed as CC0, but a bounded given-name query
+did not return usable results during this phase, so no Wikidata data was
+imported. GeoNames was confirmed CC BY 4.0 but was not imported: its real places
+would require a separate morphology derivation and factual-location guard.
+GBIF and Wiktionary remain excluded for the licence reasons recorded in Phase
+4A. No source provenance has been invented.
+
+Counts and semantic expansion
+=============================
+
+Family        Phase 4B   Phase 4C   Increase
+Animals            134      1,539     +1,405
+Objects            508      3,909     +3,401
+Descriptors        708      2,948     +2,240
+Names              494        915       +421
+Slang               30        128        +98
+Places              58        541       +483
+TOTAL            1,932      9,980     +8,048
+
+Phase 4C contains 1,438 editorially reviewed and 8,542 machine-checked entries.
+It reaches the initial animal, object, descriptor and place targets. Names are
+85 short of the lower target; slang is 372 short. These shortfalls are preferable
+to manufacturing weak aliases or importing unsafe legacy phrases.
+
+Animals now carry twelve selection classes including mammals, birds, reptiles,
+amphibians, fish, insects, arachnids, crustaceans, molluscs and other
+invertebrates. Objects add vehicles, tools, clothing, architecture, scientific
+and medical equipment, musical instruments, machinery, containers, furniture
+and historical objects. Descriptor imports add lexical emotion, personality,
+ability, social status, appearance, behaviour, restriction, circumstance,
+temporal and degree classes. Names add object-derived surname roots; slang adds
+exclamations, insults, idioms, intensifiers and reactions; places add lexical
+stems, place types and fictional institutions.
+
+Validation and editorial status
+================================
+
+Automated validation reports zero errors, two near-duplicate warnings and five
+semantic-concentration warnings. The warnings are retained because OEWN's
+lexicographer files are broader than the comedy-specific classification:
+978 animals remain other_animal, 2,425 objects physical_object, 1,809
+descriptors general_description, 421 names object_surname_root and 476 places
+fictional_morphology. The two near variants are out-of-door/out-of-doors and
+finger/fingers.
+
+The validator covers duplicate IDs/text, inflectional near variants, malformed
+phrases, descriptor roles, missing provenance, unsupported licences,
+discriminatory content, trademark/real-person risk flags, false editorial
+approval, unsupported obscurity and concentration. Near-duplicate lookup is
+indexed rather than quadratic, keeping the ten-thousand-entry validation fast.
+
+Machine validation cannot determine whether an ambiguous label denotes a
+recognisable animal/object in isolation or whether a lexical descriptor is a
+good comic situation. New entries must pass sampled human review before shadow
+or live eligibility.
+
+250-MUNGE diversity audit
+=========================
+
+Both catalogues used normal suggestion quotas: four animals, sixteen objects,
+and ten each of descriptors, name ingredients, slang and place ingredients.
+The audit separately modelled randomly accepted/used subsets, because offered
+ingredients are not necessarily used by a rewrite. It does not claim that
+offline diversity guarantees diverse model output.
+
+Family       Unique offered B→C   Unique used B→C   rolling-10 B→C   C semantic classes
+Animals             133→518             115→261          0→0              12
+Objects             506→1,462           325→563          0→0              19
+Descriptors         699→695             484→453          0→0              36
+Names               478→522             298→301          0→0              17
+Slang                30→128              30→79       68.51→0               5
+Places               58→467              47→99       44.09→0               3
+
+Animal and object identity diversity improves materially. Safe slang and place
+expansion removes short-window repetition, although lifetime reuse remains high
+because those banks are still small. Name-root improvement is modest.
+Descriptor diversity is flat despite the larger bank: generic OEWN adjectives
+mostly occupy semantic classes already covered by stronger reviewed comedy
+ingredients, so semantic balancing correctly continues to favour distinct
+reviewed situations. This demonstrates that lexical volume cannot replace new
+comic mechanisms, subjects and circumstances.
+
+The reconstructed Phase 4B audit took 6,494.43 ms; Phase 4C took 43,263.71 ms.
+Peak traced memory was 36,950,691 bytes. The current selector repeatedly sorts
+large pools and is suitable for offline review, not yet for live integration.
+A future shadow implementation should pre-index family/role/mechanism buckets
+and cache seeded ranks. Database and provider operations were zero.
+
+Weak and rejected examples
+==========================
+
+Weak accepted-for-review labels expose the limits of automated lexical import:
+`small beer` is an abstract OEWN artifact sense; `mechanical drawing` is visual
+rather than a manipulable object; `nanny` and `kitty` are ambiguous animal
+labels; generic adjectives such as `exclusive` and `patient` add little comic
+premise; object-derived name roots such as `Toilet`, `Automatic` and `Setup`
+need strong construction rules; fictional stems such as `Garage` and `Cooling`
+do not automatically sound like places.
+
+Rejected examples include `gastric mill`, `green gland`, `animal leg`, `bill`,
+`claw`, `quill`, `fetus` and `goose down` because they are anatomy, life stages
+or animal products rather than animal identities. Graphic or discriminatory
+legacy slang such as `dildo`, `shemale`, `spastic`, `camel jockey`, `towel head`
+and `christ killer` is excluded rather than merely down-weighted. Real names
+from names.csv and real locations from places.csv were not repackaged as
+invented identities.
+
+Remaining gaps and controlled integration
+=========================================
+
+1. Conduct stratified human review by animal/object semantic class, marking
+   ambiguous member labels rejected and refining taxonomy/affordances.
+2. Add genuinely new descriptor situations and mechanisms. Generic adjective
+   imports should remain optional lexical support, not replace the approved
+   comedy descriptor generator.
+3. Expand names with a separately licensed given-name dataset and editorial
+   phonetic review. Preserve 70/30 cheeky/absurd construction in the generator.
+4. Expand slang only through safe role-labelled review. The rejected legacy
+   bank must never be bulk-enabled.
+5. Derive fictional morphology from a licensed geography snapshot without
+   emitting real names, retaining source-feature IDs and transformation rules.
+6. Optimize selector indexing, then shadow one family at a time. Start with
+   reviewed animal/object candidates behind configuration; compare exact use,
+   grammar and premise repetition before any live switch.
+7. Preserve current registries and accepted-use memory. Catalogue IDs should
+   become additional lease/cooldown keys only after shadow validation.
+
+Representative examples
+=======================
+
+The following 100 seeded examples deliberately mix reviewed and WEAK/REVIEW
+entries. Construction frames aid comparison and are not proposed final jokes.
+
+  1. [animals; reviewed; animal] goat disputing a parking fine
+  2. [animals; WEAK/REVIEW; other_animal] white tail disputing a parking fine
+  3. [animals; WEAK/REVIEW; fish] rough fish disputing a parking fine
+  4. [animals; WEAK/REVIEW; bird] common canary disputing a parking fine
+  5. [animals; WEAK/REVIEW; reptile] pine lizard disputing a parking fine
+  6. [animals; WEAK/REVIEW; invertebrate] slime bacteria disputing a parking fine
+  7. [animals; WEAK/REVIEW; mammal] flying cat disputing a parking fine
+  8. [animals; WEAK/REVIEW; arachnid] wolf spider disputing a parking fine
+  9. [animals; WEAK/REVIEW; insect] blow fly disputing a parking fine
+ 10. [animals; WEAK/REVIEW; mollusc] hard clam disputing a parking fine
+ 11. [animals; WEAK/REVIEW; amphibian] true toad disputing a parking fine
+ 12. [animals; WEAK/REVIEW; crustacean] stone crab disputing a parking fine
+ 13. [animals; reviewed; animal] raven disputing a parking fine
+ 14. [animals; WEAK/REVIEW; other_animal] fish disputing a parking fine
+ 15. [animals; WEAK/REVIEW; fish] white shark disputing a parking fine
+ 16. [animals; WEAK/REVIEW; invertebrate] paw disputing a parking fine
+ 17. [animals; WEAK/REVIEW; mammal] skunk bear disputing a parking fine
+ 18. [objects; reviewed; household_object] wheelie bin with ceremonial immunity
+ 19. [objects; reviewed; machine] doorbell with ceremonial immunity
+ 20. [objects; reviewed; technical_equipment] field colander with ceremonial immunity
+ 21. [objects; WEAK/REVIEW; unclassified_object] cat feeding mat with ceremonial immunity
+ 22. [objects; WEAK/REVIEW; unclassified_object] clothes steam iron with ceremonial immunity
+ 23. [objects; reviewed; ceremonial_object] umbrella with ceremonial immunity
+ 24. [objects; reviewed; emergency_equipment] warning gong with ceremonial immunity
+ 25. [objects; WEAK/REVIEW; physical_object] well with ceremonial immunity
+ 26. [objects; WEAK/REVIEW; clothing] fly front with ceremonial immunity
+ 27. [objects; WEAK/REVIEW; unclassified_object] placemat with ceremonial immunity
+ 28. [objects; WEAK/REVIEW; unclassified_object] baby bottle brush with ceremonial immunity
+ 29. [objects; WEAK/REVIEW; vehicle] squad car with ceremonial immunity
+ 30. [objects; WEAK/REVIEW; machinery] balance wheel with ceremonial immunity
+ 31. [objects; WEAK/REVIEW; architecture] public works with ceremonial immunity
+ 32. [objects; WEAK/REVIEW; furniture] dinner set with ceremonial immunity
+ 33. [objects; WEAK/REVIEW; unclassified_object] file rack with ceremonial immunity
+ 34. [objects; WEAK/REVIEW; unclassified_object] garden fork with ceremonial immunity
+ 35. [descriptors; reviewed; trigger] descriptor ingredient: after minor setbacks
+ 36. [descriptors; reviewed; domestic_omen] descriptor ingredient: the ghost of a fitted kitchen
+ 37. [descriptors; reviewed; professional] descriptor ingredient: the emergency barber
+ 38. [descriptors; reviewed; circumstance] descriptor ingredient: after the bus shelter election
+ 39. [descriptors; reviewed; presentation] descriptor ingredient: tastefully reinforced
+ 40. [descriptors; reviewed; financial_scheme] descriptor ingredient: derivatives based on queue length
+ 41. [descriptors; reviewed; limitation] descriptor ingredient: but only indoors
+ 42. [descriptors; reviewed; relationship_delusion] descriptor ingredient: gravity is merely an old colleague
+ 43. [descriptors; reviewed; manner] descriptor ingredient: improbably
+ 44. [descriptors; reviewed; assumed_identity] descriptor ingredient: folding chair
+ 45. [descriptors; reviewed; obstacle] descriptor ingredient: without telling the committee
+ 46. [descriptors; reviewed; legal_action] descriptor ingredient: wear a ceremonial bib
+ 47. [descriptors; reviewed; weather_response] descriptor ingredient: declare a heatwave indoors
+ 48. [descriptors; reviewed; authority] descriptor ingredient: the public decency subcommittee
+ 49. [descriptors; reviewed; reason] descriptor ingredient: arguing with the ceremonial stopwatch
+ 50. [descriptors; reviewed; medical_action] descriptor ingredient: competitive nodding
+ 51. [descriptors; reviewed; temporal_action] descriptor ingredient: develops an aristocratic accent
+ 52. [names; reviewed; neutral_epithets] name component: Inspector of Royal Crumpets
+ 53. [names; reviewed; classic_surnames] name component: Rumble-Ponsonby
+ 54. [names; reviewed; surname_suffixes] name component: splott
+ 55. [names; reviewed; surname_roots] name component: Gargle
+ 56. [names; reviewed; given_names] name component: Benny
+ 57. [names; reviewed; curated] name component: Fanny Bustlewick
+ 58. [names; reviewed; nicknames] name component: Giddy
+ 59. [names; reviewed; feminine_given_names] name component: Imogen
+ 60. [names; reviewed; masculine_given_names] name component: Archibald
+ 61. [names; reviewed; territories] name component: Crumpet Parva
+ 62. [names; reviewed; feminine_titles] name component: Countess
+ 63. [names; reviewed; masculine_titles] name component: Sir
+ 64. [names; reviewed; feminine_epithets] name component: Countess of Nether Biscuit
+ 65. [names; WEAK/REVIEW; object_surname_root] name component: Clothing
+ 66. [names; reviewed; masculine_epithets] name component: Third Earl of the Lost Remote
+ 67. [names; WEAK/REVIEW; unclassified_name_component] name component: Undercrump
+ 68. [names; reviewed; neutral_titles] name component: Professor
+ 69. [slang; WEAK/REVIEW; insult] colloquial ingredient: goon
+ 70. [slang; WEAK/REVIEW; idiom] colloquial ingredient: not the sharpest tool
+ 71. [slang; WEAK/REVIEW; reaction] colloquial ingredient: give over
+ 72. [slang; WEAK/REVIEW; exclamation] colloquial ingredient: what a palaver
+ 73. [slang; WEAK/REVIEW; intensifier] colloquial ingredient: bloomin'
+ 74. [slang; WEAK/REVIEW; insult] colloquial ingredient: loudmouth
+ 75. [slang; WEAK/REVIEW; idiom] colloquial ingredient: hasn't got a leg to stand on
+ 76. [slang; WEAK/REVIEW; reaction] colloquial ingredient: steady on
+ 77. [slang; WEAK/REVIEW; intensifier] colloquial ingredient: a bit
+ 78. [slang; WEAK/REVIEW; exclamation] colloquial ingredient: my giddy aunt
+ 79. [slang; WEAK/REVIEW; insult] colloquial ingredient: airhead
+ 80. [slang; WEAK/REVIEW; idiom] colloquial ingredient: talking through their hat
+ 81. [slang; WEAK/REVIEW; intensifier] colloquial ingredient: frightfully
+ 82. [slang; WEAK/REVIEW; exclamation] colloquial ingredient: blimey
+ 83. [slang; WEAK/REVIEW; reaction] colloquial ingredient: that's your lot
+ 84. [slang; WEAK/REVIEW; insult] colloquial ingredient: gormless wonder
+ 85. [places; WEAK/REVIEW; fictional_morphology] fictional-place ingredient: Bramble
+ 86. [places; WEAK/REVIEW; fictional_feature] fictional-place ingredient: road
+ 87. [places; WEAK/REVIEW; fictional_institution] fictional-place ingredient: Office of Suspicious Shrubbery
+ 88. [places; WEAK/REVIEW; fictional_morphology] fictional-place ingredient: Portfolio
+ 89. [places; WEAK/REVIEW; fictional_morphology] fictional-place ingredient: Drove
+ 90. [places; WEAK/REVIEW; fictional_feature] fictional-place ingredient: wharf
+ 91. [places; WEAK/REVIEW; fictional_institution] fictional-place ingredient: Ministry of Damp
+ 92. [places; WEAK/REVIEW; fictional_feature] fictional-place ingredient: canal
+ 93. [places; WEAK/REVIEW; fictional_institution] fictional-place ingredient: Department of Queues
+ 94. [places; WEAK/REVIEW; fictional_morphology] fictional-place ingredient: Boom
+ 95. [places; WEAK/REVIEW; fictional_morphology] fictional-place ingredient: Backup
+ 96. [places; WEAK/REVIEW; fictional_feature] fictional-place ingredient: pavilion
+ 97. [places; WEAK/REVIEW; fictional_institution] fictional-place ingredient: Society for Unclaimed Trolleys
+ 98. [places; WEAK/REVIEW; fictional_feature] fictional-place ingredient: hollow
+ 99. [places; WEAK/REVIEW; fictional_institution] fictional-place ingredient: Institute of Apologies
+100. [places; WEAK/REVIEW; fictional_morphology] fictional-place ingredient: Molly

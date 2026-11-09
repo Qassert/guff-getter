@@ -3,7 +3,6 @@ from newsmuncher.config import TEMP_FILE
 import json
 import requests
 import time
-import os
 
 
 from newsmuncher.utils.clean_data import *

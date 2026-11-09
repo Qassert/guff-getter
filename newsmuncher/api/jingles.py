@@ -1,0 +1,51 @@
+"""Jingle endpoints verify permanent nomination and pet ownership server-side."""
+from fastapi import APIRouter, Cookie, HTTPException
+from fastapi.responses import JSONResponse
+from newsmuncher.api.entries import collection
+from newsmuncher.services.jingles import service, JingleError
+
+router = APIRouter(prefix="/jingles", tags=["Jingles"])
+
+
+def invoke(action, rewrite_id, owner):
+    try:
+        result = action(collection, rewrite_id, owner)
+        return JSONResponse(result, headers={"Cache-Control": "no-store"})
+    except JingleError as exc:
+        raise HTTPException(exc.status, detail=str(exc)) from exc
+
+
+@router.get("/")
+def saved_jingles(active_pet: str = Cookie(None)):
+    try:
+        return JSONResponse(service.discover(collection, active_pet),
+                            headers={"Cache-Control": "no-store"})
+    except JingleError as exc:
+        raise HTTPException(exc.status, detail=str(exc)) from exc
+
+
+@router.get("/soundtrack")
+def soundtrack_jingles(active_pet: str = Cookie(None)):
+    try:
+        return JSONResponse(service.soundtrack_library(collection, active_pet),
+                            headers={"Cache-Control": "private, max-age=60"})
+    except JingleError as exc:
+        raise HTTPException(exc.status, detail=str(exc)) from exc
+
+
+@router.get("/{rewrite_id}")
+def jingle_status(rewrite_id: str, active_pet: str = Cookie(None)):
+    return invoke(service.status, rewrite_id, active_pet)
+
+
+@router.post("/{rewrite_id}")
+def make_jingle(rewrite_id: str, active_pet: str = Cookie(None)):
+    return invoke(service.generate, rewrite_id, active_pet)
+
+@router.post('/{rewrite_id}/replace')
+def replace_jingle(rewrite_id: str, active_pet: str = Cookie(None)):
+    try:
+        service.replace(collection, rewrite_id, active_pet)
+    except JingleError as exc:
+        raise HTTPException(exc.status, detail=str(exc)) from exc
+    return invoke(service.generate, rewrite_id, active_pet)

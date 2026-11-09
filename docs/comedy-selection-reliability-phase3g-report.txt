@@ -1,0 +1,159 @@
+NewsMuncher Phase 3G — invented-name exhaustion and registry reliability
+Date: 2026-10-10
+
+Scope and safety
+================
+
+All diagnosis used deterministic local generators, isolated in-memory
+Mongo-shaped collections and mocked route providers. No provider request or
+production database write was made. Existing Phase 3F animal/object/descriptor
+memory, prompt safety logging and live quotas remain unchanged.
+
+Confirmed root cause
+====================
+
+The invented-name registry was the remaining pre-reliability implementation:
+
+* It seeded its deterministic candidate queue with `active_pet:draft_session`.
+  A browser draft session survives nominate-then-MUNGE and ordinary repeated
+  rewrites, so each new creation revisited the same 100 cheeky and 100 absurd
+  candidates instead of exploring the generator's combinatorial space.
+* Accepted names in that fixed queue correctly entered the 30-day exact-name
+  cooldown. Existing cooldown records from earlier rewrites also occupied the
+  same queue. Once either the 7-cheeky or 3-absurd quota could not be filled,
+  selection stopped even though thousands of valid names existed outside that
+  deterministic queue.
+* The registry attempted an atomic Mongo upsert for every candidate it examined.
+  It had no batched availability read, so saturation also increased database
+  traffic.
+* It raised a raw RuntimeError before the common selection exception handler.
+  That produced the reported HTTP 500. It was candidate-pool exhaustion, not
+  genuine generator exhaustion, a lease leak, stale expiry handling or an
+  intentional category-quota failure.
+
+Unused and failed offers were already released correctly. Active offers already
+expired after 15 minutes. Normalized exact-name keys were appropriately narrow;
+they were not collapsing unrelated names.
+
+Implementation
+==============
+
+Attempt identity
+----------------
+
+Names now use `active_pet:rewrite_uuid`, matching generated concepts and
+descriptors. Every new MUNGE receives a new UUID and a fresh deterministic
+search. Retrying `offer()` for one genuine attempt key returns the same slate.
+Nomination does not mutate the saved creation or carry its name lease into a
+new rewrite.
+
+Bounded broad selection
+-----------------------
+
+The registry deterministically generates 300 candidates for each style. It
+performs one projected Mongo `find` for all normalized candidate keys, filters
+cooldowns and active leases in memory, orders eligible names by oldest use and
+use count, then atomically leases only the final 7 cheeky and 3 absurd names.
+Concurrent races remain safe because each final lease still uses the existing
+conditional atomic upsert. A race advances to another eligible candidate.
+
+Exact-name cooldown never relaxes. Active lease ownership never relaxes. There
+is no fallback to names.csv and no soft name restriction requiring relaxation.
+Only names found exactly in a successfully persisted title/body enter cooldown;
+unused and failed offers are released. Cooldown expiry still permits eventual
+reuse.
+
+Controlled failure
+------------------
+
+`NameSelectionExhausted` now represents bounded generator or lease exhaustion.
+Partial leases are released before it escapes. The Creation route catches it
+alongside concept and descriptor exhaustion and returns HTTP 409 with:
+
+  Not enough invented names are currently available. Please try MUNGE IT again.
+
+This happens before `send_prompt`. Existing Creator error handling displays the
+server detail, calls `hideLoader()`, permits the normal spin/throb wind-down and
+restores MUNGE. No provider call can occur on this path.
+
+Cross-registry audit
+====================
+
+Concepts and descriptors already use rewrite UUIDs, batched availability reads,
+typed exhaustion, partial cleanup and hard phrase/active-lease protection.
+Their softer ingredient/premise diversity cooldowns relax only after bounded
+viability proves saturation. No further rewrite was warranted. Names required
+the identity, batching and typed-error changes above; they have no softer
+diversity key to relax.
+
+Offline endurance audit
+=======================
+
+Command:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_selection_reliability.py
+
+The audit exercises the actual three registries together with production
+quotas, fresh UUID-shaped keys, stable retries, 2–4 exact accepted uses and
+unused offer release. It uses only in-memory collections.
+
+Rewrites   Successful   Unique offered names   Repeated offers   Avg local ms   Max local ms
+      10           10                    100                 0         630.64         868.71
+      25           25                    241                 9         607.01         868.71
+      50           50                    478                22         597.84         868.71
+     100          100                    954                46         595.32         868.71
+     250          250                   2368               132         600.20         868.71
+
+Repeated offers are names that had previously been offered but not accepted;
+they correctly remain eligible. Exact accepted names did not reappear during
+their cooldown. There were zero controlled exhaustion events and zero
+unexpected exceptions.
+
+Database-shaped operation counts over 250 rewrites
+---------------------------------------------------
+
+Names:       256 finds, 3,308 update_one, 250 update_many
+Concepts:    250 finds, 16,096 update_one, 994 update_many
+Descriptors: 250 finds, 7,500 update_one, 1,003 update_many
+
+The six extra name reads and additional name lease writes come from explicit
+stable-retry checkpoints at 1, 10, 25, 50, 100 and 250. A normal new name slate
+uses one read and ten successful final lease writes. Accepted-use updates remain
+one per accepted exact name so each record retains its own display metadata.
+
+Concept diversity cooldown relaxed 216 times and descriptor diversity cooldown
+170 times under this intentionally long fixed-clock saturation test. Their exact
+phrase cooldowns and all active leases remained hard. Names required zero
+cooldown relaxation.
+
+Existing records and migration
+==============================
+
+No migration, reset or deletion is required. Active name leases naturally
+expire under their existing 15-minute TTL semantics. Accepted exact names retain
+their configured 30-day cooldown and become reusable normally. New rewrite UUID
+seeds immediately stop repeatedly targeting the old browser-session queue.
+
+Limits
+======
+
+* The 300-per-style search is intentionally bounded. An artificial database in
+  which all 600 deterministic candidates are actively leased or cooling returns
+  a controlled 409 rather than performing an unlimited search.
+* Accepted-name matching remains conservative and exact. A model paraphrase or
+  nickname is not guessed, avoiding false cooldown claims.
+* Local endurance time includes generation of 40 comedy ingredients and all
+  in-memory persistence work. It does not predict provider latency.
+
+Manual reproduction
+===================
+
+1. Restart NewsMuncher so Phase 3G is loaded.
+2. MUNGE and nominate a creation, then MUNGE the same source at least ten times.
+3. Confirm each new request logs a different rewrite UUID and completes without
+   the former fifth-attempt 500.
+4. Confirm a successful creation remains unchanged after nomination.
+5. In two browser sessions, start MUNGE concurrently and verify both receive
+   complete disjoint active name slates.
+6. Under an intentionally saturated mocked registry, confirm Creation displays
+   the actionable 409 detail and MUNGE becomes available after wind-down.

@@ -1,0 +1,253 @@
+NewsMuncher Phase 4B — universal comedy vocabulary foundation
+Date: 2026-10-10
+
+Scope and safety
+================
+
+Phase 4B adds a static, typed catalogue, an offline deterministic selector and
+validation/audit tooling. No application module imports the catalogue and no
+live prompt, CSV, registry, cooldown, claim, database or media path changed.
+The work performed zero network, database or provider operations.
+
+Architecture
+============
+
+`newsmuncher/resources/vocabulary/comedy_vocabulary_catalogue.json` is a
+versioned catalogue (schema 1.0, catalogue phase4b-1). Each ingredient has a
+stable family-scoped ID; display text; category and subtype; category-specific
+grammar; semantic class; compatible mechanisms; humour metadata; familiarity;
+source/licence attribution; editorial flags; and an explicit approval status.
+The companion `catalogue.schema.json` documents the portable resource shape.
+
+`newsmuncher/services/vocabulary_catalogue.py` loads and validates the static
+resource and offers deterministic seeded selection. Selection prioritises
+ingredients outside a supplied recent-ID window, balances semantic classes and
+common/unusual/obscure familiarity bands, honours mechanism and grammatical
+role constraints, and keeps machine-checked content visibly distinct. It uses
+preloaded lists only: no database, registry or network dependency.
+
+`scripts/diagnostics/build_vocabulary_catalogue.py` reproducibly builds the
+snapshot from existing approved structured resources plus explicitly marked
+Phase 4A samples. It does not download or silently scrape data.
+
+Inventory and editorial status
+==============================
+
+Family        Total   Editorially reviewed   Machine checked / needs review
+Animals         134            60                         74
+Objects         508           200                        308
+Descriptors     708           708                          0
+Names           494           470                         24
+Slang            30             0                         30
+Places           58             0                         58
+TOTAL         1,932         1,438                        494
+
+“Editorially reviewed” refers to material already reviewed during the earlier
+NewsMuncher concept, descriptor and name phases. It does not assert third-party
+redistribution rights. Machine-checked entries pass structural and safety
+checks but have not received human approval and are not eligible for live use.
+
+Provenance and licensing
+========================
+
+All entries in this Phase 4B snapshot are repository-local. Their source IDs
+are `newsmuncher-curated`, `phase4a-editorial-seed` or `legacy-local-filter`.
+They deliberately carry `INTERNAL-UNVERIFIED`, with attribution text warning
+that ownership/licensing must be resolved before external redistribution.
+No external dataset has been copied into the repository.
+
+Future imports should use the Phase 4A recommendations only after retaining
+source-specific identity and notices: Wikidata CC0; Open English WordNet CC BY
+4.0 plus the Princeton notice; OS Open Names OGL 3.0; GeoNames CC BY 4.0; and
+release-specific ONS/OGL notices. GBIF must be admitted dataset by dataset.
+Wiktionary remains excluded until a deliberate CC BY-SA/GFDL compatibility
+decision is made.
+
+Validation and quality gate
+===========================
+
+The validator checks required fields, stable IDs, exact and simple inflectional
+near-duplicates, malformed text, grammatical descriptor roles, source and
+licence support, blocked discriminatory terms, trademark/real-person flags,
+false editorial approval, unsupported obscurity and semantic concentration.
+Automated validation does not promote an entry to editorially reviewed.
+
+The generated catalogue has zero validation errors. Three warnings remain:
+animals have only a coarse `animal` class; 308 legacy object candidates remain
+`unclassified_object`; and the small place bank is dominated by fictional
+morphology. These warnings block any claim that Phase 4B is production-ready.
+
+250-MUNGE offline diversity audit
+=================================
+
+The command was:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_vocabulary_foundation.py
+
+It used normal suggestion volumes per MUNGE: 4 animals, 16 objects and ten each
+of descriptors, name ingredients, slang and place ingredients. Phase 4A is the
+raw prototype catalogue; Phase 4B is the typed, quality-gated catalogue with a
+ten-rewrite recent-ID window.
+
+Family       Offers   Phase 4A unique/repeats/rolling-10   Phase 4B unique/repeats/rolling-10
+Animals       1,000        134 /   866 / 0.37                  133 /   867 / 0.00
+Objects       4,000        510 / 3,490 / 2.61                  507 / 3,493 / 0.00
+Descriptors   2,500      2,389 /   111 / 0.00                  698 / 1,802 / 0.00
+Names         2,500        495 / 2,005 / 0.64                  463 / 2,037 / 0.00
+Slang         2,500      2,142 /   358 / 0.01                   30 / 2,470 / 68.45
+Places        2,500        997 / 1,503 / 0.07                   58 / 2,442 / 44.16
+
+Phase 4B removes all short-window repetition for the four sufficiently broad
+families. Its lower lifetime descriptor/slang/place diversity is deliberate:
+Phase 4A counted unreviewed flat CSV content, including unsafe, malformed and
+grammatically incompatible entries. Phase 4B refuses to present that raw
+quantity as approved vocabulary. Slang and places clearly need licensed,
+human-reviewed expansion before integration.
+
+The audit covered 36 descriptor semantic classes, 15 name semantic classes and
+six object classes. Names spanned six component/construction subtypes; places
+spanned three. Runtime was 5,189.12 ms with 6,241,821 peak traced bytes. It made
+zero database, network and provider operations. Performance is adequate for an
+offline build/audit; live integration should load once and batch history reads.
+
+Remaining gaps and risks
+========================
+
+The aspirational ranges remain far away: 134 versus 1,000–5,000 animals; 508
+versus 5,000–20,000 objects; 708 descriptor ingredients versus several
+thousand; 494 name ingredients versus several thousand; 30 safe slang units
+and 58 place units versus several thousand each. Counts must grow through
+licensed acquisition and editorial review, not by relabelling legacy CSVs.
+
+Animals require taxonomic classes, stable species IDs and recognisability
+notes. Legacy objects need affordances and human review. Name samples need
+real-person collision review. Slang needs register, meaning, region, target and
+explicitness fields. Place parts need morphology compatibility rules so suffix
+and feature ingredients become plausible fictional constructions. Ingredient
+selection alone does not guarantee comedy; generators still need compatible
+templates and premise-level memory.
+
+Recommended staged integration
+==============================
+
+1. Resolve repository-local licensing and complete review of current machine-
+   checked samples; rejected entries remain recorded rather than silently used.
+2. Build separate, versioned importers for Wikidata/OEWN and licensed geography
+   sources. Store upstream IDs, exact licence/version and transformation notes.
+3. Add taxonomic/object affordance/place morphology metadata and conduct a
+   sampled human review before increasing catalogue versions.
+4. Shadow the selector beside each current generator and compare grammar,
+   comedy and repetition without adding prompt content or claims.
+5. Integrate one family at a time behind configuration, retaining existing
+   registries, exact accepted-use handling and legacy fallback. Start with
+   animals or objects; defer slang and places until their review coverage is
+   materially larger.
+
+Representative examples
+=======================
+
+The following 100 deterministic examples include weak machine-checked entries.
+`WEAK/REVIEW` means structurally accepted for evaluation, not approved for live
+use. Repeated construction frames make ingredient differences inspectable and
+are not proposed final jokes.
+
+  1. [animals; reviewed; animal] raven working as a relief parking warden
+  2. [animals; reviewed; animal] newt working as a relief parking warden
+  3. [animals; reviewed; animal] weasel working as a relief parking warden
+  4. [animals; WEAK/REVIEW; animal] oarfish working as a relief parking warden
+  5. [animals; WEAK/REVIEW; animal] lanternfly working as a relief parking warden
+  6. [animals; reviewed; animal] magpie working as a relief parking warden
+  7. [animals; reviewed; animal] vole working as a relief parking warden
+  8. [animals; reviewed; animal] kestrel working as a relief parking warden
+  9. [animals; reviewed; animal] donkey working as a relief parking warden
+ 10. [animals; WEAK/REVIEW; animal] bearded vulture working as a relief parking warden
+ 11. [animals; WEAK/REVIEW; animal] wobbegong working as a relief parking warden
+ 12. [animals; reviewed; animal] goose working as a relief parking warden
+ 13. [animals; reviewed; animal] beetle working as a relief parking warden
+ 14. [animals; reviewed; animal] peacock working as a relief parking warden
+ 15. [animals; reviewed; animal] bee working as a relief parking warden
+ 16. [animals; WEAK/REVIEW; animal] dik-dik working as a relief parking warden
+ 17. [animals; WEAK/REVIEW; animal] coelacanth working as a relief parking warden
+ 18. [descriptors; reviewed; circumstance] descriptor ingredient: after losing confidence in Tuesdays
+ 19. [descriptors; reviewed; grievance_action] descriptor ingredient: boycotted the communal teapot
+ 20. [descriptors; reviewed; motive] descriptor ingredient: for reasons involving a disputed allotment
+ 21. [descriptors; reviewed; presentation_manner] descriptor ingredient: legally
+ 22. [descriptors; reviewed; weather_response] descriptor ingredient: forecast somebody else's lunch
+ 23. [descriptors; reviewed; limitation] descriptor ingredient: subject to a tea break
+ 24. [descriptors; reviewed; trigger] descriptor ingredient: near garden furniture
+ 25. [descriptors; reviewed; emotion] descriptor ingredient: permanently baffled
+ 26. [descriptors; reviewed; manner] descriptor ingredient: politely
+ 27. [descriptors; reviewed; petty_topic] descriptor ingredient: the emotional availability of deckchairs
+ 28. [descriptors; reviewed; confidence_basis] descriptor ingredient: after fitting one shelf
+ 29. [descriptors; reviewed; etiquette_fault] descriptor ingredient: keeps emergency cufflinks in the freezer
+ 30. [descriptors; reviewed; obstacle] descriptor ingredient: under an assumed postcode
+ 31. [descriptors; reviewed; odd_schedule] descriptor ingredient: officially sanctioned Tuesdays
+ 32. [descriptors; reviewed; cosmic_motive] descriptor ingredient: to avoid an awkward prophecy
+ 33. [descriptors; reviewed; inability] descriptor ingredient: making a modest entrance
+ 34. [descriptors; reviewed; authority] descriptor ingredient: the civic posture authority
+ 35. [names; reviewed; nicknames] name ingredient: Pudding
+ 36. [names; reviewed; surname_suffixes] name ingredient: house
+ 37. [names; reviewed; territories] name ingredient: Nether Biscuit
+ 38. [names; reviewed; masculine_given_names] name ingredient: Edmund
+ 39. [names; reviewed; surname_roots] name ingredient: Shuffle
+ 40. [names; reviewed; classic_surnames] name ingredient: Jostleby
+ 41. [names; reviewed; given_names] name ingredient: Bob
+ 42. [names; reviewed; neutral_titles] name ingredient: The Honourable
+ 43. [names; reviewed; feminine_given_names] name ingredient: Edwina
+ 44. [names; reviewed; curated] name ingredient: Pam Poppycock
+ 45. [names; reviewed; feminine_titles] name ingredient: Countess
+ 46. [names; reviewed; masculine_epithets] name ingredient: Hereditary Wrangler of the Royal Stoat
+ 47. [names; reviewed; neutral_epithets] name ingredient: Inspector of Royal Crumpets
+ 48. [names; reviewed; masculine_titles] name ingredient: Sir
+ 49. [names; reviewed; feminine_epithets] name ingredient: Countess of Nether Biscuit
+ 50. [names; WEAK/REVIEW; unclassified_name_component] name ingredient: Fergus
+ 51. [names; reviewed; masculine_given_names] name ingredient: Godfrey
+ 52. [objects; reviewed; machine] leaf blower with temporary powers of arrest
+ 53. [objects; reviewed; household_object] mop bucket with temporary powers of arrest
+ 54. [objects; reviewed; technical_equipment] alarm thermos with temporary powers of arrest
+ 55. [objects; WEAK/REVIEW; unclassified_object] dart board with temporary powers of arrest
+ 56. [objects; WEAK/REVIEW; unclassified_object] camping chair with temporary powers of arrest
+ 57. [objects; reviewed; emergency_equipment] flood pump with temporary powers of arrest
+ 58. [objects; reviewed; ceremonial_object] hatstand with temporary powers of arrest
+ 59. [objects; reviewed; machine] forklift with temporary powers of arrest
+ 60. [objects; reviewed; household_object] toaster with temporary powers of arrest
+ 61. [objects; WEAK/REVIEW; unclassified_object] oven tray with temporary powers of arrest
+ 62. [objects; WEAK/REVIEW; unclassified_object] nightstand with temporary powers of arrest
+ 63. [objects; reviewed; technical_equipment] field colander with temporary powers of arrest
+ 64. [objects; reviewed; emergency_equipment] warning gong with temporary powers of arrest
+ 65. [objects; reviewed; ceremonial_object] gravy boat with temporary powers of arrest
+ 66. [objects; reviewed; household_object] butter paddle with temporary powers of arrest
+ 67. [objects; WEAK/REVIEW; unclassified_object] golf club head cover with temporary powers of arrest
+ 68. [objects; WEAK/REVIEW; unclassified_object] dental floss holder with temporary powers of arrest
+ 69. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: bridge
+ 70. [places; WEAK/REVIEW; fictional_feature] fictional place ingredient: roundabout
+ 71. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: Rattle
+ 72. [places; WEAK/REVIEW; fictional_feature] fictional place ingredient: road
+ 73. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: wick
+ 74. [places; WEAK/REVIEW; fictional_feature] fictional place ingredient: registry
+ 75. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: haven
+ 76. [places; WEAK/REVIEW; fictional_feature] fictional place ingredient: marsh
+ 77. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: bury
+ 78. [places; WEAK/REVIEW; fictional_feature] fictional place ingredient: services
+ 79. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: bottom
+ 80. [places; WEAK/REVIEW; fictional_feature] fictional place ingredient: lane
+ 81. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: field
+ 82. [places; WEAK/REVIEW; fictional_feature] fictional place ingredient: hamlet
+ 83. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: Dither
+ 84. [places; WEAK/REVIEW; fictional_feature] fictional place ingredient: academy
+ 85. [places; WEAK/REVIEW; fictional_morphology] fictional place ingredient: Crumble
+ 86. [slang; WEAK/REVIEW; exclamation] colloquial ingredient: stone the crows
+ 87. [slang; WEAK/REVIEW; insult] colloquial ingredient: nincompoop
+ 88. [slang; WEAK/REVIEW; idiom] colloquial ingredient: all mouth and no trousers
+ 89. [slang; WEAK/REVIEW; insult] colloquial ingredient: prat
+ 90. [slang; WEAK/REVIEW; exclamation] colloquial ingredient: flipping heck
+ 91. [slang; WEAK/REVIEW; idiom] colloquial ingredient: not my cup of tea
+ 92. [slang; WEAK/REVIEW; insult] colloquial ingredient: muppet
+ 93. [slang; WEAK/REVIEW; exclamation] colloquial ingredient: well I never
+ 94. [slang; WEAK/REVIEW; idiom] colloquial ingredient: lost the plot
+ 95. [slang; WEAK/REVIEW; exclamation] colloquial ingredient: crikey
+ 96. [slang; WEAK/REVIEW; insult] colloquial ingredient: numpty
+ 97. [slang; WEAK/REVIEW; idiom] colloquial ingredient: a right carry-on
+ 98. [slang; WEAK/REVIEW; exclamation] colloquial ingredient: blimey
+ 99. [slang; WEAK/REVIEW; insult] colloquial ingredient: wally
+100. [slang; WEAK/REVIEW; idiom] colloquial ingredient: as useful as a chocolate teapot

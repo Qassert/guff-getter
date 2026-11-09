@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://newsmuncher.local/schema/comedy-vocabulary-catalogue-1.json",
+  "title": "NewsMuncher comedy vocabulary catalogue",
+  "type": "object",
+  "required": ["schema_version", "catalogue_version", "sources", "ingredients"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "catalogue_version": {"type": "string", "minLength": 1},
+    "sources": {"type": "object", "additionalProperties": {"type": "object", "required": ["name", "licence_id", "attribution"]}},
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "family", "category", "subtype", "grammar", "semantic_class", "compatible_mechanisms", "humour", "familiarity", "source_id", "licence_id", "editorial_flags", "approval_status"],
+        "properties": {
+          "id": {"type": "string", "minLength": 3},
+          "text": {"type": "string", "minLength": 1},
+          "family": {"enum": ["animals", "objects", "descriptors", "names", "slang", "places"]},
+          "approval_status": {"enum": ["machine_checked", "editorially_reviewed", "rejected"]}
+        }
+      }
+    }
+  }
+}

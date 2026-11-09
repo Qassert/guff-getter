@@ -1,0 +1,275 @@
+NewsMuncher Phase 3E — cross-generator repetition and diversity review
+Date: 2026-10-09
+
+Scope and safety
+================
+
+This investigation used deterministic local generators, in-memory Mongo-shaped
+collections and mocked rewrite outcomes. It made no provider request and no
+production database write. The live prompt still contains 20 concepts and 10
+descriptors; the two-pass rewrite flow, legacy modes, rewrite identity, saved
+creations and media paths are unchanged.
+
+Confirmed causes
+================
+
+1. Phrase uniqueness was masking structural repetition. Before this change the
+   concept generator had 17 templates and 15 mechanisms, while the descriptor
+   generator had 16 templates and 13 mechanisms. Large object/subject banks
+   produced many unique strings, but the central joke-bearing modifier banks
+   were often only 6–10 entries per intensity. Quality ranking repeatedly
+   preferred the same productive structures.
+
+2. Cooldown keys represented only part of the repeated joke. Concept selection
+   protected base objects, and descriptor selection protected subjects, but
+   neither represented the broader semantic premise. Thus differently worded
+   council, restriction, secret-history or impossible-ability jokes could be
+   considered fresh.
+
+3. Descriptor selection cooled an entire preassembled slate. It discarded a
+   slate when any subject was unavailable instead of assembling a valid slate
+   from the wider candidate pool. In the production-shaped pre-change audit,
+   ordinary accepted-use saturation caused bounded exhaustion after only 4–6
+   consecutive rewrites. Concepts had already needed a related saturation
+   workaround during Phase 2E.
+
+4. Unused offers were correctly released and failed rewrites did not cool them.
+   Exact accepted-use normalization behaved conservatively as designed. This
+   means exact phrases used verbatim are tracked, while paraphrases cannot be
+   reliably inferred without another model call. That limitation is distinct
+   from a lease leak.
+
+5. Deterministic seeds were not themselves repeating a slate: each new rewrite
+   UUID creates a new deterministic pool and a genuine retry retains its slate.
+   The restricted mechanisms and cooldown representation were the material
+   causes.
+
+6. Concepts and descriptors were assembled independently. This allowed one
+   prompt to contain several unrelated jokes from the same broad theme.
+
+Implementation
+==============
+
+Structured diversity metadata
+-----------------------------
+
+Every generated concept and descriptor now records a stable semantic_theme and
+premise_key. Premise keys combine a deliberately bounded semantic theme with
+the joke-bearing modifier or subject. They are deterministic generator
+metadata rather than fuzzy similarity scores.
+
+Concept registry
+----------------
+
+Concept selection now atomically leases the exact phrase, base object and
+semantic premise. Accepted exact uses cool all three records; unused offers and
+failed rewrites release all three. A slate forbids duplicate bases and premises.
+Phrase cooldown always remains strict. If finite base/premise cooldowns make an
+otherwise valid 20-item slate impossible, only those diversity cooldowns relax;
+exact phrase cooldown, active leases, quota rules and concurrency safety remain
+hard. This prevents repeated-MUNGE exhaustion without silently reverting to CSV
+words.
+
+Descriptor registry
+-------------------
+
+Descriptor selection now creates one broad deterministic candidate pool,
+filters known phrase/subject availability with a single read, then assembles a
+grammar-complete 10-item slate from eligible candidates. Only the final slate
+is leased atomically. Exact phrase cooldown remains strict. Subject cooldown
+can relax on demonstrated saturation while active leases, exact phrases,
+category/intensity quotas and all six grammatical roles remain hard.
+
+Cross-generator balancing
+-------------------------
+
+The rewrite path counts concept semantic themes. A theme is passed to descriptor
+assembly only when it occurs at least three times in the concept slate.
+Descriptor ranking softly deprioritizes those themes while preserving all hard
+grammar/category/intensity constraints. No metadata is added to the provider
+prompt, so this adds no prompt tokens or provider calls.
+
+New mechanisms
+--------------
+
+The concept resource now has 24 templates, adding genuinely different comic
+situations: domestic alibis, scandalous reputations, impossible measurement,
+principled creature refusals, absurd dispute resolution, emergency aftermath
+and commemorated failure.
+
+The descriptor resource now has 24 templates, adding meteorological affliction,
+domestic supernaturalism, financial folly, temporal quirks, mistaken
+relationships, invented ritual status, compulsory ritual and cosmic
+motivation. Existing British irreverence, innuendo, institutional absurdity,
+short forms and elaborate clauses remain.
+
+Offline simulation
+==================
+
+Method
+------
+
+The command is:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_comedy_diversity.py --seed phase3e-final --rewrites 100
+
+Each rewrite uses the production 20-concept and 10-descriptor quotas. It marks
+2–4 randomly selected candidates as exact accepted uses, one candidate as a
+local paraphrase that conservative matching intentionally does not recognize,
+and the remainder as ignored. Each selection has a separate rewrite identity;
+registry tests separately cover simultaneous sessions and atomic collision
+handling.
+
+The pre-change production-shaped runs could not reach their requested 10, 25,
+50 or 100 checkpoints: depending on the deterministic seed, descriptor
+selection exhausted after 4–6 rewrites. This was a real availability defect,
+not evidence of phrase exhaustion.
+
+Post-change checkpoint measurements
+-----------------------------------
+
+                         10 rewrites  25 rewrites  50 rewrites  100 rewrites
+Concept offers                 200          500         1000          2000
+Unique concept phrases         197          489          950          1828
+Repeated phrase occurrences      3           11           50           172
+Unique concept bases            155          238          262           272
+Concept templates                20           21           21            21
+Concept mechanisms               18           19           19            19
+Concept semantic themes          12           13           13            13
+Unique concept premises         139          241          281           294
+
+Descriptor offers              100          250          500          1000
+Unique descriptor phrases       89          205          409           796
+Repeated phrase occurrences     11           45           91           204
+Unique descriptor subjects      69          125          219           285
+Descriptor templates            12           14           18            23
+Descriptor mechanisms           12           14           16            20
+Descriptor semantic themes      11           13           15            19
+Unique descriptor premises      69          125          219           287
+
+Rolling ten-rewrite exact phrase repetition
+-------------------------------------------
+
+At 100 rewrites, the concept rolling-window average was 2.63 repeated offers
+out of 200 (maximum 7). The descriptor average was 7.11 out of 100 (maximum
+15). Premise repetition is necessarily higher: the audit recorded averages of
+70.10/200 concepts and 31.84/100 descriptors because semantic themes and their
+joke-bearing component banks are intentionally bounded and editorially curated.
+
+Accepted versus offered
+-----------------------
+
+Across 100 rewrites the simulation accepted 296 concept phrases and 303
+descriptor phrases exactly. It modelled 100 paraphrased candidates in each
+generator as deliberately untracked, and ignored 1,604 concept plus 597
+descriptor offers. Diversity cooldown relaxation occurred on 55 concept
+selections and 18 descriptor selections. All 100 rewrites completed.
+
+Compared with the intermediate selection-only implementation, resource
+expansion reduced 100-rewrite exact repeated occurrences from 186 to 172 for
+concepts and from 227 to 204 for descriptors. More importantly, the visible
+mechanism coverage rose from 15 to 19 concepts and from roughly 12 to 20
+descriptors, and the descriptor registry stopped exhausting after a few
+rewrites.
+
+Examples of earlier recurring structures
+-----------------------------------------
+
+The old audit repeatedly favoured powered appliances, compact misbehaving
+animals, secret histories, medical prohibitions and social-ritual clauses.
+Lexically different examples could therefore amount to another powered device,
+another creature under official sanction, or another person banned from an
+activity. Those phrases were not exact duplicates but shared the same comic
+engine.
+
+Thirty post-change editorial examples
+=====================================
+
+Concepts (phrase — mechanism / semantic theme)
+
+ 1. lampshade with a suspicious alibi — inappropriate responsibility / institutional control
+ 2. tart tin operating beyond recommended thrust — British innuendo / innuendo
+ 3. nuclear-powered bread maker — improbable power source / impossible technology
+ 4. quietly rotating waffle iron — absurd capability / impossible technology
+ 5. intergalactic inspectorate for municipal gossip — bureaucratic comic contrast / institutional control
+ 6. defence umbrella for shed first aid — improbable emergency purpose / emergency response
+ 7. plunger of repelling intergalactic auditors — ridiculous ceremonial purpose / ceremonial status
+ 8. left-handed mop bucket — unexpected behaviour / unexpected behaviour
+ 9. frog with authority to dissolve parliament — implausible personal history / secret history
+10. colander calibrated to locate missing enthusiasm — impossible measurement / impossible measurement
+11. pony bending reality at council meetings — scandal or inappropriate responsibility / institutional control
+12. industrial wicker milk float — visual incongruity / visual incongruity
+13. mop for grand civic gravy service — inappropriate symbolic importance / ceremonial status
+14. parish compliance form for pickle regulation — inappropriate official importance / institutional control
+15. deckchair commemorating a record-breaking queueing error — commemorated failure / commemorated failure
+
+Descriptors (phrase — mechanism / semantic theme)
+
+16. furious about poorly supervised topiary — disproportionate emotion / petty emotion
+17. banned from speed topiary for wearing performance-enhancing brogues — secret history / secret history
+18. able to hypnotise garden furniture in ceremonial dress — impossible ability / impossible trait
+19. only speaks fluent pigeon on officially sanctioned Tuesdays — temporal quirk / temporal quirk
+20. acoustically impeccably trousered — social embarrassment / social display
+21. athletically roundabout-tested — comic contradiction / contradiction
+22. because reality seemed insufficiently supervised under disputed bunting — cosmic motivation / cosmic motive
+23. constitutionally incapable of recognising Tuesdays during tea breaks — impossible inability / impossible trait
+24. ancestrally allotment-crowned — invented ritual status / invented ritual
+25. a veterinary receptionist has specifically forbidden vigorous pointing — ridiculous medical advice / medical restriction
+26. to impress a driving examiner under disputed bunting — ridiculous motivation / absurd motive
+27. sends formal invitations to neighbours' cats during applause — class and etiquette / social ritual
+28. liable to thunder without adequate notice during applause — meteorological affliction / weather anomaly
+29. haunted by a whispering kettle over an insulting weather vane — domestic supernaturalism / domestic supernaturalism
+30. financed through an allotment-backed security to avoid making small talk — financial folly / financial folly
+
+Trade-offs and remaining limitations
+====================================
+
+* Premise metadata is explicit and explainable, but coarse. It cannot recognize
+  every paraphrase or two unrelated constructions that a reader considers the
+  same joke. Adding embedding or model similarity would add cost, latency and
+  false-positive risk and was deliberately rejected.
+* Cooldowns apply only to exact candidates found in the accepted title/body.
+  This protects against false claims but cannot cool a model paraphrase.
+* Twenty concepts per rewrite produce 2,000 offers in 100 rewrites, so reuse of
+  a finite set of visually useful bases is expected. Unused offers remain
+  eligible by design; otherwise prompt candidates would exhaust rapidly.
+* Saturation fallback trades some base/subject/premise freshness for reliable
+  completion. It never relaxes exact phrase cooldown or active lease ownership.
+* Registries now create/read additional phrase, base/subject and premise
+  records. A normal concept slate can perform up to 60 atomic lease writes and
+  a descriptor slate up to 20, followed by existing accepted/release updates.
+  The broad descriptor availability read avoids repeatedly attempting known
+  unavailable candidates. This is local database work and adds no provider
+  cost or prompt tokens.
+* Cross-generator balancing is intentionally soft. A hard ban could make role
+  or category quotas impossible and reduce humour quality.
+
+Manual review
+=============
+
+1. Restart NewsMuncher so the new resource versions are loaded.
+2. Create at least ten MUNGEs, including nominate-then-MUNGE-again from the same
+   source. Check that no ordinary sequence produces a 409 or stuck button.
+3. Review each candidate article for exact repeated phrases and for repeated
+   premises such as councils, medical restrictions, secret occupations and
+   social rituals.
+4. Confirm a genuine retry of one in-progress rewrite preserves its offered
+   slate, while a new rewrite UUID produces a fresh slate.
+5. Run two browser sessions concurrently and confirm both complete without
+   receiving overlapping actively leased phrases/premises.
+6. If a controlled 409 occurs under artificial saturation, confirm the Creator
+   displays the actionable message and restores MUNGE availability.
+7. Legacy modes remain available through the existing name, concept and
+   descriptor configuration switches.
+
+Manual-test correction
+======================
+
+The first live manual attempt exposed a timezone representation mismatch in
+the descriptor availability prefilter. PyMongo decodes BSON datetimes as naive
+UTC by default, while the registry clock is aware UTC. Comparing a persisted
+`last_used_at` directly with the aware cooldown cutoff raised `TypeError`
+before any rewrite provider call. Persisted `last_used_at` and `offer_until`
+values are now normalized to aware UTC for client-side availability checks.
+Database-side atomic lease/cooldown queries and all expiry durations are
+unchanged. A regression test covers naive Mongo-shaped timestamps.

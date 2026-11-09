@@ -1,420 +1,503 @@
 [
-{
-"title": "Adventurous Romantic",
-"description": "Professional, adventurous individual seeking companionship",
-"extract": "I am a 33-year-old professional who loves exploring new places, from weekend hiking trips to international travel. I enjoy dining out, good books, and long conversations over a glass of wine. I am looking for someone kind, confident, and adventurous to share life’s moments with. If you enjoy both laughter and meaningful talks, I would love to hear from you."
-},
-{
-"title": "Lover of Arts and Culture",
-"description": "Art enthusiast seeking intellectual connection",
-"extract": "I am a 40-year-old with a passion for theatre, live music, and modern art galleries. My evenings are spent reading classics or attending cultural events. I am seeking a thoughtful and intellectual partner aged 35-50 who enjoys stimulating conversations, the occasional debate, and cozy evenings. If you have a creative soul and a love for the arts, please write to me."
-},
-{
-"title": "Fitness Fanatic",
-"description": "Active individual seeking someone with shared enthusiasm",
-"extract": "I am 29, energetic, and passionate about staying active. My ideal weekend includes a morning run, yoga, or cycling, followed by a healthy brunch. I am looking for someone with a similar enthusiasm for fitness and well-being, someone who loves nature and values balance in life. If you enjoy a mix of active days and quiet nights, I’d love to hear from you."
-},
-{
-"title": "Vintage Enthusiast",
-"description": "Nostalgic individual looking for someone with similar interests",
-"extract": "I am a 38-year-old antique collector with a love for all things vintage, from fashion to furniture. My weekends are spent browsing flea markets, restoring old finds, and enjoying retro films. I would love to meet someone who shares a love for history, nostalgia, and life’s little treasures. Let’s create timeless memories together."
-},
-{
-"title": "Animal Lover",
-"description": "Caring individual looking for a kind-hearted partner",
-"extract": "As a 35-year-old animal rescuer, my life is full of furry friends and compassion. I am looking for someone who loves animals as much as I do and shares a kind heart. A perfect date might involve a trip to the park with the dogs or an afternoon volunteering at a shelter. If you believe in making the world a better place for all creatures, write to me."
-},
-{
-"title": "City Girl",
-"description": "Urban enthusiast seeking someone to explore with",
-"extract": "I am a 28-year-old city dweller who loves the hustle and bustle of urban life. From street food festivals to jazz nights at the local bar, I enjoy making the most of my surroundings. I would love to meet someone who shares my love for exploring the city, trying new experiences, and finding joy in the everyday. Let’s discover the world together."
-},
-{
-"title": "Country Gentleman",
-"description": "Rural enthusiast seeking a partner for the quiet life",
-"extract": "I am a 42-year-old farmer who loves the simple life. My days are spent outdoors, working the land, and caring for animals. I am looking for someone who appreciates nature, values hard work, and is ready to embrace country living. If your dream involves a cozy home, warm fires, and wide-open spaces, I hope to hear from you."
-},
-{
-"title": "Bookworm",
-"description": "Literary enthusiast looking for a partner who loves stories",
-"extract": "I am 31, a librarian, and a lover of literature. My favorite moments are spent curled up with a good book or wandering the aisles of a bookstore. I’m looking for someone who shares a love for stories, whether through books, film, or conversation. If you believe life is better with a good story to tell, let’s start our next chapter together."
-},
-{
-"title": "Chef",
-"description": "Culinary expert looking for someone who enjoys good food",
-"extract": "I am a 37-year-old chef who finds joy in creating culinary masterpieces. My perfect evening includes cooking a delicious meal for someone special and sharing it over candlelight. I am seeking a partner who appreciates good food, enjoys dining out, and isn’t afraid to try new flavors. Let’s cook up something wonderful together."
-},
-{
-"title": "Dreamer",
-"description": "Romantic soul looking for someone who believes in magic",
-"extract": "I am a 29-year-old dreamer who believes in love, poetry, and moonlit walks. I enjoy writing, painting, and gazing at the stars. I am searching for someone who is kind, romantic, and unafraid to express their feelings. If you believe in the magic of life and love, I would love to get to know you better."
-},
-{
-"title": "Business Professional",
-"description": "Ambitious individual seeking a partner with balance",
-"extract": "I am a 40-year-old business professional with a busy lifestyle but a longing for connection. I enjoy fine dining, classic films, and weekend getaways. I am looking for someone who is confident, ambitious, and values both career and companionship. If you’re ready to balance work and love, let’s take the first step."
-},
-{
-"title": "Nature Enthusiast",
-"description": "Outdoor lover seeking someone to explore the world with",
-"extract": "As a 34-year-old with a deep love for nature, I spend my weekends hiking, camping, and photographing landscapes. I’m looking for someone who shares my passion for the great outdoors and values simplicity. Let’s explore forests, climb mountains, and create memories in the fresh air together."
-},
-{
-"title": "Creative Soul",
-"description": "Artist seeking someone with a love for creativity",
-"extract": "I am a 36-year-old artist who finds beauty in the little things. I love painting, sculpting, and experimenting with different mediums. I am looking for someone who appreciates creativity, values self-expression, and finds joy in the artistic process. Let’s inspire one another."
-},
-{
-"title": "Ocean Lover",
-"description": "Beach enthusiast looking for a partner to enjoy the waves",
-"extract": "I am a 32-year-old who loves the sound of waves and the feel of sand between my toes. My weekends are often spent at the beach, surfing, or watching the sunset. I am looking for someone who shares my love for the ocean and enjoys peaceful moments by the water. Let’s create memories under the open sky."
-},
-{
-"title": "History Buff",
-"description": "History enthusiast seeking a partner with curiosity",
-"extract": "I am 39 and fascinated by history, from ancient civilizations to modern events. I enjoy museums, documentaries, and traveling to historic sites. I’m looking for someone who shares a passion for learning about the past and discussing the lessons it teaches us. Let’s explore the world’s rich history together."
-},
-{
-"title": "Gardener at Heart",
-"description": "Nature-loving gardener seeking someone to grow with",
-"extract": "I am 44 and find peace in tending to my garden and watching plants grow. I enjoy spending time outdoors, planting flowers, and enjoying the simple beauty of nature. I am looking for a patient and caring partner who appreciates the joy of growing something beautiful. Let’s nurture a relationship as wonderful as a blooming garden."
-},
-{
-"title": "Foodie",
-"description": "Lover of good food seeking someone to share meals with",
-"extract": "I am 30 and passionate about exploring cuisines from around the world. Whether it’s a fancy restaurant or a hidden street vendor, I love trying new flavors. I’m searching for someone who shares my enthusiasm for food, cooking, and dining out. Let’s savor life one bite at a time."
-},
-{
-"title": "Film Fanatic",
-"description": "Cinema lover seeking a partner for movie nights",
-"extract": "I am 35, a devoted fan of films, from classic noir to modern blockbusters. I love discussing directors, storytelling, and cinematography. I’m looking for someone who enjoys movie nights, sharing popcorn, and debating the best films of all time. Let’s write our own love story, one scene at a time."
-},
-{
-"title": "Musician at Heart",
-"description": "Music enthusiast seeking someone to share melodies",
-"extract": "I am a 28-year-old guitarist who lives for music. I enjoy composing songs, attending concerts, and jamming with friends. I’m looking for someone who shares my passion for music, whether as a listener or a performer. Let’s create a symphony of love together."
-},
-{
-"title": "Adventurer",
-"description": "Thrill-seeker looking for a partner in adventure",
-"extract": "I am 27 and live for the thrill of new experiences. From skydiving to road trips, I love pushing boundaries and embracing the unknown. I’m looking for someone who shares my zest for life and wants to explore the world with me. Let’s make every day an adventure."
-},
-{
-"title": "Bookstore Romantic",
-"description": "Dreamy bibliophile looking for a literary partner",
-"extract": "I am a 31-year-old who finds joy in the smell of old books and quiet afternoons in bookshops. I love discussing literature and discovering hidden gems on dusty shelves. I’m looking for someone who appreciates the charm of a well-written story and believes in the magic of words. Let’s write our own love story together."
-},
-{
-"title": "Dancer",
-"description": "Dance enthusiast seeking a partner to share the rhythm",
-"extract": "I am 34 and feel most alive when I’m dancing. From salsa to ballroom, I love moving to the rhythm and losing myself in the music. I’m looking for someone who enjoys dancing, whether on a crowded floor or in a quiet room. Let’s dance our way through life together."
-},
-{
-"title": "Dog Lover",
-"description": "Canine enthusiast seeking a partner who loves animals",
-"extract": "I am a 29-year-old dog owner who adores spending time with my furry best friend. I enjoy long walks, playing fetch, and discovering dog-friendly cafes. I’m searching for someone who loves animals as much as I do and values kindness and loyalty. Let’s build a happy life together with wagging tails."
-},
-{
-"title": "Traveler",
-"description": "World explorer seeking a companion for adventures",
-"extract": "I am 38 and have a passion for travel. I love discovering new cultures, tasting exotic cuisines, and exploring off-the-beaten-path destinations. I’m looking for someone who shares my curiosity and wanderlust. Let’s explore the world and create unforgettable memories together."
-},
-{
-"title": "Photographer",
-"description": "Creative soul seeking someone to capture life with",
-"extract": "I am a 33-year-old photographer who finds beauty in the everyday. I enjoy capturing moments, whether it’s a stunning sunset or a candid smile. I’m looking for someone who appreciates art, creativity, and the magic of preserving memories. Let’s capture life’s beautiful moments together."
-},
-{
-"title": "Tea Lover",
-"description": "Quiet soul seeking someone to share cozy moments",
-"extract": "I am a 41-year-old who finds comfort in a good cup of tea and meaningful conversation. My ideal evening includes a warm mug, a good book, and peaceful company. I’m looking for someone who enjoys simple pleasures, values kindness, and appreciates life’s quiet moments. Let’s brew a beautiful relationship together."
-},
-{
-"title": "Astronomy Buff",
-"description": "Stargazer seeks a partner to explore the cosmos",
-"extract": "I am a 32-year-old with a fascination for the stars, planets, and the mysteries of the universe. My ideal evenings involve telescope sessions, stargazing under a clear night sky, and pondering life's big questions. This cosmic dreamer seeks someone equally curious and excited about exploring the wonders of the cosmos."
-},
-{
-"title": "Comedy Enthusiast",
-"description": "Laughter-loving individual seeks a partner with a sense of humor",
-"extract": "As a 29-year-old comedy fan, I love stand-up shows, clever sitcoms, and witty banter. A great weekend for me includes a comedy club visit or a night of rewatching classic comedy films. Seeks someone who appreciates humor and enjoys making the ordinary feel extraordinary with laughter."
-},
-{
-"title": "Wine Connoisseur",
-"description": "Wine enthusiast seeks someone to sip and savor with",
-"extract": "I am a 39-year-old who adores discovering new wines and pairing them with good food and great company. My weekends often include vineyard tours, wine tastings, or simply unwinding with a glass of red. Seeks someone who shares my passion for wine and enjoys the art of savoring life’s finer moments."
-},
-{
-"title": "Board Game Lover",
-"description": "Strategic thinker seeks a partner for game nights",
-"extract": "I am 31 and love spending evenings playing board games, from strategy epics to quick party games. Whether it’s a friendly competition or a cooperative adventure, I believe games bring people together. Seeks a partner who enjoys playful challenges and fun-filled nights of creativity and connection."
-},
-{
-"title": "Meditation Enthusiast",
-"description": "Mindful individual seeks someone to share calm moments with",
-"extract": "As a 35-year-old meditation and mindfulness practitioner, I enjoy finding balance and inner peace. My days include yoga, peaceful walks in nature, and moments of quiet reflection. Seeks someone who values tranquility and connection, and who finds joy in life’s stillness and simplicity."
-},
-{
-"title": "Adrenaline Junkie",
-"description": "Thrill-seeker seeks a partner to embrace adventure",
-"extract": "I am 28, always chasing my next thrill—whether it’s bungee jumping, zip-lining, or white-water rafting. My life revolves around embracing excitement and pushing boundaries. Seeks someone who craves adventure and is ready to share adrenaline-filled experiences with me."
-},
-{
-"title": "Poet at Heart",
-"description": "Wordsmith seeks someone who loves the beauty of language",
-"extract": "I am 33, a passionate poet who finds inspiration in the rhythm of words and the emotions they evoke. My days are spent crafting verses, reading poetry, and exploring hidden meanings. Seeks someone who appreciates heartfelt expression and believes in the power of beautifully chosen words."
-},
-{
-"title": "Tech Enthusiast",
-"description": "Innovator seeks a partner to explore the future with",
-"extract": "I am 30 and passionate about the latest tech innovations, from gadgets to groundbreaking AI. My time is spent building projects, diving into tech trends, and dreaming about how technology can shape the future. Seeks someone curious and forward-thinking to share in these discoveries."
-},
-{
-"title": "Cyclist",
-"description": "Road and trail cyclist seeks a partner to share the journey",
-"extract": "I am 36, an avid cyclist who enjoys long rides through scenic routes and challenging terrains. Whether it’s road cycling or mountain biking, I find freedom in the open air. Seeks someone who shares my love for cycling and is ready to explore new paths together."
-},
-{
-"title": "Jazz Aficionado",
-"description": "Music lover seeks a partner to enjoy soulful melodies",
-"extract": "As a 41-year-old jazz enthusiast, I find joy in live performances, smooth saxophones, and late-night jazz clubs. Music fills my soul, and Seeks someone who feels the same connection to melody and rhythm, ready to share evenings of soulful sounds and meaningful moments."
-},
-{
-"title": "DIY Creator",
-"description": "Craft enthusiast seeks someone to build a life with",
-"extract": "I am 38 and love creating with my hands, from woodworking to home projects and upcycling. There’s something magical about bringing ideas to life. Seeks someone who appreciates creativity and enjoys making both meaningful projects and memories."
-},
-{
-"title": "Astronomy Geek",
-"description": "Cosmic explorer seeks someone to share celestial wonders",
-"extract": "As a 34-year-old with a deep love for the stars, I spend nights stargazing, mapping constellations, and diving into astronomy books. Seeks someone fascinated by the universe who is ready to share awe-inspiring moments under the night sky."
-},
-{
-"title": "Festival Goer",
-"description": "Lively soul seeks someone to dance through festivals with",
-"extract": "I am 29, drawn to the energy of music festivals, vibrant colors, and unforgettable memories. Whether it’s electronic beats or soulful ballads, I find joy in the freedom of music. Seeks a partner who thrives on life’s rhythm and is ready to create epic festival memories."
-},
-{
-"title": "Sustainability Advocate",
-"description": "Eco-conscious individual seeks someone who values the planet",
-"extract": "I am 40 and deeply committed to sustainability, from reducing waste to living mindfully. I enjoy gardening, upcycling, and finding creative ways to make a positive impact. Seeks someone who shares a passion for protecting our planet and cherishes a simple, meaningful life."
-},
-{
-"title": "Collector of Stories",
-"description": "Curious individual seeks a partner to share tales with",
-"extract": "I am 32, fascinated by people’s stories, cultural tales, and life experiences. My time is spent interviewing, documenting, or simply listening to the unique narratives of others. Seeks someone who loves storytelling and treasures the art of conversation."
-},
-{
-"title": "Minimalist",
-"description": "Simple soul seeks someone to embrace less and live more",
-"extract": "I am 39, living intentionally with a minimalist lifestyle that values quality over quantity. My days are about finding joy in little things, from cozy spaces to heartfelt moments. Seeks someone who shares this appreciation for simplicity and meaningful connections."
-},
-{
-"title": "Retro Gamer",
-"description": "Gaming enthusiast seeks a player two for life",
-"extract": "I am 28, a nostalgic gamer who loves classic consoles, pixel art, and high-score challenges. Gaming is my way of connecting with fun and creativity. Seeks someone who enjoys a mix of friendly competition and shared adventures in both games and life."
-},
-{
-"title": "Beachcomber",
-"description": "Seaside explorer seeks someone to enjoy coastal life",
-"extract": "As a 37-year-old who finds serenity by the sea, my ideal day involves collecting shells, feeling the sand underfoot, and watching sunsets over the water. Seeks someone who loves the ocean’s beauty and is ready to explore its treasures with me."
-},
-{
-"title": "Tattoo Enthusiast",
-"description": "Ink lover seeks someone who shares artistic passion",
-"extract": "I am 34 and see tattoos as wearable art that tells a story. My body is a canvas, and I enjoy discovering designs and artists who bring creativity to life. Seeks someone who shares this appreciation for individuality and self-expression."
-},
-{
-"title": "DIY Adventurer",
-"description": "Crafty explorer seeks a partner for hands-on journeys",
-"extract": "I am 40, an avid fan of DIY projects and creative adventures, from building furniture to camping in homemade gear. Seeks someone who loves hands-on experiences and creating unforgettable memories through ingenuity."
-},
-{
-"title": "Outdoor Chef",
-"description": "Grill master seeks someone to cook under the stars with",
-"extract": "As a 35-year-old outdoor cooking enthusiast, I love grilling by the beach, hosting backyard BBQs, and creating meals with a side of fresh air. Seeks someone who enjoys cooking and sharing flavorful moments under the open sky."
-},
-{
-"title": "Collector of Oddities",
-"description": "Quirky individual seeks someone who loves the unusual",
-"extract": "I am 39, with a fascination for peculiar objects, from vintage curiosities to rare finds. My weekends are spent exploring antique shops and odd museums. Seeks someone with a quirky sense of wonder who enjoys uncovering life’s little surprises."
-},
-{
-"title": "Aspiring Novelist",
-"description": "Storyteller seeks a muse to inspire creative worlds",
-"extract": "I am 30 and spend my days weaving stories, drafting novels, and imagining characters that come to life on the page. Seeks someone who believes in the magic of storytelling and wants to inspire and be inspired."
-},
-{
-"title": "Culinary Traveler",
-"description": "Food adventurer seeks someone to share global flavors",
-"extract": "I am 41, a foodie who loves traveling to discover unique dishes and the cultures behind them. From street food to fine dining, I find joy in every bite. Seeks someone who’s eager to explore the world one meal at a time."
-},
-{
-"title": "Fiction Fanatic",
-"description": "Lover of stories seeks someone who adores imagination",
-"extract": "I am 33, obsessed with fictional worlds, from epic novels to immersive TV shows and films. Seeks someone who loves discussing characters, plot twists, and what makes a great story unforgettable."
-},
-{
-"title": "Science Buff",
-"description": "Curious mind seeks someone fascinated by discovery",
-"extract": "As a 38-year-old science enthusiast, I’m constantly learning, from quantum physics to biology. My ideal day includes reading scientific articles or visiting museums. Seeks someone who shares a love for exploration and discovery."
-},
-{
-"title": "Hiker at Heart",
-"description": "Trail explorer seeks someone to share mountaintop moments",
-"extract": "I am 36, happiest when surrounded by nature and challenging myself on hiking trails. There’s nothing like reaching the summit and taking in the view. Seeks someone who loves outdoor adventures and values the journey as much as the destination."
-},
-{
-"title": "City Explorer",
-"description": "Urban adventurer seeks a partner to uncover hidden gems",
-"extract": "As a 31-year-old city enthusiast, I love finding unique cafes, art murals, and secret corners in urban spaces. Seeks someone who thrives on exploration and is ready to uncover the magic of cities, one street at a time."
-},
-{
-"title": "Wellness Advocate",
-"description": "Mindful soul seeks a partner to live a balanced life",
-"extract": "I am 34, committed to a healthy lifestyle that includes meditation, nutritious cooking, and regular exercise. Seeks someone who values self-care and is eager to embrace wellness as a shared journey."
-},
-{
-"title": "Nature Artist",
-"description": "Painter of landscapes seeks someone to inspire creativity",
-"extract": "I am 32, a painter who finds beauty in natural vistas, from serene forests to dramatic coastlines. Seeks someone who shares an appreciation for art and finds joy in the colors of life."
-},
-{
+  {
+    "title": "Adventurous Romantic",
+    "description": "Professional, adventurous individual seeking companionship",
+    "extract": "I am a 33-year-old professional who loves exploring new places, from weekend hiking trips to international travel. I enjoy dining out, good books, and long conversations over a glass of wine. I am looking for someone kind, confident, and adventurous to share life’s moments with. If you enjoy both laughter and meaningful talks, I would love to hear from you."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Lover of Arts and Culture",
+    "description": "Art enthusiast seeking intellectual connection",
+    "extract": "I am a 40-year-old with a passion for theatre, live music, and modern art galleries. My evenings are spent reading classics or attending cultural events. I am seeking a thoughtful and intellectual partner aged 35-50 who enjoys stimulating conversations, the occasional debate, and cozy evenings. If you have a creative soul and a love for the arts, please write to me."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Fitness Fanatic",
+    "description": "Active individual seeking someone with shared enthusiasm",
+    "extract": "I am 29, energetic, and passionate about staying active. My ideal weekend includes a morning run, yoga, or cycling, followed by a healthy brunch. I am looking for someone with a similar enthusiasm for fitness and well-being, someone who loves nature and values balance in life. If you enjoy a mix of active days and quiet nights, I’d love to hear from you."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Vintage Enthusiast",
+    "description": "Nostalgic individual looking for someone with similar interests",
+    "extract": "I am a 38-year-old antique collector with a love for all things vintage, from fashion to furniture. My weekends are spent browsing flea markets, restoring old finds, and enjoying retro films. I would love to meet someone who shares a love for history, nostalgia, and life’s little treasures. Let’s create timeless memories together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Animal Lover",
+    "description": "Caring individual looking for a kind-hearted partner",
+    "extract": "As a 35-year-old animal rescuer, my life is full of furry friends and compassion. I am looking for someone who loves animals as much as I do and shares a kind heart. A perfect date might involve a trip to the park with the dogs or an afternoon volunteering at a shelter. If you believe in making the world a better place for all creatures, write to me."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "City Girl",
+    "description": "Urban enthusiast seeking someone to explore with",
+    "extract": "I am a 28-year-old city dweller who loves the hustle and bustle of urban life. From street food festivals to jazz nights at the local bar, I enjoy making the most of my surroundings. I would love to meet someone who shares my love for exploring the city, trying new experiences, and finding joy in the everyday. Let’s discover the world together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Country Gentleman",
+    "description": "Rural enthusiast seeking a partner for the quiet life",
+    "extract": "I am a 42-year-old farmer who loves the simple life. My days are spent outdoors, working the land, and caring for animals. I am looking for someone who appreciates nature, values hard work, and is ready to embrace country living. If your dream involves a cozy home, warm fires, and wide-open spaces, I hope to hear from you."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Bookworm",
+    "description": "Literary enthusiast looking for a partner who loves stories",
+    "extract": "I am 31, a librarian, and a lover of literature. My favorite moments are spent curled up with a good book or wandering the aisles of a bookstore. I’m looking for someone who shares a love for stories, whether through books, film, or conversation. If you believe life is better with a good story to tell, let’s start our next chapter together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Chef",
+    "description": "Culinary expert looking for someone who enjoys good food",
+    "extract": "I am a 37-year-old chef who finds joy in creating culinary masterpieces. My perfect evening includes cooking a delicious meal for someone special and sharing it over candlelight. I am seeking a partner who appreciates good food, enjoys dining out, and isn’t afraid to try new flavors. Let’s cook up something wonderful together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Dreamer",
+    "description": "Romantic soul looking for someone who believes in magic",
+    "extract": "I am a 29-year-old dreamer who believes in love, poetry, and moonlit walks. I enjoy writing, painting, and gazing at the stars. I am searching for someone who is kind, romantic, and unafraid to express their feelings. If you believe in the magic of life and love, I would love to get to know you better."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Business Professional",
+    "description": "Ambitious individual seeking a partner with balance",
+    "extract": "I am a 40-year-old business professional with a busy lifestyle but a longing for connection. I enjoy fine dining, classic films, and weekend getaways. I am looking for someone who is confident, ambitious, and values both career and companionship. If you’re ready to balance work and love, let’s take the first step."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Nature Enthusiast",
+    "description": "Outdoor lover seeking someone to explore the world with",
+    "extract": "As a 34-year-old with a deep love for nature, I spend my weekends hiking, camping, and photographing landscapes. I’m looking for someone who shares my passion for the great outdoors and values simplicity. Let’s explore forests, climb mountains, and create memories in the fresh air together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Creative Soul",
+    "description": "Artist seeking someone with a love for creativity",
+    "extract": "I am a 36-year-old artist who finds beauty in the little things. I love painting, sculpting, and experimenting with different mediums. I am looking for someone who appreciates creativity, values self-expression, and finds joy in the artistic process. Let’s inspire one another."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Ocean Lover",
+    "description": "Beach enthusiast looking for a partner to enjoy the waves",
+    "extract": "I am a 32-year-old who loves the sound of waves and the feel of sand between my toes. My weekends are often spent at the beach, surfing, or watching the sunset. I am looking for someone who shares my love for the ocean and enjoys peaceful moments by the water. Let’s create memories under the open sky."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "History Buff",
+    "description": "History enthusiast seeking a partner with curiosity",
+    "extract": "I am 39 and fascinated by history, from ancient civilizations to modern events. I enjoy museums, documentaries, and traveling to historic sites. I’m looking for someone who shares a passion for learning about the past and discussing the lessons it teaches us. Let’s explore the world’s rich history together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Gardener at Heart",
+    "description": "Nature-loving gardener seeking someone to grow with",
+    "extract": "I am 44 and find peace in tending to my garden and watching plants grow. I enjoy spending time outdoors, planting flowers, and enjoying the simple beauty of nature. I am looking for a patient and caring partner who appreciates the joy of growing something beautiful. Let’s nurture a relationship as wonderful as a blooming garden."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Foodie",
+    "description": "Lover of good food seeking someone to share meals with",
+    "extract": "I am 30 and passionate about exploring cuisines from around the world. Whether it’s a fancy restaurant or a hidden street vendor, I love trying new flavors. I’m searching for someone who shares my enthusiasm for food, cooking, and dining out. Let’s savor life one bite at a time."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Film Fanatic",
+    "description": "Cinema lover seeking a partner for movie nights",
+    "extract": "I am 35, a devoted fan of films, from classic noir to modern blockbusters. I love discussing directors, storytelling, and cinematography. I’m looking for someone who enjoys movie nights, sharing popcorn, and debating the best films of all time. Let’s write our own love story, one scene at a time."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Musician at Heart",
+    "description": "Music enthusiast seeking someone to share melodies",
+    "extract": "I am a 28-year-old guitarist who lives for music. I enjoy composing songs, attending concerts, and jamming with friends. I’m looking for someone who shares my passion for music, whether as a listener or a performer. Let’s create a symphony of love together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Adventurer",
+    "description": "Thrill-seeker looking for a partner in adventure",
+    "extract": "I am 27 and live for the thrill of new experiences. From skydiving to road trips, I love pushing boundaries and embracing the unknown. I’m looking for someone who shares my zest for life and wants to explore the world with me. Let’s make every day an adventure."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Bookstore Romantic",
+    "description": "Dreamy bibliophile looking for a literary partner",
+    "extract": "I am a 31-year-old who finds joy in the smell of old books and quiet afternoons in bookshops. I love discussing literature and discovering hidden gems on dusty shelves. I’m looking for someone who appreciates the charm of a well-written story and believes in the magic of words. Let’s write our own love story together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Dancer",
+    "description": "Dance enthusiast seeking a partner to share the rhythm",
+    "extract": "I am 34 and feel most alive when I’m dancing. From salsa to ballroom, I love moving to the rhythm and losing myself in the music. I’m looking for someone who enjoys dancing, whether on a crowded floor or in a quiet room. Let’s dance our way through life together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Dog Lover",
+    "description": "Canine enthusiast seeking a partner who loves animals",
+    "extract": "I am a 29-year-old dog owner who adores spending time with my furry best friend. I enjoy long walks, playing fetch, and discovering dog-friendly cafes. I’m searching for someone who loves animals as much as I do and values kindness and loyalty. Let’s build a happy life together with wagging tails."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Traveler",
+    "description": "World explorer seeking a companion for adventures",
+    "extract": "I am 38 and have a passion for travel. I love discovering new cultures, tasting exotic cuisines, and exploring off-the-beaten-path destinations. I’m looking for someone who shares my curiosity and wanderlust. Let’s explore the world and create unforgettable memories together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Photographer",
+    "description": "Creative soul seeking someone to capture life with",
+    "extract": "I am a 33-year-old photographer who finds beauty in the everyday. I enjoy capturing moments, whether it’s a stunning sunset or a candid smile. I’m looking for someone who appreciates art, creativity, and the magic of preserving memories. Let’s capture life’s beautiful moments together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Tea Lover",
+    "description": "Quiet soul seeking someone to share cozy moments",
+    "extract": "I am a 41-year-old who finds comfort in a good cup of tea and meaningful conversation. My ideal evening includes a warm mug, a good book, and peaceful company. I’m looking for someone who enjoys simple pleasures, values kindness, and appreciates life’s quiet moments. Let’s brew a beautiful relationship together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Astronomy Buff",
+    "description": "Stargazer seeks a partner to explore the cosmos",
+    "extract": "I am a 32-year-old with a fascination for the stars, planets, and the mysteries of the universe. My ideal evenings involve telescope sessions, stargazing under a clear night sky, and pondering life's big questions. This cosmic dreamer seeks someone equally curious and excited about exploring the wonders of the cosmos."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Comedy Enthusiast",
+    "description": "Laughter-loving individual seeks a partner with a sense of humor",
+    "extract": "As a 29-year-old comedy fan, I love stand-up shows, clever sitcoms, and witty banter. A great weekend for me includes a comedy club visit or a night of rewatching classic comedy films. Seeks someone who appreciates humor and enjoys making the ordinary feel extraordinary with laughter."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Wine Connoisseur",
+    "description": "Wine enthusiast seeks someone to sip and savor with",
+    "extract": "I am a 39-year-old who adores discovering new wines and pairing them with good food and great company. My weekends often include vineyard tours, wine tastings, or simply unwinding with a glass of red. Seeks someone who shares my passion for wine and enjoys the art of savoring life’s finer moments."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Board Game Lover",
+    "description": "Strategic thinker seeks a partner for game nights",
+    "extract": "I am 31 and love spending evenings playing board games, from strategy epics to quick party games. Whether it’s a friendly competition or a cooperative adventure, I believe games bring people together. Seeks a partner who enjoys playful challenges and fun-filled nights of creativity and connection."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Meditation Enthusiast",
+    "description": "Mindful individual seeks someone to share calm moments with",
+    "extract": "As a 35-year-old meditation and mindfulness practitioner, I enjoy finding balance and inner peace. My days include yoga, peaceful walks in nature, and moments of quiet reflection. Seeks someone who values tranquility and connection, and who finds joy in life’s stillness and simplicity."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Adrenaline Junkie",
+    "description": "Thrill-seeker seeks a partner to embrace adventure",
+    "extract": "I am 28, always chasing my next thrill—whether it’s bungee jumping, zip-lining, or white-water rafting. My life revolves around embracing excitement and pushing boundaries. Seeks someone who craves adventure and is ready to share adrenaline-filled experiences with me."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Poet at Heart",
+    "description": "Wordsmith seeks someone who loves the beauty of language",
+    "extract": "I am 33, a passionate poet who finds inspiration in the rhythm of words and the emotions they evoke. My days are spent crafting verses, reading poetry, and exploring hidden meanings. Seeks someone who appreciates heartfelt expression and believes in the power of beautifully chosen words."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Tech Enthusiast",
+    "description": "Innovator seeks a partner to explore the future with",
+    "extract": "I am 30 and passionate about the latest tech innovations, from gadgets to groundbreaking AI. My time is spent building projects, diving into tech trends, and dreaming about how technology can shape the future. Seeks someone curious and forward-thinking to share in these discoveries."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Cyclist",
+    "description": "Road and trail cyclist seeks a partner to share the journey",
+    "extract": "I am 36, an avid cyclist who enjoys long rides through scenic routes and challenging terrains. Whether it’s road cycling or mountain biking, I find freedom in the open air. Seeks someone who shares my love for cycling and is ready to explore new paths together."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Jazz Aficionado",
+    "description": "Music lover seeks a partner to enjoy soulful melodies",
+    "extract": "As a 41-year-old jazz enthusiast, I find joy in live performances, smooth saxophones, and late-night jazz clubs. Music fills my soul, and Seeks someone who feels the same connection to melody and rhythm, ready to share evenings of soulful sounds and meaningful moments."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "DIY Creator",
+    "description": "Craft enthusiast seeks someone to build a life with",
+    "extract": "I am 38 and love creating with my hands, from woodworking to home projects and upcycling. There’s something magical about bringing ideas to life. Seeks someone who appreciates creativity and enjoys making both meaningful projects and memories."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Astronomy Geek",
+    "description": "Cosmic explorer seeks someone to share celestial wonders",
+    "extract": "As a 34-year-old with a deep love for the stars, I spend nights stargazing, mapping constellations, and diving into astronomy books. Seeks someone fascinated by the universe who is ready to share awe-inspiring moments under the night sky."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Festival Goer",
+    "description": "Lively soul seeks someone to dance through festivals with",
+    "extract": "I am 29, drawn to the energy of music festivals, vibrant colors, and unforgettable memories. Whether it’s electronic beats or soulful ballads, I find joy in the freedom of music. Seeks a partner who thrives on life’s rhythm and is ready to create epic festival memories."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Sustainability Advocate",
+    "description": "Eco-conscious individual seeks someone who values the planet",
+    "extract": "I am 40 and deeply committed to sustainability, from reducing waste to living mindfully. I enjoy gardening, upcycling, and finding creative ways to make a positive impact. Seeks someone who shares a passion for protecting our planet and cherishes a simple, meaningful life."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Collector of Stories",
+    "description": "Curious individual seeks a partner to share tales with",
+    "extract": "I am 32, fascinated by people’s stories, cultural tales, and life experiences. My time is spent interviewing, documenting, or simply listening to the unique narratives of others. Seeks someone who loves storytelling and treasures the art of conversation."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Minimalist",
+    "description": "Simple soul seeks someone to embrace less and live more",
+    "extract": "I am 39, living intentionally with a minimalist lifestyle that values quality over quantity. My days are about finding joy in little things, from cozy spaces to heartfelt moments. Seeks someone who shares this appreciation for simplicity and meaningful connections."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Retro Gamer",
+    "description": "Gaming enthusiast seeks a player two for life",
+    "extract": "I am 28, a nostalgic gamer who loves classic consoles, pixel art, and high-score challenges. Gaming is my way of connecting with fun and creativity. Seeks someone who enjoys a mix of friendly competition and shared adventures in both games and life."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Beachcomber",
+    "description": "Seaside explorer seeks someone to enjoy coastal life",
+    "extract": "As a 37-year-old who finds serenity by the sea, my ideal day involves collecting shells, feeling the sand underfoot, and watching sunsets over the water. Seeks someone who loves the ocean’s beauty and is ready to explore its treasures with me."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Tattoo Enthusiast",
+    "description": "Ink lover seeks someone who shares artistic passion",
+    "extract": "I am 34 and see tattoos as wearable art that tells a story. My body is a canvas, and I enjoy discovering designs and artists who bring creativity to life. Seeks someone who shares this appreciation for individuality and self-expression."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "DIY Adventurer",
+    "description": "Crafty explorer seeks a partner for hands-on journeys",
+    "extract": "I am 40, an avid fan of DIY projects and creative adventures, from building furniture to camping in homemade gear. Seeks someone who loves hands-on experiences and creating unforgettable memories through ingenuity."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Outdoor Chef",
+    "description": "Grill master seeks someone to cook under the stars with",
+    "extract": "As a 35-year-old outdoor cooking enthusiast, I love grilling by the beach, hosting backyard BBQs, and creating meals with a side of fresh air. Seeks someone who enjoys cooking and sharing flavorful moments under the open sky."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Collector of Oddities",
+    "description": "Quirky individual seeks someone who loves the unusual",
+    "extract": "I am 39, with a fascination for peculiar objects, from vintage curiosities to rare finds. My weekends are spent exploring antique shops and odd museums. Seeks someone with a quirky sense of wonder who enjoys uncovering life’s little surprises."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Aspiring Novelist",
+    "description": "Storyteller seeks a muse to inspire creative worlds",
+    "extract": "I am 30 and spend my days weaving stories, drafting novels, and imagining characters that come to life on the page. Seeks someone who believes in the magic of storytelling and wants to inspire and be inspired."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Culinary Traveler",
+    "description": "Food adventurer seeks someone to share global flavors",
+    "extract": "I am 41, a foodie who loves traveling to discover unique dishes and the cultures behind them. From street food to fine dining, I find joy in every bite. Seeks someone who’s eager to explore the world one meal at a time."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Fiction Fanatic",
+    "description": "Lover of stories seeks someone who adores imagination",
+    "extract": "I am 33, obsessed with fictional worlds, from epic novels to immersive TV shows and films. Seeks someone who loves discussing characters, plot twists, and what makes a great story unforgettable."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Science Buff",
+    "description": "Curious mind seeks someone fascinated by discovery",
+    "extract": "As a 38-year-old science enthusiast, I’m constantly learning, from quantum physics to biology. My ideal day includes reading scientific articles or visiting museums. Seeks someone who shares a love for exploration and discovery."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Hiker at Heart",
+    "description": "Trail explorer seeks someone to share mountaintop moments",
+    "extract": "I am 36, happiest when surrounded by nature and challenging myself on hiking trails. There’s nothing like reaching the summit and taking in the view. Seeks someone who loves outdoor adventures and values the journey as much as the destination."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "City Explorer",
+    "description": "Urban adventurer seeks a partner to uncover hidden gems",
+    "extract": "As a 31-year-old city enthusiast, I love finding unique cafes, art murals, and secret corners in urban spaces. Seeks someone who thrives on exploration and is ready to uncover the magic of cities, one street at a time."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Wellness Advocate",
+    "description": "Mindful soul seeks a partner to live a balanced life",
+    "extract": "I am 34, committed to a healthy lifestyle that includes meditation, nutritious cooking, and regular exercise. Seeks someone who values self-care and is eager to embrace wellness as a shared journey."
+  },
+  {
+    "numberOftimesUsed": 0,
+    "title": "Nature Artist",
+    "description": "Painter of landscapes seeks someone to inspire creativity",
+    "extract": "I am 32, a painter who finds beauty in natural vistas, from serene forests to dramatic coastlines. Seeks someone who shares an appreciation for art and finds joy in the colors of life."
+  },
+  {
+    "numberOftimesUsed": 0,
     "title": "Architect of Dreams",
     "description": "Visionary designer seeks a creative collaborator",
     "extract": "I am 35, an architect with a passion for blending functionality with beauty. My life revolves around building structures that inspire and create meaning. Seeks someone who values innovation, enjoys deep conversations about art and design, and dreams of creating something extraordinary together."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Forest Wanderer",
     "description": "Nature lover seeks someone to get lost in the woods with",
     "extract": "As a 33-year-old who finds peace in the whisper of trees and the crunch of leaves underfoot, Seeks someone who shares my love for tranquil forest walks. Let’s discover hidden trails, share stories by campfires, and create a connection as natural as the world around us."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Gardening Guru",
     "description": "Green-thumbed individual seeks a partner to grow with",
     "extract": "I am 42, happiest when my hands are in the soil and surrounded by flourishing plants. Gardening is my escape, and Seeks someone who shares my love for nurturing life, whether it’s in a sprawling garden or a collection of potted plants."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Dream Chaser",
     "description": "Optimistic adventurer seeks a partner to reach the stars",
     "extract": "I am 29, driven by big goals and unshakable optimism. My life is about chasing dreams, whether it’s launching a business or climbing a mountain. Seeks someone who believes in the power of possibility and is ready to build an extraordinary life together."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Puzzle Enthusiast",
     "description": "Curious mind seeks a partner to piece life together",
     "extract": "I am 36 and love solving puzzles, whether it’s a crossword, a jigsaw, or a life problem. Seeks someone who enjoys intellectual challenges, thoughtful conversations, and finding joy in the little victories of life."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Road Tripper",
     "description": "Free spirit seeks a companion for life’s winding roads",
     "extract": "I am 30, at my happiest when behind the wheel on an open road, discovering new places and meeting new faces. Seeks someone who loves spontaneity, road trip playlists, and the thrill of chasing horizons together."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Fantasy Enthusiast",
     "description": "Imaginative soul seeks someone to explore magical worlds with",
     "extract": "I am 28 and captivated by fantastical worlds, whether in books, games, or films. Seeks someone who shares my love for dragons, epic quests, and the magic of storytelling, ready to embark on our own legendary adventure."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Community Builder",
     "description": "Outgoing connector seeks a partner to create bonds with",
     "extract": "I am 39, passionate about bringing people together and fostering a sense of community. From hosting gatherings to volunteering locally, Seeks someone who values connection, empathy, and shared purpose in making a positive impact."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Mindful Explorer",
     "description": "Spiritual seeker seeks a partner for soul-deep adventures",
     "extract": "As a 35-year-old who practices mindfulness and meditation, Seeks someone who values inner peace and self-discovery. Together, let’s explore the beauty of both the outer world and the depths of our souls."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Park Enthusiast",
     "description": "Outdoor lover seeks a partner for simple joys in nature",
     "extract": "I am 29, finding happiness in local parks, whether it’s picnicking under a shady tree or people-watching from a bench. Seeks someone who appreciates life’s simplicity and wants to share peaceful moments outdoors."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Animal Whisperer",
     "description": "Animal lover seeks a partner to care for furry friends",
     "extract": "I am 34, with a knack for understanding animals and a heart full of compassion. My life revolves around caring for pets and wildlife. Seeks someone who loves animals as much as I do and dreams of a home filled with wagging tails and gentle purrs."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Amateur Chef",
     "description": "Food lover seeks a partner for culinary experiments",
     "extract": "As a 33-year-old who loves experimenting in the kitchen, Seeks someone who enjoys cooking, tasting, and laughing over kitchen mishaps. Let’s create delicious meals and even better memories together."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Vintage Collector",
     "description": "Treasure hunter seeks a partner who loves timeless finds",
     "extract": "I am 38, spending weekends exploring antique shops and estate sales for hidden gems. Seeks someone who treasures nostalgia and enjoys the charm of items with a story to tell."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Cultural Explorer",
     "description": "World traveler seeks a partner to embrace diversity with",
     "extract": "I am 40 and fascinated by different cultures, cuisines, and traditions. Seeks someone who shares my curiosity for learning and experiencing the richness of the world around us."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Night Owl",
     "description": "Late-night thinker seeks someone for moonlit conversations",
     "extract": "I am 29, most inspired during quiet nights when the world sleeps. Seeks someone who thrives in the magic of the moonlight and enjoys meaningful talks that stretch until sunrise."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Wildlife Advocate",
     "description": "Conservationist seeks someone to protect nature with",
     "extract": "I am 37, dedicated to wildlife conservation and protecting Earth’s biodiversity. Seeks someone who shares my love for nature and passion for preserving its beauty for future generations."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Urban Photographer",
     "description": "City lover seeks a partner to capture hidden beauty",
     "extract": "I am 31, finding inspiration in the overlooked corners of urban life. From graffiti art to quiet alleyways, Seeks someone who shares my eye for beauty and wants to document life’s unexpected moments together."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Yoga Practitioner",
     "description": "Flexible soul seeks a partner for shared tranquility",
     "extract": "As a 35-year-old who practices yoga daily, Seeks someone who values health, mindfulness, and the peaceful energy that comes from balance and harmony."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Sports Fanatic",
     "description": "Die-hard fan seeks someone who loves the thrill of the game",
     "extract": "I am 34 and passionate about cheering on my favorite teams, whether at the stadium or from the couch. Seeks someone who shares my enthusiasm for sports and enjoys celebrating victories together."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Woodworker",
     "description": "Craftsman seeks someone who appreciates handmade beauty",
     "extract": "I am 40, spending my time shaping raw wood into functional art. Seeks someone who values the creativity and dedication that goes into crafting things by hand."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Fitness Coach",
     "description": "Energetic trainer seeks someone who loves staying active",
     "extract": "As a 29-year-old fitness coach, I live for inspiring others to reach their goals. Seeks someone who shares my enthusiasm for staying active and appreciates the joy of pushing boundaries together."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Ocean Explorer",
     "description": "Scuba diver seeks a partner for underwater adventures",
     "extract": "I am 33, fascinated by marine life and the vast mysteries of the ocean. Seeks someone who dreams of exploring coral reefs, spotting sea turtles, and experiencing the magic of underwater worlds."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Community Organizer",
     "description": "Passionate activist seeks a partner for social change",
     "extract": "I am 38, committed to creating positive change through community action. Seeks someone who values equity, compassion, and is ready to stand side by side in making a difference."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Skater",
     "description": "Adventurous spirit seeks someone to roll through life with",
     "extract": "I am 27, a skater who finds freedom on four wheels. Whether at the skatepark or on quiet streets, Seeks someone who loves a little thrill and isn’t afraid to embrace fun and spontaneity."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Cabin Enthusiast",
     "description": "Cozy soul seeks a partner for log cabin getaways",
     "extract": "I am 41, happiest when tucked away in a cabin, surrounded by nature. Seeks someone who dreams of quiet retreats, warm fires, and a life filled with simple pleasures."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Martial Artist",
     "description": "Disciplined individual seeks a partner with inner strength",
     "extract": "As a 32-year-old martial artist, I find joy in discipline, movement, and self-growth. Seeks someone who values personal improvement and is ready to join me in exploring strength and balance."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Aspiring Filmmaker",
     "description": "Visionary storyteller seeks a creative collaborator",
     "extract": "I am 30, crafting short films and scripts that bring unique stories to life. Seeks someone who shares my passion for storytelling and is eager to create and inspire through art."
   },
   {
+    "numberOftimesUsed": 0,
     "title": "Astronomy Nerd",
     "description": "Cosmic enthusiast seeks a partner to explore the universe",
     "extract": "I am 35 and spend nights charting constellations and wondering about distant galaxies. Seeks someone who shares my fascination with the cosmos and dreams of stargazing under infinite skies."

@@ -1,0 +1,2470 @@
+category,word
+adjective,absurd
+adjective,ancient
+adjective,awkward
+adjective,automatic
+adjective,bizarre
+adjective,boiling
+adjective,bouncy
+adjective,broken
+adjective,bulky
+adjective,ceremonial
+adjective,chaotic
+adjective,clattering
+adjective,crooked
+adjective,damp
+adjective,demonic
+adjective,distorted
+adjective,elaborate
+adjective,enormous
+adjective,explosive
+adjective,filthy
+adjective,flimsy
+adjective,fluorescent
+adjective,furry
+adjective,gargantuan
+adjective,gigantic
+adjective,glittering
+adjective,gloomy
+adjective,greasy
+adjective,gruesome
+adjective,hairy
+adjective,hideous
+adjective,hollow
+adjective,impossible
+adjective,impractical
+adjective,invisible
+adjective,jagged
+adjective,jittery
+adjective,lopsided
+adjective,luminous
+adjective,ludicrous
+adjective,massive
+adjective,moist
+adjective,mysterious
+adjective,nautical
+adjective,noisy
+adjective,obnoxious
+adjective,peculiar
+adjective,pompous
+adjective,prickly
+adjective,psychedelic
+adjective,pulsing
+adjective,ridiculous
+adjective,rusty
+adjective,scandalous
+adjective,shiny
+adjective,sinister
+adjective,sizzling
+adjective,slippery
+adjective,sloppy
+adjective,soggy
+adjective,sparkling
+adjective,spiky
+adjective,spooky
+adjective,squeaky
+adjective,sticky
+adjective,suspicious
+adjective,tiny
+adjective,transparent
+adjective,triangular
+adjective,twisted
+adjective,vibrating
+adjective,warped
+adjective,whimsical
+object,air conditioner
+object,antenna
+object,apron
+object,armchair
+object,attic
+object,awning
+object,axle
+object,backpack
+object,ballpointpen
+object,barbecue grill
+object,baseball bat
+object,basket
+object,battery
+object,bath towel
+object,bathroom scale
+object,bedframe
+object,bicycle
+object,binder
+object,blanket
+object,book case
+object,bowl
+object,broom
+object,bucket
+object,bulb
+object,button
+object,calendar
+object,candle
+object,car battery
+object,carjack
+object,car seat
+object,carpet
+object,chair
+object,charger
+object,cheese grater
+object,chopping board
+object,clothes hanger
+object,clothes peg
+object,coat rack
+object,compost bin
+object,computer mouse
+object,corkscrew
+object,curtains
+object,cupboard
+object,cushion
+object,desk lamp
+object,dining table
+object,dish rack
+object,doorbell
+object,door mat
+object,dresser
+object,drying rack
+object,dust bin
+object,dust pan
+object,earphones
+object,extension cord
+object,fabric softener
+object,filing cabinet
+object,fire extinguisher
+object,flashlight
+object,flower pot
+object,freezer
+object,frying pan
+object,fusebox
+object,garden hose
+object,garden rake
+object,gas stove
+object,gearstick
+object,glue stick
+object,hammer
+object,headphones
+object,hedge trimmer
+object,hoover
+object,hot water bottle
+object,ice cube tray
+object,ironing board
+object,jelly mould
+object,jigsaw
+object,jumper cables
+object,key holder
+object,keyboard
+object,kitchen sink
+object,kitchen towel
+object,ladder
+object,lampshade
+object,laptop
+object,laundry basket
+object,lawn mower
+object,light bulb
+object,measuring tape
+object,microwave
+object,mixing bowl
+object,mop
+object,mosquito net
+object,mousepad
+object,napkin holder
+object,newspaper rack
+object,nightstand
+object,notepad
+object,nutcracker
+object,oil can
+object,oven mitt
+object,paint roller
+object,paper clip
+object,paper towel
+object,pegboard
+object,pencil sharpener
+object,pet bowl
+object,photo frame
+object,picture hanger
+object,placemat
+object,plastic container
+object,pliers
+object,pocketknife
+object,pool skimmer
+object,postitnotes
+object,radiator
+object,reading lamp
+object,remote control
+object,roof rack
+object,rolling pin
+object,rubber gloves
+object,salt shaker
+object,saw
+object,scissors
+object,screwdriver
+object,sewing kit
+object,shoe brush
+object,shower curtain
+object,shower gel
+object,showerhead
+object,sink strainer
+object,slotted spoon
+object,soap dispenser
+object,soap dish
+object,solar light
+object,soup ladle
+object,spice rack
+object,sponge
+object,stapler
+object,stepladder
+object,storage bin
+object,straw
+object,string lights
+object,suitcase
+object,sunshade
+object,sunglasses
+object,superglue
+object,surge protector
+object,tablecloth
+object,table lamp
+object,tape dispenser
+object,tea strainer
+object,thread spool
+object,tissue box
+object,toilet brush
+object,toilet seat
+object,tool box
+object,toothbrush
+object,toothbrush holder
+object,toothpaste
+object,towel rack
+object,trash can
+object,travel adapter
+object,tray
+object,treadmill
+object,trowel
+object,tvremote
+object,umbrella
+object,vegetable peeler
+object,vinegar bottle
+object,wall clock
+object,wallpaper scraper
+object,watering can
+object,wax paper
+object,whisk
+object,whiteboard
+object,window latch
+object,wine rack
+object,wire hanger
+object,wooden spoon
+object,wrench
+object,zipper
+object,accordion file
+object,address book
+object,adhesive tape
+object,air freshener
+object,aluminum foil
+device,alarm clock
+device,blender
+device,calculator
+device,camera
+device,can opener
+device,ceiling fan
+device,coffee maker
+device,dishwasher
+device,drill
+device,electric fan
+device,electric kettle
+device,hair dryer
+device,heater
+device,jar opener
+device,juicer
+device,letter opener
+device,pasta maker
+device,pressure cooker
+device,router
+device,salad spinner
+device,sandwich maker
+device,smoke detector
+device,tea kettle
+device,telephone
+device,thermometer
+device,timer
+device,tin opener
+device,toaster
+device,vacuum cleaner
+device,waffle maker
+device,washing machine
+device,yogurt maker
+device,alarm system
+device,angle grinder
+device,baby monitor
+device,balloon pump
+device,barcode scanner
+device,bicycle pump
+device,blood pressure monitor
+device,bottle opener
+device,bread maker
+device,cooking thermometer
+device,drill bit
+device,electric razor
+device,envelope opener
+device,espresso machine
+device,fire alarm
+device,fitness tracker
+device,metal detector
+device,oscillatingfan
+device,pepper grinder
+device,popcorn maker
+device,pressurewasher
+device,projector
+device,razorblade
+device,sand timer
+device,security camera
+device,soda maker
+device,space heater
+device,spice grinder
+device,steamer basket
+device,toaster oven
+surreal_descriptor,abnormal
+surreal_descriptor,absentminded
+surreal_descriptor,accusative
+surreal_descriptor,adhesive
+surreal_descriptor,anatomical
+surreal_descriptor,anxious
+surreal_descriptor,arrogant
+surreal_descriptor,audacious
+surreal_descriptor,auxiliary
+surreal_descriptor,bacterial
+surreal_descriptor,barometrical
+surreal_descriptor,behavioral
+surreal_descriptor,biological
+surreal_descriptor,botanical
+surreal_descriptor,breathless
+surreal_descriptor,causal
+surreal_descriptor,chemical
+surreal_descriptor,clinical
+surreal_descriptor,collective
+surreal_descriptor,criminal
+surreal_descriptor,cynical
+surreal_descriptor,depressed
+surreal_descriptor,divine
+surreal_descriptor,dizzy
+surreal_descriptor,drunk
+surreal_descriptor,eccentric
+surreal_descriptor,economic
+surreal_descriptor,elastic
+surreal_descriptor,embarrassed
+surreal_descriptor,emotional
+surreal_descriptor,ethical
+surreal_descriptor,euphoric
+surreal_descriptor,exhausted
+surreal_descriptor,fugitive
+surreal_descriptor,functional
+surreal_descriptor,hysterical
+surreal_descriptor,idealistic
+surreal_descriptor,illogical
+surreal_descriptor,illuminating
+surreal_descriptor,impatient
+surreal_descriptor,impersonal
+surreal_descriptor,impulsive
+surreal_descriptor,incoherent
+surreal_descriptor,incompatible
+surreal_descriptor,incompetent
+surreal_descriptor,inconclusive
+surreal_descriptor,inconsistent
+surreal_descriptor,indecisive
+surreal_descriptor,indignant
+surreal_descriptor,industrious
+surreal_descriptor,ineffective
+surreal_descriptor,inefficient
+surreal_descriptor,infamous
+surreal_descriptor,infinite
+surreal_descriptor,insecure
+surreal_descriptor,insidious
+surreal_descriptor,insolent
+surreal_descriptor,insufficient
+surreal_descriptor,intelligent
+surreal_descriptor,interactive
+surreal_descriptor,intimate
+surreal_descriptor,irrational
+surreal_descriptor,irresponsible
+surreal_descriptor,legal
+surreal_descriptor,lethal
+surreal_descriptor,logical
+surreal_descriptor,malevolent
+surreal_descriptor,materialistic
+surreal_descriptor,morbid
+surreal_descriptor,objective
+surreal_descriptor,passive
+surreal_descriptor,philosophical
+surreal_descriptor,political
+surreal_descriptor,possessive
+surreal_descriptor,psychological
+surreal_descriptor,rational
+surreal_descriptor,recreational
+surreal_descriptor,redundant
+surreal_descriptor,repetitive
+surreal_descriptor,scientific
+surreal_descriptor,secretive
+surreal_descriptor,sentimental
+surreal_descriptor,sociable
+surreal_descriptor,sonic
+surreal_descriptor,spiritual
+surreal_descriptor,static
+surreal_descriptor,strategic
+surreal_descriptor,systematic
+surreal_descriptor,temperamental
+surreal_descriptor,tonal
+surreal_descriptor,turbulent
+surreal_descriptor,tyrannical
+surreal_descriptor,unstable
+surreal_descriptor,variable
+surreal_descriptor,virtual
+surreal_descriptor,volatile
+surreal_descriptor,vulnerable
+device,hydraulic press
+device,lathe
+device,milling machine
+device,bandsaw
+device,pillar drill
+device,arc welder
+device,plasma cutter
+device,air compressor
+device,conveyor belt
+device,forklift
+device,gantry crane
+device,chain hoist
+device,pallet truck
+device,bench grinder
+device,surface grinder
+device,sheet metal brake
+device,guillotine shear
+device,injection moulding machine
+device,extrusion press
+device,rolling mill
+device,blast furnace
+device,industrial kiln
+object,hydraulic ram
+object,pneumatic cylinder
+device,gear pump
+device,centrifugal pump
+device,reciprocating pump
+device,heat exchanger
+device,cooling tower
+device,industrial boiler
+device,steam turbine
+device,gas turbine
+object,flywheel
+object,gearbox
+object,universal joint
+object,ball bearing
+object,roller bearing
+object,torque wrench
+object,vernier caliper
+object,micrometer
+object,spirit level
+device,rivet gun
+device,grease gun
+device,pipe bender
+object,wire stripper
+object,bolt cutter
+object,bench vice
+object,anvil
+object,foundry ladle
+object,welding helmet
+object,Bunsen burner
+object,test tube
+object,conical flask
+object,volumetric flask
+object,round-bottom flask
+object,beaker
+object,pipette
+object,burette
+object,retort stand
+object,test-tube rack
+object,Petri dish
+device,microscope
+device,telescope
+device,spectrometer
+device,colorimeter
+device,calorimeter
+device,oscilloscope
+device,laboratory centrifuge
+object,fume cupboard
+device,laminar flow cabinet
+device,laboratory incubator
+device,autoclave
+object,desiccator
+device,vacuum chamber
+object,glove box
+device,laboratory hot plate
+device,magnetic stirrer
+device,laboratory balance
+device,Geiger counter
+device,particle counter
+device,pH meter
+device,conductivity meter
+device,refractometer
+device,polarimeter
+device,chromatograph
+device,electrophoresis chamber
+device,microtome
+device,cryostat
+device,spectrophotometer
+device,scintillation counter
+object,cloud chamber
+object,wave tank
+device,Van de Graaff generator
+device,signal generator
+device,function generator
+object,laboratory clamp
+object,wash bottle
+object,reagent bottle
+object,sample vial
+object,diffraction grating
+device,tractor
+device,combine harvester
+device,seed drill
+object,plough
+device,disc harrow
+device,cultivator
+device,rotavator
+device,baler
+device,hay rake
+device,forage harvester
+device,crop sprayer
+device,fertiliser spreader
+device,grain auger
+device,grain elevator
+device,threshing machine
+device,winnowing machine
+device,irrigation pump
+object,sprinkler head
+object,drip emitter
+object,sheep shears
+object,hoof trimmer
+object,cattle crush
+device,milking machine
+device,cream separator
+device,egg incubator
+object,chicken feeder
+object,poultry drinker
+object,beehive smoker
+object,hive tool
+object,fencing pliers
+device,post driver
+object,wheelbarrow
+device,muck spreader
+object,slurry tanker
+object,silage clamp
+device,silage cutter
+device,feed mixer
+device,chaff cutter
+device,corn sheller
+device,potato harvester
+device,beet harvester
+object,fruit picker
+object,pruning saw
+object,grafting knife
+object,dibber
+object,broadfork
+object,mattock
+object,scythe
+object,sickle
+object,pitchfork
+object,stethoscope
+device,otoscope
+device,ophthalmoscope
+object,reflex hammer
+object,tuning fork
+object,tongue depressor
+object,examination couch
+object,hospital bed
+object,wheelchair
+object,walking frame
+object,crutch
+object,cervical collar
+object,splint
+object,tourniquet
+object,syringe
+object,hypodermic needle
+object,intravenous stand
+device,infusion pump
+device,syringe pump
+device,nebuliser
+object,oxygen mask
+object,resuscitation bag
+device,defibrillator
+device,electrocardiograph
+device,pulse oximeter
+device,ventilator
+device,anaesthetic machine
+device,suction machine
+device,dialysis machine
+device,ultrasound scanner
+device,X-ray machine
+device,CT scanner
+device,MRI scanner
+object,surgical scalpel
+object,surgical forceps
+object,haemostat
+object,needle holder
+object,speculum
+object,surgical retractor
+device,bone saw
+device,surgical drill
+device,laparoscope
+device,endoscope
+device,laryngoscope
+device,bronchoscope
+object,operating table
+device,surgical light
+device,steam steriliser
+object,bedpan
+object,kidney dish
+object,violin
+object,viola
+object,cello
+object,double bass
+object,acoustic guitar
+device,electric guitar
+device,bass guitar
+object,banjo
+object,mandolin
+object,ukulele
+object,harp
+object,piano
+object,accordion
+object,harmonica
+object,flute
+object,piccolo
+object,clarinet
+object,oboe
+object,bassoon
+object,saxophone
+object,trumpet
+object,cornet
+object,trombone
+object,French horn
+object,tuba
+object,euphonium
+object,snare drum
+object,bass drum
+object,timpani
+object,tambourine
+object,xylophone
+object,marimba
+object,vibraphone
+object,glockenspiel
+object,triangle
+object,cymbals
+object,gong
+object,tubular bells
+device,synthesiser
+device,drum machine
+device,mixing console
+device,audio interface
+device,microphone
+device,loudspeaker
+device,amplifier
+device,effects pedal
+object,metronome
+device,turntable
+device,reel-to-reel recorder
+object,music stand
+object,longbow
+object,crossbow
+object,war hammer
+object,morning star
+object,flail
+object,halberd
+object,glaive
+object,poleaxe
+object,billhook
+object,arbalest
+object,scabbard
+object,quiver
+object,buckler
+object,kite shield
+object,tower shield
+object,chainmail shirt
+object,breastplate
+object,gauntlet
+object,greave
+object,vambrace
+object,gorget
+object,sallet helmet
+object,bascinet
+object,great helm
+object,shield boss
+device,siege tower
+device,battering ram
+device,trebuchet
+device,mangonel
+device,ballista
+device,catapult
+device,counterweight crane
+object,portcullis
+object,drawbridge
+object,murder-hole grate
+object,palisade stake
+object,cheval de frise
+object,mantlet shield
+object,siege ladder
+object,scaling hook
+object,gabion basket
+object,embrasure shutter
+object,caltrop
+object,powder keg
+object,matchlock musket
+object,flintlock pistol
+object,hand cannon
+object,culverin
+object,bombard cannon
+object,arrow slit shutter
+object,processional cross
+object,ceremonial mace
+object,royal sceptre
+object,orb and cross
+object,coronation crown
+object,seal matrix
+object,signet ring
+object,heraldic banner
+object,ceremonial sword
+object,parade standard
+object,thurible
+object,chalice
+object,ciborium
+object,monstrance
+object,reliquary
+object,altar cross
+object,votive candle holder
+object,prayer wheel
+object,incense boat
+object,lectern
+object,baptismal font
+object,collection plate
+object,ceremonial drum
+object,funeral bier
+object,memorial wreath
+object,quill pen
+object,inkwell
+object,wax tablet
+object,writing slate
+object,seal stamp
+object,sand shaker
+object,hornbook
+object,scroll case
+object,document chest
+object,strongbox
+object,truckle bed
+object,rope bed
+object,washstand
+object,chamber pot
+object,warming pan
+object,rushlight holder
+object,tinderbox
+object,snuffbox
+object,powder horn
+object,drinking horn
+object,wooden trencher
+object,butter churn
+object,spinning wheel
+object,drop spindle
+object,hand loom
+device,motor scooter
+device,motorcycle
+device,sidecar
+device,taxicab
+device,minibus
+device,double-decker bus
+device,trolleybus
+device,tramcar
+device,ambulance
+device,hearse
+device,breakdown truck
+device,tow truck
+device,tipper lorry
+device,concrete mixer truck
+device,refuse lorry
+device,road sweeper
+device,snowplough
+device,motorised rickshaw
+device,golf cart
+device,mobility scooter
+device,quad bike
+device,go-kart
+device,camper van
+device,caravan
+device,tractor unit
+device,steam locomotive
+device,diesel locomotive
+device,electric locomotive
+device,shunting locomotive
+device,passenger carriage
+device,dining car
+device,sleeping carriage
+device,guard's van
+device,box wagon
+device,hopper wagon
+device,tanker wagon
+device,flat wagon
+device,rail crane
+device,track inspection trolley
+device,handcar
+device,funicular car
+device,cable car
+device,monorail car
+device,underground train
+device,railway turntable
+object,buffer stop
+device,railway signal
+object,points lever
+object,pantograph
+object,cowcatcher
+object,canoe
+object,kayak
+object,rowing boat
+object,dinghy
+object,lifeboat
+object,tugboat
+object,barge
+object,ferry
+object,trawler
+object,schooner
+object,catamaran
+object,hovercraft
+object,gondola
+object,punt
+object,coracle
+object,ship's wheel
+object,capstan
+object,anchor windlass
+object,mooring bollard
+object,life ring
+object,sextant
+object,signal buoy
+object,diving bell
+object,diving helmet
+object,ship's telegraph
+device,biplane
+device,glider
+device,seaplane
+device,helicopter
+device,autogyro
+device,airship
+device,hot-air balloon
+device,paraglider
+device,hang glider
+device,jet airliner
+device,cargo aircraft
+device,air ambulance
+device,ejection seat
+device,flight recorder
+device,airspeed indicator
+device,altimeter
+device,artificial horizon
+device,control yoke
+device,rudder pedal
+object,landing gear
+object,propeller
+device,jet engine
+object,windsock
+device,runway light
+device,aircraft tug
+object,brick trowel
+object,pointing trowel
+object,plastering float
+object,masonry chisel
+object,bolster chisel
+object,club hammer
+object,sledgehammer
+object,crowbar
+object,pry bar
+object,nail puller
+object,hand plane
+object,wood chisel
+object,brace and bit
+object,plumb bob
+object,chalk line
+object,try square
+object,combination square
+object,carpenter's level
+object,brick jointer
+object,mortar board
+object,caulking gun
+object,pipe wrench
+object,basin wrench
+object,cable puller
+object,conduit bender
+device,tower crane
+device,crawler crane
+device,mobile crane
+device,excavator
+device,backhoe loader
+device,bulldozer
+device,wheel loader
+device,skid-steer loader
+device,motor grader
+device,road roller
+device,asphalt paver
+device,pile driver
+device,tunnel boring machine
+device,concrete pump
+device,concrete vibrator
+device,cement mixer
+device,jackhammer
+device,demolition robot
+device,trench compactor
+device,plate compactor
+device,scissor lift
+device,cherry picker
+device,material hoist
+device,core drill
+device,floor sander
+object,bridge bearing
+object,expansion joint
+object,storm drain
+object,manhole cover
+object,inspection chamber
+object,culvert pipe
+object,drainage channel
+object,fire hydrant
+device,water meter
+object,sluice gate
+object,flood barrier
+object,retaining wall panel
+object,crash barrier
+object,road bollard
+device,traffic signal head
+object,street-light column
+object,utility pole
+object,cable tray
+object,busbar
+device,distribution board
+device,circuit breaker
+device,isolator switch
+object,transformer cabinet
+object,junction box
+object,valve chamber
+device,theodolite
+device,surveying tripod
+device,levelling staff
+device,laser level
+device,total station
+device,measuring wheel
+device,survey prism
+device,rangefinder
+device,clinometer
+device,compass tripod
+device,soil sampler
+device,core sampler
+device,moisture meter
+device,concrete test hammer
+device,rebar detector
+device,cable locator
+device,pipe locator
+device,thermal camera
+device,inspection camera
+device,endoscope camera
+device,site floodlight
+device,portable generator
+device,dewatering pump
+device,air scrubber
+device,dust extractor
+device,desktop computer
+device,workstation
+object,server rack
+device,blade server
+device,mainframe computer
+device,single-board computer
+device,graphics tablet
+device,trackball
+device,touchpad
+device,webcam
+device,document scanner
+device,flatbed scanner
+device,laser printer
+device,inkjet printer
+device,plotter
+device,3D printer
+device,network switch
+device,wireless access point
+device,modem
+device,hardware firewall
+device,disk drive
+device,solid-state drive
+object,memory module
+object,graphics card
+object,motherboard
+device,digital multimeter
+device,analogue multimeter
+device,logic analyser
+device,spectrum analyser
+device,frequency counter
+device,LCR meter
+device,bench power supply
+device,soldering station
+device,desoldering pump
+device,hot-air rework station
+device,circuit tester
+device,voltage probe
+device,current clamp
+object,breadboard
+object,printed circuit board
+object,integrated circuit
+object,transistor
+object,relay module
+device,stepper motor
+device,servo motor
+device,solenoid
+device,rotary encoder
+device,proximity sensor
+device,load cell
+device,thermocouple
+device,robotic arm
+device,robotic gripper
+device,industrial robot
+device,mobile robot
+device,warehouse robot
+device,inspection robot
+device,bomb-disposal robot
+device,robotic lawnmower
+device,robot vacuum
+device,drone
+device,quadcopter
+device,linear actuator
+device,pick-and-place machine
+device,automatic guided vehicle
+device,conveyor sensor
+device,machine-vision camera
+device,programmable controller
+device,motor controller
+device,motion controller
+device,teach pendant
+device,end effector
+device,vacuum gripper
+device,tool changer
+device,safety light curtain
+device,robot charging dock
+device,two-way radio
+device,walkie-talkie
+device,satellite phone
+device,radio receiver
+device,radio transmitter
+device,shortwave radio
+device,crystal radio
+device,telegraph key
+device,fax machine
+device,answering machine
+device,telephone exchange
+object,patch panel
+device,fibre-optic transceiver
+device,network repeater
+device,signal booster
+device,satellite dish
+object,radio antenna mast
+device,body camera
+device,video recorder
+device,digital recorder
+device,cassette recorder
+device,compact-disc player
+device,media server
+device,video switcher
+device,broadcast monitor
+object,football goal
+object,goal net
+object,corner flag
+object,cricket bat
+object,cricket ball
+object,cricket stumps
+object,cricket sight screen
+object,tennis racket
+object,tennis net
+object,badminton racket
+object,shuttlecock
+object,hockey stick
+object,hockey goal
+object,rugby ball
+object,basketball hoop
+object,volleyball net
+object,baseball glove
+object,catcher's mask
+object,lacrosse stick
+object,polo mallet
+object,golf club
+object,golf tee
+object,bowling pin
+object,bowling ball
+object,scoreboard
+object,surfboard
+object,bodyboard
+object,paddleboard
+object,water ski
+object,wakeboard
+object,windsurfing board
+object,sailing dinghy
+object,paddle
+object,climbing rope
+object,climbing harness
+object,carabiner
+object,ice axe
+object,crampon
+object,ski pole
+object,snowboard
+object,toboggan
+object,camping stove
+object,camping lantern
+object,sleeping bag
+object,hammock
+object,fishing rod
+object,landing net
+object,keepnet
+object,bait box
+object,birdwatching hide
+object,table-tennis bat
+object,table-tennis table
+object,snooker cue
+object,snooker table
+object,dartboard
+object,dart
+object,boxing glove
+object,punch bag
+object,fencing mask
+object,fencing foil
+object,gymnastics rings
+object,balance beam
+object,vaulting horse
+object,parallel bars
+object,rowing machine
+object,exercise bike
+object,kettlebell
+object,barbell
+object,dumbbell
+object,chessboard
+object,backgammon board
+object,roulette wheel
+object,billiard triangle
+object,air-hockey table
+object,table football game
+object,spinning top
+object,yo-yo
+object,kite
+object,frisbee
+object,hula hoop
+object,space hopper
+object,pogo stick
+object,skipping rope
+object,soap-bubble wand
+object,water pistol
+object,cap gun
+object,toy drum
+object,toy train
+object,model aeroplane
+object,doll's house
+object,rocking horse
+object,jack-in-the-box
+object,kaleidoscope
+object,view-master
+object,magic eight ball
+object,finger puppet
+object,sock puppet
+object,building blocks
+object,jigsaw puzzle
+object,wind-up toy
+object,stage curtain
+object,proscenium arch
+object,theatrical trapdoor
+device,revolving stage
+device,stage lift
+object,orchestra pit rail
+object,prompt desk
+object,prompt book
+device,footlight
+object,spotlight stand
+object,lighting bar
+object,fly rail
+object,counterweight arbor
+object,stage brace
+object,scenery flat
+object,backdrop
+object,cyclorama
+object,stage rostrum
+object,prop table
+object,costume rail
+object,make-up mirror
+object,quick-change booth
+object,smoke machine
+object,wind machine
+object,thunder sheet
+device,cinema projector
+device,film projector
+device,slide projector
+device,movie camera
+device,cine camera
+device,telephoto lens
+device,wide-angle lens
+device,camera tripod
+device,camera dolly
+device,camera crane
+device,camera stabiliser
+device,clapperboard
+device,light meter
+device,studio flash
+object,softbox
+object,reflector screen
+object,green screen
+object,film reel
+device,editing console
+device,teleprompter
+device,video wall
+object,projection screen
+object,viewfinder
+object,matte box
+device,boom microphone
+object,trapeze
+object,tightrope
+object,high wire
+object,springboard
+object,clown horn
+object,juggling club
+object,juggling ring
+object,unicycle
+object,stilts
+object,circus cannon
+object,magic wand
+object,top hat
+object,vanishing cabinet
+object,illusion box
+object,trap table
+object,false-bottom box
+object,linking rings
+object,magic mirror
+object,ventriloquist dummy
+object,marionette
+object,puppet theatre
+object,shadow-puppet screen
+object,hand puppet
+object,plate-spinning rod
+object,escape trunk
+device,public-address speaker
+device,mixing desk
+device,stage monitor
+device,wireless microphone
+object,microphone stand
+device,headset microphone
+device,in-ear monitor
+device,audio splitter
+device,DI box
+object,effects rack
+device,lighting console
+device,dimmer pack
+device,follow spot
+device,strobe light
+device,mirror ball
+device,confetti cannon
+device,bubble machine
+device,haze machine
+device,pyrotechnic controller
+device,cue light
+device,intercom beltpack
+device,outside-broadcast van
+device,vision mixer
+device,caption monitor
+device,applause sign
+object,waistcoat
+object,overcoat
+object,duffle coat
+object,raincoat
+object,anorak
+object,parka
+object,poncho
+object,cape
+object,cloak
+object,dressing gown
+object,boiler suit
+object,dungarees
+object,laboratory coat
+object,high-visibility vest
+object,life jacket
+object,wetsuit
+object,dry suit
+object,diving suit
+object,beekeeping suit
+object,chainmail glove
+object,wellington boot
+object,walking boot
+object,slipper
+object,spats
+object,gaiter
+object,bow tie
+object,cravat
+object,cummerbund
+object,braces
+object,garter
+object,cufflink
+object,tie pin
+object,brooch
+object,locket
+object,pocket watch
+object,monocle
+object,spectacle case
+object,hatbox
+object,handbag
+object,briefcase
+object,bumbag
+object,money belt
+object,card holder
+object,keyring
+object,walking stick
+object,shooting stick
+object,folding fan
+object,hand mirror
+object,clothes brush
+object,shoehorn
+object,chaise longue
+object,rocking chair
+object,deckchair
+object,folding screen
+object,room divider
+object,hat stand
+object,umbrella stand
+object,magazine rack
+object,writing desk
+object,bureau
+object,roll-top desk
+object,ottoman
+object,footstool
+object,beanbag chair
+object,camp bed
+object,four-poster bed
+object,canopy bed
+object,bedside cabinet
+object,blanket chest
+object,grandfather clock
+object,mantel clock
+object,cuckoo clock
+object,coat hook
+object,door knocker
+object,draught excluder
+object,carpet beater
+object,feather duster
+object,vacuum storage bag
+object,scrubbing brush
+object,bottle brush
+object,lint roller
+object,clothes horse
+object,laundry mangle
+object,wringer
+object,wash tub
+object,coal scuttle
+object,fire screen
+object,fireguard
+object,bellows
+object,log basket
+object,boot scraper
+object,fly swatter
+object,mouse trap
+object,draught stopper
+object,window blind
+object,venetian blind
+object,curtain tieback
+device,hot-water cylinder
+object,door chain
+object,letter box
+device,space capsule
+device,space shuttle
+device,lunar module
+device,space probe
+device,planetary rover
+device,lunar rover
+device,communications satellite
+device,weather satellite
+device,space telescope
+device,radio telescope
+object,observatory dome
+device,rocket engine
+device,rocket booster
+object,launch gantry
+device,launch escape tower
+object,heat shield
+device,solar panel array
+device,antenna array
+device,star tracker
+device,reaction wheel
+device,thruster
+object,airlock hatch
+object,spacesuit helmet
+device,mission-control console
+device,satellite ground station
+device,metal-detection arch
+device,handheld metal detector
+device,X-ray baggage scanner
+device,body scanner
+device,security turnstile
+device,access-control reader
+device,keypad lock
+device,electronic safe
+object,vault door
+object,security shutter
+device,panic button
+device,intruder alarm
+device,motion detector
+device,glass-break detector
+device,tripwire alarm
+device,perimeter sensor
+device,surveillance monitor
+device,thermal-imaging scope
+device,night-vision goggles
+device,police body shield
+device,riot helmet
+device,riot shield
+device,handcuffs
+object,evidence locker
+device,breathalyser
+object,archaeologist's trowel
+object,masonry brush
+object,sieving screen
+object,soil sieve
+object,sample bag
+object,finds tray
+object,measuring rod
+object,ranging pole
+object,survey marker
+object,grid peg
+object,line level
+object,drawing frame
+object,plane table
+object,field notebook
+object,specimen box
+object,plaster bandage
+object,dental pick
+object,hand lens
+object,magnifying loupe
+object,rock hammer
+object,geologist's compass
+object,sediment corer
+object,flotation tank
+object,pottery gauge
+object,conservation brush
+object,rescue stretcher
+object,basket stretcher
+object,rescue harness
+object,throw bag
+object,emergency blanket
+object,flare gun
+object,signal flare
+object,emergency beacon
+object,megaphone
+object,traffic cone
+object,crowd barrier
+object,warning triangle
+object,spill kit
+object,absorbent boom
+object,fire blanket
+object,escape ladder
+object,smoke hood
+object,gas mask
+object,respirator
+object,protective visor
+object,hard hat
+object,ear defenders
+object,knee pads
+object,tool belt
+object,portable shelter
+object,anchor chain
+object,anchor shackle
+object,deck cleat
+object,fairlead
+object,hawse pipe
+object,chain stopper
+device,mooring winch
+device,cargo winch
+device,deck crane
+object,boat hook
+object,boarding ladder
+object,gangway
+object,accommodation ladder
+object,hatch cover
+object,watertight door
+object,porthole
+object,scupper
+device,bilge pump
+object,deck ventilator
+object,ship's bell
+object,signal flag locker
+object,liferaft canister
+device,rescue davit
+object,mast step
+object,tiller arm
+device,marine chronometer
+device,gyrocompass
+device,magnetic compass binnacle
+device,echo sounder
+device,sonar display
+device,marine radar
+device,automatic identification transponder
+device,depth gauge
+device,knot meter
+device,log line
+device,lead line
+device,bearing compass
+device,parallel ruler
+device,chart divider
+device,navigation light
+device,Aldis lamp
+device,signal lantern
+device,foghorn
+device,ship's whistle
+device,radio direction finder
+device,emergency position beacon
+object,radar reflector
+object,day shape
+object,semaphore flag
+object,signal mirror
+object,lobster pot
+object,crab pot
+object,eel trap
+object,fish trap
+object,creel
+object,trawl net
+object,seine net
+object,gill net
+object,cast net
+object,handline reel
+object,fishing gaff
+object,fish stringer
+object,net needle
+object,net float
+object,net weight
+object,bait well
+object,livewell tank
+device,fish finder
+object,rod holder
+object,outrigger pole
+object,downrigger
+device,pot hauler
+object,oyster dredge
+object,aquaculture cage
+object,fish grading tray
+device,diving regulator
+object,air cylinder
+device,buoyancy compensator
+object,diving mask
+object,diving fins
+object,weight belt
+device,dive computer
+device,submersible pressure gauge
+device,underwater torch
+object,diving knife
+object,surface marker buoy
+device,rebreather
+device,diving air compressor
+device,underwater scooter
+device,remotely operated vehicle
+device,underwater camera housing
+device,diving stage
+device,decompression chamber
+device,surface-supplied air panel
+object,diving umbilical
+device,helmet intercom
+object,lift bag
+device,underwater cutting torch
+device,sonar beacon
+device,subsea manipulator
+object,coal hod
+object,crumb tray
+object,table crumb brush
+object,calling-card tray
+object,card receiver
+object,flower frog
+object,epergne
+object,pickle castor
+object,sugar nips
+object,knife rest
+object,toast rack
+object,tea caddy
+object,caddy spoon
+object,spirit kettle
+object,samovar
+object,piano stool
+object,whatnot shelf
+object,tantalus
+object,decanter stand
+object,hatpin holder
+object,glove stretcher
+object,button hook
+object,carpet sweeper
+object,bed warmer
+object,foot bath
+object,pole lathe
+object,treadle wheel
+object,distaff
+object,spindle whorl
+object,wool comb
+object,carding paddle
+object,weaving shuttle
+object,loom weight
+object,lucet
+object,nalbinding needle
+object,bodkin
+object,awl
+object,cobbler's last
+object,drawknife
+object,adze
+object,froe
+object,auger bit
+object,wooden mallet
+object,bench hook
+object,shaving horse
+object,grain quern
+object,millstone
+object,yoke
+object,flax brake
+object,winnowing basket
+object,oil lamp
+object,hurricane lamp
+object,carriage lamp
+object,dark lantern
+object,bullseye lantern
+object,whale-oil lamp
+object,gas mantle
+object,gas chandelier
+object,candle snuffer
+object,candle mould
+object,taper holder
+object,wall sconce
+object,rushlight
+object,fire basket
+object,andirons
+object,fireback
+object,fender
+object,chimney crane
+object,trivet
+object,warming brick
+object,charcoal brazier
+object,ceramic foot warmer
+object,stove pipe
+object,chimney cowl
+object,bellows stand
+object,carpetbag
+object,portmanteau
+object,steamer trunk
+object,Gladstone bag
+object,reticule
+object,chatelaine
+object,watch fob
+object,vinaigrette box
+object,calling-card case
+object,cigar case
+object,cigarette holder
+object,opera glasses
+object,lorgnette
+object,ear trumpet
+object,pocket sundial
+object,travel writing case
+object,dispatch box
+object,document tube
+object,coin purse
+object,shoe buckle
+object,cloak clasp
+object,bonnet box
+object,wig stand
+object,razor strop
+object,sword cane
+object,Erlenmeyer flask
+object,Florence flask
+object,Kjeldahl flask
+object,separating funnel
+object,dropping funnel
+object,thistle funnel
+object,filter flask
+object,Dewar flask
+object,gas washing bottle
+object,Drechsel bottle
+object,weighing bottle
+object,evaporating dish
+object,crucible
+object,crucible tongs
+object,watch glass
+object,glass stirring rod
+object,Pasteur pipette
+object,micropipette
+object,pipette filler
+object,burette clamp
+object,condenser tube
+object,Soxhlet extractor
+object,Dean-Stark trap
+object,gas syringe
+object,Schlenk flask
+device,mass spectrometer
+device,atomic absorption spectrometer
+device,infrared spectrometer
+device,Raman spectrometer
+device,fluorometer
+device,turbidimeter
+device,nephelometer
+device,viscometer
+device,densitometer
+device,hydrometer
+device,pycnometer
+device,manometer
+device,vacuum gauge
+device,oxygen analyser
+device,gas analyser
+device,moisture analyser
+device,melting-point apparatus
+device,flash-point tester
+device,bomb calorimeter
+device,polarograph
+device,potentiostat
+device,galvanostat
+device,ion-selective electrode
+device,data logger
+device,chart recorder
+device,dissecting microscope
+device,phase-contrast microscope
+device,fluorescence microscope
+device,electron microscope
+object,microscope slide
+object,cover slip
+device,haemocytometer
+device,counting chamber
+device,inoculating loop
+device,Petri-dish spreader
+device,colony counter
+device,cell counter
+device,microplate reader
+device,microplate washer
+device,thermal cycler
+device,gel documentation system
+device,biosafety cabinet
+device,anaerobic chamber
+device,tissue homogeniser
+device,orbital shaker
+device,rocking platform
+device,roller mixer
+device,water bath
+device,dry-block heater
+device,cryogenic storage vessel
+object,torsion balance
+object,ballistic pendulum
+object,Foucault pendulum
+object,Newton's cradle
+object,air track
+object,ripple tank
+object,optical bench
+object,prism spectroscope
+object,diffraction spectroscope
+object,interferometer
+object,Michelson interferometer
+object,polarising filter
+object,photometer
+object,electroscope
+object,electrometer
+object,Wimshurst machine
+object,induction coil
+object,Helmholtz coil
+object,solenoid coil
+device,resistance box
+object,Wheatstone bridge
+object,Kelvin bridge
+object,standard weight set
+object,spring balance
+object,resonance tube
+object,border fork
+object,garden fork
+object,hand fork
+object,border spade
+object,garden spade
+object,edging iron
+object,lawn edger
+object,soil rake
+object,leaf rake
+object,scarifier rake
+object,garden hoe
+object,draw hoe
+object,Dutch hoe
+object,onion hoe
+object,hand cultivator
+object,weeding knife
+object,dandelion weeder
+object,bulb planter
+object,soil tamper
+object,post-hole digger
+object,pruning knife
+object,loppers
+object,topiary shears
+object,grass shears
+object,pole pruner
+device,chainsaw
+device,pole saw
+device,stump grinder
+device,wood chipper
+device,log splitter
+device,forestry winch
+device,timber trailer
+device,logging arch
+device,cant hook
+device,peavey
+device,log tongs
+device,felling axe
+device,splitting maul
+device,crosscut saw
+device,bow saw
+device,tree caliper
+device,diameter tape
+device,increment borer
+device,clinometer relascope
+device,planting mattock
+device,tree planting spade
+device,seedling dibble
+device,brush cutter
+device,clearing saw
+device,portable sawmill
+object,hose reel
+object,hose connector
+object,spray lance
+object,watering rose
+object,oscillating sprinkler
+object,impact sprinkler
+object,soaker hose
+object,irrigation timer
+object,rain barrel
+object,water butt
+object,greenhouse staging
+object,potting bench
+object,propagator tray
+object,seed tray
+object,root trainer
+object,cold frame
+object,cloche
+object,plant support ring
+object,garden trellis
+object,tomato cage
+object,capillary mat
+object,heated propagator
+object,greenhouse vent opener
+object,shade netting
+object,frost fleece
+device,ride-on mower
+device,zero-turn mower
+device,cylinder mower
+device,lawn aerator
+device,lawn scarifier
+device,turf cutter
+device,sod roller
+device,leaf blower
+device,garden vacuum
+device,earth auger
+device,mini excavator
+device,compact tractor
+device,flail mower
+device,wood shredder
+device,compost tumbler
+device,wheelie spreader
+device,line-marking machine
+device,turf brush
+device,soil screener
+device,stone rake
+device,landscape rake
+object,root barrier
+device,lawn levelling lute
+object,tree watering bag
+object,garden cart
+device,Ferris wheel
+device,carousel
+device,dodgem car
+device,ghost train
+device,helter-skelter
+device,chair-o-planes
+device,waltzer ride
+device,scrambler ride
+device,pirate ship ride
+device,drop tower
+device,log flume
+device,roller-coaster car
+object,carousel horse
+device,ride-control console
+device,turnstile gate
+object,ticket booth
+object,height gauge
+object,safety lap bar
+object,ride restraint
+device,fairground generator
+device,organ wagon
+device,steam galloper
+device,switchback railway
+device,rotating teacup
+device,funhouse turntable
+object,coconut shy
+object,ring-toss peg
+object,hook-a-duck pond
+object,shooting-gallery target
+object,test-your-strength machine
+object,fortune-telling machine
+object,penny-pusher machine
+object,claw machine
+object,prize wheel
+object,tombola drum
+object,raffle drum
+object,ball-throwing booth
+object,milk-bottle target
+object,tin-can target
+object,skee-ball lane
+object,whack-a-mole machine
+object,duck-racing channel
+object,mirror maze panel
+object,distorting mirror
+object,spinning tunnel
+object,hall-of-mirrors frame
+object,prize counter
+object,token dispenser
+object,ticket roll holder
+object,candyfloss cart
+object,parade float
+object,maypole
+object,festival arch
+object,processional canopy
+object,paper lantern
+object,lantern pole
+object,banner pole
+object,flag harness
+object,parade baton
+object,drum major's mace
+object,confetti blower
+object,streamer cannon
+object,festival wristband
+object,ticket lanyard
+object,crowd-control rope
+object,portable bandstand
+object,temporary grandstand
+object,festival marquee
+object,beer-tent bench
+object,folding trestle
+object,portable dance floor
+object,parade barrier
+object,torch bracket
+object,carnival mask
+object,giant puppet
+object,aerial hoop
+object,aerial silk
+object,flying trapeze
+object,static trapeze
+object,Chinese pole
+object,Russian swing
+object,teeterboard
+object,globe of death
+object,wheel of death
+object,human cannon
+object,cannon net
+object,safety net
+object,tightwire rig
+object,slackline rig
+object,rola bola
+object,walking globe
+object,juggling torch
+object,devil stick
+object,diabolo
+object,flower stick
+object,contact-juggling ball
+object,unicycle giraffe
+object,circus ring kerb
+object,ringmaster's whip
+object,clown ladder
+device,fire hose
+device,hose reel branch
+device,fire nozzle
+device,hydrant key
+object,standpipe
+object,breeching inlet
+device,fire pump
+device,portable fire pump
+device,turntable ladder
+device,aerial platform
+device,fire escape hood
+device,thermal-imaging camera
+device,positive-pressure fan
+device,smoke ejector
+device,foam inductor
+device,foam branchpipe
+device,fire beater
+device,fire swatter
+object,salvage sheet
+device,ceiling hook
+device,Halligan bar
+device,fire axe
+device,door ram
+object,hose bridge
+object,firefighter's helmet
+object,spinal board
+object,scoop stretcher
+object,vacuum mattress
+object,cervical immobiliser
+object,head immobiliser
+object,stair chair
+object,evacuation chair
+object,patient transfer sheet
+object,rescue blanket
+object,triage tag
+object,trauma bag
+object,airway bag
+object,oxygen cylinder trolley
+object,first-aid cabinet
+object,automated defibrillator cabinet
+object,road flare
+object,traffic wand
+device,warning beacon
+object,hydraulic spreader
+object,hydraulic cutter
+object,rescue ram
+object,windscreen saw
+object,glass punch
+object,vehicle stabilisation strut
+object,wheel chock
+object,rescue boat
+object,inflatable rescue sled
+object,rescue tube
+object,rescue buoy
+object,throw line
+object,reach pole
+object,water-rescue helmet
+object,swift-water vest
+object,dry rescue suit
+object,ice-rescue suit
+object,ice awl
+object,rescue board
+object,floating stretcher
+object,flood barrier tube
+object,sandbag filler
+device,submersible pump
+object,portable floodlight
+device,water-level gauge
+object,inflatable dam
+object,decontamination shower
+object,spill-containment pool
+object,oil skimmer
+object,absorbent pad
+object,floating boom
+object,drain blocker
+device,search camera
+device,victim-locating camera
+device,listening device
+device,seismic detector
+device,rescue radar
+device,thermal drone
+device,searchlight
+device,portable siren
+device,emergency radio
+device,satellite messenger
+device,personal locator beacon
+device,emergency generator
+device,field telephone
+object,command tent
+device,inflatable shelter
+object,field cot
+device,disaster-supply crate
+device,water-purification unit
+device,portable toilet
+device,mobile shower unit
+device,body bag
+object,mortuary trolley
+object,shoring prop
+object,trench-rescue panel
+device,lifting airbag
+device,engine lathe
+device,turret lathe
+device,capstan lathe
+device,vertical milling machine
+device,horizontal milling machine
+device,shaper machine
+device,slotting machine
+device,broaching machine
+device,jig borer
+device,radial drill
+device,magnetic drill
+device,power hacksaw
+device,cold saw
+device,abrasive cut-off saw
+device,metal bandsaw
+device,surface planer
+device,tool grinder
+device,cylindrical grinder
+device,jig grinder
+device,spark eroder
+device,wire EDM machine
+device,plasma table
+device,laser cutter
+device,waterjet cutter
+device,CNC machining centre
+device,press brake
+device,power shear
+device,punch press
+device,stamping press
+device,forging hammer
+device,drop hammer
+device,power hammer
+device,rolling machine
+device,plate roller
+device,section bender
+device,tube bender
+device,swaging machine
+device,beading machine
+device,English wheel
+device,planishing hammer
+device,shrink-stretcher
+device,spot welder
+device,seam welder
+device,stud welder
+device,welding positioner
+device,welding rotator
+device,pipe threader
+device,tube notcher
+device,deburring machine
+device,vibratory finisher
+device,table saw
+device,panel saw
+device,radial-arm saw
+device,mitre saw
+device,scroll saw
+device,band sawmill
+device,thickness planer
+device,dovetailing machine
+device,spindle moulder
+device,wood router table
+device,mortising machine
+device,tenoning machine
+device,dovetail jig
+device,woodturning lathe
+device,drum sander
+device,edge sander
+device,belt sander
+device,disc sander
+device,bobbin sander
+device,woodworking vice
+object,workbench dog
+object,holdfast clamp
+object,sash cramp
+object,corner clamp
+device,patternmaker's plane
+device,overhead crane
+device,jib crane
+device,vacuum lifter
+device,magnetic lifter
+device,scissor table
+device,pallet stacker
+device,drum lifter
+device,barrel trolley
+device,roller conveyor
+device,screw conveyor
+device,bucket elevator
+device,vibratory feeder
+object,parts hopper
+device,weighing hopper
+device,bagging machine
+device,carton sealer
+device,strapping machine
+device,shrink-wrapping machine
+device,pallet wrapper
+device,label applicator
+device,date coder
+device,case erector
+device,case packer
+device,bottle unscrambler
+device,industrial turntable
+object,lens cap
+object,lens filter
+object,lens adapter
+object,extension tube
+object,teleconverter
+object,bellows attachment
+object,lens shade
+object,follow-focus unit
+object,camera cage
+object,camera shoulder rig
+object,camera slider
+object,camera monopod
+object,tripod head
+object,fluid head
+object,quick-release plate
+object,camera remote
+object,cable release
+object,flash trigger
+object,flash diffuser
+object,flash bracket
+object,battery grip
+object,memory-card case
+object,film canister
+object,plate holder
+object,ground-glass screen
+object,photographic enlarger
+object,enlarger lens
+object,negative carrier
+object,easel mask
+object,developing tank
+object,developing tray
+object,print washer
+object,film washer
+object,film drying cabinet
+object,darkroom timer
+object,safelight
+object,contact-printing frame
+object,film squeegee
+object,print tongs
+object,grain focuser
+object,retouching stand
+object,mounting press
+object,dry-mount tissue
+object,paper cutter
+object,print rack
+object,chemical storage bottle
+object,film-loading bag
+object,darkroom sink
+object,roller processor
+object,photo guillotine
+device,studio camera
+device,pedestal camera
+device,camera control unit
+device,waveform monitor
+device,vectorscope
+device,audio mixer
+device,field mixer
+device,microphone preamplifier
+device,compressor unit
+device,limiter unit
+device,noise gate
+device,equaliser unit
+device,patchbay
+device,talkback unit
+device,cue speaker
+device,broadcast desk
+device,radio playout system
+device,cart machine
+device,reel-to-reel tape deck
+device,digital audio workstation
+device,timecode generator
+device,sync generator
+device,distribution amplifier
+device,outside-broadcast camera
+device,satellite uplink terminal
+device,cinema camera
+device,film magazine
+object,camera blimp
+object,director's viewfinder
+device,focus puller wheel
+object,dolly track
+device,camera jib
+device,remote camera head
+device,motion-control rig
+device,slate board
+device,film synchroniser
+device,film splicer
+device,film viewer
+device,projection lamp
+device,projection lens
+device,film platter
+device,film transport
+device,rewind bench
+device,sound reader
+device,subtitle projector
+object,cinema screen frame
+object,masking curtain
+device,cinema sound processor
+device,cinema amplifier
+object,projection-booth porthole
+object,display case
+object,museum plinth
+object,picture rail hook
+object,painting easel
+object,artefact mount
+object,specimen drawer
+object,collection cabinet
+object,map cabinet
+object,print cabinet
+object,archive box
+object,acid-free folder
+object,document cradle
+object,book cradle
+object,foam support
+object,conservation weight
+device,humidity indicator
+device,light dosimeter
+object,insect trap
+object,dust cover
+object,handling tray
+object,object trolley
+object,painting rack
+object,sculpture dolly
+object,packing crate
+object,exhibition label holder
+object,excavation dustpan
+object,margin trowel
+object,leaf trowel
+object,bucket auger
+object,Dutch auger
+object,hand corer
+object,soil probe
+object,munsell chart
+object,scale bar
+object,north arrow marker
+object,photogrammetry target
+object,site datum pin
+object,survey nail
+object,finds bucket
+object,sample tube
+object,bulk-sample sack
+object,flotation sieve
+object,wet-sieving table
+object,pottery calliper
+object,profile comb
+object,drawing board
+object,measuring frame
+object,excavation tent
+object,kneeling board
+object,soil colour book
+object,expedition sledge
+object,pack frame
+object,rucksack frame
+object,canvas bedroll
+object,bivouac sack
+object,storm tent
+object,pyramid tent
+object,snow shovel
+object,avalanche probe
+object,avalanche transceiver
+object,snow saw
+object,ice screw
+object,piton
+object,ascender
+object,descender
+object,rope ladder
+object,portable mast
+object,field desk
+object,map case
+object,waterproof notebook
+object,specimen press
+object,plant press
+object,insect collecting net
+object,butterfly case
+object,field microscope
+device,prismatic compass
+device,lensatic compass
+device,survey compass
+device,sun compass
+device,astrocompass
+device,octant
+device,quadrant
+device,cross-staff
+device,backstaff
+device,artificial horizon mirror
+object,chronometer box
+device,pelorus
+device,alidade
+device,plane-table alidade
+device,map measurer
+device,opisometer
+device,parallel plotter
+device,course protractor
+object,chart table
+object,map roller
+object,globe stand
+device,armillary sphere
+device,celestial globe
+object,survey chain
+object,Gunter's chain
+object,rotating bookcase
+object,secretary desk
+object,campaign desk
+object,partners desk
+object,kneehole desk
+object,slant-top desk
+object,map table
+object,drafting table
+object,library ladder chair
+object,monk's bench
+object,settle bench
+object,window seat
+object,conversation seat
+object,love seat
+object,fainting couch
+object,daybed
+object,trundle bed
+object,box bed
+object,Murphy bed
+object,captain's chair
+object,porter's chair
+object,hall tree
+object,corner cupboard
+object,display cabinet
+object,specimen cabinet
+object,fanlight
+object,transom window
+object,oriel window
+object,bay-window seat
+object,window grille
+object,shutter latch
+object,casement stay
+object,door closer
+object,door viewer
+object,letter plate
+object,finger plate
+object,kick plate
+object,escutcheon plate
+object,stair rod
+object,banister finial
+object,newel cap
+object,balustrade panel
+object,ceiling rose
+object,cornice moulding
+object,picture-rail moulding
+object,dado rail
+object,ventilation grille
+object,floor hatch
+object,access panel
+object,service hatch
+object,park bench
+object,bus shelter
+object,cycle rack
+object,drinking fountain
+object,public litter bin
+object,dog-waste bin
+object,parking bollard
+object,retractable bollard
+object,tree guard
+object,tree grille
+object,planter box
+object,notice board
+object,information kiosk
+object,wayfinding sign
+object,fingerpost
+object,street-name plate
+object,lamp post
+object,pedestrian barrier
+object,queue barrier
+object,bench armrest
+object,picnic table
+object,public chess table
+object,bike-repair stand
+object,parcel locker
+object,telephone kiosk
+object,library carrel
+object,reading-room table
+object,card-catalogue cabinet
+object,book trolley
+object,periodical rack
+object,newspaper stand
+object,atlas stand
+object,dictionary stand
+object,lectern desk
+object,church pew
+object,choir stall
+object,kneeler
+object,hymn-board frame
+object,courtroom dock
+object,witness stand
+object,judge's bench
+object,jury box
+object,ballot box
+object,polling booth
+object,school desk
+object,laboratory stool
+object,drafting stool
+object,filing trolley
+object,mail-sorting rack
+object,cloakroom bench

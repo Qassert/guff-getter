@@ -1,4 +1,6 @@
-from newsmuncher.config import ENV_FILE
+from newsmuncher.config import ENV_FILE, SEEDS_DIR
+import hashlib
+import json
 from fastapi import FastAPI, HTTPException
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
@@ -19,6 +21,28 @@ client = MongoClient(MONGO_URI, server_api=ServerApi('1'), tlsCAFile=certifi.whe
 # Define database & collection
 db = client["funny_json_db"]
 reusable_collection = db["reusable_entries"]
+
+def source_collection(source):
+    if source == "drivel":
+        return reusable_collection
+    if source != "dating":
+        raise HTTPException(status_code=400, detail="Unknown reusable source")
+    collection = db["dating_entries"]
+    # Stable IDs make initialization repeatable without resetting usage counters.
+    with open(SEEDS_DIR / "lonelyHearts.json", encoding="utf-8") as seed:
+        entries = json.load(seed)
+    for entry in entries:
+        record = {
+            "title": entry["title"],
+            "description": entry["description"],
+            "extract": entry.get("extract") or entry["description"],
+            "numberOftimesUsed": entry.get("numberOftimesUsed", 0),
+        }
+        identity = json.dumps([record[k] for k in ("title", "description", "extract")], ensure_ascii=False)
+        key = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:24]
+        collection.update_one({"_id": ObjectId(key)}, {"$setOnInsert": record}, upsert=True)
+    return collection
+
 
 # Initialize FastAPI
 app = FastAPI()
@@ -82,8 +106,8 @@ def get_one_reusable_entry():
 
 # ✅ GET - Retrieve All Reusable Entries
 @app.get("/get_all/")
-def get_all_reusable_entries():
-    entries = list(reusable_collection.find())
+def get_all_reusable_entries(source: str = "drivel"):
+    entries = list(source_collection(source).find())
     for entry in entries:
         entry["id"] = str(entry["_id"])
         del entry["_id"]
@@ -91,8 +115,8 @@ def get_all_reusable_entries():
 
 # ✅ PUT - Increment numberOftimesUsed for a specific entry
 @app.put("/increment_usage/{id}")
-def increment_usage(id: str):
-    result = reusable_collection.update_one(
+def increment_usage(id: str, source: str = "drivel"):
+    result = source_collection(source).update_one(
         {"_id": ObjectId(id)},
         {'$inc': {"numberOftimesUsed": 1}}
     )

@@ -1,0 +1,155 @@
+{
+  "version": "phase4e-expressions-1",
+  "approval_status": "machine_checked",
+  "slang": {
+    "insult_modifiers": [
+      "absolute",
+      "championship-grade",
+      "parish-certified",
+      "industrially confused",
+      "emotionally laminated",
+      "aggressively decorative",
+      "budget",
+      "deluxe",
+      "free-range",
+      "municipal",
+      "three-piece",
+      "provisional"
+    ],
+    "insult_nouns": [
+      "waffle merchant",
+      "pudding burglar",
+      "gravy amateur",
+      "sock magistrate",
+      "turnip consultant",
+      "shed philosopher",
+      "carpet admiral",
+      "cardigan bandit",
+      "teapot extremist",
+      "gazebo botherer",
+      "clipboard peacock"
+    ],
+    "exclamation_objects": [
+      "unlicensed crumpets",
+      "the mayor's emergency vest",
+      "a bucket of parliamentary custard",
+      "the sacred wheelie bin",
+      "three startled cardigans",
+      "the deputy's ornamental knees"
+    ],
+    "useless_objects": [
+      "a chocolate handbrake",
+      "a paper submarine",
+      "a knitted fire escape",
+      "an inflatable anchor",
+      "a solar-powered umbrella",
+      "a marzipan crowbar",
+      "a waterproof teabag",
+      "a silent brass band"
+    ],
+    "factories": [
+      "a gossip factory",
+      "a panic warehouse",
+      "a scandal refinery",
+      "an excuse foundry",
+      "a rumour mill with planning permission",
+      "a ceremonial complaint office"
+    ],
+    "failed_tasks": [
+      "organise a scandal",
+      "locate a doorway",
+      "supervise a sandwich",
+      "start a rumour",
+      "fold a complaint",
+      "misplace a deadline",
+      "brief a pigeon",
+      "cancel a panic",
+      "invoice a gazebo",
+      "recognise a Tuesday"
+    ],
+    "outrage": [
+      "a complete trouser emergency",
+      "an outrage against respectable puddings",
+      "the collapse of indoor civilisation",
+      "a scandal in a cardigan",
+      "an administrative slap in the chutney",
+      "a national shortage of decent eyebrows"
+    ]
+  },
+  "places": {
+    "prefixes": [
+      "Little",
+      "Much",
+      "Upper",
+      "Lower",
+      "Nether",
+      "Great",
+      "West",
+      "North",
+      "Bishop's",
+      "Lady",
+      "Saint",
+      "Royal"
+    ],
+    "stems": [
+      "Wobble",
+      "Puddle",
+      "Crumpet",
+      "Nettle",
+      "Muddle",
+      "Snoring",
+      "Quibble",
+      "Turnip",
+      "Fluster",
+      "Titter",
+      "Bramble",
+      "Gander",
+      "Soggy",
+      "Dither"
+    ],
+    "settlement_suffixes": [
+      "wick",
+      "bury",
+      "combe",
+      "ford",
+      "minster",
+      "leigh",
+      "thorpe",
+      "ham",
+      "stead",
+      "mere"
+    ],
+    "roads": [
+      "Apology Lane",
+      "Suspicious Avenue",
+      "Cardigan Crescent",
+      "Unfinished Business Road",
+      "Deputy Parade",
+      "Mild Concern Close"
+    ],
+    "institutions": [
+      "Institute of Indoor Weather",
+      "Department of Minor Panic",
+      "National Centre for Competitive Loitering",
+      "Office of Ceremonial Receipts",
+      "Academy of Applied Awkwardness",
+      "Bureau of Unclaimed Spoons"
+    ],
+    "venues": [
+      "The Reluctant Turnip",
+      "The Three Cardigans",
+      "The Municipal Ferret",
+      "The Apologetic Peacock",
+      "The Bent Clipboard",
+      "The Deputy Crumpet"
+    ],
+    "features": [
+      "Mount Mild Concern",
+      "the River Apology",
+      "Pudding Tor",
+      "Whispering Kettle Hill",
+      "the Lesser Gravy Falls",
+      "Unlicensed Bunting Marsh"
+    ]
+  }
+}

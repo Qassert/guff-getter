@@ -1,0 +1,51 @@
+[
+  {
+    "id": "politics-civic-budget",
+    "category": "politics",
+    "title": "Council approves late-night transport trial",
+    "description": "A six-month transport pilot will extend three bus routes on Fridays and Saturdays.",
+    "extract": "The city council has approved a six-month trial extending three bus routes until 1 a.m. on Friday and Saturday nights. Councillors said the service would help shift workers and visitors reach residential districts after the railway station closes. The transport authority will publish monthly passenger figures and review noise complaints from streets near the terminus. The trial begins in November and will use the existing fleet, with two additional drivers assigned to each route. A final decision on making the timetable permanent will follow a public consultation next spring."
+  },
+  {
+    "id": "technology-library-robots",
+    "category": "technology",
+    "title": "Library tests robots for overnight book sorting",
+    "description": "Two small autonomous carts will move returned books while the building is closed.",
+    "extract": "A public library has begun testing two autonomous carts that sort returned books overnight. Staff scan each book during the day and place it in a numbered tray. After closing time, the carts follow floor markers to deliver the trays to the correct section. Librarians will continue shelving individual books and answering reader enquiries. The three-month trial is intended to reduce the time spent moving heavy loads between floors. Safety sensors stop the carts when a person or obstacle enters their path, and the machines remain inside the locked building."
+  },
+  {
+    "id": "science-seabird-survey",
+    "category": "science",
+    "title": "Island survey records recovering seabird colony",
+    "description": "Researchers counted more nesting pairs after habitat restoration work.",
+    "extract": "Researchers surveying a small offshore island have recorded the highest number of nesting seabirds there in fifteen years. The team counted 640 breeding pairs during a week-long spring survey, compared with 410 pairs five years ago. Conservation workers removed invasive plants, repaired eroded nesting ground and installed simple shelters before the birds returned. Scientists cautioned that one successful season does not establish a long-term trend. They will repeat the count next year and monitor food availability in the surrounding water throughout the winter."
+  },
+  {
+    "id": "entertainment-community-film",
+    "category": "entertainment",
+    "title": "Community cinema reopens after volunteer restoration",
+    "description": "The independent venue has reopened with a programme of classic and local films.",
+    "extract": "An independent cinema has reopened after volunteers spent eighteen months restoring its auditorium and projection room. The first weekend programme includes a silent comedy, a locally produced documentary and a recent family film. More than eighty residents helped repair seats, repaint the foyer and catalogue old posters found in a storage cupboard. The cinema will operate from Thursday to Sunday and reserve one screening each month for work by regional filmmakers. Ticket income will cover running costs, while a charitable trust owns and maintains the building."
+  },
+  {
+    "id": "business-bakery-expansion",
+    "category": "business",
+    "title": "Family bakery opens second production kitchen",
+    "description": "The new kitchen will supply shops across the county and add twelve jobs.",
+    "extract": "A family-owned bakery has opened a second production kitchen after demand from independent shops increased during the past year. The company expects to add twelve jobs in mixing, packing and delivery. Its original high-street shop will remain open and continue making small seasonal batches on site. The new kitchen includes larger ovens and a refrigerated loading area, allowing morning deliveries to reach towns across the county. The owners said they financed the expansion through retained profits and a commercial loan rather than outside investment."
+  },
+  {
+    "id": "sport-rowing-regatta",
+    "category": "sport",
+    "title": "Junior rowing crews prepare for regional regatta",
+    "description": "Twenty-four clubs will compete on the river following revised safety arrangements.",
+    "extract": "Junior rowing crews from twenty-four clubs will compete in a regional regatta this weekend. Organisers have shortened one race category after unusually strong river flow was measured on Tuesday. Rescue boats will be stationed at three points along the course, and coaches attended a safety briefing before final entries closed. Racing begins at 8 a.m. on Saturday, with finals scheduled for Sunday afternoon. Spectators have been asked to use shuttle buses because parking beside the boathouse is limited during construction work."
+  },
+  {
+    "id": "human-interest-lost-parrot",
+    "category": "human_interest",
+    "title": "Missing parrot returns home after joining school assembly",
+    "description": "A pet parrot was found in a school hall two kilometres from its home.",
+    "extract": "A missing pet parrot has returned home after flying into a primary school during morning assembly. Teachers opened a side door when they heard the bird calling from the playground, and it settled on a lighting rail above the stage. A caretaker recognised the telephone number printed on a small ring attached to its leg and contacted the owner, who lived two kilometres away. The parrot had been missing since the previous afternoon. Pupils waited in their classrooms while the owner collected it, and the school later resumed its normal timetable."
+  }
+]

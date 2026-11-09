@@ -1,0 +1,414 @@
+NewsMuncher Phase 4E — descriptors, names, slang and fictional places
+Date: 2026-10-11
+
+Scope and safety
+================
+
+Phase 4E preserves all Phase 4D animal/object work. It adds independently gated
+descriptor and invented-name evaluation layers plus offline-only typed slang
+and fictional-place generators. Defaults, prompt slot counts, rewrite UUIDs,
+registries, leases, cooldowns, accepted-use matching, historical creations and
+provider count remain unchanged. No production database, network or provider
+operation was made.
+
+Confirmed repetition causes
+===========================
+
+Descriptors: 24 old templates conceal small joke-bearing subject/situation
+banks. Slate ranking repeatedly preferred reliable impossibility, medical,
+ritual and embarrassment structures. Phrase cooldown is correct; the editorial
+mechanism space is the limit.
+
+Names: millions of combinations are dominated by 46 cheeky and 36 absurd roots,
+the same suffix rhythms and twelve recipes. Exact-name cooldown and fresh UUID
+selection work correctly. Ingredient sound families, not full-name capacity,
+are the constraint.
+
+Slang: the live CSV is large but flat, role-incompatible and uneven in safety.
+The typed Phase 4C bank has only 128 entries. Neither gives structured control
+over insult, exclamation, idiom, comparison or mock-outrage roles.
+
+Places: the live CSV mixes real geography, institutions and invented phrases.
+The typed catalogue has components but insufficient morphology. Repetition is
+driven by a few suffixes and institutional jokes, while factual-location safety
+requires keeping replacement optional and explicit.
+
+New resources and mechanisms
+============================
+
+Descriptors add 12 machine-checked mechanisms and templates, bringing the
+resource to 36 templates and 32 mapped mechanisms. Added situations cover
+peculiar habits, romantic complications, medical oddities, qualifications,
+workplace failures, irrational fears, ambitions, scandals, hobbies, rivalries,
+personal legal restrictions and unlikely achievements. All six grammatical
+roles remain available and the existing 70/30 category plus 30/45/25 intensity
+allocation is unchanged. Two compatible ingredient slots give each new
+mechanism 100 deterministic constructions rather than adjective substitution.
+
+Names add 32 cheeky given names, 20 classic surnames, 20 roots, 15 suffixes and
+8 nicknames. Absurd names add 24 given names, 12 classic surnames, 12 roots, 12
+suffixes, 5 neutral titles, 5 epithets and 7 territories. Existing recipes,
+filters and 70/30 weighting remain. All additions are original machine-checked
+review material, not real identities.
+
+Slang adds five typed mechanisms backed by 60 components: mild insult, comic
+disbelief, useless comparison, failed-organisation idiom and mock outrage.
+Places add seven construction types backed by 70 components: settlements,
+roads, estates, institutions, venues and geographical features. They are
+original `INTERNAL-UNVERIFIED` machine-checked material and make no claim of
+authentic historic or regional usage.
+
+Controlled integration
+======================
+
+  NEWSMUNCHER_EXPANDED_DESCRIPTORS=off|reviewed|evaluation
+  NEWSMUNCHER_EXPANDED_NAMES=off|reviewed|evaluation
+
+Both default to `off`. `reviewed` currently behaves like `off` because Phase 4E
+adds no human-reviewed entry. `evaluation` merges the expansion into the
+existing generator while retaining the existing Mongo registry and prompt ten.
+Invalid values fail configuration. Generator failure follows the existing typed
+409 and lease cleanup path. Slang and places remain offline because their small
+constructed spaces repeat more than the current CSVs and they lack a dedicated
+accepted-use registry.
+
+250-MUNGE comparison
+====================
+
+Command:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_vocabulary_phase4e.py --rewrites 250
+
+The run offered ten items per family and modelled six final-text uses per MUNGE.
+It distinguishes offers from mocked uptake and does not claim article quality.
+
+Metric                              Current       Expanded evaluation
+Descriptor unique / 2,500          901           843
+Descriptor rolling-ten repeats     12.27         15.75
+Descriptor subjects                150           147
+Descriptor premises                150           147
+Descriptor mechanisms observed     12            17
+Name unique / 2,500                2,243         2,254
+Name rolling-ten repeats           1.33          1.48
+Distinct surname components        1,503         1,526
+Slang unique / 2,500               1,504         219
+Slang rolling-ten repeats          2.00          41.53
+Places unique / 2,500              928           532
+Places rolling-ten repeats         3.92          37.88
+Mock-final unique / 1,500          1,273         1,012
+Average generation latency         195.95 ms     193.44 ms
+Maximum generation latency         230.67 ms     236.77 ms
+Average four-family prompt chars   1,101.12      1,482.41
+Maximum prompt chars               1,238         1,613
+Peak-RSS high-water delta*         4,456,448 B   360,448 B
+Database/provider operations       0 / 0         0 / 0
+
+* The two modes run sequentially in one process, so the second value is only
+the additional high-water increase and is not a clean independent comparison.
+The diagnostic labels macOS `ru_maxrss` values as bytes.
+
+The descriptor experiment materially broadens mechanisms, but longer developed
+premises increase prompt size and the current ranking over-selects several new
+families. Exact phrase and subject diversity therefore did not improve. It is
+useful for local editorial evaluation, not production promotion. Names improve
+lifetime root/name diversity modestly but not rolling-ten repetition. Slang and
+places are clearly below the live baseline and remain offline.
+
+Editorial assessment
+====================
+
+Strong descriptor examples include “saluting unattended luggage before anyone
+can object”, “engaged to a disputed scarecrow by mutual misunderstanding”,
+“terrified of confidently folded maps since the indoor regatta”, and “legally
+barred from unsupervised confidence pending a tribunal of concerned aunties”.
+
+Strong name examples include Neville Nudgeham, Lady Tabitha Thistlecrank,
+Provisional Chancellor Godfrey Ganderduckworth and Wilhelmina Mouldering-Fox,
+Patron of Unnecessary Trumpets. New roots appear naturally, but familiar old
+contours still dominate too many slates.
+
+Strong offline expressions include “about as useful as a marzipan crowbar”,
+“you championship-grade clipboard peacock”, “couldn't supervise a sandwich in
+a panic warehouse”, North Ditherleigh, Apology Lane, and the Bureau of
+Unclaimed Spoons.
+
+Weak/rejected material includes overlong pre-noun qualifications, combinations
+whose context adds explanation without a stronger punchline, repeated
+“constitutionally incapable” structures, generic name suffix swaps, forced
+“well, butter …” exclamations and settlement names whose stem/suffix join is
+hard to pronounce. Generation rejects exact duplicates, over-14-word slang/place
+outputs, blocked name forms and existing name filters. Editorially weak but safe
+items remain labelled machine-checked in the sample rather than being hidden.
+
+Licensing and editorial status
+==============================
+
+All Phase 4E additions are original repository-local constructions labelled
+`machine_checked`; none is silently promoted. Existing catalogue provenance and
+Open English WordNet attribution remain unchanged. The live legacy CSV licences
+are not reclassified. Real place names and real people are not sources for the
+new generators.
+
+Readiness
+=========
+
+Descriptors: ready for independent local evaluation only. Mechanism breadth is
+promising; ranking, concision and ingredient variety need another editorial pass.
+
+Names: ready for independent local evaluation only. Quality is stable and root
+diversity rises modestly, but the improvement is not yet large enough for a new
+default.
+
+Slang: offline only. It needs several hundred more reviewed role-compatible
+constructions and accepted-use memory before live wiring.
+
+Fictional places: offline only. It needs stronger morphology joining, more
+suffix families and explicit factual-place protection in a future registry.
+
+Manual local testing
+====================
+
+1. Restart with both new flags unset and confirm unchanged MUNGE output.
+2. Set `NEWSMUNCHER_EXPANDED_DESCRIPTORS=evaluation`, restart, and review ten
+   MUNGEs for role grammar, repeated mechanisms and prompt uptake.
+3. Test names separately with `NEWSMUNCHER_EXPANDED_NAMES=evaluation`.
+4. Test both flags together only after separate review. Keep the Phase 4D
+   animal/object flag independently configured.
+5. Confirm genuine retry stability, fresh MUNGE UUIDs, simultaneous sessions,
+   failed-rewrite release and `[munge-timing]` output.
+6. Unset either flag and restart for immediate rollback.
+
+Offline commands:
+
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/build_phase4e_resources.py
+  PYTHONPATH=. .venv/bin/python scripts/diagnostics/evaluate_vocabulary_phase4e.py --rewrites 250
+
+Recommended next steps
+======================
+
+Tune descriptor slate ranking to rotate mechanisms across accepted history,
+shorten the longest two-slot constructions and expand the weakest subjects.
+Review name outputs by spoken root family rather than full-name uniqueness.
+For slang, expand each grammatical role before building a shared generic phrase
+registry. For places, add compatibility tables for stems/suffixes and keep real
+source locations exempt. Promote individual resources only after human review;
+do not enable all four categories as one switch.
+
+Validation
+==========
+
+Python: 422 passed, 0 failed, 105 subtests passed. JavaScript: 84 passed,
+0 failed. Python compilation, all production JavaScript syntax checks, the
+reproducible Phase 4E resource build and `git diff --check` passed. The suites
+used mocks and local resources; no production database or provider was used.
+
+Editorial sample: 200 outputs
+=============================
+
+DESCRIPTORS
+01. academically scandal-ready — comic_contradiction
+02. legally topiary-resistant — comic_contradiction
+03. financially thermos-trained — comic_contradiction
+04. academically immaculately laminated — social_embarrassment
+05. architecturally waistcoat-dependent — comic_contradiction
+06. after Tuesday breached containment while officially indoors — cosmic_motivation
+07. parochially doormat-blessed — invented_ritual_status
+08. hereditarily lovingly calibrated — social_embarrassment
+09. medically advised by a senior biscuit consultant against emotional upholstery — ridiculous_medical_advice
+10. record-holding indoor mountaineer without using their hands — unlikely_achievement
+11. hereditarily beautifully ventilated — social_embarrassment
+12. constitutionally incapable of recognising Tuesdays when bunting appears — impossible_inability
+13. constitutionally incapable of handling ordinary cutlery before witnesses — impossible_inability
+14. romantically confused about the modern approach to elbows — disproportionate_emotion
+15. gastronomically allotment-crowned — invented_ritual_status
+16. professionally allotment-crowned — invented_ritual_status
+17. the duty aromatherapist has specifically forbidden vigorous pointing — ridiculous_medical_advice
+18. hereditarily crisply ironed — social_embarrassment
+19. practises synchronised complaining for reasons of indoor security — unusual_hobby
+20. able to levitate modest stationery with both elbows labelled — impossible_ability
+21. able to locate disputed teaspoons but never on Tuesdays — impossible_ability
+22. able to levitate modest stationery with a valid licence — impossible_ability
+23. constitutionally incapable of operating a normal doorbell when formally dressed — impossible_inability
+24. recovering from administrative dizziness near ceremonial fabric — questionable_condition
+25. able to identify a guilty weather vane during moderate drizzle — impossible_ability
+26. constitutionally cardigan-ordained — invented_ritual_status
+27. record-holding indoor mountaineer without a valid permit — unlikely_achievement
+28. saluting unattended luggage before anyone can object — peculiar_habit
+29. banned from precision sandwich measuring for insulting a commemorative hedge — secret_history
+30. medically advised by the emergency barber against vigorous pointing — ridiculous_medical_advice
+31. banned from municipal hide-and-seek for insulting a commemorative hedge — secret_history
+32. a panel of three nervous pharmacists has specifically forbidden amateur diplomacy — ridiculous_medical_advice
+33. medal-winning amateur bureaucrat without removing their ceremonial hat — unlikely_achievement
+34. constitutionally incapable of whispering at village level — impossible_inability
+35. afflicted by spontaneous committee voice after hearing a whistle — questionable_condition
+36. allergic to reasonable expectations during budget discussions — questionable_condition
+37. needlessly jealous about a gazebo claiming diplomatic immunity — disproportionate_emotion
+38. mildly betrayed about the national shortage of teaspoons — disproportionate_emotion
+39. banned from municipal hide-and-seek for wearing performance-enhancing brogues — secret_history
+40. terrified of confidently folded maps since the indoor regatta — irrational_fear
+41. prone to ceremonial swelling after moderate cheese — questionable_condition
+42. medal-winning amateur bureaucrat without leaving the refreshments — unlikely_achievement
+43. liable to declare a heatwave indoors before witnesses — meteorological_affliction
+44. needlessly jealous about a flower show laundering rosettes — disproportionate_emotion
+45. operating under an assumed clipboard to evade the municipal whispering board — secret_history
+46. only remembers the future on officially sanctioned Tuesdays — temporal_quirk
+47. legally barred from unsupervised confidence pending a tribunal of concerned aunties — personal_legal_restriction
+48. medically advised by a senior biscuit consultant against competitive murmuring — ridiculous_medical_advice
+49. suspicious of chairs facing north since the disputed raffle — irrational_fear
+50. engaged to a disputed scarecrow by mutual misunderstanding — romantic_complication
+
+NAMES
+01. Jean Wobblestone — given+constructed
+02. Beryl Bustlewick — curated
+03. Mabel "Wobbles" Coddleett — given+nickname+constructed
+04. Minnie Plumpthorpe — given+constructed
+05. Connie Crumpbottom — given+constructed
+06. Provisional Chancellor Godfrey Ganderduckworth — title+constructed
+07. Reg Puckeridge — given+classic
+08. Rupert Legge-Puller — given+classic
+09. Felicity Fidgetthorpe — given+constructed
+10. Wilhelmina Mouldering-Fox, Patron of Unnecessary Trumpets — bare+epithet
+11. Trevor Throbbleworth — given+constructed
+12. Sheila Shuffleham — alliterative
+13. Dolly Danglebury — curated
+14. Neville Nudgeham — given+constructed
+15. Eileen "Saucy" Crumppool — given+nickname+constructed
+16. Terry Twitchley — curated
+17. Lady Tabitha Thistlecrank — title+classic
+18. Nigel Nuzzleford — curated
+19. Enid Dimplebottom — given+constructed
+20. Doctor Henrietta Hobblepenge — title+constructed
+21. Sir Montague Huffington-Splott — title+classic
+22. Lord-Lieutenant Emeritus Prudence Quibblethorpe — title+classic
+23. Doris Dimplemere — alliterative
+24. Sally Spankwick — alliterative
+25. Baroness Honoria Herringbone-Crump — title+classic
+26. Rita Rumpwell — given+constructed
+27. Tarquin Turnip-Smythe, Chairman of the Emergency Teapot — bare+epithet
+28. Norman Fondleby — given+classic
+29. Felicity Fumbleton — given+classic
+30. Sid Fumbleford — given+constructed
+31. Percy Pokehurst — curated
+32. Lord Bartholomew Spluttercombe — title+constructed
+33. Lord Cuthbert Crumply-Fogge — curated
+34. Nora Fondlebury-Bogglehole — given+double
+35. Stanley Sausagefield — alliterative
+36. Graham Jostleby — given+classic
+37. Percy Plumpwood-Bustlewick — given+double
+38. Clive Crackleworth-Crumpet — given+double
+39. Randy Hobblethorpe — given+constructed
+40. Hereditary Comptroller Gideon Gravycastle — title+constructed
+41. Wilf Wagglecombe — alliterative
+42. Deputy Marquess Horatio Dunderchook — title+constructed
+43. Dame Winifred Biscuit-Fawcett — curated
+44. Cecil Crumphurst-Rumpington — given+double
+45. Mervyn "Plonker" Winkport — given+nickname+constructed
+46. Phil Plumpley — given+constructed
+47. Pam "Soft Focus" Throbblemore — given+nickname+constructed
+48. Frank Fiddleport — alliterative
+49. Lady Beatrice Ditherstone — title+constructed
+50. Gertrude Ganderleigh, Bearer of the Emergency Trousers — bare+epithet
+
+SLANG
+01. about as useful as a chocolate handbrake — comic_comparison
+02. an outrage against respectable puddings — mock_outrage
+03. a national shortage of decent eyebrows — mock_outrage
+04. about as useful as a marzipan crowbar — comic_comparison
+05. about as useful as a paper submarine — comic_comparison
+06. about as useful as a knitted fire escape — comic_comparison
+07. the collapse of indoor civilisation — mock_outrage
+08. couldn't fold a complaint in a ceremonial complaint office — failed_organisation
+09. a scandal in a cardigan — mock_outrage
+10. you free-range pudding burglar — comic_identity
+11. couldn't brief a pigeon in a ceremonial complaint office — failed_organisation
+12. well, butter a bucket of parliamentary custard — mock_disbelief
+13. couldn't brief a pigeon in a scandal refinery — failed_organisation
+14. you free-range shed philosopher — comic_identity
+15. you industrially confused teapot extremist — comic_identity
+16. an administrative slap in the chutney — mock_outrage
+17. you provisional turnip consultant — comic_identity
+18. couldn't invoice a gazebo in a panic warehouse — failed_organisation
+19. couldn't locate a doorway in an excuse foundry — failed_organisation
+20. you championship-grade teapot extremist — comic_identity
+21. you budget pudding burglar — comic_identity
+22. couldn't cancel a panic in a panic warehouse — failed_organisation
+23. you aggressively decorative carpet admiral — comic_identity
+24. you deluxe sock magistrate — comic_identity
+25. about as useful as a waterproof teabag — comic_comparison
+26. couldn't start a rumour in a ceremonial complaint office — failed_organisation
+27. couldn't organise a scandal in a gossip factory — failed_organisation
+28. well, butter three startled cardigans — mock_disbelief
+29. well, butter the mayor's emergency vest — mock_disbelief
+30. you provisional teapot extremist — comic_identity
+31. well, butter the sacred wheelie bin — mock_disbelief
+32. couldn't locate a doorway in a panic warehouse — failed_organisation
+33. about as useful as a solar-powered umbrella — comic_comparison
+34. well, butter the deputy's ornamental knees — mock_disbelief
+35. you provisional gazebo botherer — comic_identity
+36. you deluxe teapot extremist — comic_identity
+37. you provisional gravy amateur — comic_identity
+38. you deluxe gazebo botherer — comic_identity
+39. you industrially confused marmalade witness — comic_identity
+40. couldn't fold a complaint in a scandal refinery — failed_organisation
+41. couldn't brief a pigeon in a rumour mill with planning permission — failed_organisation
+42. you budget waffle merchant — comic_identity
+43. couldn't misplace a deadline in an excuse foundry — failed_organisation
+44. couldn't recognise a Tuesday in a scandal refinery — failed_organisation
+45. you provisional marmalade witness — comic_identity
+46. couldn't cancel a panic in a scandal refinery — failed_organisation
+47. you budget sock magistrate — comic_identity
+48. you aggressively decorative turnip consultant — comic_identity
+49. well, butter unlicensed crumpets — mock_disbelief
+50. you absolute sock magistrate — comic_identity
+
+PLACES
+01. Little Flusterthorpe — believable_morphology
+02. Wobble View Estate — municipal_absurdity
+03. Mount Mild Concern — landscape_absurdity
+04. Lady Turnipstead — believable_morphology
+05. Great Nettlebury — believable_morphology
+06. Whispering Kettle Hill — landscape_absurdity
+07. Crumpet View Estate — municipal_absurdity
+08. The Three Cardigans — social_absurdity
+09. Unfinished Business Road — civic_absurdity
+10. Fluster View Estate — municipal_absurdity
+11. Ditherminster — believable_morphology
+12. Little Flusterham — believable_morphology
+13. The Deputy Crumpet — social_absurdity
+14. Turnipleigh — believable_morphology
+15. Office of Ceremonial Receipts — institutional_absurdity
+16. Saint Muddleham — believable_morphology
+17. Unlicensed Bunting Marsh — landscape_absurdity
+18. Ditherstead — believable_morphology
+19. Saint Ditherham — believable_morphology
+20. Marmalade View Estate — municipal_absurdity
+21. North Ditherford — believable_morphology
+22. Puddleminster — believable_morphology
+23. Crumpetham — believable_morphology
+24. Bramblestead — believable_morphology
+25. Institute of Indoor Weather — institutional_absurdity
+26. Titter View Estate — municipal_absurdity
+27. Much Puddleminster — believable_morphology
+28. Nettle View Estate — municipal_absurdity
+29. Bishop's Crumpetthorpe — believable_morphology
+30. Nettlemere — believable_morphology
+31. Upper Turnipbury — believable_morphology
+32. Cardigan Crescent — civic_absurdity
+33. Bureau of Unclaimed Spoons — institutional_absurdity
+34. the Lesser Gravy Falls — landscape_absurdity
+35. The Apologetic Peacock — social_absurdity
+36. Ganderthorpe — believable_morphology
+37. Muddleleigh — believable_morphology
+38. Turnipminster — believable_morphology
+39. The Bent Clipboard — social_absurdity
+40. the River Apology — landscape_absurdity
+41. Lady Wobblebury — believable_morphology
+42. Pudding Tor — landscape_absurdity
+43. Bishop's Marmaladeford — believable_morphology
+44. Deputy Parade — civic_absurdity
+45. Crumpetleigh — believable_morphology
+46. Mild Concern Close — civic_absurdity
+47. Nether Ditherford — believable_morphology
+48. Bramblemere — believable_morphology
+49. Turnipmere — believable_morphology
+50. Bramble View Estate — municipal_absurdity

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Pet Profile{% endblock %}
+{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/swear-generator.css') }}?v=swear-generator-1">{% endblock %}
 {% block header %}{% endblock %}
 {% block body_attributes %} class="profile-page"{% endblock %}
 {% block background %}
@@ -7,38 +8,76 @@
 <div id="generatedBackdrop" class="generated-backdrop" aria-hidden="true"><div></div><div></div></div>
 {% endblock %}
 {% block content %}
+<script src="{{ url_for('static', path='js/shared/article-text-fit.js') }}?v=article-fit-1"></script>
 <div id="imageAmbient" class="image-ambient" aria-hidden="true"><div class="wash-group"><span></span><span></span></div><div class="wash-group"><span></span><span></span></div></div>
 <div class="workshop">
+  <nav class="mode-nav" aria-label="NewsMuncher mode">
+    <span class="mode-nav-button mode-nav-create mode-nav-active" aria-current="page" aria-label="CREATE" data-hover-voice="{{ url_for('static', path='audio/voices/Create_Shout.mp3') }}"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></span>
+    <a class="mode-nav-button mode-nav-build" href="/build" aria-label="BUILD" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"><img src="{{ url_for('static', path='images/buttons/build-idle.png') }}" alt=""></a>
+    <a class="mode-nav-button mode-nav-gallery" href="/promotion-gallery/" aria-label="GALLERY" data-hover-voice="{{ url_for('static', path='audio/voices/Gallery_Shout.mp3') }}" data-squelch="{{ url_for('static', path='audio/effects/ui/squelch_02_suction_slurp.wav') }}"><img src="{{ url_for('static', path='images/buttons/gallery-idle.png') }}" alt=""></a>
+  </nav>
 
 
   <div class="container profile-container">
   <div class="container nonsense-container" role="group" aria-label="Source selection">
-    <button type="button" class="funky-button source-choice" data-source="fetch_historicalFunny_from_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_historicalFunny_from_api')">DRIVEL</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_wikipedia_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_wikipedia_into_api')">WIKIPEDIA</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_poem_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_poem_into_api')">POEM</button>
-    <button type="button" class="funky-button source-choice" data-source="fetch_people_into_api" aria-pressed="false" onclick="fetchAndDisplay('fetch_people_into_api')">PEOPLE</button>
-  </div>
-    <div id="loader" class="spinner hidden"></div>
-    <input type="hidden" id="titleDescBox">
-    <button type="button" id="sourceEdit" class="funky-button edit-tab" aria-label="Edit source" aria-controls="sourceEditor" aria-expanded="false" onclick="profileEditing.edit('source')">EDIT</button>
-    <div id="sourceDisplay" class="section-display">
-      <h2 id="sourceTitleHeading" class="result-heading"></h2>
-      <textarea aria-label="Source body" id="nonsenseBox" readonly></textarea>
+    <div id="sourceUdder" class="source-udder">
+      <img class="udder-master-body" src="{{ url_for('static', path='images/udders/source/udder-master-body.png') }}" alt="">
+      {% set sources = [
+        ('OPENALEX', 'fetch_dating_from_api', '#ea4f7a', 'udder-teat-1.png', '18.1%', '15.7%'),
+        ('DRIVEL', 'fetch_historicalFunny_from_api', '#9acd32', 'udder-teat-2.png', '33.3%', '14.3%'),
+        ('WIKIPEDIA', 'fetch_wikipedia_into_api', '#45a8e8', 'udder-teat-3.png', '50.9%', '12.9%'),
+        ('NASA', 'fetch_poem_into_api', '#a96ee8', 'udder-teat-4.png', '68.5%', '13.8%'),
+        ('HACKER NEWS', 'fetch_people_into_api', '#f1a33c', 'udder-teat-5.png', '84.7%', '15.7%')
+      ] %}
+      {% for label, action, colour, image, position, width in sources %}
+      <button type="button" class="source-choice udder-teat{% if loop.first %} udder-teat-cream-prototype{% endif %}" style="--teat-x: {{ position }}; --teat-width: {{ width }}; --liquid: {{ colour }}"
+        data-source="{{ action }}" data-liquid="{{ colour }}" aria-label="{{ label }}" title="{{ label }}"
+        aria-pressed="false" onclick="fetchAndDisplay('{{ action }}')">
+        <span class="teat-shape" aria-hidden="true">
+          <img src="{{ url_for('static', path='images/udders/source/' ~ image) }}" alt="">
+        </span>
+      </button>
+      {% endfor %}
     </div>
-    <div id="sourceEditor" class="section-editor" hidden>
-      <textarea id="sourceTitleDraft" class="headline-editor" rows="1" aria-label="Source title" oninput="autoResize(this)"></textarea>
+  </div>
+    <div id="loader" class="loader page-loader hidden" role="status" aria-label="Loading"></div>
+    <p id="mungeMessage" role="alert" aria-live="polite" class="creation-status-message" hidden></p>
+    <div id="sourceEditor" class="section-editor">
+      <input id="sourceTitleDraft" type="hidden" value="">
+      <input id="sourceUrlDraft" type="hidden" value="">
+      <input id="sourceNameDraft" type="hidden" value="">
+      <input id="sourceAuthorDraft" type="hidden" value="">
+      <input id="sourceLicenceDraft" type="hidden" value="">
       <textarea id="sourceBodyDraft" aria-label="Source body" oninput="autoResize(this)"></textarea>
-      <div class="edit-actions" role="group" aria-label="Source editing">
-        <button type="button" class="funky-button" onclick="profileEditing.save('source')">SAVE</button>
-        <button type="button" class="funky-button" onclick="profileEditing.cancel('source')">CANCEL</button>
+      <a id="sourceAttribution" class="source-attribution" href="" target="_blank" rel="noopener noreferrer" hidden></a>
+    </div>
+<div class="generation-controls munge-generation-controls">
+  <div id="mungeControls" class="munge-engine-group" role="group" aria-label="MUNGE engines">
+    {% for engine, label in [('classic', 'MUNGE CLASSIC'), ('current', 'MUNGE'), ('experimental', 'MUNGE EXPERIMENTAL')] %}
+    <div id="mungeControl-{{ engine }}" class="munge-control" data-munge-engine="{{ engine }}">
+      <div id="mungeRotor-{{ engine }}" class="munge-rotor">
+      <button type="button" id="mungeBodyButton-{{ engine }}" class="munge-body-button" data-munge-engine="{{ engine }}" aria-label="{{ label }}">
+        <img class="munge-body" src="{{ url_for('static', path='images/udders/munge/munge-body-' ~ engine ~ '.png') }}" alt="">
+      </button>
+      {% set munge_teats = [
+        ('upper-left', 1, 'calc(32% + 16px)', '23%', '31%', '-78%', '-72%', '-.72', '-.70', '78%', '72%', '0deg'),
+        ('upper-right', 3, 'calc(68% - 16px)', '23%', '31%', '-22%', '-72%', '.72', '-.70', '22%', '72%', '0deg'),
+        ('left', 4, 'calc(26% + 8px)', 'calc(42% - 21px)', '29%', '-78%', '-22%', '-1', '0', '78%', '22%', '0deg'),
+        ('right', 6, 'calc(74% - 6px)', 'calc(42% - 22px)', '31%', '-22%', '-22%', '1', '0', '22%', '22%', '0deg'),
+        ('lower-left', 2, 'calc(37% + 20px)', 'calc(60% - 16px)', '27%', '-50%', '-12%', '-.31', '.39', '50%', '12%', '35deg'),
+        ('lower-right', 5, 'calc(63% - 12px)', 'calc(60% - 16px)', '27%', '-50%', '-12%', '.31', '.39', '50%', '12%', '-35deg')
+      ] %}
+      {% for orientation, image, x, y, width, tx, ty, axis_x, axis_y, origin_x, origin_y, rotation in munge_teats %}
+      <button type="button" class="munge-teat munge-teat-{{ orientation }}"
+        style="--x:{{ x }};--y:{{ y }};--w:{{ width }};--tx:{{ tx }};--ty:{{ ty }};--axis-x:{{ axis_x }};--axis-y:{{ axis_y }};--origin-x:{{ origin_x }};--origin-y:{{ origin_y }};--base-rotation:{{ rotation }}"
+        data-orientation="{{ orientation }}" data-munge-engine="{{ engine }}" aria-label="{{ label }} — {{ orientation }} teat">
+        <span class="munge-teat-shape" aria-hidden="true"><img src="{{ url_for('static', path='images/udders/munge/munge-teat-' ~ image ~ '.png') }}" alt=""></span>
+      </button>
+      {% endfor %}
       </div>
     </div>
-<div class="generation-controls">
-    <label class="image-toggle">
-      <input type="checkbox" id="generateImages" autocomplete="off">
-      <span class="funky-button">IMAGE GENERATION MODE</span>
-    </label>
-    <button class="funky-button shizzle-button" onclick="confirmData()">SHIZZALISE</button>
+    {% endfor %}
+  </div>
   </div>
   </div>
 
@@ -46,26 +85,78 @@
 
 
   <div id="outputContainer" class="container hidden">
-    <button type="button" id="responseEdit" class="funky-button edit-tab" aria-label="Edit response" aria-controls="responseEditor" aria-expanded="false" onclick="profileEditing.edit('response')">EDIT</button>
-    <div id="responseDisplay" class="section-display">
-      <h2 id="crazyTitleBox" class="result-heading"></h2>
-      <textarea aria-label="Response body" id="crazyExtractBox" readonly></textarea>
+    <div id="responseEditor" class="section-editor article-fit-region">
+      <input id="responseTitleDraft" type="hidden" value="">
+      <textarea id="responseBodyDraft" aria-label="Response body" oninput="autoResize(this); responseEdited(); updateCopyButton()"></textarea>
     </div>
-    <div id="responseEditor" class="section-editor" hidden>
-      <textarea id="responseTitleDraft" class="headline-editor" rows="1" aria-label="Response title" oninput="autoResize(this)"></textarea>
-      <textarea id="responseBodyDraft" aria-label="Response body" oninput="autoResize(this)"></textarea>
-      <div class="edit-actions" role="group" aria-label="Response editing">
-        <button type="button" class="funky-button" onclick="profileEditing.save('response')">SAVE</button>
-        <button type="button" class="funky-button" onclick="profileEditing.cancel('response')">CANCEL</button>
+
+    <section class="object-generator" data-object-generator data-vocabulary="{{ url_for('static', path='data/object-generator-vocabulary.csv') }}" aria-label="Object-name generator">
+      <button type="button" class="funky-button" data-object-generate>STUFF</button>
+      <button type="button" class="funky-button swear-copy-button" data-object-copy disabled>COPY</button>
+      <div class="object-generator-output" data-object-output aria-live="polite" aria-atomic="false"></div>
+      <span class="swear-generator-status" data-object-status role="status" aria-live="polite">Loading vocabulary…</span>
+    </section>
+
+    <section class="swear-generator" data-swear-generator data-vocabulary="{{ url_for('static', path='data/swear-generator-vocabulary.csv') }}" aria-label="Swear-word generator">
+      <button type="button" class="funky-button" data-swear-generate>SWEAR</button>
+      <button type="button" class="funky-button swear-copy-button" data-swear-copy disabled>COPY</button>
+      <div class="swear-generator-output" data-swear-output aria-live="polite" aria-atomic="false"></div>
+      <span class="swear-generator-status" data-swear-status role="status" aria-live="polite">Loading vocabulary…</span>
+    </section>
+
+    <!-- Generated image -->
+    <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
+
+    <!-- ONE centred metadata line: IMAGE STYLE - MUSIC GENRE -->
+    <p id="creationMeta" class="creation-meta" hidden></p>
+
+    <!-- Error / status messages for individual operations (kept visible when set) -->
+    <p id="imageRedoMessage" role="status" class="creation-status-message" hidden></p>
+    <p id="embellishStatus" role="status" class="creation-status-message" hidden></p>
+
+    <!-- ONE shared centred button row — all action buttons live here -->
+    <div id="creationActions" class="creation-actions">
+      <button type="button" id="copyMungeButton" class="funky-button creation-action-button" onclick="copyMungeResult()" hidden>COPY</button>
+      <button id="bankButton" class="funky-button creation-action-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
+      <button type="button" id="redoImageButton" class="funky-button creation-action-button" onclick="redoImage()" hidden>REDO IMAGE</button>
+      <button type="button" id="deleteCreationButton" class="funky-button creation-action-button" hidden>DELETE</button>
+      <button type="button" id="embellishButton" class="funky-button shizzle-button" onclick="embellishUI.reembellish()" hidden>RE-EMBELLISH</button>
+      <button type="button" id="jingleButton" class="funky-button" onclick="jingleUI.act()" disabled hidden>MAKE JINGLE</button>
+      <button type="button" id="jingleStop" class="funky-button" onclick="jingleUI.stop()" hidden>■ STOP</button>
+      <div id="animationControls" class="animation-controls-inline" hidden>
       </div>
     </div>
-    <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
-  <button id="bankButton" class="funky-button shizzle-button hidden" onclick="bankThisBeauty()">NOMINATE</button>
+
+    <!-- Operational status messages shown beneath the button row when non-empty -->
+    <p id="animationMessage" role="status" aria-live="polite" class="creation-status-message"></p>
+    <p id="jingleMessage" role="status" aria-live="polite" class="creation-status-message"></p>
+
+    <!-- Empty compatibility wrappers retain controller lifecycle state, never layout. -->
+    <div id="jingleControls" class="jingle-controls-hidden" hidden></div>
   </div>
+
+  <dialog id="deleteCreationDialog" class="creation-delete-dialog" aria-labelledby="deleteCreationTitle">
+    <h2 id="deleteCreationTitle">Are you sure you want to delete this creation?</h2>
+    <p id="deleteCreationError" role="alert" hidden></p>
+    <div class="creation-delete-dialog-actions">
+      <button type="button" id="confirmDeleteCreation" class="funky-button">DELETE</button>
+      <button type="button" id="cancelDeleteCreation" class="funky-button">CANCEL</button>
+    </div>
+  </dialog>
+
+  <dialog id="imageRetryDialog" class="creation-delete-dialog" aria-labelledby="imageRetryTitle">
+    <h2 id="imageRetryTitle">Previous image generation had an uncertain outcome.</h2>
+    <p>The previous image request may have reached the provider. Retrying could create and charge for another image. Retry anyway?</p>
+    <div class="creation-delete-dialog-actions">
+      <button type="button" id="confirmImageRetry" class="funky-button">RETRY</button>
+      <button type="button" id="cancelImageRetry" class="funky-button">CANCEL</button>
+    </div>
+  </dialog>
 
 
 
 
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='profile-editing.js') }}"></script><script src="{{ url_for('static', path='image-background.js') }}"></script><script src="{{ url_for('static', path='image-colors.js') }}"></script><script src="{{ url_for('static', path='script.js') }}"></script>{% endblock %}
+{% block footer %}{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/munge-control.js') }}?v=munge-audio-1"></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=munge-audio-4"></script><script src="{{ url_for('static', path='js/creation/munge-music.js') }}?v=munge-music-5"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=create-actions-4"></script><script src="{{ url_for('static', path='js/creation/swear-generator.js') }}?v=swear-generator-2"></script><script src="{{ url_for('static', path='js/creation/object-generator.js') }}?v=object-generator-1"></script>{% endblock %}

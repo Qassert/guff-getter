@@ -1,0 +1,3 @@
+# Separate CLI environment, never the application's ML/runtime environment.
+modal==1.5.5
+pydantic>=2,<3

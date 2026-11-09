@@ -1,0 +1,202 @@
+## EVERYDAY BRITISH (20)
+001. committee-approved coat rack | category=everyday_british | intensity=2 | base=coat rack | template=comic_household_object | mechanism=unexpected behaviour | score=7.30 | warnings=none | words=3
+002. radio-possessed filing cabinet | category=everyday_british | intensity=3 | base=filing cabinet | template=comic_household_object | mechanism=unexpected behaviour | score=7.45 | warnings=none | words=3
+003. folding chair with a secret allotment | category=everyday_british | intensity=2 | base=folding chair | template=household_object_with_history | mechanism=inappropriate responsibility | score=7.30 | warnings=none | words=6
+004. professionally sulky umbrella stand | category=everyday_british | intensity=2 | base=umbrella stand | template=comic_household_object | mechanism=unexpected behaviour | score=7.30 | warnings=none | words=4
+005. paperwork-haunted serving hatch | category=everyday_british | intensity=3 | base=serving hatch | template=comic_household_object | mechanism=unexpected behaviour | score=7.45 | warnings=none | words=3
+006. laminated felt doormat | category=everyday_british | intensity=2 | base=doormat | template=improbable_material_object | mechanism=visual incongruity | score=7.30 | warnings=none | words=3
+007. parking meter with a minor grudge | category=everyday_british | intensity=1 | base=parking meter | template=household_object_with_history | mechanism=inappropriate responsibility | score=7.15 | warnings=none | words=6
+008. toolbox with power of arrest | category=everyday_british | intensity=3 | base=toolbox | template=household_object_with_history | mechanism=inappropriate responsibility | score=7.45 | warnings=none | words=5
+009. ironing board on unofficial tea duty | category=everyday_british | intensity=1 | base=ironing board | template=household_object_with_history | mechanism=inappropriate responsibility | score=7.15 | warnings=none | words=6
+010. precision-cut tin shopping trolley | category=everyday_british | intensity=2 | base=shopping trolley | template=improbable_material_object | mechanism=visual incongruity | score=7.30 | warnings=none | words=4
+011. reinforced rubber bedside cabinet | category=everyday_british | intensity=2 | base=bedside cabinet | template=improbable_material_object | mechanism=visual incongruity | score=7.30 | warnings=none | words=4
+012. lunchbox capable of minor prophecy | category=everyday_british | intensity=3 | base=lunchbox | template=household_object_with_history | mechanism=inappropriate responsibility | score=7.45 | warnings=none | words=5
+013. bird table with diplomatic immunity | category=everyday_british | intensity=2 | base=bird table | template=household_object_with_history | mechanism=inappropriate responsibility | score=7.30 | warnings=none | words=5
+014. unexpectedly floral towel rail | category=everyday_british | intensity=1 | base=towel rail | template=comic_household_object | mechanism=unexpected behaviour | score=7.15 | warnings=none | words=4
+015. emotionally unavailable thermos flask | category=everyday_british | intensity=2 | base=thermos flask | template=comic_household_object | mechanism=unexpected behaviour | score=7.30 | warnings=none | words=4
+016. weather-sensitive tin toilet brush | category=everyday_british | intensity=1 | base=toilet brush | template=improbable_material_object | mechanism=visual incongruity | score=7.15 | warnings=none | words=4
+017. county-banned spice rack | category=everyday_british | intensity=3 | base=spice rack | template=comic_household_object | mechanism=unexpected behaviour | score=7.45 | warnings=none | words=3
+018. politely squeaky corkscrew | category=everyday_british | intensity=1 | base=corkscrew | template=comic_household_object | mechanism=unexpected behaviour | score=7.15 | warnings=none | words=3
+019. socially awkward hot-water bottle | category=everyday_british | intensity=2 | base=hot-water bottle | template=comic_household_object | mechanism=unexpected behaviour | score=7.30 | warnings=none | words=4
+020. emotionally supportive brass pepper mill | category=everyday_british | intensity=1 | base=pepper mill | template=improbable_material_object | mechanism=visual incongruity | score=7.15 | warnings=none | words=5
+
+## CHEEKY OBJECTS (20)
+001. high-tensile cork sausage warmer | category=cheeky_object | intensity=2 | base=sausage warmer | template=cheeky_material_object | mechanism=comic contrast | score=7.30 | warnings=monitored recurring theme | words=4
+002. plunger operating beyond recommended thrust | category=cheeky_object | intensity=3 | base=plunger | template=cheeky_object_with_function | mechanism=British innuendo | score=7.45 | warnings=none | words=5
+003. suggestive hand whisk | category=cheeky_object | intensity=1 | base=hand whisk | template=cheeky_modifier_object | mechanism=British innuendo | score=7.15 | warnings=none | words=3
+004. diamond-reinforced felt bed warmer | category=cheeky_object | intensity=3 | base=bed warmer | template=cheeky_material_object | mechanism=comic contrast | score=7.45 | warnings=none | words=4
+005. inflatable velvet bolster | category=cheeky_object | intensity=1 | base=bolster | template=cheeky_material_object | mechanism=comic contrast | score=7.15 | warnings=none | words=3
+006. volcanic rubber tool belt | category=cheeky_object | intensity=3 | base=tool belt | template=cheeky_material_object | mechanism=comic contrast | score=7.45 | warnings=none | words=4
+007. licensed for vigorous plunging pocket warmer | category=cheeky_object | intensity=3 | base=pocket warmer | template=cheeky_modifier_object | mechanism=British innuendo | score=7.45 | warnings=none | words=6
+008. professionally throbbing meat tenderiser | category=cheeky_object | intensity=2 | base=meat tenderiser | template=cheeky_modifier_object | mechanism=British innuendo | score=7.30 | warnings=none | words=4
+009. frantically extendable rolling pin | category=cheeky_object | intensity=2 | base=rolling pin | template=cheeky_modifier_object | mechanism=British innuendo | score=7.30 | warnings=none | words=4
+010. overexcited sausage pricker | category=cheeky_object | intensity=2 | base=sausage pricker | template=cheeky_modifier_object | mechanism=British innuendo | score=7.30 | warnings=monitored recurring theme | words=3
+011. plump tent pole | category=cheeky_object | intensity=1 | base=tent pole | template=cheeky_modifier_object | mechanism=British innuendo | score=7.15 | warnings=none | words=3
+012. love seat approved for gentle handling | category=cheeky_object | intensity=1 | base=love seat | template=cheeky_object_with_function | mechanism=British innuendo | score=7.15 | warnings=none | words=6
+013. indecently buoyant sponge bag | category=cheeky_object | intensity=2 | base=sponge bag | template=cheeky_modifier_object | mechanism=British innuendo | score=7.30 | warnings=none | words=4
+014. overstuffed buns tray | category=cheeky_object | intensity=2 | base=buns tray | template=cheeky_modifier_object | mechanism=British innuendo | score=7.30 | warnings=none | words=3
+015. well-oiled cocktail shaker | category=cheeky_object | intensity=1 | base=cocktail shaker | template=cheeky_modifier_object | mechanism=British innuendo | score=7.15 | warnings=none | words=3
+016. milk jug with adjustable firmness | category=cheeky_object | intensity=1 | base=milk jug | template=cheeky_object_with_function | mechanism=British innuendo | score=7.15 | warnings=none | words=5
+017. double-jointed basting brush | category=cheeky_object | intensity=2 | base=basting brush | template=cheeky_modifier_object | mechanism=British innuendo | score=7.30 | warnings=none | words=3
+018. structurally aroused zip fastener | category=cheeky_object | intensity=3 | base=zip fastener | template=cheeky_modifier_object | mechanism=British innuendo | score=7.45 | warnings=none | words=4
+019. enthusiastically telescopic bun steamer | category=cheeky_object | intensity=2 | base=bun steamer | template=cheeky_modifier_object | mechanism=British innuendo | score=7.30 | warnings=none | words=4
+020. improperly sprung muff warmer | category=cheeky_object | intensity=2 | base=muff warmer | template=cheeky_modifier_object | mechanism=British innuendo | score=7.30 | warnings=none | words=4
+
+## ABSURD INVENTIONS (20)
+001. thunderbolt-powered egg whisk | category=absurd_invention | intensity=3 | base=egg whisk | template=powered_device | mechanism=improbable power source | score=7.45 | warnings=none | words=3
+002. static-electricity-powered stapler | category=absurd_invention | intensity=2 | base=stapler | template=powered_device | mechanism=improbable power source | score=7.30 | warnings=none | words=3
+003. tea-powered pie warmer | category=absurd_invention | intensity=2 | base=pie warmer | template=powered_device | mechanism=improbable power source | score=7.30 | warnings=none | words=3
+004. gravy-detecting ticket machine | category=absurd_invention | intensity=2 | base=ticket machine | template=self_acting_device | mechanism=absurd capability | score=7.30 | warnings=none | words=3
+005. self-warming hedge trimmer | category=absurd_invention | intensity=1 | base=hedge trimmer | template=self_acting_device | mechanism=absurd capability | score=7.15 | warnings=none | words=3
+006. volcanic-powered pressure washer | category=absurd_invention | intensity=3 | base=pressure washer | template=powered_device | mechanism=improbable power source | score=7.45 | warnings=none | words=3
+007. self-polishing gravy pump | category=absurd_invention | intensity=1 | base=gravy pump | template=self_acting_device | mechanism=absurd capability | score=7.15 | warnings=none | words=3
+008. self-folding slow cooker | category=absurd_invention | intensity=1 | base=slow cooker | template=self_acting_device | mechanism=absurd capability | score=7.15 | warnings=none | words=3
+009. argument-winning weather vane | category=absurd_invention | intensity=2 | base=weather vane | template=self_acting_device | mechanism=absurd capability | score=7.30 | warnings=none | words=3
+010. shed-inflating parking meter | category=absurd_invention | intensity=2 | base=parking meter | template=self_acting_device | mechanism=absurd capability | score=7.30 | warnings=none | words=3
+011. gravy-powered parcel scanner | category=absurd_invention | intensity=2 | base=parcel scanner | template=powered_device | mechanism=improbable power source | score=7.30 | warnings=none | words=3
+012. gravity-cancelling fondue pot | category=absurd_invention | intensity=3 | base=fondue pot | template=self_acting_device | mechanism=absurd capability | score=7.45 | warnings=none | words=3
+013. leftover-tea-powered kettle | category=absurd_invention | intensity=1 | base=kettle | template=powered_device | mechanism=improbable power source | score=7.15 | warnings=none | words=3
+014. self-defending trouser press | category=absurd_invention | intensity=2 | base=trouser press | template=self_acting_device | mechanism=absurd capability | score=7.30 | warnings=monitored recurring theme | words=3
+015. quietly rotating hole punch | category=absurd_invention | intensity=1 | base=hole punch | template=self_acting_device | mechanism=absurd capability | score=7.15 | warnings=none | words=4
+016. hamster-powered pepper mill | category=absurd_invention | intensity=2 | base=pepper mill | template=powered_device | mechanism=improbable power source | score=7.30 | warnings=none | words=3
+017. elastic-band-powered hand dryer | category=absurd_invention | intensity=1 | base=hand dryer | template=powered_device | mechanism=improbable power source | score=7.15 | warnings=none | words=4
+018. parliament-dissolving cheese grater | category=absurd_invention | intensity=3 | base=cheese grater | template=self_acting_device | mechanism=absurd capability | score=7.45 | warnings=none | words=3
+019. moon-towing electric blanket | category=absurd_invention | intensity=3 | base=electric blanket | template=self_acting_device | mechanism=absurd capability | score=7.45 | warnings=none | words=3
+020. chip-fat-powered waffle iron | category=absurd_invention | intensity=2 | base=waffle iron | template=powered_device | mechanism=improbable power source | score=7.30 | warnings=none | words=4
+
+## RIDICULOUS CREATURES (20)
+001. filibustering mackerel | category=ridiculous_creature | intensity=1 | base=mackerel | template=strong_compact_creature | mechanism=unexpected behaviour | score=7.45 | warnings=short premise | words=2
+002. parliament-storming newt | category=ridiculous_creature | intensity=2 | base=newt | template=strong_compact_creature | mechanism=unexpected behaviour | score=7.60 | warnings=short premise | words=2
+003. crab moonlighting as a divorce mediator | category=ridiculous_creature | intensity=2 | base=crab | template=creature_with_action | mechanism=scandal or inappropriate responsibility | score=7.30 | warnings=none | words=6
+004. constitutionally protected squirrel | category=ridiculous_creature | intensity=2 | base=squirrel | template=strong_compact_creature | mechanism=unexpected behaviour | score=8.10 | warnings=none | words=3
+005. constitutionally protected salmon | category=ridiculous_creature | intensity=3 | base=salmon | template=strong_compact_creature | mechanism=unexpected behaviour | score=8.25 | warnings=none | words=3
+006. snail banned from municipal swimming pools | category=ridiculous_creature | intensity=2 | base=snail | template=creature_with_history | mechanism=implausible personal history | score=7.30 | warnings=none | words=6
+007. stoat smuggling duty-free marmalade | category=ridiculous_creature | intensity=2 | base=stoat | template=creature_with_action | mechanism=scandal or inappropriate responsibility | score=7.30 | warnings=none | words=4
+008. dormouse investigating a royal scandal | category=ridiculous_creature | intensity=2 | base=dormouse | template=creature_with_action | mechanism=scandal or inappropriate responsibility | score=7.30 | warnings=none | words=5
+009. constitutionally protected jackdaw | category=ridiculous_creature | intensity=3 | base=jackdaw | template=strong_compact_creature | mechanism=unexpected behaviour | score=8.25 | warnings=none | words=3
+010. seagull working as retired seaside clairvoyant | category=ridiculous_creature | intensity=1 | base=seagull | template=creature_working_as | mechanism=ridiculous occupation | score=7.15 | warnings=none | words=6
+011. parrot working as trainee allotment detective | category=ridiculous_creature | intensity=1 | base=parrot | template=creature_working_as | mechanism=ridiculous occupation | score=7.15 | warnings=none | words=6
+012. alpaca working as licensed royal footman | category=ridiculous_creature | intensity=2 | base=alpaca | template=creature_working_as | mechanism=ridiculous occupation | score=7.30 | warnings=none | words=6
+013. chicken with an unexplained government pension | category=ridiculous_creature | intensity=2 | base=chicken | template=creature_with_history | mechanism=implausible personal history | score=7.30 | warnings=none | words=6
+014. haddock working as intergalactic customs inspector | category=ridiculous_creature | intensity=3 | base=haddock | template=creature_working_as | mechanism=ridiculous occupation | score=7.45 | warnings=none | words=6
+015. hamster working as dimension-hopping tax investigator | category=ridiculous_creature | intensity=3 | base=hamster | template=creature_working_as | mechanism=ridiculous occupation | score=7.45 | warnings=none | words=6
+016. mole commanding a volunteer fire brigade | category=ridiculous_creature | intensity=2 | base=mole | template=creature_with_action | mechanism=scandal or inappropriate responsibility | score=7.30 | warnings=none | words=6
+017. ferret working as parliamentary siege negotiator | category=ridiculous_creature | intensity=3 | base=ferret | template=creature_working_as | mechanism=ridiculous occupation | score=7.45 | warnings=none | words=6
+018. pig working as part-time library bouncer | category=ridiculous_creature | intensity=1 | base=pig | template=creature_working_as | mechanism=ridiculous occupation | score=7.15 | warnings=none | words=6
+019. toad with three unpaid library fines | category=ridiculous_creature | intensity=1 | base=toad | template=creature_with_history | mechanism=implausible personal history | score=7.15 | warnings=none | words=6
+020. weasel with its own allotment committee | category=ridiculous_creature | intensity=1 | base=weasel | template=creature_with_history | mechanism=implausible personal history | score=7.15 | warnings=none | words=6
+
+## BUREAUCRATIC NONSENSE (20)
+001. parish permit for unauthorised garden gnomes | category=bureaucratic_nonsense | intensity=1 | base=permit | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.65 | warnings=none | words=6
+002. regional inspectorate for milk-float intelligence | category=bureaucratic_nonsense | intensity=1 | base=inspectorate | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.65 | warnings=none | words=5
+003. statutory commission for hostile umbrellas | category=bureaucratic_nonsense | intensity=2 | base=commission | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.80 | warnings=none | words=5
+004. royal standards board for clipboard misconduct | category=bureaucratic_nonsense | intensity=2 | base=standards board | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.80 | warnings=none | words=6
+005. civic licence for pigeon misconduct | category=bureaucratic_nonsense | intensity=1 | base=licence | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.65 | warnings=none | words=5
+006. national operating charter for unlicensed teapots | category=bureaucratic_nonsense | intensity=2 | base=operating charter | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.80 | warnings=none | words=6
+007. national registration card for caravan surveillance | category=bureaucratic_nonsense | intensity=2 | base=registration card | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.80 | warnings=none | words=6
+008. regional provisional warrant for inappropriate bunting | category=bureaucratic_nonsense | intensity=1 | base=provisional warrant | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.65 | warnings=none | words=6
+009. supreme advisory council for cake-stand compliance | category=bureaucratic_nonsense | intensity=3 | base=advisory council | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.95 | warnings=monitored recurring theme | words=6
+010. village inspection order for aggressive doormats | category=bureaucratic_nonsense | intensity=1 | base=inspection order | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.65 | warnings=none | words=6
+011. supreme appeal dossier for rogue lunchboxes | category=bureaucratic_nonsense | intensity=3 | base=appeal dossier | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.95 | warnings=none | words=6
+012. statutory tribunal for emergency cardigans | category=bureaucratic_nonsense | intensity=2 | base=tribunal | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.80 | warnings=none | words=5
+013. cross-party compliance form for mop-bucket readiness | category=bureaucratic_nonsense | intensity=2 | base=compliance form | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.80 | warnings=none | words=6
+014. planetary subcommittee for gravy procurement | category=bureaucratic_nonsense | intensity=3 | base=subcommittee | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.95 | warnings=none | words=5
+015. interdepartmental review panel for militant deckchairs | category=bureaucratic_nonsense | intensity=2 | base=review panel | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.80 | warnings=none | words=6
+016. national directorate for trifle standards | category=bureaucratic_nonsense | intensity=2 | base=directorate | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.80 | warnings=none | words=5
+017. planetary notice for slipper registration | category=bureaucratic_nonsense | intensity=3 | base=notice | template=document_for_absurdity | mechanism=inappropriate official importance | score=6.95 | warnings=none | words=5
+018. statutory inquiry for waffle enforcement | category=bureaucratic_nonsense | intensity=2 | base=inquiry | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.80 | warnings=none | words=5
+019. intergalactic ombudsman for compulsory tea breaks | category=bureaucratic_nonsense | intensity=3 | base=ombudsman | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.95 | warnings=none | words=6
+020. parish licensing authority for kettle emissions | category=bureaucratic_nonsense | intensity=1 | base=licensing authority | template=body_for_absurdity | mechanism=bureaucratic comic contrast | score=6.65 | warnings=none | words=6
+
+## EMERGENCY EQUIPMENT (20)
+001. crisis periscope for rainy picnic recovery | category=emergency_equipment | intensity=1 | base=crisis periscope | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.15 | warnings=none | words=6
+002. defence teapot for feral wheelie-bin control | category=emergency_equipment | intensity=2 | base=defence teapot | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=none | words=6
+003. mobile toast rack for badger evacuation | category=emergency_equipment | intensity=2 | base=mobile toast rack | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=none | words=6
+004. command lunchbox for escaped pudding recovery | category=emergency_equipment | intensity=2 | base=command lunchbox | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=none | words=6
+005. containment bucket for rogue gazebo capture | category=emergency_equipment | intensity=2 | base=containment bucket | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=none | words=6
+006. warning gong for custard containment | category=emergency_equipment | intensity=2 | base=warning gong | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=monitored recurring theme | words=5
+007. crisis lampshade for cardigan apocalypse survival | category=emergency_equipment | intensity=3 | base=crisis lampshade | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.45 | warnings=none | words=6
+008. defence umbrella for hostile bunting suppression | category=emergency_equipment | intensity=2 | base=defence umbrella | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=none | words=6
+009. hazard blanket for minor queue containment | category=emergency_equipment | intensity=1 | base=hazard blanket | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.15 | warnings=none | words=6
+010. evacuation doormat for escaped pudding recovery | category=emergency_equipment | intensity=2 | base=evacuation doormat | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=none | words=6
+011. warning kettle for rogue gazebo capture | category=emergency_equipment | intensity=2 | base=warning kettle | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=none | words=6
+012. flood pump for hostile bunting suppression | category=emergency_equipment | intensity=2 | base=flood pump | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.30 | warnings=none | words=6
+013. emergency deckchair for pigeon riot control | category=emergency_equipment | intensity=1 | base=emergency deckchair | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.15 | warnings=none | words=6
+014. signal megaphone for emergency biscuit protection | category=emergency_equipment | intensity=1 | base=signal megaphone | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.15 | warnings=monitored recurring theme | words=6
+015. incident whistle for runaway moon recovery | category=emergency_equipment | intensity=3 | base=incident whistle | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.45 | warnings=none | words=6
+016. safety plunger for interdimensional damp containment | category=emergency_equipment | intensity=3 | base=safety plunger | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.45 | warnings=none | words=6
+017. first-aid hamper for orbital teapot interception | category=emergency_equipment | intensity=3 | base=first-aid hamper | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.45 | warnings=none | words=6
+018. hazard apron for cardigan apocalypse survival | category=emergency_equipment | intensity=3 | base=hazard apron | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.45 | warnings=none | words=6
+019. alarm thermos for drizzle evacuation | category=emergency_equipment | intensity=1 | base=alarm thermos | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.15 | warnings=none | words=5
+020. backup cardigan for drizzle evacuation | category=emergency_equipment | intensity=1 | base=backup cardigan | template=device_for_emergency | mechanism=improbable emergency purpose | score=7.15 | warnings=none | words=5
+
+## CEREMONIAL OBJECTS (20)
+001. picnic hamper of constitutional gravy service | category=ceremonial_object | intensity=2 | base=picnic hamper | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.30 | warnings=none | words=6
+002. hot-water bottle for imperial state emergencies | category=ceremonial_object | intensity=3 | base=hot-water bottle | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.45 | warnings=none | words=6
+003. dustpan of hereditary allotment rights | category=ceremonial_object | intensity=2 | base=dustpan | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.30 | warnings=none | words=5
+004. deckchair for mythic national queue formation | category=ceremonial_object | intensity=3 | base=deckchair | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.45 | warnings=none | words=6
+005. coat hanger of compulsory tea breaks | category=ceremonial_object | intensity=1 | base=coat hanger | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.15 | warnings=none | words=6
+006. cake stand for mayoral sandwich inspection | category=ceremonial_object | intensity=1 | base=cake stand | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.15 | warnings=none | words=6
+007. hedge trimmer for state-approved trouser pressing | category=ceremonial_object | intensity=2 | base=hedge trimmer | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.30 | warnings=monitored recurring theme | words=6
+008. toast rack of state-approved pudding defence | category=ceremonial_object | intensity=2 | base=toast rack | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.30 | warnings=none | words=6
+009. cardigan of restarting parliament after lunch | category=ceremonial_object | intensity=3 | base=cardigan | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.45 | warnings=none | words=6
+010. ladle of repelling intergalactic auditors | category=ceremonial_object | intensity=3 | base=ladle | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.45 | warnings=none | words=5
+011. hatstand for hereditary parliamentary duties | category=ceremonial_object | intensity=2 | base=hatstand | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.30 | warnings=none | words=5
+012. filing cabinet of parliamentary trouser pressing | category=ceremonial_object | intensity=2 | base=filing cabinet | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.30 | warnings=monitored recurring theme | words=6
+013. bath mat for gilded constitutional ceremonies | category=ceremonial_object | intensity=2 | base=bath mat | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.30 | warnings=none | words=6
+014. letterbox of municipal queue discipline | category=ceremonial_object | intensity=1 | base=letterbox | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.15 | warnings=none | words=5
+015. bird bath of repelling intergalactic auditors | category=ceremonial_object | intensity=3 | base=bird bath | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.45 | warnings=none | words=6
+016. garden gnome for official tea-break observance | category=ceremonial_object | intensity=1 | base=garden gnome | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.15 | warnings=none | words=6
+017. lampshade for the annual shed opening | category=ceremonial_object | intensity=1 | base=lampshade | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.15 | warnings=none | words=6
+018. doorstop of parish biscuit distribution | category=ceremonial_object | intensity=1 | base=doorstop | template=object_of_ceremonial_purpose | mechanism=ridiculous ceremonial purpose | score=7.15 | warnings=monitored recurring theme | words=5
+019. mop for state-approved trouser pressing | category=ceremonial_object | intensity=2 | base=mop | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.30 | warnings=monitored recurring theme | words=5
+020. milk float for sacred royal emergencies | category=ceremonial_object | intensity=2 | base=milk float | template=object_for_ceremony | mechanism=inappropriate symbolic importance | score=7.30 | warnings=none | words=6
+
+## QUALITY AUDIT (5000)
+Unique phrases: 5000
+Duplicate outputs: 0
+Candidates attempted: 86611
+Candidates rejected: 16611
+Rejection reasons: {'duplicate': 14069, 'short_creature_variety_cap': 1253, 'repeated_word': 664, 'weak_short_creature': 345, 'word_count': 280}
+Category distribution: {'cheeky_object': 1000, 'ridiculous_creature': 1000, 'absurd_invention': 1000, 'bureaucratic_nonsense': 750, 'ceremonial_object': 250, 'everyday_british': 750, 'emergency_equipment': 250}
+Intensity distribution: {1: 1500, 2: 2250, 3: 1250}
+Template distribution: {'self_acting_device': 500, 'powered_device': 500, 'cheeky_modifier_object': 484, 'comic_household_object': 383, 'body_for_absurdity': 377, 'document_for_absurdity': 373, 'cheeky_material_object': 370, 'creature_with_action': 349, 'creature_working_as': 284, 'household_object_with_history': 281, 'device_for_emergency': 250, 'creature_with_history': 200, 'strong_compact_creature': 167, 'cheeky_object_with_function': 146, 'object_for_ceremony': 144, 'object_of_ceremonial_purpose': 106, 'improbable_material_object': 86}
+Most reused base objects: [('inquiry', 32), ('advisory council', 32), ('tribunal', 32), ('ombudsman', 32), ('waiver', 32), ('licensing authority', 32), ('inspection order', 31), ('permit', 31), ('task force', 31), ('directorate', 31), ('review panel', 31), ('notice', 31)]
+Explicitly monitored theme usage: {'trouser': 68, 'council': 46, 'sausage': 40, 'biscuit': 84, 'custard': 36}
+Two-word ridiculous_creature: 100/1000 (10.0%)
+Two-word ceremonial_object: 0/250 (0.0%)
+Two-word concepts among weakest 30: 0; across audit: 100
+Grammatical validation: all outputs passed word-order, repeated-word, visible-base and category-length rules
+Category exhausted: no
+Phase 2B comparison (same 5,000 seed): 85,993 → 86,611 attempted; 15,993 → 16,611 rejected; 5,000 unique and zero emitted duplicates in both phases
+Weakest/borderline accepted combinations:
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 6 words] civic advisory council for emergency cardigans
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 6 words] civic advisory council for hostile umbrellas
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 6 words] civic advisory council for turnip diplomacy
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic appeal dossier for hostile umbrellas
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic appeal dossier for pigeon misconduct
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic application for caravan surveillance
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic application for lampshade equality
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic application for municipal gossip
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic application for shed sovereignty
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 5 words] civic commission for trifle standards
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic compliance form for parking-cone etiquette
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 5 words] civic directorate for hedge-trimmer diplomacy
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 5 words] civic inquiry for kettle emissions
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 5 words] civic inquiry for slipper registration
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic licence for compulsory tea breaks
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic licence for emergency cardigans
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 6 words] civic licensing authority for pickle regulation
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic notice for caravan surveillance
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic notice for militant deckchairs
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic notice for milk-float intelligence
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 5 words] civic ombudsman for mop-bucket readiness
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic operating charter for inappropriate bunting
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic operating charter for marmalade smuggling
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 5 words] civic permit for caravan surveillance
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic provisional warrant for ceremonial damp
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic provisional warrant for emergency cardigans
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic registration card for hostile umbrellas
+- [6.65; bureaucratic_nonsense; intensity 1; inappropriate official importance; 6 words] civic registration card for sandwich accountability
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 6 words] civic review panel for thermos accreditation
+- [6.65; bureaucratic_nonsense; intensity 1; bureaucratic comic contrast; 6 words] civic review panel for waffle enforcement

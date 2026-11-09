@@ -3,7 +3,6 @@ from newsmuncher.config import PROMPT_FILE
 import os
 import requests
 import random
-import json
 
 
 from newsmuncher.utils.clean_data import *

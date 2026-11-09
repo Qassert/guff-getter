@@ -1,0 +1,191 @@
+{
+  "source": "OpenAlex",
+  "retrieved_at": "2026-11-02T16:47:51.287304+00:00",
+  "request_urls": [
+    "https://api.openalex.org/works?filter=has_abstract:true&sample=50&per-page=50"
+  ],
+  "record_count": 10,
+  "records": [
+    {
+      "id": "https://openalex.org/W4252483161",
+      "title": "Bij de Aucaners",
+      "url": "https://doi.org/10.1163/22134360-90001725",
+      "descriptive_text": "Bij de openbare behandeling van de Surinaamsche begrooting voor het dienstjaar 1920 in de Koloniale Staten, zeide de gedelegeerde van den Gouverneur, de wd.Gouvernements-Secretaris, Mr. J.J. W. Eekhout, ter verdediging van den post tot het instellen van het ambt van Posthouder bij de Aucaner Boschnegers in de Boven-Marowijne, o. m. \"Het is inderdaad een eereschuld die aan de Boschnegers en Indianen moet worden betaald.\"Mr. Eekhout eindigde zijne rede aldus: \"Wanneer deze post zonder hoofdelijke stemming werd aangenomen, zou dit een schoone bladzijde zijn in de parlementaire geschiedenis van Suriname.\"Deze sympathieke woorden door den vertegenwoordiger van het Bestuur tot de volksvertegenwoordiging gesproken, zullen ongetwijfeld onderschreven worden door allen die van nabij bekend zijn met de Boschnegers en Indianen in Suriname en hunne geschiedenis kennen.Inderdaad, het is niet meer dan een moreele plicht, dien wij thans vervullen door den eersten termijn van een eereschuld, die helaas te lang bleef openstaan, aan te zuiveren.De Boschnegers hebben er alle aanspraak op.Er zijn enkele menschen die het onbillijk vinden tegenover de Indianen, dat een proef tot beschaving het eerst met de Boschnegers genomen wordt, omdat zij, de Indianen, als oudste bewoners der kolonie, die in hun eigen land verdrongen werden, daar meer aanspraak op hebben.Ik geef toe dat de Indianen oudere rechten hebben;Dit zou eerder met eenigen grond van waarheid van de Indianen gezegd kunnen worden.Daarover later meer.Doch de Boschnegers, ik herhaal het, leven niet tevreden, noch gevoelen zij zich gelukkig in hun oer-toestand.Het tegendeel is waar, en vooral het jongere geslacht gevoelt zich bepaald ongelukkig, \"nanga den didibri sani di den de dieni\" (\"met de duivelsche dingen die zij dienen.\")Wisten zij zich aan de verdrukking der blanken te onttrekken, en vrij te komen van physieke slavernij, deze vrijheid maakte hen pas, m <fe« m^^si «tïggèm'itfw zm va» /^ zwoord tot slaven van de begrippen die zij over het leven, en vooral over den dood huldigen.Hun leven, ik heb het reeds vaak elders gezegd, kan beschouwd worden als één lange godsdienstoefening van de wieg tot het graf.En die godsdienst eischt wortówmuZ offers en boetedoening.In één angst leeft elke Boschneger; immers zelfs een onwillekeurige, vaak kleine handeling van hem, kan grievend of beleedigend voor de goden en jorka's (geesten van afgestorvenen) zijn en de slechtste gevolgen daarvan (ziekte en dood in de eerste plaats) zullen onverbiddelijk hem en de zijnen treffen.Ik zal hier enkele voorbeelden aanhalen ter verduidelijking van het bovenstaande.Toen in 1918 de griep haar intrede deed in de Tapanahony, trad de epidemie het eerst op in het dorp Manlobbi.Het orakel *), dat als het ware den ganschen dag op alle dorpen voor alles en nog wat wordt geraadpleegd, maakte uit dat de \"lanti sieki\" (epidemie) ontstaan was doordien een jonge man, die gedurende den rouwtijd voor zijn vrouw (deze verplichte rouwtijd bedraagt ten minste 15 maanden, doch kan ook langer, b.v. 3 jaren, duren) naar een ander meisje had omgekeken.*) Op elk Boschnegerdorp bevindt zich een orakel dat den naam van \"Afrakoe\" draagt.Het hoofdorakel, \"Grantata\", staat op Drietabbetje, de residentie van het Groot-Opperhoofd, waar ook de Opper-en hooge priesters wonen.Maar laat ons voor een oogenblik alle ethica laten rusten en beschouwen wij de zaak van de praktische zijde.Suriname is een aan bevolking arm land.Allen die over het bevolkingsvraagstuk der kolonie gesproken of geschreven hebben, zijn het volmaakt eens, dat voor haar geen bloei te verwachten is, zonder aanmerkelijke vergrooting van de bevolking.En zou het dan niet onverantwoordelijk zijn, indien men bleef voortgaan geen aandacht aan de Boschnegers te schenken, en niet tracht met betrekkelijk geringe uitgaven hen voor de samenleving te winnen, terwijl jaar in jaar uit, met hooge kosten, immigranten van elders hier worden ingevoerd?Met een begin aan dit werk te maken, heeft Gouverneur Staal niet alleen de Boschnegers, doch geheel Suriname aan zich verplicht en maakt hij reeds hiervoor blijvend aanspraak op de erkentelijkheid der kolonie.Want deze poging za/ s/ag£w, n'en déplaise hen, die daar anders over denken.De waarborgen voor dit welslagen vindt men in het karakter van den Boschneger zelf.Het komt er slechts op aan dat zij die met het werk belast worden, daar steeds tact en geduld genoeg voor hebben, en vooral in den beginne m' tfi den godsdienst op den voorgrond stellen.Een samenloop van omstandigheden maakte, dat het beschavingswerk het eerst bij de Aucaner-Boschnegers, de energiekste en voornaamste stam der \"wegloopers\", is aangevangen.Jaren lang had ik als balata-industrieel in de Boven-Marowyne omgang met de Aucaners en leerde ik hen van nabij kennen en belang in hen stellen.En toen ik, jaren nadat ik niet meer in de Marowyne kwam, de gelegenheid kreeg om in een nieuwsblad in Suriname iets over hen te schrijven, waren mijne eerste artikelen gericht op propaganda voor hunne beschaving.De Gouverneur vond in die artikelen aanleiding een proef te nemen.Op de begrooting voor 1920 werden de bedragen, voor dit werk noodig, uitgetrokken en droeg Zijne Excellentie",
+      "word_count": 834,
+      "metadata": {
+        "publication_year": 1922,
+        "type": "article",
+        "open_access": {
+          "is_oa": true,
+          "oa_status": "hybrid",
+          "oa_url": "https://brill.com/downloadpdf/journals/nwig/3/1/article-p1_3.pdf",
+          "any_repository_has_fulltext": false
+        },
+        "landing_page_url": "https://doi.org/10.1163/22134360-90001725"
+      }
+    },
+    {
+      "id": "https://openalex.org/W1937983078",
+      "title": "Matrix-binding proteins of Staphylococcus aureus: functional analysis of mutant and hybrid molecules",
+      "url": "https://doi.org/10.1099/00221287-145-9-2497",
+      "descriptive_text": "The fibrinogen-binding protein ClfA and the collagen-binding protein Cna are surface-associated adhesins of Staphylococcus aureus. ClfA has a dipeptide repeat region R composed mainly of serine and aspartate residues, more than 40 of which are required along with the 28-residue region W, the LPXTG motif and region M to display the ligand-binding region A on the cell surface in a functional form. Cna has a 61-residue region W and at least one 187-residue region B linking the collagen-binding region A to peptidoglycan. A cna mutant of S. aureus lacking region B was shown to bind collagen at the same level as wild-type Cna+ cells, indicating that region B is not necessary for ligand binding. Furthermore, altering the number of B repeats did not influence the level of collagen binding. In order to study the ability of C-terminal domains of Cna and ClfA to support functional ligand-binding activity of different adhesins, chimeric proteins were constructed and expressed in S. aureus. Surprisingly, the presence of a single Cna B domain and a nonapeptide linker located between ClfA region A and Cna region WM failed to support fibrinogen binding by S. aureus cells, despite the fact that ClfA region A was detected on the bacterial surface by immunoblotting. In contrast, the ClfA region A-Cna region B hybrid expressed as a recombinant protein in Escherichia coli did bind fibrinogen in Western ligand blots and in an ELISA-type assay. It is concluded that Cna region B cannot support functional display of ClfA region A on the bacterial cell surface. However, the ClfA dipeptide repeat region R and region WM did promote functional surface expression of the Cna collagen-binding domain in a hybrid Cna-ClfA protein.",
+      "word_count": 279,
+      "metadata": {
+        "publication_year": 1999,
+        "type": "article",
+        "open_access": {
+          "is_oa": false,
+          "oa_status": "closed",
+          "oa_url": null,
+          "any_repository_has_fulltext": false
+        },
+        "landing_page_url": "https://doi.org/10.1099/00221287-145-9-2497"
+      }
+    },
+    {
+      "id": "https://openalex.org/W4251914032",
+      "title": "Evaluation of subsetting programming language elements in a novice's programming environment",
+      "url": "https://doi.org/10.1145/971300.971392",
+      "descriptive_text": "In this paper, we evaluate the effects of applying programming language subsets to the programming environment used by novice (CS1) students in a closed-laboratory setting, as well as reducing the complexity of the user interface for the environment. Our goal in this effort was to assess if such interface and application-level changes adversely impact the student or hinder the later migration to a traditional professional-strength programming environment.We focus on the comparison of the quantitative data captured from the closed-laboratory sessions (assignment grades, number of syntax / semantic errors, and the number of compilation / execution attempts) involving subjects that used a new programming environment featuring a less complex interface in two forms: one lacking support of language subsets, and one supporting the application of language subsets.We found that while using the environment supporting the application of language subsets, there was no difference in the compilation-attempt rate, the number of errors did not increase, and student grades were equivalent between the experiment groups. Additionally, following a migration to the professional environment from the simplified environment, student grades were equivalent to those that had used the professional environment throughout the experiment. Student reaction to the experimental environment was very positive, especially related to the removal of unused tools and project management features.",
+      "word_count": 210,
+      "metadata": {
+        "publication_year": 2004,
+        "type": "conference-paper",
+        "open_access": {
+          "is_oa": false,
+          "oa_status": "closed",
+          "oa_url": null,
+          "any_repository_has_fulltext": false
+        },
+        "landing_page_url": "https://doi.org/10.1145/971300.971392"
+      }
+    },
+    {
+      "id": "https://openalex.org/W2463947573",
+      "title": "[The tuberculosis endemy in Bucharest, Romania, in 2005].",
+      "url": "https://openalex.org/W2463947573",
+      "descriptive_text": "In Bucharest, TB incidence (new cases + relapses) was 65.9 per thousand in 1985. After that, it increased every year, reaching 154.1 per thousand in 2001. In the last 4 years the incidence decreased to 120 per thousand, meaning a decrease rate of 22% in this interval. In 2005, incidence ranged between 91 per thousand in Sector 1, and 138.7 per thousand in Sector 5. Among all patients registered in 2005, 86.1% were new cases and 13.9% relapses. One noted also a decrease of TB incidence in children, from 65.2 per thousand in 2002 to 27.8 per thousand in 2005. Progressive extension of DOTS in the whole city led to a success rate for \"source\" patients of 88.7% in 2004 (new pulmonary TB cases, smear positive). The late discovery of some cases and failure of re-treatments explain mainly the fact that, between 2002 and 2004, in Bucharest were registered about 200 TB deaths every year. Tuberculosis continues to be one of the main public health problems in Bucharest.",
+      "word_count": 175,
+      "metadata": {
+        "publication_year": 2006,
+        "type": "article",
+        "open_access": {
+          "is_oa": false,
+          "oa_status": "closed",
+          "oa_url": null,
+          "any_repository_has_fulltext": false
+        },
+        "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/17069210"
+      }
+    },
+    {
+      "id": "https://openalex.org/W7120869602",
+      "title": "Loss and improvement analysys based on lean concepts applied to the wine industry",
+      "url": "https://openalex.org/W7120869602",
+      "descriptive_text": "Nos últimos anos, o setor vinícola nacional vem apresentando diversas transformações em seus processos produtivos. Melhorias focadas na qualidade final do produto, bem como no processo de produção em si, passaram a ser fundamentais à sobrevivência do setor frente ao crescente volume de vinhos importados disponíveis no mercado nacional. De tal forma, perdas no processo produtivo devem ser minimizadas e/ou eliminadas para assegurar a competitividade do segmento nacional. Este artigo apresenta uma aplicação inédita dos conceitos do Sistema Toyota de Produção (STP) na melhoria do processo produtivo em uma empresa vinícola. No estudo de caso que ilustra o artigo, a linha de engarrafamento foi identificada como concentradora das perdas de produção mais pronunciadas, por intermédio de entrevistas e filmagem dos procedimentos envolvidos. Ferramentas oriundas da Engenharia de Produção, como mudança de layout e desenvolvimento de dispositivos anti-falhas, foram implementadas na linha de engarrafamento. As modificações propostas conduziram à redução do transporte de insumos, eliminação de perdas por ruptura de vasilhame e otimização do número de operários no setor.",
+      "word_count": 169,
+      "metadata": {
+        "publication_year": 2009,
+        "type": "article",
+        "open_access": {
+          "is_oa": true,
+          "oa_status": "green",
+          "oa_url": "http://hdl.handle.net/10183/196502",
+          "any_repository_has_fulltext": true
+        },
+        "landing_page_url": "http://hdl.handle.net/10183/196502"
+      }
+    },
+    {
+      "id": "https://openalex.org/W4248948132",
+      "title": "THE RUSSIAN RESPONSE IN THE FAR EAST 1895–1950",
+      "url": "https://doi.org/10.4324/9780203074473-67",
+      "descriptive_text": "After successfully halting Japanese expansion in 1895, the Russians adopted an active expansionist policy. For 10 years they pressed forward in Manchuria, and discussed the partition of China with the British Government in 1900. But Japan sought revenge for the humiliation of 1895, and in 1902 neutralized Britain by the Anglo-Japanese Alliance. In February 1904, under Russian provocation, Japan attacked Port Arthur. Russia was defeated on land and sea, and a peace treaty was signed in the United States in Sept.1905. The grave demoralization created by Russia's defeat led to a mass of revolutionary in Russia, and to a serious weakening of the Tsarist mystique.",
+      "word_count": 106,
+      "metadata": {
+        "publication_year": 2013,
+        "type": "book-chapter",
+        "open_access": {
+          "is_oa": false,
+          "oa_status": "closed",
+          "oa_url": null,
+          "any_repository_has_fulltext": false
+        },
+        "landing_page_url": "https://doi.org/10.4324/9780203074473-67"
+      }
+    },
+    {
+      "id": "https://openalex.org/W2614194299",
+      "title": "Land value taxation and financing public infrastructure with land value capture",
+      "url": "https://openalex.org/W2614194299",
+      "descriptive_text": "The purpose of this thesis is to examine the effects of land value taxation and land value capture methods. Land value capture methods can be divided into three categories which are betterment tax, accessibility increment contribution and joint development. \\n\\nTheory of land value taxation, discussion about neutrality and challenges with the use of land value taxation are introduced. Value capture methods and their impacts according to prior research are examined. Finally the incidence of both land value taxation in general and land value capture methods is studied. Studies from different parts of the world are introduced and patterns in terms of effectivity are identified. \\n\\nBy comparing models which estimate the incidence of land value taxation the conclusion can be made that introduction of a land value tax have different effects depending on which kind of factors and sectors are included in the model and if they are mobile or immobile. \\n\\nThe factors which influence a value capture mechanism's ability to succeed are found to be increment of accessibility, rate of overall growth in the area, availability of developable land and zoning incentives and constraints. \\n\\nIn the use of land value taxation and land value capture the overall characteristics of the area have a significant impact on the results and they should be considered when making policy decisions.",
+      "word_count": 221,
+      "metadata": {
+        "publication_year": 2017,
+        "type": "dissertation",
+        "open_access": {
+          "is_oa": true,
+          "oa_status": "green",
+          "oa_url": "https://trepo.tuni.fi/handle/10024/101151",
+          "any_repository_has_fulltext": true
+        },
+        "landing_page_url": "https://trepo.tuni.fi/handle/10024/101151"
+      }
+    },
+    {
+      "id": "https://openalex.org/W4246896128",
+      "title": "Financial Modelling Techniques",
+      "url": "https://doi.org/10.1002/9781119520344.ch4",
+      "descriptive_text": "This chapter looks at some of the more frequently used techniques, as well as some of the common errors (and avoidance strategies), issues, and decisions a financial modeller encounters when building models in Excel. Those who have been using Excel for any length of time will know how easy it is to make a mistake, and what a huge effect this can have on their business models. Therefore, knowing and using strategies for reducing errors is an important skill for the Excel modeller to have. The chapter also looks at how to avoid overly long and complex formulas, and how to dissect them if people are unfortunate enough to have inherited a model that includes overly complicated formulas. Linking to external files, building error checks, and dealing with circular references are also issues that are commonly encountered in financial models.",
+      "word_count": 140,
+      "metadata": {
+        "publication_year": 2019,
+        "type": "other",
+        "open_access": {
+          "is_oa": false,
+          "oa_status": "closed",
+          "oa_url": null,
+          "any_repository_has_fulltext": false
+        },
+        "landing_page_url": "https://doi.org/10.1002/9781119520344.ch4"
+      }
+    },
+    {
+      "id": "https://openalex.org/W4304183963",
+      "title": "\"MOTIVATION OF IT TERMS IN MEDICINE IN THE CONTEXT OF TERM FORMATION\"",
+      "url": "https://doi.org/10.48081/cmpo2003",
+      "descriptive_text": "\"The article discusses some aspects of the motivation of the terms in the field of IT in medicine on the basis of the Russian language. Definitions of the concepts «term», «abbreviation», «acronym» are given, motivated and unmotivated types of terms are distinguished. The specifics of the motivation of terms is revealed, which manifests itself in the disclosure of the semantic relationships of the meaning and structure of the terminological unit. In the course of the study, there is a tendency to combine different types of motivation within the same sphere, models of term abbreviations are presented, as well as acronyms and abbreviations in English used in international nomenclature. The article also presents an analysis of Russian acronyms and abbreviations in the terminological system under study, highlights thematic categories according to the name of organizations, equipment, medical history, treatment methods, names of information databases. In the context of the issues under consideration, groups of information systems are given in terms of content (territorial, problem-oriented). The authors came to the conclusion that the use of the abbreviation method in term formation indicates the flexibility of the language and its ability to adapt to the changing conditions of modernity, which is an important argument for the functioning of the law of economy of language means. In addition, it was noted that, depending on the field of application, various extralinguistic factors influence the formation of the studied terminological system.\"",
+      "word_count": 235,
+      "metadata": {
+        "publication_year": 2022,
+        "type": "article",
+        "open_access": {
+          "is_oa": true,
+          "oa_status": "bronze",
+          "oa_url": "https://doi.org/10.48081/cmpo2003",
+          "any_repository_has_fulltext": false
+        },
+        "landing_page_url": "http://doi.org/10.48081/cmpo2003"
+      }
+    },
+    {
+      "id": "https://openalex.org/W7220592586",
+      "title": "STUDI NILAI PENDIDIKAN DALAM KITAB AL-HIKAM DAN RELEVANSINYA DI ERA PENDIDIKAN 4.0",
+      "url": "https://openalex.org/W7220592586",
+      "descriptive_text": "Penelitian ini mengkaji tentang Studi Nilai Pendidikan dalam Kitab Al-Hikam dan Relevansinya di Era Pendidikan 4.0. Penelitian menggunakan metode kepustakaan dengan pendekatan deskriptif-analitis, studi ini mengeksplorasi konsep pendidikan spiritual sufistik yang terkandung dalam kitab klasik tersebut. Temuan penelitian menunjukkan bahwa Al-Hikam menawarkan lima nilai pendidikan fundamental: (1) Kesadaran akan hal negatif (Al-'Illal), (2) Pembangunan karakter berbasis ketakwaan (Al-Akhlaq), (3) Pemahaman hakikat kehidupan (Al-Ma'arif), (4) Adaptasi terhadap kondisi psikososial (Al-Ahwal), dan (5) Implementasi nilai dalam perbuatan nyata (Al-A'mal). Nilai-nilai ini diimplementasikan melalui konsep \"suluk\" atau perjalanan spiritual. Penelitian ini mengungkapkan bahwa nilai-nilai Al-Hikam sangat relevan untuk menjawab tantangan Pendidikan 4.0, khususnya dalam: (1) Menangkal dampak negatif teknologi digital, (2) Membangun ketahanan moral generasi muda, (3) Menjaga keseimbangan spiritual di era digital, dan (4) Mempertahankan nilai-nilai humanis di tengah dominasi teknologi. Kitab ini menawarkan solusi holistik yang memadukan pendekatan spiritual dengan kebutuhan pendidikan modern, menghasilkan generasi yang tidak hanya menguasai teknologi tetapi juga memiliki fondasi karakter yang kokoh. Implikasi penelitian ini menekankan pentingnya integrasi nilai-nilai Al-Hikam dalam kurikulum pendidikan karakter untuk menciptakan keseimbangan antara pengembangan kompetensi teknis dan pembentukan kepribadian yang utuh. Studi ini memberikan kontribusi signifikan dalam pengembangan paradigma pendidikan yang responsif terhadap tantangan Revolusi Industri 4.0 tanpa mengabaikan dimensi spiritual dan moral.",
+      "word_count": 205,
+      "metadata": {
+        "publication_year": 2025,
+        "type": "article",
+        "open_access": {
+          "is_oa": true,
+          "oa_status": "diamond",
+          "oa_url": "https://jurnal.staitapaktuan.ac.id/index.php/fitra/article/download/137/105",
+          "any_repository_has_fulltext": false
+        },
+        "landing_page_url": "https://jurnal.staitapaktuan.ac.id/index.php/fitra/article/view/137"
+      }
+    }
+  ],
+  "notes": "Abstracts reconstructed from abstract_inverted_index; fields in the saved request were limited to metadata needed for evaluation."
+}

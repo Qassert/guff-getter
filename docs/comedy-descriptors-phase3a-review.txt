@@ -1,0 +1,291 @@
+NEWSMUNCHER COMEDY DESCRIPTORS — PHASE 3A EDITORIAL REVIEW
+Generated offline on 2026-10-09. No provider or database access.
+
+1. EXISTING BANK INVENTORY
+
+adverbs.csv
+- 1,954 cells; 1,683 unique after trimming/case-folding; 271 duplicate cells.
+- 1,939 single-word entries and 15 multiword entries.
+- Despite its filename, this is predominantly an adjective/participle descriptor bank. Examples include angular, angry, abandoned, gleaming, sticky, swollen and threadbare. Some true adverbs/connectives appear, but the live prompt accurately labels the bank "Adverbs/absurd descriptors" and explicitly permits grammatical alteration.
+- Strongest styles: tactile/material descriptions, bodily or mechanical movement, visual finish, emotional condition and grotesque physical texture.
+- Weaknesses: extensive exact duplication; clusters of near-synonyms around wetness, slime, swelling, pulsing, damage, glow and hair; many ordinary dictionary adjectives; almost no developed comic premise; grammatical role is not recorded.
+- Compatibility constraint: a generated replacement cannot be dropped blindly into the existing pre-noun/adverb instruction. Predicate clauses such as "legally required to wear slippers" need explicit role-aware prompt guidance.
+
+slang.csv
+- 2,277 cells; 2,142 unique after trimming/case-folding; 135 duplicate cells.
+- 1,222 single-word and 1,055 multiword entries.
+- It mixes exclamations, insults, anatomical/sexual vocabulary, profanity, compound abuse, sexual acts, descriptive slang and invented vulgar phrases. The filename therefore hides several incompatible grammatical and tonal roles.
+- Weaknesses: numerous spelling variants and concatenated forms; repeated stems; a substantial amount of graphic or discriminatory material; many phrases cannot substitute for one another grammatically; familiar profanity dominates subtler British comic language.
+
+places.csv
+- 1,005 cells; 997 unique after trimming/case-folding; eight duplicate cells: Dominican Republic, Smingehorpe, Dudley, Iceland, Boots, Stonehenge, Dartmoor and Twat-Piss Peak.
+- 397 single-word and 608 multiword entries.
+- It mixes real countries, regions, settlements and landmarks with businesses, institutions and invented/rude locations. Those roles carry different prepositions and different risks to source geography.
+- Weaknesses: no real/invented distinction, no geographic type, no preposition metadata, and no mechanism for retaining a source story's real geographic context.
+
+2. ACTUAL LIVE CODE PATH
+
+- clean_data.CSV_FILES maps the three prompt keys to these files. In generated-concept mode only nouns and animals are excluded; adverbs, slang and places still use the legacy path.
+- load_random_words reads each bank through word_shuffle.read_bank, which strips boundary whitespace and deduplicates while retaining spelling/capitalisation. PermanentWordClaims.draw shuffles the currently unclaimed vocabulary and supplies ten values from each bank.
+- prepare_prompt source-filters the candidates, splits each ten-value list into three interleaved placeholder lists and inserts them under Adverbs/absurd descriptors, Places and Slang/rude words.
+- The rewrite prompt asks for most adjectives/adverbs and most places to be replaced, while slang is optional where it improves the joke. The generated noun/animal overrides and invented-name override occupy separate prompt fields and do not alter these three banks.
+- After the existing two-pass rewrite, claim_used_words performs exact, case-insensitive boundary matching against the final title/body. Only supplied values literally used are atomically committed to word_shuffle_bags.
+- Claims are permanent. There is no time cooldown or recycling. Concurrent draws may overlap, but the Mongo transaction rejects a final claim if another rewrite claimed the same candidate first. Unused candidates are never claimed.
+
+3. STANDALONE DESCRIPTOR GENERATOR
+
+Files:
+- newsmuncher/services/comedy_descriptors.py
+- newsmuncher/resources/descriptors/comedy_descriptor_components.json
+- scripts/diagnostics/generate_comedy_descriptors.py
+- tests/python/test_comedy_descriptors.py
+
+Architecture:
+- Two configurable editorial categories: cheeky_british (70%) and broader_absurdity (30%).
+- Three configurable intensity levels: 30% mild, 45% properly absurd and 25% unhinged.
+- Six grammatical roles: pre_noun, adverbial, predicate, post_noun, behavioural and short_clause.
+- Sixteen construction templates across thirteen comic mechanisms. Templates, rather than uncontrolled adjective stacking, determine which component banks can combine.
+- Deterministic seeded selection, exact largest-remainder allocations, normalized duplicate prevention, bounded candidate search, template/subject diversity caps, blocked-term filtering, grammatical rejection rules, quality scores and visible editorial warnings.
+- Every output records phrase, grammatical role, mechanism, category, intensity, template, version, word count, score, warnings and a diagnostic subject.
+- The module is not imported by previews.py or clean_data.py and cannot affect live Creation rewriting.
+
+Editorial observations:
+- Successful concise forms include "professionally overexcited", "chronically underqualified" and "emotionally well-moisturised".
+- Strong developed premises include bans for tactical scones, constitutional inability to recognise Tuesdays, medical warnings against advanced tutting, and petty campaigns over badly chaired meetings.
+- Grammatical roles prevent emotional, legal, medical and historical clauses from entering a pre-noun slot.
+- Remaining borderline material is concentrated in long circumstance clauses and the medical-source construction. These are retained and explicitly visible in the weakest-output list rather than hidden by score manipulation.
+- Some monitored themes remain, but the audit's most common subjects are circumstances rather than biscuits, sausages, custard, trousers, councils or ceremonies. No monitored theme is structurally required.
+
+4. FUTURE SLANG GENERATOR PLAN
+
+Recommended categories/roles:
+- exclamation: sentence-level reactions with punctuation metadata;
+- direct insult: vocative or predicate noun, with target/safety metadata;
+- descriptive slang: adjective or predicate description;
+- comic oath: standalone interjection;
+- cheeky euphemism: noun phrase with explicit tone/intensity;
+- action/expression: clause or verb phrase.
+
+Use curated British mechanisms, safety tiers and grammatical roles. Keep explicit sexual material behind a deliberate configuration rather than mixing it with general exclamations. Never infer interchangeability from the current CSV. A future integration should offer optional role-labelled phrases and track accepted uses in a separate lease/cooldown ledger, leaving the historical CSV and claims intact.
+
+5. FUTURE PLACE GENERATOR PLAN
+
+Recommended categories/metadata:
+- real source place (preserved, never randomly replaced without editorial intent);
+- real British place with type and correct in/at/from prepositions;
+- plausible invented settlement;
+- ridiculous civic facility;
+- landscape/landmark;
+- institution/business presented as a location;
+- ceremonial or bureaucratic jurisdiction.
+
+Each item needs place type, real/invented status, country/region where applicable, suitable prepositions and whether it may replace a source location. The safest future integration keeps at least one recognisable source geography and treats comic places as optional secondary locations. Blind replacement of every place risks changing the central meaning and producing misinformation-like geography.
+
+6. SEEDED AUDIT AND EDITORIAL SAMPLE
+
+EDITORIAL SAMPLE (150)
+
+[adverbial]
+- to conceal an embarrassing raffle victory during authorised periods of whimsy | broader_absurdity | intensity=2 | mechanism=ridiculous_motivation | template=questionable_motive | score=6.9 warnings=long descriptor
+- because Tuesdays had become too powerful since the annual shed census | broader_absurdity | intensity=3 | mechanism=ridiculous_motivation | template=questionable_motive | score=7.1 warnings=long descriptor
+- in pursuit of a modest inheritance after the commemorative mug vanished | broader_absurdity | intensity=2 | mechanism=ridiculous_motivation | template=questionable_motive | score=6.9 warnings=long descriptor
+- to impress a driving examiner after losing confidence in Tuesdays | broader_absurdity | intensity=3 | mechanism=ridiculous_motivation | template=questionable_motive | score=7.1 warnings=long descriptor
+- to impress an indifferent crossing guard since the great marmalade compromise | broader_absurdity | intensity=2 | mechanism=ridiculous_motivation | template=questionable_motive | score=6.9 warnings=long descriptor
+- to conceal an embarrassing raffle victory whenever the kettle falls silent | broader_absurdity | intensity=2 | mechanism=ridiculous_motivation | template=questionable_motive | score=6.9 warnings=long descriptor
+
+[behavioural]
+- certain they could audit a haunted castle | cheeky_british | intensity=2 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.15
+- certain they could perform minor surgery | cheeky_british | intensity=1 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=6.95
+- certain they could negotiate a hostage situation | cheeky_british | intensity=2 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.15
+- certain they could brief the Cabinet | cheeky_british | intensity=2 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.15
+- certain they could chair a disciplinary hearing | cheeky_british | intensity=1 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=6.95
+- certain they could coach an Olympic team | cheeky_british | intensity=1 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=6.95
+- certain they could repair the national grid | cheeky_british | intensity=1 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=6.95
+- certain they could land a passenger aircraft | cheeky_british | intensity=2 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.15
+- operating under an assumed moustache during county-level festivities | cheeky_british | intensity=2 | mechanism=secret_history | template=assumed_disguise | score=7.6
+- certain they could translate medieval Latin | cheeky_british | intensity=3 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.35
+- certain they could command a polar expedition | cheeky_british | intensity=1 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=6.95
+- certain they could judge an international pageant | cheeky_british | intensity=3 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.35
+- certain they could run a coastal rescue | cheeky_british | intensity=3 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.35
+- certain they could design a suspension bridge | cheeky_british | intensity=2 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.15
+- certain they could manage a royal banquet | cheeky_british | intensity=2 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.15
+- certain they could settle a border dispute | cheeky_british | intensity=2 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.15
+- certain they could mediate a family Christmas | cheeky_british | intensity=2 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.15
+- certain they could inspect a nuclear submarine | cheeky_british | intensity=1 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=6.95
+- certain they could lead an archaeological dig | cheeky_british | intensity=3 | mechanism=inappropriate_confidence | template=confidence_without_basis | score=7.35
+- operating under an assumed waistcoat after the commemorative mug vanished | cheeky_british | intensity=1 | mechanism=secret_history | template=assumed_disguise | score=6.7 warnings=long descriptor
+- operating under an assumed moustache during outbreaks of competitive modesty | cheeky_british | intensity=2 | mechanism=secret_history | template=assumed_disguise | score=6.9 warnings=long descriptor
+- operating under an assumed waistcoat during routine umbrella inspections | cheeky_british | intensity=1 | mechanism=secret_history | template=assumed_disguise | score=6.7
+
+[post_noun]
+- banned from high-stakes flower arranging for wearing performance-enhancing brogues | cheeky_british | intensity=1 | mechanism=secret_history | template=competition_ban | score=6.7
+- banned from freestyle apologising for wearing performance-enhancing brogues | cheeky_british | intensity=3 | mechanism=secret_history | template=competition_ban | score=7.8
+- banned from speed topiary for wearing performance-enhancing brogues | cheeky_british | intensity=3 | mechanism=secret_history | template=competition_ban | score=7.8
+- banned from recreational town crying for arguing with the ceremonial stopwatch | cheeky_british | intensity=3 | mechanism=secret_history | template=competition_ban | score=7.1 warnings=long descriptor
+- banned from precision sandwich measuring for insulting a commemorative hedge | cheeky_british | intensity=1 | mechanism=secret_history | template=competition_ban | score=6.7 warnings=long descriptor
+- secretly funded by three anonymous greengrocers since the great marmalade compromise | broader_absurdity | intensity=1 | mechanism=institutional_interference | template=secret_funding | score=6.7 warnings=long descriptor
+- secretly funded by an offshore tea room during supervised daylight hours | broader_absurdity | intensity=1 | mechanism=institutional_interference | template=secret_funding | score=6.7 warnings=long descriptor
+- banned from synchronised shed building for performing an excessively confident warm-up | cheeky_british | intensity=3 | mechanism=secret_history | template=competition_ban | score=7.1 warnings=long descriptor
+- banned from contactless conga dancing for wearing performance-enhancing brogues | cheeky_british | intensity=2 | mechanism=secret_history | template=competition_ban | score=6.9
+- secretly funded by a secretive knitting circle during routine umbrella inspections | broader_absurdity | intensity=3 | mechanism=institutional_interference | template=secret_funding | score=7.1 warnings=long descriptor
+- banned from regional spoon balancing for performing an excessively confident warm-up | cheeky_british | intensity=2 | mechanism=secret_history | template=competition_ban | score=6.9 warnings=long descriptor
+- banned from speed topiary for misplacing the official silence | cheeky_british | intensity=2 | mechanism=secret_history | template=competition_ban | score=6.9
+
+[pre_noun]
+- theatrically understaffed | cheeky_british | intensity=2 | mechanism=personal_incompetence | template=incompetence_manner | score=7.95
+- chronically unrehearsed | cheeky_british | intensity=2 | mechanism=personal_incompetence | template=incompetence_manner | score=7.95
+- romantically overdecorated | cheeky_british | intensity=2 | mechanism=personal_incompetence | template=incompetence_manner | score=7.95
+- financially unprepared | cheeky_british | intensity=2 | mechanism=personal_incompetence | template=incompetence_manner | score=7.95
+- recklessly outnumbered | cheeky_british | intensity=3 | mechanism=personal_incompetence | template=incompetence_manner | score=8.15
+- unreasonably overdue | cheeky_british | intensity=1 | mechanism=personal_incompetence | template=incompetence_manner | score=7.75
+- politely overcommitted | cheeky_british | intensity=3 | mechanism=personal_incompetence | template=incompetence_manner | score=8.15
+- alarmingly unlicensed | cheeky_british | intensity=2 | mechanism=personal_incompetence | template=incompetence_manner | score=7.95
+- emotionally overdue | cheeky_british | intensity=1 | mechanism=personal_incompetence | template=incompetence_manner | score=7.75
+- painfully unrehearsed | cheeky_british | intensity=1 | mechanism=personal_incompetence | template=incompetence_manner | score=7.75
+- recklessly unrehearsed | cheeky_british | intensity=2 | mechanism=personal_incompetence | template=incompetence_manner | score=7.95
+- suspiciously unaccredited | cheeky_british | intensity=1 | mechanism=personal_incompetence | template=incompetence_manner | score=7.75
+- theatrically misplaced | cheeky_british | intensity=1 | mechanism=personal_incompetence | template=incompetence_manner | score=7.75
+- professionally overdressed | cheeky_british | intensity=2 | mechanism=personal_incompetence | template=incompetence_manner | score=7.95
+- spiritually underestimated | cheeky_british | intensity=3 | mechanism=personal_incompetence | template=incompetence_manner | score=8.15
+- geographically misdirected | cheeky_british | intensity=3 | mechanism=personal_incompetence | template=incompetence_manner | score=8.15
+- mechanically underestimated | cheeky_british | intensity=3 | mechanism=personal_incompetence | template=incompetence_manner | score=8.15
+- chronically underestimated | cheeky_british | intensity=2 | mechanism=personal_incompetence | template=incompetence_manner | score=7.95
+- theatrically elaborately fastened | cheeky_british | intensity=3 | mechanism=social_embarrassment | template=comic_presentation | score=7.8
+- unreasonably well-moisturised | cheeky_british | intensity=2 | mechanism=social_embarrassment | template=comic_presentation | score=7.6
+- inexplicably freshly upholstered | cheeky_british | intensity=3 | mechanism=social_embarrassment | template=comic_presentation | score=7.8
+- worryingly delicately varnished | cheeky_british | intensity=3 | mechanism=social_embarrassment | template=comic_presentation | score=7.8
+- unnervingly oddly symmetrical | cheeky_british | intensity=2 | mechanism=social_embarrassment | template=comic_presentation | score=7.6
+- alarmingly tastefully reinforced | cheeky_british | intensity=2 | mechanism=social_embarrassment | template=comic_presentation | score=7.6
+- suspiciously flawlessly presented | cheeky_british | intensity=2 | mechanism=social_embarrassment | template=comic_presentation | score=7.6
+- offensively tastefully reinforced | cheeky_british | intensity=1 | mechanism=social_embarrassment | template=comic_presentation | score=7.4
+- unreasonably oddly symmetrical | cheeky_british | intensity=2 | mechanism=social_embarrassment | template=comic_presentation | score=7.6
+- needlessly meticulously buttered | cheeky_british | intensity=1 | mechanism=social_embarrassment | template=comic_presentation | score=7.4
+- disconcertingly luxuriously insulated | cheeky_british | intensity=3 | mechanism=social_embarrassment | template=comic_presentation | score=7.8
+- inexplicably elaborately fastened | cheeky_british | intensity=3 | mechanism=social_embarrassment | template=comic_presentation | score=7.8
+- magnificently freshly upholstered | cheeky_british | intensity=2 | mechanism=social_embarrassment | template=comic_presentation | score=7.6
+- remarkably meticulously buttered | cheeky_british | intensity=2 | mechanism=social_embarrassment | template=comic_presentation | score=7.6
+- worryingly professionally fluffed | cheeky_british | intensity=1 | mechanism=social_embarrassment | template=comic_presentation | score=7.4
+- ostentatiously immaculately laminated | cheeky_british | intensity=2 | mechanism=social_embarrassment | template=comic_presentation | score=7.6
+- unexpectedly delicately varnished | cheeky_british | intensity=1 | mechanism=social_embarrassment | template=comic_presentation | score=7.4
+- needlessly professionally fluffed | cheeky_british | intensity=3 | mechanism=social_embarrassment | template=comic_presentation | score=7.8
+
+[predicate]
+- permanently baffled about a controversial tea rota | cheeky_british | intensity=3 | mechanism=disproportionate_emotion | template=petty_fury | score=8.15
+- unreasonably proud about poorly supervised topiary | cheeky_british | intensity=3 | mechanism=disproportionate_emotion | template=petty_fury | score=8.15
+- terrified about the standard of public murmuring | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- delighted about the decline of sensible doorbells | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- romantically confused about the length of council pencils | cheeky_british | intensity=1 | mechanism=disproportionate_emotion | template=petty_fury | score=7.75
+- solemnly impressed about the reckless naming of roundabouts | cheeky_british | intensity=1 | mechanism=disproportionate_emotion | template=petty_fury | score=7.75
+- dangerously cheerful about the reckless naming of roundabouts | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- deeply suspicious about incorrectly folded maps | cheeky_british | intensity=1 | mechanism=disproportionate_emotion | template=petty_fury | score=7.75
+- secretly relieved about an insulting weather vane | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- inappropriately thrilled about the casual misuse of coasters | cheeky_british | intensity=1 | mechanism=disproportionate_emotion | template=petty_fury | score=7.75
+- heroically patient about a badly chaired meeting | cheeky_british | intensity=1 | mechanism=disproportionate_emotion | template=petty_fury | score=7.75
+- unreasonably proud about the decline of formal slippers | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- personally offended about the reckless naming of roundabouts | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- quietly triumphant about the modern approach to elbows | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- mildly betrayed about competitive curtain twitching | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- needlessly jealous about incorrectly folded maps | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- professionally outraged about unregulated sandwich corners | cheeky_british | intensity=3 | mechanism=disproportionate_emotion | template=petty_fury | score=8.15
+- mildly betrayed about overconfident garden centres | cheeky_british | intensity=2 | mechanism=disproportionate_emotion | template=petty_fury | score=7.95
+- constitutionally incapable of whispering during county-level festivities | cheeky_british | intensity=1 | mechanism=impossible_inability | template=constitutional_inability | score=7.4
+- medically advised against unauthorised winking during county-level festivities | cheeky_british | intensity=2 | mechanism=ridiculous_medical_advice | template=medical_warning | score=7.6
+- constitutionally incapable of whispering during supervised daylight hours | cheeky_british | intensity=1 | mechanism=impossible_inability | template=constitutional_inability | score=7.4
+- able to translate regional sighing during county-level festivities | broader_absurdity | intensity=2 | mechanism=impossible_ability | template=impossible_talent | score=7.6
+- able to detect rain through brickwork after the lawn bowls schism | broader_absurdity | intensity=2 | mechanism=impossible_ability | template=impossible_talent | score=6.9 warnings=long descriptor
+- legally required to report unruly eyebrows since an awkward harvest supper | cheeky_british | intensity=2 | mechanism=absurd_legal_restriction | template=legal_requirement | score=6.9 warnings=long descriptor
+- constitutionally incapable of leaving a buffet calmly during routine umbrella inspections | cheeky_british | intensity=2 | mechanism=impossible_inability | template=constitutional_inability | score=6.9 warnings=long descriptor
+- able to identify counterfeit gravy since the great marmalade compromise | broader_absurdity | intensity=2 | mechanism=impossible_ability | template=impossible_talent | score=6.9 warnings=long descriptor
+- legally required to maintain an emergency waistcoat during rehearsed public appearances | cheeky_british | intensity=3 | mechanism=absurd_legal_restriction | template=legal_requirement | score=7.1 warnings=long descriptor
+- medically advised against aggressive sandwich handling during supervised bouts of enthusiasm | cheeky_british | intensity=1 | mechanism=ridiculous_medical_advice | template=medical_warning | score=6.7 warnings=long descriptor
+- able to detect improperly buttered toast since the regional doormat review | broader_absurdity | intensity=2 | mechanism=impossible_ability | template=impossible_talent | score=6.9 warnings=long descriptor
+- able to smell administrative weakness whenever the town clock runs fast | broader_absurdity | intensity=2 | mechanism=impossible_ability | template=impossible_talent | score=6.9 warnings=long descriptor
+- able to remember every village raffle since the library trolley disappeared | broader_absurdity | intensity=3 | mechanism=impossible_ability | template=impossible_talent | score=7.1 warnings=long descriptor
+- able to sense an approaching subcommittee whenever formal footwear is required | broader_absurdity | intensity=2 | mechanism=impossible_ability | template=impossible_talent | score=6.9 warnings=long descriptor
+- legally required to label both elbows during emergency sandwich conditions | cheeky_british | intensity=2 | mechanism=absurd_legal_restriction | template=legal_requirement | score=6.9 warnings=long descriptor
+- able to smell administrative weakness during routine umbrella inspections | broader_absurdity | intensity=2 | mechanism=impossible_ability | template=impossible_talent | score=6.9
+- able to communicate with lost umbrellas after losing confidence in Tuesdays | broader_absurdity | intensity=3 | mechanism=impossible_ability | template=impossible_talent | score=7.1 warnings=long descriptor
+- legally required to wear slippers since the regional doormat review | cheeky_british | intensity=3 | mechanism=absurd_legal_restriction | template=legal_requirement | score=7.1 warnings=long descriptor
+- medically advised against prolonged cardigan exposure since the regional doormat review | cheeky_british | intensity=2 | mechanism=ridiculous_medical_advice | template=medical_warning | score=6.9 warnings=long descriptor
+- able to detect rain through brickwork after the bus shelter election | broader_absurdity | intensity=2 | mechanism=impossible_ability | template=impossible_talent | score=6.9 warnings=long descriptor
+- legally required to announce every sneeze since the controversial raffle result | cheeky_british | intensity=3 | mechanism=absurd_legal_restriction | template=legal_requirement | score=7.1 warnings=long descriptor
+- legally required to announce every sneeze whenever the weather becomes administrative | cheeky_british | intensity=2 | mechanism=absurd_legal_restriction | template=legal_requirement | score=6.9 warnings=long descriptor
+- medically advised against vigorous pointing since an awkward harvest supper | cheeky_british | intensity=2 | mechanism=ridiculous_medical_advice | template=medical_warning | score=6.9 warnings=long descriptor
+- medically advised against prolonged cardigan exposure since the controversial raffle result | cheeky_british | intensity=2 | mechanism=ridiculous_medical_advice | template=medical_warning | score=6.9 warnings=long descriptor
+- medically advised against competitive murmuring during temporary shortages of common sense | cheeky_british | intensity=3 | mechanism=ridiculous_medical_advice | template=medical_warning | score=7.1 warnings=long descriptor
+
+[short_clause]
+- a disgraced orthodontist has forbidden unauthorised winking | broader_absurdity | intensity=3 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.8
+- a senior biscuit consultant has forbidden recreational saluting | broader_absurdity | intensity=2 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.6 warnings=monitored recurring theme
+- the regional balance clinic has forbidden vigorous pointing | broader_absurdity | intensity=3 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.8
+- a licensed elbow technician has forbidden advanced tutting | broader_absurdity | intensity=1 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.4
+- has withheld ceremonial napkins over the price of modest umbrellas | broader_absurdity | intensity=3 | mechanism=petty_grievance | template=petty_campaign | score=7.45 warnings=long descriptor
+- a freelance posture nurse has forbidden unauthorised winking | broader_absurdity | intensity=1 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.4
+- a licensed elbow technician has forbidden competitive nodding | broader_absurdity | intensity=1 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.4
+- the emergency barber has forbidden contactless Morris dancing | broader_absurdity | intensity=3 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.8
+- a freelance posture nurse has forbidden emotional upholstery | broader_absurdity | intensity=1 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.4
+- a freelance posture nurse has forbidden high-speed queuing | broader_absurdity | intensity=1 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.4
+- a disgraced orthodontist has forbidden aggressive sandwich handling | broader_absurdity | intensity=1 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.4
+- the family chiropodist has forbidden competitive murmuring | broader_absurdity | intensity=2 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.6
+- the regional balance clinic has forbidden competitive murmuring | broader_absurdity | intensity=1 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.4
+- has withheld ceremonial napkins over substandard commemorative mugs | broader_absurdity | intensity=1 | mechanism=petty_grievance | template=petty_campaign | score=7.75
+- an independent trouser physician has forbidden ceremonial lunging | broader_absurdity | intensity=2 | mechanism=ridiculous_medical_advice | template=medical_source | score=7.6
+- has boycotted the communal teapot over an unresolved thermos incident | broader_absurdity | intensity=1 | mechanism=petty_grievance | template=petty_campaign | score=7.05 warnings=long descriptor
+- has withheld ceremonial napkins over unregulated sandwich corners | broader_absurdity | intensity=1 | mechanism=petty_grievance | template=petty_campaign | score=7.75
+- has challenged the mayor to croquet over an unresolved thermos incident | broader_absurdity | intensity=1 | mechanism=petty_grievance | template=petty_campaign | score=7.05 warnings=long descriptor
+- has placed the kettle under observation over an insulting weather vane | broader_absurdity | intensity=3 | mechanism=petty_grievance | template=petty_campaign | score=7.45 warnings=long descriptor
+- has placed the kettle under observation over an unauthorised village raffle | broader_absurdity | intensity=1 | mechanism=petty_grievance | template=petty_campaign | score=7.05 warnings=long descriptor
+- has written seventeen letters over incorrectly folded maps | broader_absurdity | intensity=1 | mechanism=petty_grievance | template=petty_campaign | score=7.75
+- has published an accusatory parish map over incorrectly folded maps | broader_absurdity | intensity=2 | mechanism=petty_grievance | template=petty_campaign | score=7.25 warnings=long descriptor
+- has written seventeen letters over the modern approach to elbows | broader_absurdity | intensity=2 | mechanism=petty_grievance | template=petty_campaign | score=7.25 warnings=long descriptor
+- bows to domestic appliances since the folding-table rebellion | cheeky_british | intensity=2 | mechanism=class_and_etiquette | template=class_etiquette | score=7.6
+- has written seventeen letters over substandard commemorative mugs | broader_absurdity | intensity=1 | mechanism=petty_grievance | template=petty_campaign | score=7.75
+- has formed a breakaway committee over the reckless naming of roundabouts | broader_absurdity | intensity=2 | mechanism=petty_grievance | template=petty_campaign | score=7.25 warnings=long descriptor
+- has written seventeen letters over improperly chilled lemonade | broader_absurdity | intensity=2 | mechanism=petty_grievance | template=petty_campaign | score=7.95
+- bows to domestic appliances whenever the brass band denies everything | cheeky_british | intensity=2 | mechanism=class_and_etiquette | template=class_etiquette | score=6.9 warnings=long descriptor
+- announces puddings by rank during emergency sandwich conditions | cheeky_british | intensity=1 | mechanism=class_and_etiquette | template=class_etiquette | score=7.4
+- bows to domestic appliances during emergency sandwich conditions | cheeky_british | intensity=3 | mechanism=class_and_etiquette | template=class_etiquette | score=7.8
+- addresses parking wardens as Your Grace since the regional doormat review | cheeky_british | intensity=1 | mechanism=class_and_etiquette | template=class_etiquette | score=6.7 warnings=long descriptor
+
+AUDIT (5000)
+unique= 5000 duplicates= 0
+categories {'cheeky_british': 3500, 'broader_absurdity': 1500}
+intensities {2: 2250, 3: 1250, 1: 1500}
+roles {'predicate': 1845, 'short_clause': 983, 'pre_noun': 1190, 'adverbial': 269, 'behavioural': 304, 'post_noun': 409}
+templates {'petty_fury': 595, 'petty_campaign': 349, 'incompetence_manner': 595, 'medical_source': 357, 'questionable_motive': 269, 'comic_presentation': 595, 'impossible_talent': 425, 'class_etiquette': 277, 'confidence_without_basis': 20, 'secret_funding': 86, 'constitutional_inability': 175, 'legal_requirement': 189, 'competition_ban': 309, 'medical_warning': 461, 'assumed_disguise': 284, 'legal_supervision': 14}
+mechanisms {'disproportionate_emotion': 595, 'petty_grievance': 349, 'personal_incompetence': 595, 'ridiculous_medical_advice': 818, 'ridiculous_motivation': 269, 'social_embarrassment': 595, 'impossible_ability': 425, 'class_and_etiquette': 277, 'inappropriate_confidence': 20, 'institutional_interference': 100, 'impossible_inability': 175, 'absurd_legal_restriction': 189, 'secret_history': 593}
+rejections {'repeated_word': 33338, 'quality_score': 54110, 'word_count': 24659, 'duplicate': 100876, 'template_diversity_cap': 11592}
+top subjects [('during county-level festivities', 96), ('during official tea breaks', 73), ('whenever bunting is present', 72), ('during minor constitutional emergencies', 70), ('during rehearsed public appearances', 69), ('since the folding-table rebellion', 68), ('after the village fete', 68), ('during routine umbrella inspections', 67), ('since the gazebo tribunal', 66), ('during supervised daylight hours', 65), ('during emergency sandwich conditions', 58), ('during periods of civic uncertainty', 48), ('whenever decorative gravel is discussed', 48), ('since the library trolley disappeared', 47), ('during supervised bouts of enthusiasm', 46), ('after the commemorative mug vanished', 45), ('since the mayoral sock inquiry', 44), ('after the allotment changed management', 44), ('unregulated sandwich corners', 43), ('whenever the kettle falls silent', 43)]
+proposed 304575 rejected 224575 exhausted False
+
+WEAKEST 30
+- a consultant in applied shrugging has forbidden contactless Morris dancing | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a consultant in applied shrugging has forbidden excessive gazebo use | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a consultant in applied shrugging has forbidden recreational saluting | short_clause | ridiculous_medical_advice | score=6.7 | warnings=none
+- a licensed elbow technician has forbidden prolonged cardigan exposure | short_clause | ridiculous_medical_advice | score=6.7 | warnings=none
+- a licensed elbow technician has forbidden sudden acts of leadership | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a panel of exhausted podiatrists has forbidden excessive gazebo use | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a panel of exhausted podiatrists has forbidden experimental loafing | short_clause | ridiculous_medical_advice | score=6.7 | warnings=none
+- a panel of exhausted podiatrists has forbidden prolonged cardigan exposure | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a panel of exhausted podiatrists has forbidden rhythmic filing | short_clause | ridiculous_medical_advice | score=6.7 | warnings=none
+- a panel of three nervous pharmacists has forbidden amateur diplomacy | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a panel of three nervous pharmacists has forbidden contactless Morris dancing | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a retired cough assessor has forbidden contactless Morris dancing | short_clause | ridiculous_medical_advice | score=6.7 | warnings=none
+- a retired cough assessor has forbidden excessive gazebo use | short_clause | ridiculous_medical_advice | score=6.7 | warnings=none
+- a retired cough assessor has forbidden sudden acts of leadership | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a senior biscuit consultant has forbidden aggressive sandwich handling | short_clause | ridiculous_medical_advice | score=6.7 | warnings=monitored recurring theme
+- a senior biscuit consultant has forbidden contactless Morris dancing | short_clause | ridiculous_medical_advice | score=6.7 | warnings=monitored recurring theme
+- a senior biscuit consultant has forbidden excessive gazebo use | short_clause | ridiculous_medical_advice | score=6.7 | warnings=monitored recurring theme
+- a senior biscuit consultant has forbidden public eyebrow work | short_clause | ridiculous_medical_advice | score=6.7 | warnings=monitored recurring theme
+- a specialist in municipal knees has forbidden sudden acts of leadership | short_clause | ridiculous_medical_advice | score=6.7 | warnings=long descriptor
+- a suspiciously young surgeon has forbidden contactless Morris dancing | short_clause | ridiculous_medical_advice | score=6.7 | warnings=none
+- a travelling ear inspector has forbidden contactless Morris dancing | short_clause | ridiculous_medical_advice | score=6.7 | warnings=none
+- able to communicate with lost umbrellas after the village fete | predicate | impossible_ability | score=6.7 | warnings=long descriptor
+- able to communicate with lost umbrellas during emergency sandwich conditions | predicate | impossible_ability | score=6.7 | warnings=long descriptor
+- able to communicate with lost umbrellas during official tea breaks | predicate | impossible_ability | score=6.7 | warnings=long descriptor
+- able to communicate with lost umbrellas during outbreaks of competitive modesty | predicate | impossible_ability | score=6.7 | warnings=long descriptor
+- able to communicate with lost umbrellas during outbreaks of organised politeness | predicate | impossible_ability | score=6.7 | warnings=long descriptor
+- able to communicate with lost umbrellas since the library trolley disappeared | predicate | impossible_ability | score=6.7 | warnings=long descriptor
+- able to communicate with lost umbrellas under conditions of moderate drizzle | predicate | impossible_ability | score=6.7 | warnings=long descriptor
+- able to communicate with lost umbrellas whenever the noticeboard issues instructions | predicate | impossible_ability | score=6.7 | warnings=long descriptor
+- able to detect improperly buttered toast after the allotment changed management | predicate | impossible_ability | score=6.7 | warnings=long descriptor

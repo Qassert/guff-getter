@@ -1,0 +1,676 @@
+{
+  "domains": 90,
+  "api_usage": {
+    "input_tokens": 93753,
+    "output_tokens": 166046,
+    "cost_usd": 0.81752175
+  },
+  "proposed": 3150,
+  "types": {
+    "entity": 1620,
+    "process": 810,
+    "property": 540,
+    "relationship": 180
+  },
+  "statuses": {
+    "candidate_unreviewed": 2067,
+    "rejected_by_automated_screen": 274,
+    "needs_human_verification": 809
+  },
+  "rejection_reasons": {
+    "existing_or_pilot_normalised_duplicate": 259,
+    "scaled_normalised_duplicate": 103,
+    "invalid_or_overlong": 11
+  },
+  "review_flags": {
+    "noun_head_collision_review": 751,
+    "specialist_factual_review": 249,
+    "historical_provenance_review": 29
+  },
+  "accepted_distinct_entity_phrases": 803,
+  "accepted_new_single_token_noun_heads": 785,
+  "batch_summaries": {
+    "1": {
+      "proposed": 350,
+      "statuses": {
+        "candidate_unreviewed": 283,
+        "rejected_by_automated_screen": 16,
+        "needs_human_verification": 51
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 127,
+      "new_single_token_entity_heads": 126
+    },
+    "2": {
+      "proposed": 350,
+      "statuses": {
+        "candidate_unreviewed": 249,
+        "needs_human_verification": 78,
+        "rejected_by_automated_screen": 23
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 100,
+      "new_single_token_entity_heads": 98
+    },
+    "3": {
+      "proposed": 350,
+      "statuses": {
+        "candidate_unreviewed": 253,
+        "needs_human_verification": 72,
+        "rejected_by_automated_screen": 25
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 115,
+      "new_single_token_entity_heads": 114
+    },
+    "4": {
+      "proposed": 350,
+      "statuses": {
+        "candidate_unreviewed": 223,
+        "needs_human_verification": 97,
+        "rejected_by_automated_screen": 30
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 90,
+      "new_single_token_entity_heads": 89
+    },
+    "5": {
+      "proposed": 350,
+      "statuses": {
+        "candidate_unreviewed": 206,
+        "needs_human_verification": 109,
+        "rejected_by_automated_screen": 35
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 60,
+      "new_single_token_entity_heads": 59
+    },
+    "6": {
+      "proposed": 350,
+      "statuses": {
+        "candidate_unreviewed": 232,
+        "needs_human_verification": 100,
+        "rejected_by_automated_screen": 18
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 82,
+      "new_single_token_entity_heads": 73
+    },
+    "7": {
+      "proposed": 350,
+      "statuses": {
+        "candidate_unreviewed": 208,
+        "needs_human_verification": 114,
+        "rejected_by_automated_screen": 28
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 67,
+      "new_single_token_entity_heads": 66
+    },
+    "8": {
+      "proposed": 350,
+      "statuses": {
+        "needs_human_verification": 108,
+        "candidate_unreviewed": 195,
+        "rejected_by_automated_screen": 47
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 69,
+      "new_single_token_entity_heads": 67
+    },
+    "9": {
+      "proposed": 350,
+      "statuses": {
+        "rejected_by_automated_screen": 52,
+        "needs_human_verification": 80,
+        "candidate_unreviewed": 218
+      },
+      "types": {
+        "entity": 180,
+        "process": 90,
+        "property": 60,
+        "relationship": 20
+      },
+      "new_entity_phrase_candidates": 93,
+      "new_single_token_entity_heads": 93
+    }
+  },
+  "family_summaries": {
+    "living_systems": {
+      "candidate_unreviewed": 234,
+      "rejected_by_automated_screen": 15,
+      "needs_human_verification": 31
+    },
+    "cosmos_physics": {
+      "candidate_unreviewed": 192,
+      "needs_human_verification": 73,
+      "rejected_by_automated_screen": 15
+    },
+    "earth_atmosphere": {
+      "candidate_unreviewed": 214,
+      "needs_human_verification": 51,
+      "rejected_by_automated_screen": 15
+    },
+    "past_societies": {
+      "needs_human_verification": 65,
+      "candidate_unreviewed": 185,
+      "rejected_by_automated_screen": 30
+    },
+    "culture_language": {
+      "rejected_by_automated_screen": 19,
+      "candidate_unreviewed": 183,
+      "needs_human_verification": 78
+    },
+    "built_systems": {
+      "candidate_unreviewed": 179,
+      "needs_human_verification": 101,
+      "rejected_by_automated_screen": 35
+    },
+    "medicine_mind": {
+      "needs_human_verification": 75,
+      "candidate_unreviewed": 196,
+      "rejected_by_automated_screen": 9
+    },
+    "abstract_technology": {
+      "needs_human_verification": 95,
+      "candidate_unreviewed": 162,
+      "rejected_by_automated_screen": 23
+    },
+    "performance_arts": {
+      "needs_human_verification": 100,
+      "candidate_unreviewed": 156,
+      "rejected_by_automated_screen": 24
+    },
+    "craft_material": {
+      "candidate_unreviewed": 166,
+      "rejected_by_automated_screen": 49,
+      "needs_human_verification": 65
+    },
+    "field_practices": {
+      "rejected_by_automated_screen": 40,
+      "candidate_unreviewed": 200,
+      "needs_human_verification": 75
+    }
+  },
+  "domain_summaries": {
+    "marine-biology": {
+      "candidate_unreviewed": 33,
+      "rejected_by_automated_screen": 1,
+      "needs_human_verification": 1
+    },
+    "microbiology": {
+      "candidate_unreviewed": 32,
+      "needs_human_verification": 1,
+      "rejected_by_automated_screen": 2
+    },
+    "genetics": {
+      "candidate_unreviewed": 29,
+      "needs_human_verification": 5,
+      "rejected_by_automated_screen": 1
+    },
+    "botany": {
+      "candidate_unreviewed": 32,
+      "rejected_by_automated_screen": 2,
+      "needs_human_verification": 1
+    },
+    "entomology": {
+      "needs_human_verification": 7,
+      "candidate_unreviewed": 27,
+      "rejected_by_automated_screen": 1
+    },
+    "ornithology": {
+      "candidate_unreviewed": 26,
+      "needs_human_verification": 5,
+      "rejected_by_automated_screen": 4
+    },
+    "animal-navigation": {
+      "candidate_unreviewed": 23,
+      "needs_human_verification": 9,
+      "rejected_by_automated_screen": 3
+    },
+    "extremophile-life": {
+      "candidate_unreviewed": 32,
+      "needs_human_verification": 2,
+      "rejected_by_automated_screen": 1
+    },
+    "astronomy": {
+      "candidate_unreviewed": 22,
+      "needs_human_verification": 13
+    },
+    "cosmology": {
+      "candidate_unreviewed": 27,
+      "needs_human_verification": 7,
+      "rejected_by_automated_screen": 1
+    },
+    "quantum-physics": {
+      "candidate_unreviewed": 26,
+      "needs_human_verification": 8,
+      "rejected_by_automated_screen": 1
+    },
+    "optics": {
+      "needs_human_verification": 6,
+      "candidate_unreviewed": 24,
+      "rejected_by_automated_screen": 5
+    },
+    "fluid-dynamics": {
+      "needs_human_verification": 12,
+      "candidate_unreviewed": 21,
+      "rejected_by_automated_screen": 2
+    },
+    "thermodynamics": {
+      "needs_human_verification": 11,
+      "candidate_unreviewed": 23,
+      "rejected_by_automated_screen": 1
+    },
+    "electromagnetism": {
+      "candidate_unreviewed": 30,
+      "needs_human_verification": 5
+    },
+    "timekeeping-physics": {
+      "needs_human_verification": 11,
+      "candidate_unreviewed": 19,
+      "rejected_by_automated_screen": 5
+    },
+    "geology": {
+      "candidate_unreviewed": 32,
+      "needs_human_verification": 1,
+      "rejected_by_automated_screen": 2
+    },
+    "volcanology": {
+      "needs_human_verification": 7,
+      "candidate_unreviewed": 27,
+      "rejected_by_automated_screen": 1
+    },
+    "palaeontology": {
+      "candidate_unreviewed": 27,
+      "rejected_by_automated_screen": 3,
+      "needs_human_verification": 5
+    },
+    "oceanography": {
+      "needs_human_verification": 12,
+      "candidate_unreviewed": 20,
+      "rejected_by_automated_screen": 3
+    },
+    "meteorology": {
+      "candidate_unreviewed": 26,
+      "needs_human_verification": 7,
+      "rejected_by_automated_screen": 2
+    },
+    "glaciology": {
+      "candidate_unreviewed": 23,
+      "needs_human_verification": 11,
+      "rejected_by_automated_screen": 1
+    },
+    "cave-science": {
+      "candidate_unreviewed": 29,
+      "needs_human_verification": 4,
+      "rejected_by_automated_screen": 2
+    },
+    "desert-geomorphology": {
+      "candidate_unreviewed": 30,
+      "needs_human_verification": 4,
+      "rejected_by_automated_screen": 1
+    },
+    "ancient-egypt": {
+      "needs_human_verification": 12,
+      "candidate_unreviewed": 18,
+      "rejected_by_automated_screen": 5
+    },
+    "mesopotamia": {
+      "candidate_unreviewed": 22,
+      "needs_human_verification": 8,
+      "rejected_by_automated_screen": 5
+    },
+    "roman-engineering": {
+      "candidate_unreviewed": 31,
+      "needs_human_verification": 2,
+      "rejected_by_automated_screen": 2
+    },
+    "medieval-manuscripts": {
+      "candidate_unreviewed": 22,
+      "rejected_by_automated_screen": 2,
+      "needs_human_verification": 11
+    },
+    "byzantine-court": {
+      "candidate_unreviewed": 26,
+      "needs_human_verification": 6,
+      "rejected_by_automated_screen": 3
+    },
+    "silk-road": {
+      "candidate_unreviewed": 26,
+      "needs_human_verification": 7,
+      "rejected_by_automated_screen": 2
+    },
+    "viking-navigation": {
+      "candidate_unreviewed": 19,
+      "needs_human_verification": 13,
+      "rejected_by_automated_screen": 3
+    },
+    "history-of-printing": {
+      "candidate_unreviewed": 21,
+      "needs_human_verification": 6,
+      "rejected_by_automated_screen": 8
+    },
+    "comparative-mythology": {
+      "rejected_by_automated_screen": 3,
+      "candidate_unreviewed": 29,
+      "needs_human_verification": 3
+    },
+    "folklore-customs": {
+      "candidate_unreviewed": 17,
+      "needs_human_verification": 16,
+      "rejected_by_automated_screen": 2
+    },
+    "anthropology-gifts": {
+      "candidate_unreviewed": 24,
+      "needs_human_verification": 11
+    },
+    "linguistics": {
+      "candidate_unreviewed": 33,
+      "needs_human_verification": 2
+    },
+    "writing-systems": {
+      "needs_human_verification": 10,
+      "candidate_unreviewed": 22,
+      "rejected_by_automated_screen": 3
+    },
+    "oral-storytelling": {
+      "candidate_unreviewed": 24,
+      "needs_human_verification": 11
+    },
+    "ritual-masks": {
+      "candidate_unreviewed": 18,
+      "needs_human_verification": 12,
+      "rejected_by_automated_screen": 5
+    },
+    "games-and-play": {
+      "candidate_unreviewed": 16,
+      "needs_human_verification": 13,
+      "rejected_by_automated_screen": 6
+    },
+    "architecture": {
+      "candidate_unreviewed": 30,
+      "needs_human_verification": 2,
+      "rejected_by_automated_screen": 3
+    },
+    "urban-design": {
+      "rejected_by_automated_screen": 4,
+      "candidate_unreviewed": 25,
+      "needs_human_verification": 6
+    },
+    "bridge-engineering": {
+      "candidate_unreviewed": 20,
+      "rejected_by_automated_screen": 6,
+      "needs_human_verification": 9
+    },
+    "lighthouse-engineering": {
+      "needs_human_verification": 15,
+      "rejected_by_automated_screen": 2,
+      "candidate_unreviewed": 18
+    },
+    "sewer-history": {
+      "needs_human_verification": 14,
+      "candidate_unreviewed": 20,
+      "rejected_by_automated_screen": 1
+    },
+    "railway-signalling": {
+      "needs_human_verification": 14,
+      "candidate_unreviewed": 18,
+      "rejected_by_automated_screen": 3
+    },
+    "canal-engineering": {
+      "needs_human_verification": 15,
+      "candidate_unreviewed": 13,
+      "rejected_by_automated_screen": 7
+    },
+    "clockwork-machinery": {
+      "needs_human_verification": 11,
+      "candidate_unreviewed": 18,
+      "rejected_by_automated_screen": 6
+    },
+    "stage-machinery": {
+      "candidate_unreviewed": 17,
+      "needs_human_verification": 15,
+      "rejected_by_automated_screen": 3
+    },
+    "neuroscience": {
+      "needs_human_verification": 8,
+      "candidate_unreviewed": 27
+    },
+    "immunology": {
+      "candidate_unreviewed": 25,
+      "needs_human_verification": 10
+    },
+    "pharmacology": {
+      "candidate_unreviewed": 32,
+      "needs_human_verification": 2,
+      "rejected_by_automated_screen": 1
+    },
+    "epidemiology": {
+      "needs_human_verification": 12,
+      "candidate_unreviewed": 21,
+      "rejected_by_automated_screen": 2
+    },
+    "sleep-science": {
+      "needs_human_verification": 8,
+      "candidate_unreviewed": 27
+    },
+    "prosthetics": {
+      "rejected_by_automated_screen": 1,
+      "needs_human_verification": 16,
+      "candidate_unreviewed": 18
+    },
+    "forensic-pathology": {
+      "candidate_unreviewed": 22,
+      "rejected_by_automated_screen": 3,
+      "needs_human_verification": 10
+    },
+    "psychophysics": {
+      "candidate_unreviewed": 24,
+      "needs_human_verification": 9,
+      "rejected_by_automated_screen": 2
+    },
+    "cryptography": {
+      "needs_human_verification": 11,
+      "candidate_unreviewed": 21,
+      "rejected_by_automated_screen": 3
+    },
+    "robotics": {
+      "needs_human_verification": 13,
+      "candidate_unreviewed": 19,
+      "rejected_by_automated_screen": 3
+    },
+    "graph-theory": {
+      "candidate_unreviewed": 23,
+      "needs_human_verification": 9,
+      "rejected_by_automated_screen": 3
+    },
+    "probability": {
+      "candidate_unreviewed": 21,
+      "needs_human_verification": 12,
+      "rejected_by_automated_screen": 2
+    },
+    "number-theory": {
+      "needs_human_verification": 15,
+      "candidate_unreviewed": 19,
+      "rejected_by_automated_screen": 1
+    },
+    "information-theory": {
+      "rejected_by_automated_screen": 2,
+      "candidate_unreviewed": 20,
+      "needs_human_verification": 13
+    },
+    "early-computing": {
+      "candidate_unreviewed": 20,
+      "rejected_by_automated_screen": 4,
+      "needs_human_verification": 11
+    },
+    "control-theory": {
+      "needs_human_verification": 11,
+      "candidate_unreviewed": 19,
+      "rejected_by_automated_screen": 5
+    },
+    "musicology": {
+      "needs_human_verification": 9,
+      "candidate_unreviewed": 26
+    },
+    "opera": {
+      "needs_human_verification": 9,
+      "rejected_by_automated_screen": 2,
+      "candidate_unreviewed": 24
+    },
+    "dance-history": {
+      "needs_human_verification": 8,
+      "candidate_unreviewed": 26,
+      "rejected_by_automated_screen": 1
+    },
+    "circus-arts": {
+      "candidate_unreviewed": 21,
+      "needs_human_verification": 11,
+      "rejected_by_automated_screen": 3
+    },
+    "stage-magic": {
+      "candidate_unreviewed": 12,
+      "rejected_by_automated_screen": 8,
+      "needs_human_verification": 15
+    },
+    "mime-and-masque": {
+      "needs_human_verification": 13,
+      "candidate_unreviewed": 20,
+      "rejected_by_automated_screen": 2
+    },
+    "radio-drama": {
+      "needs_human_verification": 21,
+      "rejected_by_automated_screen": 4,
+      "candidate_unreviewed": 10
+    },
+    "experimental-cinema": {
+      "candidate_unreviewed": 17,
+      "needs_human_verification": 14,
+      "rejected_by_automated_screen": 4
+    },
+    "textile-weaving": {
+      "candidate_unreviewed": 18,
+      "rejected_by_automated_screen": 5,
+      "needs_human_verification": 12
+    },
+    "ceramics": {
+      "candidate_unreviewed": 22,
+      "needs_human_verification": 4,
+      "rejected_by_automated_screen": 9
+    },
+    "metallurgy": {
+      "candidate_unreviewed": 24,
+      "needs_human_verification": 6,
+      "rejected_by_automated_screen": 5
+    },
+    "bookbinding": {
+      "needs_human_verification": 9,
+      "rejected_by_automated_screen": 7,
+      "candidate_unreviewed": 19
+    },
+    "musical-instrument-making": {
+      "needs_human_verification": 9,
+      "candidate_unreviewed": 23,
+      "rejected_by_automated_screen": 3
+    },
+    "dye-making": {
+      "needs_human_verification": 16,
+      "candidate_unreviewed": 18,
+      "rejected_by_automated_screen": 1
+    },
+    "stone-carving": {
+      "candidate_unreviewed": 24,
+      "rejected_by_automated_screen": 7,
+      "needs_human_verification": 4
+    },
+    "watchmaking": {
+      "rejected_by_automated_screen": 12,
+      "needs_human_verification": 5,
+      "candidate_unreviewed": 18
+    },
+    "cartography": {
+      "rejected_by_automated_screen": 6,
+      "candidate_unreviewed": 20,
+      "needs_human_verification": 9
+    },
+    "celestial-navigation": {
+      "candidate_unreviewed": 33,
+      "needs_human_verification": 2
+    },
+    "mountaineering": {
+      "rejected_by_automated_screen": 6,
+      "candidate_unreviewed": 22,
+      "needs_human_verification": 7
+    },
+    "polar-exploration": {
+      "candidate_unreviewed": 21,
+      "rejected_by_automated_screen": 8,
+      "needs_human_verification": 6
+    },
+    "beekeeping": {
+      "candidate_unreviewed": 15,
+      "needs_human_verification": 15,
+      "rejected_by_automated_screen": 5
+    },
+    "fermentation": {
+      "candidate_unreviewed": 24,
+      "rejected_by_automated_screen": 3,
+      "needs_human_verification": 8
+    },
+    "horticulture": {
+      "candidate_unreviewed": 25,
+      "needs_human_verification": 7,
+      "rejected_by_automated_screen": 3
+    },
+    "seed-banking": {
+      "candidate_unreviewed": 25,
+      "needs_human_verification": 10
+    },
+    "falconry": {
+      "rejected_by_automated_screen": 9,
+      "candidate_unreviewed": 15,
+      "needs_human_verification": 11
+    }
+  }
+}

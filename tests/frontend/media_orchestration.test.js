@@ -1,0 +1,2 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+test('Creator exposes automatic media plus explicit failed-image recovery',()=>{const html=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');assert(html.includes('>RE-EMBELLISH<'));assert(!html.includes('narration')); assert(html.includes('id="jingleStop"'));assert(!html.includes('id="animationButton"'));assert(html.includes('id="redoImageButton"'));});
