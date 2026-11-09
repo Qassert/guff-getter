@@ -1,3 +1,5 @@
+import pytest
+
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -280,7 +282,7 @@ def test_provider_rejections_have_actionable_details_without_logging_sensitive_b
     import httpx
     from openai import APIStatusError
     for status, code, expected in [
-        (429, 'insufficient_quota', 'API credit'),
+        (429, 'insufficient_quota', 'quota or billing restriction'),
         (429, 'rate_limit_exceeded', 'rate-limiting'),
         (404, 'model_not_found', 'model access'),
         (401, 'invalid_api_key', 'credentials'),
@@ -307,3 +309,62 @@ def test_refusal_returns_a_prompt_edit_message_instead_of_generic_bad_gateway():
         response = client().post('/build/generate', json=generation_payload())
     assert response.status_code == 422
     assert response.json()['detail'] == 'Edit this prompt. Your recipe is still here.'
+
+
+@pytest.mark.parametrize('code,error_type,expected', [
+    ('credit_balance_exhausted', 'insufficient_quota', 'exhausted API credit'),
+    ('insufficient_quota', 'insufficient_quota', 'quota or billing restriction'),
+    (None, 'insufficient_quota', 'quota or billing restriction'),
+    ('organization_spend_limit_exceeded', 'insufficient_quota', 'organisation spending-limit'),
+    ('project_spend_limit_exceeded', 'insufficient_quota', 'project spending-limit'),
+    ('organization_usage_limit_exceeded', 'insufficient_quota', 'approved usage limit'),
+    ('rate_limit_exceeded', 'tokens', 'rate-limiting'),
+    (None, 'rate_limit_error', 'rate-limiting'),
+    ('slow_down', 'rate_limit_error', 'rate-limiting'),
+    ('unknown_provider_error', 'insufficient_quota', 'rejected this request'),
+    (None, None, 'rejected this request'),
+])
+def test_provider_error_classification_preserves_code_type_and_endpoint(code, error_type, expected, caplog):
+    import httpx
+    from openai import APIStatusError
+    error = APIStatusError('sensitive exception text',
+        response=httpx.Response(429, request=httpx.Request('POST', 'https://example.test/responses'),
+                                headers={'x-request-id': 'req_classification123'}),
+        body={'error': {'code': code, 'type': error_type, 'message': 'sensitive body text'}})
+    with patch.object(build, 'story_provider', side_effect=error):
+        response = client().post('/build/generate', json=generation_payload())
+    assert response.status_code == 502
+    assert expected in response.json()['detail']
+    assert 'Your recipe is still here.' in response.json()['detail']
+    assert 'endpoint=/build/generate status=429' in caplog.text
+    assert f'code={code or "unavailable"} type={error_type or "unavailable"}' in caplog.text
+    assert 'request_id=req_classification123' in caplog.text
+    assert 'sensitive' not in caplog.text
+    assert 'Transparent bipolar wrench projector' not in caplog.text
+    if code != 'credit_balance_exhausted':
+        assert 'exhausted API credit' not in response.text
+    if code in ('organization_spend_limit_exceeded', 'project_spend_limit_exceeded', 'organization_usage_limit_exceeded'):
+        assert 'rate-limiting' not in response.text
+
+
+@pytest.mark.parametrize('value', ['sk_secret_value', 'sk-secret-value', 'Bearer secret', 'prompt\ntext', {'secret': 'value'}, ['secret']])
+def test_provider_diagnostics_redact_non_metadata_values(value):
+    assert build.safe_provider_identifier(value) == 'redacted'
+    assert build.safe_provider_identifier(value, request_id=True) == 'redacted'
+
+
+def test_provider_diagnostics_do_not_log_headers_credentials_or_arbitrary_provider_content(caplog):
+    import httpx
+    from openai import APIStatusError
+    error = APIStatusError('sk-secret-exception',
+        response=httpx.Response(400, request=httpx.Request('POST', 'https://example.test/responses',
+                                    headers={'authorization': 'Bearer sk-secret-header'}),
+                                headers={'x-request-id': 'sk-secret-request-id'}),
+        body={'code': 'sk-secret-code', 'type': 'user prompt secret', 'message': 'sk-secret-body'})
+    with patch.object(build, 'story_provider', side_effect=error):
+        response = client().post('/build/generate', json=generation_payload())
+    assert response.status_code == 502
+    assert 'code=redacted type=redacted request_id=redacted' in caplog.text
+    assert 'sk-secret' not in caplog.text
+    assert 'user prompt' not in caplog.text
+    assert 'sk-secret' not in response.text

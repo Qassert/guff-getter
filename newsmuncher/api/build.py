@@ -135,6 +135,39 @@ async def build_workshop(request: Request):
     )
 
 
+def safe_provider_identifier(value, request_id=False):
+    """Log enum/request identifiers only, never arbitrary provider text or secrets."""
+    if value is None or value == '':
+        return 'unavailable'
+    pattern = r'req_[A-Za-z0-9_-]{1,100}' if request_id else r'[a-z][a-z0-9_]{0,79}'
+    if (not isinstance(value, str) or value.startswith(('sk_', 'sk-', 'sess_'))
+            or not re.fullmatch(pattern, value)):
+        return 'redacted'
+    return value
+
+
+def provider_error_detail(code, error_type, status):
+    # A specific code takes precedence over the broader error.type classification.
+    category = code or error_type
+    if category == 'credit_balance_exhausted':
+        detail = 'The generation provider reports exhausted API credit. Please check the credited organisation.'
+    elif category == 'insufficient_quota':
+        detail = 'The generation provider reports a quota or billing restriction. Check the organisation and project limits and billing status.'
+    elif category == 'organization_spend_limit_exceeded':
+        detail = 'The generation provider reports an organisation spending-limit restriction. Check the organisation spending limit.'
+    elif category == 'project_spend_limit_exceeded':
+        detail = 'The generation provider reports a project spending-limit restriction. Check the project spending limit.'
+    elif category == 'organization_usage_limit_exceeded':
+        detail = 'The generation provider reports that the organisation reached its approved usage limit. Check the organisation usage tier and limit.'
+    elif category in ('rate_limit_exceeded', 'slow_down', 'rate_limit_error'):
+        detail = 'The generation provider is rate-limiting requests. Please wait and try again.'
+    elif status in (401, 403) or category in ('invalid_api_key', 'model_not_found'):
+        detail = 'The generation provider rejected the server API credentials or model access. Please check the server configuration.'
+    else:
+        detail = 'The generation provider rejected this request. Check the server log for its error code.'
+    return detail + ' Your recipe is still here.'
+
+
 @router.post('/build/generate')
 async def generate_build_munge(payload: BuildStoryRequest):
     recipe = payload.recipe
@@ -156,35 +189,24 @@ async def generate_build_munge(payload: BuildStoryRequest):
     except (APITimeoutError, TimeoutError) as exc:
         raise HTTPException(status_code=504, detail='Story generation timed out. Please try again.') from exc
     except BuildStoryResponseError as exc:
-        log.warning('BUILD generation response failure: code=%s', exc.code)
+        log.warning('BUILD generation response failure: endpoint=/build/generate code=%s', safe_provider_identifier(exc.code))
         raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
     except APIStatusError as exc:
         # Never log the exception/body: they may contain prompts or credentials.
         body = exc.body if isinstance(exc.body, dict) else {}
         error = body.get('error', body)
         error = error if isinstance(error, dict) else {}
-        code = error.get('code') or error.get('type')
-        known_codes = {'insufficient_quota', 'credit_balance_exhausted', 'model_not_found',
-                       'invalid_api_key', 'unsupported_parameter', 'invalid_request_error', 'rate_limit_exceeded'}
-        safe_code = code if isinstance(code, str) and code in known_codes else 'unknown'
-        request_id = getattr(exc, 'request_id', '') or ''
-        safe_id = request_id if re.fullmatch(r'req_[A-Za-z0-9_-]{1,100}', request_id) else 'unavailable'
-        log.warning('BUILD provider rejected request: status=%s code=%s request_id=%s',
-                    exc.status_code, safe_code, safe_id)
-        if code in ('insufficient_quota', 'credit_balance_exhausted'):
-            detail = 'The generation provider has no available API credit. Please check billing. Your recipe is still here.'
-        elif exc.status_code == 429:
-            detail = 'The generation provider is rate-limiting requests. Please wait and try again. Your recipe is still here.'
-        elif exc.status_code in (401, 403) or code == 'model_not_found':
-            detail = 'The generation provider rejected the server API credentials or model access. Please check the server configuration. Your recipe is still here.'
-        else:
-            detail = 'The generation provider rejected this request. Check the server log for its error code. Your recipe is still here.'
+        code, error_type = error.get('code'), error.get('type')
+        log.warning('BUILD provider rejected request: endpoint=/build/generate status=%s code=%s type=%s request_id=%s',
+                    exc.status_code, safe_provider_identifier(code), safe_provider_identifier(error_type),
+                    safe_provider_identifier(getattr(exc, 'request_id', None), request_id=True))
+        detail = provider_error_detail(code, error_type, exc.status_code)
         raise HTTPException(status_code=502, detail=detail) from exc
     except APIConnectionError as exc:
-        log.warning('BUILD provider connection failed')
+        log.warning('BUILD provider connection failed: endpoint=/build/generate')
         raise HTTPException(status_code=502, detail='Could not connect to the generation provider. Your recipe is still here; please try again.') from exc
     except Exception as exc:
-        log.warning('BUILD generation failed: exception_type=%s', type(exc).__name__)
+        log.warning('BUILD generation failed: endpoint=/build/generate exception_type=%s', type(exc).__name__)
         raise HTTPException(status_code=502, detail='Story generation failed. Your recipe is still here.') from exc
 
     if isinstance(generated, dict):

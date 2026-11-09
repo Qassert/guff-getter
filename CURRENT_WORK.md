@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: BUILD provider request aligned with CREATE and failure diagnostics hardened; live retry pending.
-APPROVAL: Andy authorized implementation and a local commit on develop only. No merge, push or deployment for this task.
-NEXT_STEP: Reload the local server and retry BUILD; inspect the safe BUILD warning if generation still fails. No merge, push or deployment.
-VALIDATION: 59 focused Python tests and 209 JavaScript tests pass for this follow-up. Provider calls are mocked. See docs/build-generation-failure.md.
+CURRENT_TASK: Quota classifications reviewed and verified; commit, restart and real-browser BUILD test in progress.
+APPROVAL: Andy authorized committing the diagnostic fix, restarting local Uvicorn and real-browser BUILD generation; push develop only if browser generation and recipe preservation pass. No production deployment.
+NEXT_STEP: Restart local Uvicorn and perform the authorized browser BUILD test before pushing develop.
+VALIDATION: 77 focused Python tests and 209 JavaScript tests pass. Exactly one authorized live OpenAI request completed (HTTP 200). See docs/build-quota-diagnostics.md.
 
 ## Early adoption access — 2026-11-09
 
