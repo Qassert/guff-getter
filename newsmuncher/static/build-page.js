@@ -144,6 +144,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     });
     let payload = {};
     try { payload = await response.json(); } catch (_) {}
+    if (response.status === 401 && payload.adoption_url) root.adoptionAccess?.redirect(payload.adoption_url);
     if (!response.ok) throw new Error(payload.detail || 'Story generation failed. Please try again.');
     if (typeof payload.story !== 'string' || !payload.story.trim()) {
       throw new Error('Story generation returned no text. Please try again.');
@@ -170,6 +171,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       body: JSON.stringify({story, headline, headline_story: headlineStory})
     });
     const payload = await response.json().catch(() => ({}));
+    if (response.status === 401 && payload.adoption_url) root.adoptionAccess?.redirect(payload.adoption_url);
     if (!response.ok) throw new Error(payload.detail || 'Nomination could not be prepared.');
     return payload;
   }
@@ -208,6 +210,31 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
         for (const [category, count] of Object.entries(INITIAL_COUNTS)) {
           for (let index = 0; index < count; index++) this.addSlot(category, false);
         }
+        root.adoptionAccess?.register('build', {
+          snapshot: () => ({slots: this.slots, recipe: this.recipe, nextId: this.nextId,
+            prompt: this.currentPrompt(), promptTarget: this.promptTarget, promptDirty: this.promptDirty,
+            story: this.element.querySelector('[data-build-story]')?.value || '',
+            generatedHeadline: this.generatedHeadline, headlineStory: this.headlineStory}),
+          restore: draft => {
+            if (!draft.slots || !draft.recipe) return;
+            this.slots = draft.slots; this.recipe = draft.recipe; this.nextId = draft.nextId;
+            for (const slots of Object.values(this.slots)) {
+              for (const slot of slots) { slot.busy = false; slot.generation++; }
+            }
+            this.promptTarget = draft.promptTarget || 60;
+            this.generatedHeadline = draft.generatedHeadline || '';
+            this.headlineStory = draft.headlineStory || '';
+            this.promptDirty = !!draft.promptDirty;
+            this.element.querySelector('[data-prompt-editor]').value = draft.prompt || '';
+            if (draft.story) {
+              displayBuildStory(this.element, draft.story);
+              const nominate = this.element.querySelector('[data-build-nominate]');
+              if (nominate) { nominate.hidden = false; nominate.disabled = false; }
+              root.updateCopyButton?.();
+            }
+          }
+        });
+        root.adoptionAccess?.restore();
         this.bind(); this.render();
         this.element.querySelector('[data-build-loading]').hidden = true;
         this.element.querySelector('[data-build-controls]').hidden = false;
@@ -463,6 +490,11 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     }
 
     async generateStory(targetWords) {
+      if (this.checkingAdoption) return;
+      this.checkingAdoption = true;
+      try {
+        if (root.adoptionAccess && !await root.adoptionAccess.ensure()) return;
+      } finally { this.checkingAdoption = false; }
       const populated = Object.values(this.recipe).some(items => items.length);
       if (!populated || this.generating) return;
       this.generating = true;

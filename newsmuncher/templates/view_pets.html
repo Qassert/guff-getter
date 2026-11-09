@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Pet Gallery{% endblock %}
 {% block content %}
+{% if request.query_params.get('next') %}<p role="status">Adopt a pet or select your existing pet to use CREATE, BUILD and GALLERY. After adoption or sign-in, you’ll return to your requested page.</p>{% endif %}
 <div class="page-heading"><p class="eyebrow">THE USUAL SUSPECTS</p><h1>Select or Adopt<br><span class="paint-underline">a Bogart</span></h1></div>
     <div class="gallery">
         {# Non-orphan pets first, sorted by name #}
         {% for pet in pets|selectattr('name')|sort(attribute='name') %}
-            <div class="pet-card" onclick="window.location.href='/pets/select/{{ pet["avatar"] }}'">
+            <div class="pet-card" onclick="window.location.href='/pets/select/{{ pet["avatar"] }}?next={{ request.query_params.get('next', '')|urlencode }}'">
                 <img src="/avatars/{{ pet["avatar"] }}" alt="Pet Image">
                 <p>{{ pet["name"] }}</p>
                 <div class="speech-bubble" id="bubble-{{ pet["avatar"] }}" onclick="event.stopPropagation();"></div>
@@ -14,7 +15,7 @@
 
         {# Orphan pets afterwards #}
         {% for pet in pets if not pet.get("name") %}
-            <div class="pet-card" onclick="window.location.href='/pets/select/{{ pet["avatar"] }}'">
+            <div class="pet-card" onclick="window.location.href='/pets/select/{{ pet["avatar"] }}?next={{ request.query_params.get('next', '')|urlencode }}'">
                 <img src="/avatars/{{ pet["avatar"] }}" alt="Pet Image">
                 <p>Orphan</p>
                 <div class="speech-bubble" id="bubble-{{ pet["avatar"] }}" onclick="event.stopPropagation();"></div>

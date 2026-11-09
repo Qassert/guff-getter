@@ -475,15 +475,22 @@ window.creationActions = {
     nominate: () => bankThisBeauty(),
 };
 
-function confirmData(event) {
+let adoptionCheckPending = false;
+async function confirmData(event) {
+    const engine = event?.currentTarget?.dataset?.mungeEngine || 'current';
+    if (adoptionCheckPending || mungeProcessing) return;
+    adoptionCheckPending = true;
+    try {
+        if (window.adoptionAccess && !await window.adoptionAccess.ensure()) return;
+    } finally { adoptionCheckPending = false; }
     if (mungeProcessing) return;
     const mungeClickedAt = window.performance?.now?.() ?? Date.now();
     const mungeMessage = document.getElementById('mungeMessage');
     if (mungeMessage) { mungeMessage.hidden = true; mungeMessage.textContent = ''; }
-    if (typeof jingleUI !== "undefined") jingleUI.show({nominated: false});
     const sequence = ++rewriteSequence;
-    document.getElementById('bankButton').disabled = true;
-    resetImagePanel();
+    const bank = document.getElementById('bankButton');
+    const wasDisabled = bank.disabled;
+    bank.disabled = true;
     window.mungeMusic?.start(mungeClickedAt);
     showLoader();
     const sourceTitle=document.getElementById('sourceTitleDraft').value,[title,...parts]=sourceTitle.split(' - ');
@@ -493,7 +500,6 @@ function confirmData(event) {
     const source_author=document.getElementById('sourceAuthorDraft')?.value||null;
     const source_licence=document.getElementById('sourceLicenceDraft')?.value||null;
 
-    const engine = event?.currentTarget?.dataset?.mungeEngine || 'current';
     window.mungeMusic?.markApiDispatched();
     fetch("/temp/shizzalise_data", {
         method: "POST",
@@ -505,12 +511,15 @@ function confirmData(event) {
     })
         .then(async response => {
             const data = await response.json().catch(() => ({}));
+            if (response.status === 401 && data.adoption_url) window.adoptionAccess?.redirect(data.adoption_url);
             if (!response.ok) throw new Error(data.detail || "Could not create this MUNGE. Please try again.");
             return data;
         })
         .then(data => {
             if (sequence !== rewriteSequence) return;
             window.mungeMusic?.stop();
+            resetImagePanel();
+            if (typeof jingleUI !== "undefined") jingleUI.show({nominated: false});
             setDisplayedRewriteId(data.rewrite_id);
             setNominationState(data);
             try {
@@ -534,6 +543,7 @@ function confirmData(event) {
         .catch(error => {
             if (sequence !== rewriteSequence) return;
             window.mungeMusic?.stop();
+            bank.disabled = wasDisabled;
             console.error("Error during shizzalise:", error);
             if (mungeMessage) {
                 mungeMessage.textContent = error.message;
@@ -790,6 +800,33 @@ document.getElementById('imageRetryDialog')?.addEventListener('cancel', event =>
 window.addEventListener('pageshow', renderDeleteCreation);
 
 window.onload = () => {
+    const access = window.adoptionAccess;
+    if (document.getElementById('sourceBodyDraft')) {
+        const ids = ['sourceTitleDraft', 'sourceBodyDraft', 'sourceUrlDraft', 'sourceNameDraft',
+            'sourceAuthorDraft', 'sourceLicenceDraft', 'responseTitleDraft', 'responseBodyDraft'];
+        access?.register('create', {
+            snapshot: () => ({...Object.fromEntries(ids.map(id => [id, document.getElementById(id)?.value || ''])),
+                rewriteId: displayedRewriteId}),
+            restore: draft => {
+                for (const id of ids) {
+                    const field = document.getElementById(id);
+                    if (field && typeof draft[id] === 'string') { field.value = draft[id]; autoResize(field); }
+                }
+                if (draft.responseBodyDraft) document.getElementById('outputContainer').style.display = 'block';
+                updateCopyButton();
+            }
+        });
+        const requestedRewrite = new URLSearchParams(window.location.search).get('rewrite_id');
+        const saved = access?.read();
+        if ((!requestedRewrite || requestedRewrite === saved?.rewriteId) && access?.restore()) {
+            // Recover existing server-side draft controls/media when still authorised;
+            // reapply local text afterwards so unsaved edits always win.
+            if (saved?.rewriteId) {
+                restoreImageRewrite().finally(() => { access.restore(); renderNominationButton(); });
+            }
+            return;
+        }
+    }
     if (document.getElementById('sourceBodyDraft')) {
         populateTempData().catch(error=>console.error("Error populating temporary data:",error));
     }

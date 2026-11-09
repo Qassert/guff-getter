@@ -1,7 +1,7 @@
-STATUS: READY
+STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: BUILD CONSOLIDATION FOR DEVELOP
+LAST_COMPLETED_FEATURE: EARLY ADOPTION ACCESS AND DRAFT PRESERVATION
 LAST_COMPLETED_COMMIT: See latest BUILD consolidation and merge commits in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,10 +13,19 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Consolidate verified BUILD prompts, headline generation and SPIN ALL into develop.
-APPROVAL: Andy explicitly authorized committing verified BUILD work, merging into develop and pushing develop. No production deployment.
-NEXT_STEP: Review BUILD visually from develop; live paid generation and production deployment remain unperformed.
-VALIDATION: 199 JavaScript tests; 133 Python tests plus six subtests pass. Generation/media providers and database operations are mocked. See docs/build-consolidation.md.
+CURRENT_TASK: Shared early adoption checks and per-tab work preservation complete; committed locally for review.
+APPROVAL: Andy authorized implementation and a local commit on develop only. No merge, push or deployment for this task.
+NEXT_STEP: Browser-review adoption/login return flow and draft restoration. See docs/adoption-access.md. Do not merge, push or deploy without new authorization.
+VALIDATION: 209 JavaScript tests; 163 Python tests plus six subtests pass. Generation/media providers and database operations are mocked. See docs/adoption-access.md.
+
+## Early adoption access — 2026-11-09
+
+- Shared server checks protect CREATE, BUILD and GALLERY navigation and late MUNGE requests.
+- Reused active_pet, adopted records and existing validated login sessions; Gallery authorization remains intact.
+- Existing adoption/login forms carry safe return destinations, including validation failures.
+- Per-tab drafts preserve CREATE text/source metadata and BUILD ingredients, recipe, prompts and story.
+- Missing adoption is checked before destructive UI changes; storage failure blocks automatic redirection.
+- Local develop commit only; unrelated work in the other worktree is untouched.
 
 ## BUILD consolidation — 2026-11-09
 

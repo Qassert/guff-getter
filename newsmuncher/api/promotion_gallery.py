@@ -177,5 +177,6 @@ async def gallery_page(request: Request):
         request=request, name='promotion_gallery.html', context={
             'signed_in': user is not None,
             'creation_url': f'/pets/pet_profile/{pet_path}' if user else '/pets/view_pets',
-            'login_url': f'/pets/select/{pet_path}' if pet else '/pets/view_pets',
+            'login_url': (f'/pets/select/{pet_path}?next=%2Fpromotion-gallery%2F' if pet
+                          else '/pets/view_pets?next=%2Fpromotion-gallery%2F'),
         }, headers={'Cache-Control': 'private, no-store'})

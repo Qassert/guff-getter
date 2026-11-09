@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Login to {{ pet["name"] }}{% endblock %}
 {% block content %}
+{% if request.query_params.get('next') %}<p role="status">Adopt a pet or sign in to your existing pet to use CREATE, BUILD and GALLERY. We’ll return you to your work afterwards.</p>{% endif %}
 <section class="auth-layout"><div class="page-heading"><p class="eyebrow">BACK FOR MORE</p><h1>Log in to {{ pet["name"] }}</h1></div>
     <div class="form-container">
         {% if error %}
             <div class="error-message">{{ error }}</div>
         {% endif %}
-        <form method="post" action="/pets/use_pet/{{ pet['avatar'] }}">
+        <form method="post" action="/pets/use_pet/{{ pet['avatar'] }}?next={{ request.query_params.get('next', '')|urlencode }}">
             <label class="field-label">Password<input type="password" name="password" placeholder="Password" required autofocus></label>
             <button type="submit">Enter</button>
         </form>

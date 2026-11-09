@@ -10,6 +10,7 @@ import uuid
 import re
 from pymongo.errors import DuplicateKeyError
 from typing import List
+from newsmuncher.services.adoption_access import return_destination
 from newsmuncher.services.gallery_sessions import issue_session
 
 # Environment setup
@@ -170,7 +171,8 @@ async def adopt_pet(
             },
         )
 
-    response = RedirectResponse(url=f"/pets/pet_profile/{avatar}", status_code=303)
+    response = RedirectResponse(url=(return_destination(request.query_params["next"], avatar)
+        if request.query_params.get("next") else f"/pets/pet_profile/{avatar}"), status_code=303)
     response.set_cookie(key="active_pet", value=avatar, httponly=True, max_age=86400)
     await issue_session(db["gallery_sessions"], response, request,
                         {"avatar": avatar, "password": hashed_password})
@@ -209,7 +211,8 @@ async def use_pet(
         {"$set": {"last_used": datetime.utcnow()}}
     )
 
-    response = RedirectResponse(url=f"/pets/pet_profile/{avatar}", status_code=303)
+    response = RedirectResponse(url=(return_destination(request.query_params["next"], avatar)
+        if request.query_params.get("next") else f"/pets/pet_profile/{avatar}"), status_code=303)
     response.set_cookie(key="active_pet", value=avatar, httponly=True, max_age=86400)
     await issue_session(db["gallery_sessions"], response, request, pet)
     return response
