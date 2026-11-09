@@ -1,7 +1,7 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: EARLY ADOPTION ACCESS AND DRAFT PRESERVATION
+LAST_COMPLETED_FEATURE: BUILD PROVIDER REQUEST AND FAILURE HANDLING
 LAST_COMPLETED_COMMIT: See latest BUILD consolidation and merge commits in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Shared early adoption checks and per-tab work preservation complete; committed locally for review.
+CURRENT_TASK: BUILD provider request aligned with CREATE and failure diagnostics hardened; live retry pending.
 APPROVAL: Andy authorized implementation and a local commit on develop only. No merge, push or deployment for this task.
-NEXT_STEP: Browser-review adoption/login return flow and draft restoration. See docs/adoption-access.md. Do not merge, push or deploy without new authorization.
-VALIDATION: 209 JavaScript tests; 163 Python tests plus six subtests pass. Generation/media providers and database operations are mocked. See docs/adoption-access.md.
+NEXT_STEP: Reload the local server and retry BUILD; inspect the safe BUILD warning if generation still fails. No merge, push or deployment.
+VALIDATION: 59 focused Python tests and 209 JavaScript tests pass for this follow-up. Provider calls are mocked. See docs/build-generation-failure.md.
 
 ## Early adoption access — 2026-11-09
 

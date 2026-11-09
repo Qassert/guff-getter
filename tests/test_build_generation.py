@@ -236,3 +236,74 @@ def test_build_template_has_build_only_footer_override_and_functional_munge():
     assert 'MUNGE {{ target }}' in template
     assert 'data-build-result' in template
     assert '>MUNCH</button>' not in template
+
+
+def test_build_provider_uses_the_same_bounded_nonreasoning_settings_as_create():
+    response = SimpleNamespace(status='completed', output=[], output_text='{"story":"The bishop floated away.","headline":"Bishop floats"}')
+    mocked = MagicMock()
+    mocked.__enter__.return_value = mocked
+    mocked.responses.create.return_value = response
+    with patch.object(build_story, 'OpenAI', return_value=mocked):
+        for maximum in (33, 66, 99):
+            result = build_story.generate_build_story('A local prompt', maximum)
+            assert result['story'] == 'The bishop floated away.'
+    call = mocked.responses.create.call_args.kwargs
+    assert call['reasoning'] == {'effort': 'none'}
+    assert call['max_output_tokens'] == 750
+    assert call['store'] is False
+    assert mocked.responses.create.call_count == 3  # One request per MUNGE; no retries.
+
+
+def test_provider_response_failures_are_safe_and_never_return_partial_stories():
+    import pytest
+    cases = [
+        (SimpleNamespace(status='incomplete', output=[], output_text='{"story":"partial'), 'incomplete', 502),
+        (SimpleNamespace(status='completed', output=[SimpleNamespace(content=[SimpleNamespace(type='refusal')])], output_text=''), 'refusal', 422),
+        (SimpleNamespace(status='completed', output=[], output_text='not JSON'), 'invalid_json', 502),
+        (SimpleNamespace(status='completed', output=[], output_text='[]'), 'invalid_shape', 502),
+        (SimpleNamespace(status='completed', output=[], output_text='{"story":{"bad":"shape"}}'), 'empty_story', 502),
+        (SimpleNamespace(status='completed', output=[], output_text='{"story":""}'), 'empty_story', 502),
+    ]
+    for response, code, status in cases:
+        mocked = MagicMock()
+        mocked.__enter__.return_value = mocked
+        mocked.responses.create.return_value = response
+        with patch.object(build_story, 'OpenAI', return_value=mocked):
+            with pytest.raises(build_story.BuildStoryResponseError) as error:
+                build_story.generate_build_story('A local prompt', 66)
+        assert error.value.code == code
+        assert error.value.status_code == status
+        mocked.responses.create.assert_called_once()
+
+
+def test_provider_rejections_have_actionable_details_without_logging_sensitive_bodies(caplog):
+    import httpx
+    from openai import APIStatusError
+    for status, code, expected in [
+        (429, 'insufficient_quota', 'API credit'),
+        (429, 'rate_limit_exceeded', 'rate-limiting'),
+        (404, 'model_not_found', 'model access'),
+        (401, 'invalid_api_key', 'credentials'),
+        (400, 'unsupported_parameter', 'rejected this request'),
+    ]:
+        caplog.clear()
+        error = APIStatusError('sensitive-provider-message',
+            response=httpx.Response(status, request=httpx.Request('POST', 'https://example.test/responses'),
+                                    headers={'x-request-id': 'req_test123'}),
+            body={'error': {'code': code, 'message': 'sensitive-provider-body'}})
+        with patch.object(build, 'story_provider', side_effect=error):
+            response = client().post('/build/generate', json=generation_payload())
+        assert response.status_code == 502
+        assert expected in response.json()['detail']
+        assert code in caplog.text
+        assert 'req_test123' in caplog.text
+        assert 'sensitive-provider' not in caplog.text
+        assert 'sensitive-provider' not in response.text
+
+
+def test_refusal_returns_a_prompt_edit_message_instead_of_generic_bad_gateway():
+    error = build_story.BuildStoryResponseError('refusal', 'Edit this prompt. Your recipe is still here.', 422)
+    with patch.object(build, 'story_provider', side_effect=error):
+        response = client().post('/build/generate', json=generation_payload())
+    assert response.status_code == 422
+    assert response.json()['detail'] == 'Edit this prompt. Your recipe is still here.'

@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import Literal, Optional
 from urllib.parse import quote
@@ -5,17 +6,19 @@ from urllib.parse import quote
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from openai import APITimeoutError
+from openai import APITimeoutError, APIStatusError, APIConnectionError
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from newsmuncher.config import TEMPLATES_DIR
-from newsmuncher.services.build_story import bounded_headline, enforce_word_limit, generate_build_story
+from newsmuncher.services.build_story import (BuildStoryResponseError, bounded_headline,
+    enforce_word_limit, generate_build_story)
 from newsmuncher.services.image_generation import store
 
 router = APIRouter()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 story_provider = generate_build_story
+log = logging.getLogger(__name__)
 STORY_LENGTH_MAXIMUMS = {30: 33, 60: 66, 90: 99}
 DEFAULT_BUILD_CREATIVE_PROMPT = """You are a dangerously unhinged comedy writer with impeccable comic timing and absolutely no respect for reality.
 
@@ -152,7 +155,36 @@ async def generate_build_munge(payload: BuildStoryRequest):
         generated = await run_in_threadpool(story_provider, prompt, maximum_words)
     except (APITimeoutError, TimeoutError) as exc:
         raise HTTPException(status_code=504, detail='Story generation timed out. Please try again.') from exc
+    except BuildStoryResponseError as exc:
+        log.warning('BUILD generation response failure: code=%s', exc.code)
+        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+    except APIStatusError as exc:
+        # Never log the exception/body: they may contain prompts or credentials.
+        body = exc.body if isinstance(exc.body, dict) else {}
+        error = body.get('error', body)
+        error = error if isinstance(error, dict) else {}
+        code = error.get('code') or error.get('type')
+        known_codes = {'insufficient_quota', 'credit_balance_exhausted', 'model_not_found',
+                       'invalid_api_key', 'unsupported_parameter', 'invalid_request_error', 'rate_limit_exceeded'}
+        safe_code = code if isinstance(code, str) and code in known_codes else 'unknown'
+        request_id = getattr(exc, 'request_id', '') or ''
+        safe_id = request_id if re.fullmatch(r'req_[A-Za-z0-9_-]{1,100}', request_id) else 'unavailable'
+        log.warning('BUILD provider rejected request: status=%s code=%s request_id=%s',
+                    exc.status_code, safe_code, safe_id)
+        if code in ('insufficient_quota', 'credit_balance_exhausted'):
+            detail = 'The generation provider has no available API credit. Please check billing. Your recipe is still here.'
+        elif exc.status_code == 429:
+            detail = 'The generation provider is rate-limiting requests. Please wait and try again. Your recipe is still here.'
+        elif exc.status_code in (401, 403) or code == 'model_not_found':
+            detail = 'The generation provider rejected the server API credentials or model access. Please check the server configuration. Your recipe is still here.'
+        else:
+            detail = 'The generation provider rejected this request. Check the server log for its error code. Your recipe is still here.'
+        raise HTTPException(status_code=502, detail=detail) from exc
+    except APIConnectionError as exc:
+        log.warning('BUILD provider connection failed')
+        raise HTTPException(status_code=502, detail='Could not connect to the generation provider. Your recipe is still here; please try again.') from exc
     except Exception as exc:
+        log.warning('BUILD generation failed: exception_type=%s', type(exc).__name__)
         raise HTTPException(status_code=502, detail='Story generation failed. Your recipe is still here.') from exc
 
     if isinstance(generated, dict):
