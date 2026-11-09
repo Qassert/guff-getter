@@ -1,7 +1,7 @@
-STATUS: READY
+STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: BUILD QUOTA DIAGNOSTICS AND REAL-BROWSER VERIFICATION
+LAST_COMPLETED_FEATURE: GALLERY EDIT TEXT PERSISTENCE
 LAST_COMPLETED_COMMIT: See latest BUILD consolidation and merge commits in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Quota diagnostic fix committed; restarted local server and real-browser BUILD generation/recipe preservation passed.
-APPROVAL: Andy authorized committing the diagnostic fix, restarting local Uvicorn and real-browser BUILD generation; push develop only if browser generation and recipe preservation pass. No production deployment.
-NEXT_STEP: Push verified develop as authorized; production deployment remains prohibited.
-VALIDATION: 77 focused Python tests and 209 JavaScript tests pass. One real-browser MUNGE 30 succeeded with HTTP 200 and all three selected recipe items preserved. See docs/build-quota-diagnostics.md.
+CURRENT_TASK: Gallery edits now save durable canonical text and are awaited before navigation; completed locally for review.
+APPROVAL: Andy authorized a local develop commit for the Gallery edit fix only. No push, merge or deployment.
+NEXT_STEP: Review Gallery edit/save/navigation behaviour. See docs/gallery-text-edit.md. Do not push, merge or deploy.
+VALIDATION: 215 JavaScript tests; 149 Python tests plus six subtests pass. Temporary SQLite/fake Mongo and mocked navigation; no live story/media changes. See docs/gallery-text-edit.md.
 
 ## Early adoption access — 2026-11-09
 

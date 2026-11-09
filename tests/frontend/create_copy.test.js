@@ -32,7 +32,7 @@ test('fresh Create assets expose a fully interactive inline result editor',()=>{
   assert(textarea);assert.doesNotMatch(textarea,/\b(?:readonly|disabled)\b/i);
   assert.match(css,/#responseBodyDraft\s*\{[^}]*pointer-events:\s*auto[^}]*cursor:\s*text/s);
   assert.match(base,/styles\.css'\) \}\}\?v=master-audio-1/);
-  assert.match(html,/script\.js'\) \}\}\?v=create-actions-5/);
+  assert.match(html,/script\.js'\) \}\}\?v=create-actions-6/);
 });
 
 test('nomination remains visible as NOMINATED and becomes editable only after changes',()=>{

@@ -185,6 +185,7 @@ async function deleteCurrentCreation() {
 }
 function responseEdited() {
     renderNominationButton();
+    globalThis.creationTextSaver?.schedule();
 }
 
 function renderNominationButton() {
@@ -573,7 +574,32 @@ window.persistCreationText = async () => {
     return {rewrite_id:displayedRewriteId, text};
 };
 
+if (window.NewsMuncherStoryText) {
+    window.creationTextSaver = new window.NewsMuncherStoryText.StoryTextSaver({
+        snapshot: () => {
+            const text = currentResultText();
+            return displayedRewriteId && creationNominated && JSON.stringify(text) !== nominatedSnapshot
+                ? {rewrite_id: displayedRewriteId, text} : null;
+        },
+        saved: draft => {
+            if (draft.rewrite_id === displayedRewriteId) {
+                nominatedSnapshot = JSON.stringify(draft.text);
+                window.adoptionAccess?.save();
+                renderNominationButton();
+            }
+        },
+        notify: text => {
+            const status = document.getElementById('storyTextSaveStatus');
+            if (status) { status.textContent = text; status.hidden = false; }
+        }
+    });
+    window.addEventListener('pagehide', () => window.creationTextSaver.flush().catch(() => {}));
+}
+
 function bankThisBeauty() {
+    if (creationNominated && displayedRewriteId && window.creationTextSaver) {
+        return window.creationTextSaver.flush().catch(() => {});
+    }
     if (nominationPending || imageRedoPending) return;
     const response = currentResultText();
     const snapshot = JSON.stringify(response);
@@ -806,9 +832,19 @@ window.onload = () => {
             'sourceAuthorDraft', 'sourceLicenceDraft', 'responseTitleDraft', 'responseBodyDraft'];
         access?.register('create', {
             snapshot: () => ({...Object.fromEntries(ids.map(id => [id, document.getElementById(id)?.value || ''])),
-                rewriteId: displayedRewriteId}),
+                rewriteId: displayedRewriteId,
+                savedTextSnapshot: typeof nominatedSnapshot === 'string' ? nominatedSnapshot : null}),
             restore: draft => {
+                // An acknowledged local copy is not an unsaved edit: prefer the
+                // latest server text when reopening a story saved in another session.
+                const acknowledged = draft.savedTextSnapshot &&
+                    draft.savedTextSnapshot === JSON.stringify({
+                        crazyReplacement1Title: draft.responseTitleDraft,
+                        crazyReplacement1Extract: draft.responseBodyDraft}) &&
+                    typeof creationNominated !== 'undefined' && creationNominated &&
+                    draft.rewriteId === displayedRewriteId;
                 for (const id of ids) {
+                    if (acknowledged && id.startsWith('response')) continue;
                     const field = document.getElementById(id);
                     if (field && typeof draft[id] === 'string') { field.value = draft[id]; autoResize(field); }
                 }
@@ -822,7 +858,7 @@ window.onload = () => {
             // Recover existing server-side draft controls/media when still authorised;
             // reapply local text afterwards so unsaved edits always win.
             if (saved?.rewriteId) {
-                restoreImageRewrite().finally(() => { access.restore(); renderNominationButton(); });
+                restoreImageRewrite().finally(() => { access.restore(); responseEdited(); });
             }
             return;
         }

@@ -635,6 +635,16 @@
                 if (sequence === this.sequence) this.view.completing(false);
             }
         }
+        async resume() {
+            if (!this.current) return;
+            const sequence = ++this.sequence;
+            try {
+                const latest = await this.storedItem(this.current);
+                await this.refresh(latest, sequence);
+            } catch (error) {
+                if (sequence === this.sequence) this.view.error(error.message);
+            }
+        }
         leave() {
             this.sequence++;
             this.stopPingPongPoll();
@@ -911,6 +921,7 @@
     endRetryDialog.addEventListener('cancel', event => {
         event.preventDefault(); closeEndRetryDialog(false);
     });
+    window.addEventListener('pageshow', event => { if (event.persisted) gallery.resume(); });
     window.addEventListener('pagehide', () => {
         clearTimeout(nextTimer);
         clearTimeout(promoteTimer);

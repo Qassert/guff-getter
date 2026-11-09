@@ -1187,6 +1187,37 @@ def read_image_rewrite(db, rewrite_id, owner, allow_discarded=False):
         raise HTTPException(status_code=403, detail=str(exc))
 
 
+class SavedStoryText(BaseModel):
+    crazyReplacement1Title: str = Field(max_length=300)
+    crazyReplacement1Extract: str = Field(min_length=1, max_length=10000)
+
+
+@router.patch('/creation/{rewrite_id}/text')
+def save_creation_text(rewrite_id: str, payload: SavedStoryText, request: Request):
+    """Save existing nomination text in both read models, leaving all media intact."""
+    from newsmuncher.api.entries import collection
+    owner = request.cookies.get('active_pet')
+    if not owner:
+        raise HTTPException(401, 'No active pet selected.')
+    with store.transaction() as db:
+        state = read_image_rewrite(db, rewrite_id, owner)
+        if state.get('generating') or not state.get('entry_id'):
+            raise HTTPException(409, 'Only a saved creation can be edited here.')
+        if not ObjectId.is_valid(state['entry_id']):
+            raise HTTPException(409, 'Saved creation identity is invalid.')
+        query = {'_id': ObjectId(state['entry_id']), 'rewrite_id': rewrite_id, '$or': [
+            {'image_owner': owner},
+            {'image_owner': {'$exists': False}, 'creationUser': owner}]}
+        changes = payload.model_dump()
+        # Text-only $set: never invalidate, unlink or regenerate existing media.
+        result = collection.update_one(query, {'$set': changes})
+        if result.matched_count != 1:
+            raise HTTPException(404, 'Saved creation not found for this pet.')
+        state['result'].update(changes)
+        store.save(db, rewrite_id, state)
+    return {'rewrite_id': rewrite_id, **changes}
+
+
 def persist_banked_image(state, metadata):
     response = requests.patch(
         f"{ENTRIES_API_BASE_URL}/entry/{state['entry_id']}/image",
