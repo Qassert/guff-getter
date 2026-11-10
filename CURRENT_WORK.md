@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: BUILD COMPLETE STORY DISPLAY AND DRAMATIC PROMPT
-LAST_COMPLETED_COMMIT: See latest BUILD display and drama commit in Git history
+LAST_COMPLETED_FEATURE: RANDOMIZED NAVIGATION SOUNDS
+LAST_COMPLETED_COMMIT: See latest randomized navigation sounds commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: BUILD shared fitting verifies the final textarea viewport; dramatic default creative rule added. Complete locally for review.
-APPROVAL: Andy authorized committing only these two BUILD improvements. No push, merge or deployment.
-NEXT_STEP: Review local commit and docs/build-display-drama.md. No push, merge or deployment.
-VALIDATION: 221 JavaScript tests; 231 Python tests plus six subtests pass. Headless Chrome fixture verified long stories, edits, narrow layout and final-sentence scrolling. No live provider calls.
+CURRENT_TASK: Random CREATE/BUILD/GALLERY click sounds with caching, no repeats, master mute and safe navigation preserved.
+APPROVAL: Andy requested the nine supplied navigation WAVs and minimal scoped integration. No push, merge or deployment.
+NEXT_STEP: Review local navigation sound changes. Original checkout unfinished work remains untouched.
+VALIDATION: 230 JavaScript tests; 73 Python tests pass. Headless Chrome loaded all nine WAVs and verified three pools, playback, no repeats/overlap and mute. See docs/navigation-sounds.md.
 
 ## Early adoption access — 2026-11-09
 
@@ -1943,7 +1943,7 @@ image prompt only: believable figures/materials, cinematic lighting, connected s
 absurd humour and 4–6 dominant colours. Flat style retained as PREVIOUS_IMAGE_STYLE;
 original graffiti/zine wording retained as ORIGINAL_IMAGE_STYLE, both reference-only.
 Image settings, rewritten scene inputs and lifecycle unchanged.
-VALIDATION: 221 JavaScript tests; 231 Python tests plus six subtests pass. Headless Chrome fixture verified long stories, edits, narrow layout and final-sentence scrolling. No live provider calls.
+VALIDATION: 230 JavaScript tests; 73 Python tests pass. Headless Chrome loaded all nine WAVs and verified three pools, playback, no repeats/overlap and mute. See docs/navigation-sounds.md.
 No real images or external calls. Changes intentionally uncommitted/unpushed for review.
 
 
@@ -1959,7 +1959,7 @@ Run from root using .venv/bin/python -m scripts.diagnostics.compare_tts --provid
 For one live sample, replace all with openai/elevenlabs/cartesia and omit --dry-run.
 Each provider requires an API-enabled account, usable quota/credit and access to the
 configured voice IDs. Account/voice availability has not been tested live.
-VALIDATION: 221 JavaScript tests; 231 Python tests plus six subtests pass. Headless Chrome fixture verified long stories, edits, narrow layout and final-sentence scrolling. No live provider calls.
+VALIDATION: 230 JavaScript tests; 73 Python tests pass. Headless Chrome loaded all nine WAVs and verified three pools, playback, no repeats/overlap and mute. See docs/navigation-sounds.md.
 STATUS: REVIEW / CODEX; user authorized committing and pushing this harness.
 Earlier image-style changes are already committed; older uncommitted wording above
 is historical. No unrelated files changed in this harness task.
