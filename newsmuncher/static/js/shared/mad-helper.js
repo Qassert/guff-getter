@@ -1,4 +1,4 @@
-/* CREATE opts in; the component itself is reusable and has no generation calls. */
+/* Explicitly opted-in parchment text shares one helper; no generation calls. */
 (function(root) {
     'use strict';
     const KEY = 'newsmuncher.madHelper.enabled';
@@ -8,6 +8,23 @@
     };
     const idleDelay = (duration, frequency, random = Math.random) =>
         duration * 1000 * (1 - frequency) / frequency * (.6 + .8 * random());
+
+    const contentOf = text => typeof text.value === 'string' ? text.value : (text.textContent || '');
+    const discoverPlacements = doc => Array.from(doc.querySelectorAll('[data-mad-helper-text]'), text => ({
+        text, paper: text.closest('[data-mad-helper-paper]'),
+        avoid: text.dataset.madHelperAvoid ? Array.from(doc.querySelectorAll(text.dataset.madHelperAvoid)) : []
+    })).filter(placement => placement.paper);
+
+    function avoidControls(geometry, obstacles, gap = 12) {
+        const result = {...geometry}, half = result.width / 2;
+        for (const box of obstacles) {
+            if (result.x + half <= box.left || result.x - half >= box.right ||
+                    result.y + half + gap <= box.top || result.y - half - gap >= box.bottom) continue;
+            const above = box.top - half - gap, below = box.bottom + half + gap;
+            result.y = Math.abs(above - geometry.y) < Math.abs(below - geometry.y) ? above : below;
+        }
+        return result;
+    }
 
     class AnimationCycle {
         constructor({clips, frequency = .2, random = Math.random, timers = root,
@@ -83,23 +100,34 @@
             this.video.className = 'mad-helper-animation'; this.video.hidden = true;
             this.fallback = doc.createElement('img'); this.fallback.alt = ''; this.fallback.className = 'mad-helper-animation'; this.fallback.hidden = true;
             this.mirror = doc.createElement('div'); this.mirror.className = 'mad-helper-measure'; this.mirror.setAttribute('aria-hidden', 'true'); doc.body.append(this.mirror);
-            for (const {paper, text} of placements) {
+            for (const {paper, text, avoid = []} of placements) {
                 const host = doc.createElement('div'); host.className = 'mad-helper-place'; host.hidden = true;
                 const button = doc.createElement('button'); button.type = 'button'; button.className = 'mad-helper-button'; button.setAttribute('aria-label', 'Mad Helper: ' + bubbleText);
                 const image = doc.createElement('img'); image.src = png; image.alt = ''; image.draggable = false;
                 const bubble = doc.createElement('span'); bubble.className = 'mad-helper-bubble'; bubble.textContent = bubbleText; bubble.hidden = true;
                 button.append(image); host.append(button, bubble); doc.body.append(host);
-                const node = {paper, text, host, button, image, bubble, padding: text.style.paddingLeft,
+                const node = {paper, text, avoid, host, button, image, bubble, padding: text.style.paddingLeft,
                     basePadding: parseFloat(root.getComputedStyle(text).paddingLeft) || 0};
                 button.addEventListener('click', () => this.click(node)); this.nodes.push(node);
             }
             this.scheduleLayout = () => {
                 if (!this.enabled || this.doc.hidden || this.frame) return;
-                this.frame = root.requestAnimationFrame(() => {this.frame = null; this.layout();});
+                this.frame = root.requestAnimationFrame(() => {
+                    this.frame = null; this.layout();
+                    if (this.nodes.some(node => node.moving)) this.scheduleLayout();
+                });
             };
             this.visibility = () => {
-                if (doc.hidden) {if (this.frame) root.cancelAnimationFrame(this.frame); this.frame = null; this.cycle.stop(); this.stopPlayback(); this.hideBubble(); this.stopSound();}
+                if (doc.hidden) {for (const node of this.nodes) node.moving = false; if (this.frame) root.cancelAnimationFrame(this.frame); this.frame = null; this.cycle.stop(); this.stopPlayback(); this.hideBubble(); this.stopSound();}
                 else {this.scheduleLayout(); this.cycle.schedule();}
+            };
+            this.motionStart = event => {
+                const node = this.nodes.find(node => node.paper === event.target);
+                if (node) {node.moving = true; this.scheduleLayout();}
+            };
+            this.motionEnd = event => {
+                for (const node of this.nodes) if (node.paper === event.target) node.moving = false;
+                this.scheduleLayout();
             };
             this.change = () => this.setEnabled(toggle.checked);
             toggle.addEventListener('change', this.change);
@@ -113,10 +141,10 @@
         }
         measure(text) {
             const style = root.getComputedStyle(text), mirror = this.mirror;
-            for (const key of ['fontFamily','fontSize','fontWeight','fontStyle','lineHeight','letterSpacing','wordSpacing','textIndent','tabSize']) mirror.style[key] = style[key];
+            for (const key of ['fontFamily','fontSize','fontWeight','fontStyle','lineHeight','letterSpacing','wordSpacing','textIndent','tabSize','whiteSpace','wordBreak','overflowWrap']) mirror.style[key] = style[key];
             const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
             mirror.style.width = Math.max(1, text.clientWidth - padding) + 'px';
-            mirror.textContent = text.value || ' ';
+            mirror.textContent = contentOf(text) || ' ';
             return {height: mirror.getBoundingClientRect().height, top: parseFloat(style.paddingTop) || 0,
                 bottom: parseFloat(style.paddingBottom) || 0};
         }
@@ -126,9 +154,10 @@
                 const {paper, text, host} = node, rect = text.getBoundingClientRect();
                 if (!rect.width || !rect.height || !text.getClientRects().length) {host.hidden = true; continue;}
                 const measured = this.measure(text);
-                const geometry = this.position({paper:paper.getBoundingClientRect(), text:{left:rect.left, top:rect.top+measured.top,
+                const geometry = avoidControls(this.position({paper:paper.getBoundingClientRect(), text:{left:rect.left, top:rect.top+measured.top,
                     height:Math.max(0, text.clientHeight-measured.top-measured.bottom)}, padding:node.basePadding,
-                    textHeight:text.value ? measured.height : null, viewportWidth:root.innerWidth, size:this.size, gap:this.gap});
+                    textHeight:contentOf(text) ? measured.height : null, viewportWidth:root.innerWidth, size:this.size, gap:this.gap}),
+                    node.avoid.filter(element => element.getClientRects().length).map(element => element.getBoundingClientRect()));
                 const padding = node.basePadding + geometry.clearance;
                 if (Math.abs((parseFloat(text.style.paddingLeft)||0) - padding) > .5) {
                     text.style.paddingLeft = padding + 'px'; root.autoResize?.(text); this.scheduleLayout();
@@ -137,13 +166,21 @@
                 host.style.left = geometry.x + root.scrollX + 'px'; host.style.top = geometry.y + root.scrollY + 'px';
                 host.hidden = false;
             }
-            if (!this.cycle.timer && !this.owner && this.visible().length) this.cycle.schedule();
+            if (this.owner?.host.hidden) {this.stopPlayback(); this.hideBubble(); this.stopSound();}
+            if (!this.visible().length) this.cycle.stop();
+            else if (!this.cycle.timer && !this.owner) this.cycle.schedule();
         }
         listen(enabled) {
             const method = enabled ? 'addEventListener' : 'removeEventListener';
             for (const name of ['resize','scroll']) root[method](name, this.onLayout, {passive:true});
             this.doc[method]('input', this.onLayout, true);
             this.doc[method]('visibilitychange', this.visibility);
+            for (const paper of new Set(this.nodes.map(node => node.paper))) {
+                paper[method]('animationstart', this.motionStart);
+                paper[method]('animationend', this.motionEnd);
+                paper[method]('animationcancel', this.motionEnd);
+                paper[method]('transitionend', this.onLayout);
+            }
             if (enabled) {
                 this.resizeObserver = new root.ResizeObserver(this.onLayout);
                 this.mutationObserver = new root.MutationObserver(this.onLayout);
@@ -151,7 +188,8 @@
                     this.resizeObserver.observe(node.text); this.resizeObserver.observe(node.paper);
                     // Do not observe the udder/rotor subtree, which animates independently.
                     for (const target of new Set([node.paper, node.text, node.text.parentElement])) {
-                        this.mutationObserver.observe(target, {attributes:true, attributeFilter:['style','class','hidden']});
+                        this.mutationObserver.observe(target, {attributes:true, attributeFilter:['style','class','hidden'],
+                            childList:target === node.text, characterData:target === node.text, subtree:target === node.text});
                     }
                 }
                 this.doc.fonts?.ready.then(this.onLayout).catch(() => {});
@@ -165,7 +203,7 @@
             this.listen(false);
             if (this.frame) root.cancelAnimationFrame(this.frame); this.frame = null;
             for (const node of this.nodes) {
-                node.host.hidden = true;
+                node.host.hidden = true; node.moving = false;
                 if (!this.enabled) {node.text.style.paddingLeft = node.padding; root.autoResize?.(node.text);}
             }
             if (this.enabled) {this.listen(true); this.scheduleLayout();}
@@ -239,18 +277,15 @@
             const animations = manifest.animations.map(clip => ({...clip,
                 webm:new URL(clip.webm, base).href, fallback:new URL(clip.fallback, base).href}));
             const helper = new MadHelper({png:new URL(manifest.png, base).href, animations, toggle,
-                sounds: JSON.parse(toggle.dataset.sounds), placements:[
-                    {paper:root.document.querySelector('.profile-container'), text:root.document.getElementById('sourceBodyDraft')},
-                    {paper:root.document.getElementById('outputContainer'), text:root.document.getElementById('responseBodyDraft')}
-                ]});
+                sounds: JSON.parse(toggle.dataset.sounds), placements:discoverPlacements(root.document)});
             root.NewsMuncherMadHelper = helper;
             // Probe once, only on an enabled helper. WebP remains the conservative default.
             if (helper.enabled) helper.alpha = await supportsAlpha(new URL('alpha-probe.webm', base));
-            root.addEventListener('pagehide', () => {helper.cycle.stop(); helper.stopPlayback(); helper.stopSound(); helper.hideBubble();});
+            root.addEventListener('pagehide', () => {for (const node of helper.nodes) node.moving = false; if (helper.frame) root.cancelAnimationFrame(helper.frame); helper.frame = null; helper.cycle.stop(); helper.stopPlayback(); helper.stopSound(); helper.hideBubble();});
             root.addEventListener('pageshow', () => {helper.scheduleLayout(); helper.cycle.schedule();});
         } catch (_) {toggle.checked = false; toggle.disabled = true; toggle.title = 'Mad Helper assets could not be loaded';}
     }
-    const api = {MadHelper, AnimationCycle, placementGeometry, choose, idleDelay, supportsAlpha, KEY};
+    const api = {MadHelper, AnimationCycle, placementGeometry, avoidControls, discoverPlacements, contentOf, choose, idleDelay, supportsAlpha, KEY};
     root.NewsMuncherMadHelperComponent = api;
     if (typeof module !== 'undefined') module.exports = api;
     if (root.document) mount();

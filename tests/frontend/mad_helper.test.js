@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const {AnimationCycle,MadHelper,placementGeometry,choose,idleDelay,KEY}=require('../../newsmuncher/static/js/shared/mad-helper.js');
+const {AnimationCycle,MadHelper,placementGeometry,avoidControls,discoverPlacements,contentOf,choose,idleDelay,KEY}=require('../../newsmuncher/static/js/shared/mad-helper.js');
 const manifest=JSON.parse(fs.readFileSync('newsmuncher/static/images/mad-helper/manifest.json'));
 function clock(){let id=0;const queued=new Map();return {queued,setTimeout(fn,delay){queued.set(++id,{fn,delay});return id;},clearTimeout(id){queued.delete(id);}};}
 
@@ -96,11 +96,41 @@ test('disable stops playback, sound and timers, restores layout and persists sep
     helper.click(nodes[0]);assert.equal(voices.filter(v=>!v.paused).length,0);
 }));
 
-test('CREATE alone opts in, retains editable fields, and schedules position updates after text resizing',()=>{
+test('all three modes opt in through shared settings and explicit text anchors',()=>{
     const create=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');
-    assert(create.includes('data-mad-helper-toggle'));assert(create.includes('Mad Helper'));
-    for(const file of ['build.html','promotion_gallery.html'])assert(!fs.readFileSync('newsmuncher/templates/'+file,'utf8').includes('mad-helper'));
+    assert(create.includes("partials/mad-helper-toggle.html"));
+    for(const file of ['pet_profile.html','build.html','promotion_gallery.html']) {
+        const template=fs.readFileSync('newsmuncher/templates/'+file,'utf8');
+        assert(template.includes('data-mad-helper-text'));assert(template.includes('data-mad-helper-paper'));
+        assert(template.includes("partials/mad-helper-toggle.html"));assert(template.includes('mad-helper-2'));
+    }
     assert.match(fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8'),/function autoResize\(textarea\) \{\s*window.NewsMuncherMadHelper\?\.scheduleLayout\(\)/);
     const css=fs.readFileSync('newsmuncher/static/css/creation/mad-helper.css','utf8');
     assert(css.includes('position: absolute'));assert(css.includes('pointer-events: none'));
+});
+
+
+test('read-only Gallery text and empty editable prompts preserve their actual content',()=>{
+    assert.equal(contentOf({textContent:'The latest saved Gallery story!'}),'The latest saved Gallery story!');
+    assert.equal(contentOf({value:'',textContent:'Initial prompt markup'}),'');
+    assert.equal(contentOf({value:'Manual BUILD prompt edits'}),'Manual BUILD prompt edits');
+});
+
+test('Gallery controls remain clear while the helper stays on the left parchment edge',()=>{
+    const geometry={x:100,y:300,width:128,clearance:0};
+    const arrow={left:60,right:140,top:250,bottom:350};
+    const adjusted=avoidControls(geometry,[arrow]);
+    assert.equal(adjusted.x,100);
+    assert(adjusted.y+64+12<=arrow.top||adjusted.y-64-12>=arrow.bottom);
+    assert.deepEqual(avoidControls(geometry,[{left:700,right:800,top:250,bottom:350}]),geometry);
+});
+
+test('placement discovery includes only explicit regions and resolves their own parchment',()=>{
+    const paper={},unrelated={dataset:{},closest:()=>null};
+    const textarea={dataset:{},closest:()=>paper};
+    const arrow={},body={dataset:{madHelperAvoid:'.gallery-arrow'},closest:()=>paper};
+    const doc={querySelectorAll:selector=>selector==='.gallery-arrow'?[arrow]:[textarea,body,unrelated]};
+    const placements=discoverPlacements(doc);
+    assert.equal(placements.length,2);assert.equal(placements[0].text,textarea);
+    assert.equal(placements[0].paper,paper);assert.deepEqual(placements[1].avoid,[arrow]);
 });

@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: MAD HELPER CREATE PHASE 1
-LAST_COMPLETED_COMMIT: See latest Mad Helper phase 1 commit in Git history
+LAST_COMPLETED_FEATURE: MAD HELPER BUILD AND GALLERY
+LAST_COMPLETED_COMMIT: See latest Mad Helper BUILD/GALLERY extension commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: CREATE-only reusable animated Mad Helper on source/results LEFT parchment edges, with toggle, transparent derivatives, shared animation/audio lifecycle and SQUIRT interaction.
-APPROVAL: Andy requested Mad Helper phase 1 using the supplied originals, preserved alongside unrelated work. No push, merge or deployment.
-NEXT_STEP: Review local helper implementation and docs/mad-helper-phase1.md, including documented fine-hair matte limitation and native Safari QA gap.
-VALIDATION: 240 JavaScript tests; 249 Python tests plus six subtests pass. Chrome checks cover all 16 animation/fallback pairs, full CREATE layout, desktop/mobile, alpha, clicks, toggle, mute and silent idle playback.
+CURRENT_TASK: Shared Mad Helper now supports CREATE source/results, BUILD editable prompt/results and signed-in GALLERY story text, with safe arrow clearance.
+APPROVAL: Andy explicitly selected extending the helper to BUILD and GALLERY. No push, merge or deployment.
+NEXT_STEP: Review docs/mad-helper-phase2.md and local commit. Native Safari QA remains unverified; transparent assets are unchanged.
+VALIDATION: 243 JavaScript tests; 249 Python tests plus six subtests pass. Chrome full-page mocked flows verify BUILD 30/60/90, recipe/prompt preservation, Gallery NEXT/BACK, image/empty states, arrow clickability, mobile and shared preference.
 
 ## Early adoption access — 2026-11-09
 
@@ -1943,7 +1943,7 @@ image prompt only: believable figures/materials, cinematic lighting, connected s
 absurd humour and 4–6 dominant colours. Flat style retained as PREVIOUS_IMAGE_STYLE;
 original graffiti/zine wording retained as ORIGINAL_IMAGE_STYLE, both reference-only.
 Image settings, rewritten scene inputs and lifecycle unchanged.
-VALIDATION: 240 JavaScript tests; 249 Python tests plus six subtests pass. Chrome checks cover all 16 animation/fallback pairs, full CREATE layout, desktop/mobile, alpha, clicks, toggle, mute and silent idle playback.
+VALIDATION: 243 JavaScript tests; 249 Python tests plus six subtests pass. Chrome full-page mocked flows verify BUILD 30/60/90, recipe/prompt preservation, Gallery NEXT/BACK, image/empty states, arrow clickability, mobile and shared preference.
 No real images or external calls. Changes intentionally uncommitted/unpushed for review.
 
 
@@ -1959,7 +1959,7 @@ Run from root using .venv/bin/python -m scripts.diagnostics.compare_tts --provid
 For one live sample, replace all with openai/elevenlabs/cartesia and omit --dry-run.
 Each provider requires an API-enabled account, usable quota/credit and access to the
 configured voice IDs. Account/voice availability has not been tested live.
-VALIDATION: 240 JavaScript tests; 249 Python tests plus six subtests pass. Chrome checks cover all 16 animation/fallback pairs, full CREATE layout, desktop/mobile, alpha, clicks, toggle, mute and silent idle playback.
+VALIDATION: 243 JavaScript tests; 249 Python tests plus six subtests pass. Chrome full-page mocked flows verify BUILD 30/60/90, recipe/prompt preservation, Gallery NEXT/BACK, image/empty states, arrow clickability, mobile and shared preference.
 STATUS: REVIEW / CODEX; user authorized committing and pushing this harness.
 Earlier image-style changes are already committed; older uncommitted wording above
 is historical. No unrelated files changed in this harness task.

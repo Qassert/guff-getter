@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Gallery · NewsMuncher{% endblock %}
-{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=gallery-parchment-seams-1">{% endblock %}
+{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=gallery-parchment-seams-1"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/mad-helper.css') }}?v=mad-helper-2">{% endblock %}
 {% block body_attributes %} class="promotion-gallery-page"{% endblock %}
 {% block header %}{% endblock %}
 {% block background %}<div id="galleryBackdrop" class="gallery-backdrop" aria-hidden="true"><img id="galleryBackdropImage" alt=""></div>{% endblock %}
 {% block content %}
-<script src="{{ url_for('static', path='js/shared/article-text-fit.js') }}?v=article-fit-1"></script>
+<script src="{{ url_for('static', path='js/shared/article-text-fit.js') }}?v=article-fit-2"></script>
 <section class="promotion-gallery" aria-label="Nominated creations" data-creation-url="{{ creation_url }}" data-click-sound="{{ url_for('static', path='audio/effects/munge/hello meme funny - QuickSounds.com.mp3') }}" data-arrow-click-sound="{{ url_for('static', path='audio/effects/ui/cartoon-double-boing-pop.wav') }}" data-enhance-hover="{{ url_for('static', path='audio/voices/Enhance_Shout.mp3') }}" data-edit-hover="{{ url_for('static', path='audio/voices/NewsMuncher_Edit_Shout.mp3') }}" data-promote-hover="{{ url_for('static', path='audio/voices/NewsMuncher_Promote_Shout.mp3') }}" data-play-hover="{{ url_for('static', path='audio/voices/Play_Shout.mp3') }}" data-mute-hover="{{ url_for('static', path='audio/voices/Mute_Shout.mp3') }}">
   <nav class="mode-nav" aria-label="NewsMuncher mode">
     <a class="mode-nav-button mode-nav-create" href="{{ creation_url }}" aria-label="CREATE" data-nav-sound="CREATE"><img src="{{ url_for('static', path='images/buttons/create-idle.png') }}" alt=""></a>
@@ -14,13 +14,13 @@
   </nav>
   {% if signed_in %}
   <div id="galleryStatus" class="gallery-status" role="status" aria-live="polite">Opening the collection…</div>
-  <article id="galleryPage" class="gallery-page" aria-label="Creation" hidden>
+  <article id="galleryPage" class="gallery-page" data-mad-helper-paper aria-label="Creation" hidden>
     <button id="galleryBack" type="button" class="gallery-arrow gallery-arrow-back" aria-label="Previous creation" title="Previous creation" hidden><img src="{{ url_for('static', path='images/buttons/Coral Arrow on Cowhide Cushion.png') }}" alt=""></button>
     <button id="galleryNext" type="button" class="gallery-arrow gallery-arrow-next" aria-label="Next creation" title="Next creation"><img src="{{ url_for('static', path='images/buttons/Coral Arrow on Cowhide Cushion.png') }}" alt=""></button>
     <figure id="galleryIllustration" hidden><img id="galleryImage" alt="" decoding="async"></figure>
     <div class="gallery-copy">
       <p id="galleryPromoted" class="gallery-stamp" hidden>PROMOTED</p>
-      <div id="galleryTextRegion" class="article-fit-region gallery-text-region"><div id="galleryBody" class="gallery-body"></div></div>
+      <div id="galleryTextRegion" class="article-fit-region gallery-text-region"><div id="galleryBody" class="gallery-body" data-mad-helper-text data-mad-helper-avoid=".gallery-arrow, .gallery-fur-controls"></div></div>
     </div>
     <div id="galleryFurControls" class="gallery-fur-controls" role="group" aria-label="Creation controls">
       <button id="galleryMusic" type="button" class="gallery-fur-control gallery-fur-music" aria-label="Play music" title="Play music" aria-pressed="false"><img src="{{ url_for('static', path='images/buttons/Rustic Cowhide Volume Icon.png') }}" alt=""></button>
@@ -55,6 +55,7 @@
   </div>
   {% endif %}
 </section>
+{% if signed_in %}{% include 'partials/mad-helper-toggle.html' %}{% endif %}
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=gallery-text-save-1" defer></script>{% endif %}{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=gallery-text-save-1" defer></script>{% endif %}{% if signed_in %}<script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-2" defer></script>{% endif %}{% endblock %}

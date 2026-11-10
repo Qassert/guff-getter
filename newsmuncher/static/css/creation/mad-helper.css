@@ -26,3 +26,10 @@
 @media (min-width: 621px) and (max-width: 1335px) {
   .mad-helper-enabled .workshop { margin-left: 36px; }
 }
+
+@media (min-width: 621px) and (max-width: 1335px) {
+  .mad-helper-enabled .promotion-gallery { margin-left: 36px; width: calc(100% - 36px); }
+}
+@media (min-width: 621px) and (max-width: 700px) {
+  .mad-helper-enabled.build-page .build-workshop { margin-left: 56px; }
+}

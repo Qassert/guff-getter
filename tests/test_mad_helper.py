@@ -13,7 +13,7 @@ ROOT = Path('newsmuncher/static/images/mad-helper')
 MANIFEST = json.loads((ROOT / 'manifest.json').read_text())
 
 
-def test_create_only_mount_and_original_textareas_render_unchanged():
+def test_shared_helper_settings_and_create_editors_render_unchanged():
     env = Environment(loader=FileSystemLoader('newsmuncher/templates'), autoescape=True)
     html = env.get_template('pet_profile.html').render(
         url_for=lambda name, path: '/static/' + path, creation_url='/create')
@@ -24,7 +24,17 @@ def test_create_only_mount_and_original_textareas_render_unchanged():
     assert 'id="responseBodyDraft"' in html
     assert 'oninput="autoResize(this); responseEdited(); updateCopyButton()"' in html
     for page in ['build.html', 'promotion_gallery.html']:
-        assert 'mad-helper' not in Path('newsmuncher/templates', page).read_text()
+        rendered = env.get_template(page).render(url_for=lambda name, path: '/static/' + path,
+            creation_url='/create', signed_in=True, build_initial_prompt='Editable prompt')
+        assert rendered.count('data-mad-helper-toggle') == 1
+        assert 'data-mad-helper-text' in rendered
+        assert 'data-mad-helper-paper' in rendered
+        assert 'mad-helper-2' in rendered
+    signed_out = env.get_template('promotion_gallery.html').render(
+        url_for=lambda name, path: '/static/' + path, signed_in=False, login_url='/login')
+    assert 'data-mad-helper-toggle' not in signed_out
+    assert 'js/shared/mad-helper.js' not in signed_out
+    assert 'SIGN IN' in signed_out
 
 
 def test_all_transparent_derivatives_and_manifest_are_served_successfully():

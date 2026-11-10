@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Build — NewsMuncher{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', path='css/creation/mad-helper.css') }}?v=mad-helper-2">{% endblock %}
 {% block header %}{% endblock %}
 {% block body_attributes %} class="profile-page build-page"{% endblock %}
 {% block background %}
@@ -77,7 +78,7 @@
     </div>
   </div>
 
-  <div class="container profile-container build-parchment recipe-panel" data-recipe-panel hidden>
+  <div class="container profile-container build-parchment recipe-panel" data-recipe-panel data-mad-helper-paper hidden>
     <header class="recipe-heading"><p class="eyebrow">THE STORY RECIPE</p><h2>Ingredients committed to paper</h2></header>
     <div class="recipe-empty" data-recipe-empty>Use an ingredient above to begin.</div>
     <div class="recipe-categories" data-recipe-categories></div>
@@ -87,7 +88,7 @@
         <label class="prompt-arrow-label" for="buildCreativePrompt">EDIT PROMPT</label>
         <button type="button" class="mini-action" data-reset-prompt>RESET PROMPT</button>
       </div>
-      <textarea id="buildCreativePrompt" class="build-prompt-editor" data-prompt-editor>{{ build_initial_prompt }}</textarea>
+      <textarea id="buildCreativePrompt" data-mad-helper-text class="build-prompt-editor" data-prompt-editor>{{ build_initial_prompt }}</textarea>
     </section>
 
     <div class="munge-action">
@@ -98,12 +99,12 @@
       </div>
       <p id="munchStatus" class="munch-status" data-munge-status role="status">Choose at least one ingredient to MUNGE.</p>
     </div>
-    <section id="outputContainer" class="build-result" data-build-result aria-live="polite" hidden>
+    <section id="outputContainer" class="build-result" data-build-result data-mad-helper-paper aria-live="polite" hidden>
       <p class="eyebrow">YOUR FRESH MUNGE</p>
       <div id="responseEditor" class="section-editor">
         <p id="storyTextSaveStatus" class="creation-status-message" role="status" hidden></p>
         <input id="responseTitleDraft" type="hidden" value="">
-        <textarea id="responseBodyDraft" data-build-story aria-label="Generated story" oninput="autoResize(this); responseEdited(); updateCopyButton()"></textarea>
+        <textarea id="responseBodyDraft" data-build-story data-mad-helper-text aria-label="Generated story" oninput="autoResize(this); responseEdited(); updateCopyButton()"></textarea>
       </div>
       <div id="imagePanel" class="image-panel hidden" aria-live="polite"></div>
       <p id="creationMeta" class="creation-meta" hidden></p>
@@ -143,6 +144,7 @@
     </div>
   </dialog>
 </section>
+{% include 'partials/mad-helper-toggle.html' %}
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/story-text-save.js') }}?v=story-save-1"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=build-actions-2" defer></script><script src="{{ url_for('static', path='build-page.js') }}?v=build-edit-7" defer></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/story-text-save.js') }}?v=story-save-1"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=build-actions-2" defer></script><script src="{{ url_for('static', path='build-page.js') }}?v=build-edit-7" defer></script><script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-2" defer></script>{% endblock %}
