@@ -49,9 +49,9 @@ test('every animation remains selectable without the immediately previous one',(
 });
 
 test('desktop geometry anchors the LEFT edge at the rendered-text midpoint without unnecessary padding',()=>{
-    const geometry=placementGeometry({paper:{left:200},text:{left:290,top:100,height:300},textHeight:180,viewportWidth:1200});
+    const geometry=placementGeometry({paper:{left:200},text:{left:350,top:100,height:300},textHeight:180,viewportWidth:1200});
     assert.equal(geometry.x,200);assert.equal(geometry.y,190);assert.equal(geometry.clearance,0);
-    assert(geometry.x+geometry.width/2<290);
+    assert(geometry.x+geometry.width/2<350);
 });
 
 test('mobile geometry stays in the viewport and reserves only necessary textarea clearance',()=>{
@@ -102,7 +102,7 @@ test('all three modes opt in through shared settings and explicit text anchors',
     for(const file of ['pet_profile.html','build.html','promotion_gallery.html']) {
         const template=fs.readFileSync('newsmuncher/templates/'+file,'utf8');
         assert(template.includes('data-mad-helper-text'));assert(template.includes('data-mad-helper-paper'));
-        assert(template.includes("partials/mad-helper-toggle.html"));assert(template.includes('mad-helper-2'));
+        assert(template.includes("partials/mad-helper-toggle.html"));assert(template.includes('mad-helper-3'));
     }
     assert.match(fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8'),/function autoResize\(textarea\) \{\s*window.NewsMuncherMadHelper\?\.scheduleLayout\(\)/);
     const css=fs.readFileSync('newsmuncher/static/css/creation/mad-helper.css','utf8');
@@ -133,4 +133,18 @@ test('placement discovery includes only explicit regions and resolves their own 
     const placements=discoverPlacements(doc);
     assert.equal(placements.length,2);assert.equal(placements[0].text,textarea);
     assert.equal(placements[0].paper,paper);assert.deepEqual(placements[1].avoid,[arrow]);
+});
+
+
+test('the helper is exactly 70 percent larger on desktop and mobile',()=>{
+    const args={paper:{left:200},text:{left:350,top:100,height:300},textHeight:180};
+    assert.equal(placementGeometry({...args,viewportWidth:1200}).width,128*1.7);
+    assert(Math.abs(placementGeometry({...args,viewportWidth:390}).width-76*1.7)<1e-8);
+});
+
+test('the enlarged body and external bubble both clear Gallery controls',()=>{
+    const geometry={x:113,y:300,width:217.6,bubbleExtra:52};
+    const arrow={left:70,right:150,top:230,bottom:330};
+    const adjusted=avoidControls(geometry,[arrow]);
+    assert(adjusted.y-adjusted.width/2-52>=arrow.bottom+12);
 });

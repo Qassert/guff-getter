@@ -19,9 +19,9 @@
         const result = {...geometry}, half = result.width / 2;
         for (const box of obstacles) {
             if (result.x + half <= box.left || result.x - half >= box.right ||
-                    result.y + half + gap <= box.top || result.y - half - gap >= box.bottom) continue;
-            const above = box.top - half - gap, below = box.bottom + half + gap;
-            result.y = Math.abs(above - geometry.y) < Math.abs(below - geometry.y) ? above : below;
+                    result.y + half + gap <= box.top || result.y - half - (result.bubbleExtra || 0) - gap >= box.bottom) continue;
+            const above = box.top - half - gap, below = box.bottom + half + gap + (result.bubbleExtra || 0);
+            result.y = above - half - (result.bubbleExtra || 0) >= 4 && Math.abs(above - geometry.y) < Math.abs(below - geometry.y) ? above : below;
         }
         return result;
     }
@@ -49,9 +49,9 @@
         complete() { this.onIdle(); this.schedule(); }
     }
 
-    function placementGeometry({paper, text, padding = 0, textHeight, viewportWidth, size = 128, gap = 10}) {
+    function placementGeometry({paper, text, padding = 0, textHeight, viewportWidth, size = 217.6, gap = 10}) {
         // On narrow screens shift inward just enough to keep the outer half reachable.
-        const width = Math.min(size, viewportWidth < 620 ? 76 : size);
+        const width = Math.min(size, viewportWidth < 620 ? size * 76 / 128 : size);
         const x = Math.max(paper.left, width / 2 + 4);
         return {width, x, y: text.top + Math.min(text.height, textHeight || text.height) / 2,
             clearance: Math.max(0, x + width / 2 + gap - text.left - padding)};
@@ -83,7 +83,7 @@
 
     class MadHelper {
         constructor({png, animations, placements, toggle, sounds = [], frequency = .2,
-                     bubbleText = 'SQUIRT', bubbleDuration = 2500, size = 128, gap = 10, position = placementGeometry,
+                     bubbleText = 'SQUIRT', bubbleDuration = 2500, size = 217.6, gap = 10, position = placementGeometry,
                      enabled = true, alpha = false, storage, doc = root.document,
                      random = Math.random, reducedMotion = root.matchMedia?.('(prefers-reduced-motion: reduce)').matches} = {}) {
             if (storage === undefined) {try {storage = root.localStorage;} catch (_) {storage = null;}}
@@ -154,14 +154,16 @@
                 const {paper, text, host} = node, rect = text.getBoundingClientRect();
                 if (!rect.width || !rect.height || !text.getClientRects().length) {host.hidden = true; continue;}
                 const measured = this.measure(text);
-                const geometry = avoidControls(this.position({paper:paper.getBoundingClientRect(), text:{left:rect.left, top:rect.top+measured.top,
+                const geometry = avoidControls({...this.position({paper:paper.getBoundingClientRect(), text:{left:rect.left, top:rect.top+measured.top,
                     height:Math.max(0, text.clientHeight-measured.top-measured.bottom)}, padding:node.basePadding,
-                    textHeight:contentOf(text) ? measured.height : null, viewportWidth:root.innerWidth, size:this.size, gap:this.gap}),
+                    textHeight:contentOf(text) ? measured.height : null, viewportWidth:root.innerWidth, size:this.size, gap:this.gap}), bubbleExtra:52},
                     node.avoid.filter(element => element.getClientRects().length).map(element => element.getBoundingClientRect()));
                 const padding = node.basePadding + geometry.clearance;
                 if (Math.abs((parseFloat(text.style.paddingLeft)||0) - padding) > .5) {
                     text.style.paddingLeft = padding + 'px'; root.autoResize?.(text); this.scheduleLayout();
                 }
+                host.style.setProperty('--mad-helper-size', geometry.width + 'px');
+                host.classList.toggle('mad-helper-bubble-below', geometry.y - geometry.width / 2 < 56);
                 host.style.width = geometry.width + 'px'; host.style.height = geometry.width + 'px';
                 host.style.left = geometry.x + root.scrollX + 'px'; host.style.top = geometry.y + root.scrollY + 'px';
                 host.hidden = false;
@@ -274,9 +276,10 @@
             const response = await root.fetch(new URL('manifest.json', base));
             if (!response.ok) throw new Error('Helper manifest unavailable');
             const manifest = await response.json();
+            const assetURL = name => {const url = new URL(name, base); if (manifest.revision) url.searchParams.set('v', manifest.revision); return url.href;};
             const animations = manifest.animations.map(clip => ({...clip,
-                webm:new URL(clip.webm, base).href, fallback:new URL(clip.fallback, base).href}));
-            const helper = new MadHelper({png:new URL(manifest.png, base).href, animations, toggle,
+                webm:assetURL(clip.webm), fallback:assetURL(clip.fallback)}));
+            const helper = new MadHelper({png:assetURL(manifest.png), animations, toggle,
                 sounds: JSON.parse(toggle.dataset.sounds), placements:discoverPlacements(root.document)});
             root.NewsMuncherMadHelper = helper;
             // Probe once, only on an enabled helper. WebP remains the conservative default.

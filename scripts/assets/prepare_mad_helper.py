@@ -16,7 +16,7 @@ FPS = 20
 
 
 def matte(rgb):
-    """Remove only neutral near-white connected to the canvas edges.
+    """Remove neutral background, including sheltered hair and leg-gap cavities.
 
     Enclosed eyes/teeth remain opaque. Unmatte the thin antialiased boundary
     against white; do not globally key out the character's white details.
@@ -27,10 +27,35 @@ def matte(rgb):
     seeds[[0, -1], :] = candidate[[0, -1], :]
     seeds[:, [0, -1]] = candidate[:, [0, -1]]
     background = ndimage.binary_propagation(seeds, mask=candidate)
-    edge = ndimage.binary_dilation(background) & ~background
+    # White regions enclosed by hair loops and the legs cannot reach the canvas edge.
+    # Restrict extra seeds to the supplied character's hair/leg-gap geometry, never
+    # the eyes, teeth or torso. Narrow, tall lower components distinguish the gap
+    # from bright buttons/cuffs; propagation handles its grey matte boundary.
+    neutral = high.astype(int) - low
+    bright = (low > 235) & (neutral < 22)
+    labels, _ = ndimage.label(bright)
+    extra = np.zeros_like(background)
+    height, width = low.shape
+    for label, bounds in enumerate(ndimage.find_objects(labels), 1):
+        if bounds is None:
+            continue
+        ys, xs = bounds
+        count = np.count_nonzero(labels[bounds] == label)
+        hair_gap = ys.stop < height * .22 and count >= 12
+        leg_gap = (ys.start >= height * .78 and ys.stop >= height * .90
+            and ys.stop - ys.start >= height * .08
+            and xs.stop - xs.start <= width * .16
+            and xs.start >= width * .25 and xs.stop <= width * .75 and count >= 12)
+        if hair_gap or leg_gap:
+            extra[bounds] |= labels[bounds] == label
+    yy, xx = np.indices(low.shape)
+    lower_corridor = (yy >= height * .78) & (xx >= width * .25) & (xx <= width * .75)
+    relaxed = candidate | (lower_corridor & (low > 190) & (neutral < 36))
+    background |= ndimage.binary_propagation(extra, mask=relaxed)
+    edge = ndimage.binary_dilation(background, iterations=2) & ~background
     alpha = np.ones(low.shape, dtype=np.float32)
     alpha[background] = 0
-    alpha[edge] = np.clip((255 - low[edge].astype(float)) / 35, 0, 1)
+    alpha[edge] = np.clip((255 - low[edge].astype(float)) / 55, 0, 1)
     colour = rgb.astype(np.float32)
     visible = alpha > 0
     colour[visible] = (colour[visible] - 255 * (1 - alpha[visible, None])) / alpha[visible, None]
@@ -67,7 +92,7 @@ def prepare(source, output):
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'lavfi', '-i',
         'color=white:s=16x16:d=0.2,format=rgba,colorchannelmixer=aa=0', '-an',
         '-c:v', 'libvpx-vp9', '-pix_fmt', 'yuva420p', str(output / 'alpha-probe.webm')], check=True)
-    manifest = {'png': 'idle.png', 'width': SIZE, 'height': SIZE, 'fps': FPS, 'animations': [],
+    manifest = {'revision': 'refined-3', 'png': 'idle.png', 'width': SIZE, 'height': SIZE, 'fps': FPS, 'animations': [],
                 'originals': {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in pngs + clips}}
     for index, clip in enumerate(clips, 1):
         name = f'animation-{index:02d}'

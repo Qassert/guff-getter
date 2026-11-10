@@ -9,27 +9,43 @@
   pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .mad-helper-button img, .mad-helper-button video { display: block; width: 100%; height: 100%;
-  position: absolute; inset: 0; object-fit: contain; pointer-events: none; }
+  position: absolute; inset: 0; object-fit: contain; pointer-events: none;
+  filter: drop-shadow(0 4px 4px #26160c73) drop-shadow(0 0 1px #3c230f80); }
 .mad-helper-button:focus-visible { outline: 2px dashed var(--purple); outline-offset: 2px; }
-.mad-helper-bubble { position: absolute; bottom: 68%; left: 5%; z-index: 2; box-sizing: border-box;
-  width: 72%; padding: 6px 2px; text-align: center; background: #fff8d8; color: #392b20;
+.mad-helper-bubble { position: absolute; bottom: calc(100% + 12px); left: 0; z-index: 2; box-sizing: border-box;
+  width: clamp(78px, 42%, 96px); padding: 6px 2px; text-align: center; white-space: nowrap;
+  background: #fff8d8; color: #392b20;
   border: 2px solid #392b20; border-radius: 48% 38% 45% 42%; box-shadow: 2px 3px 0 #392b2055;
-  font: 900 clamp(10px, 1.2vw, 15px)/1 var(--display-font); letter-spacing: .04em;
+  font: 900 clamp(13px, 1.2vw, 16px)/1 var(--display-font); letter-spacing: .04em;
 }
-.mad-helper-bubble::after { content: ''; position: absolute; width: 12px; height: 12px;
-  bottom: -9px; left: 60%; background: #fff8d8; border-right: 2px solid #392b20;
-  border-bottom: 2px solid #392b20; transform: skewY(30deg) rotate(25deg); }
+/* A curved pointer travels beside the silhouette, not across the face/hair. */
+.mad-helper-bubble::after { content: ''; position: absolute; top: 100%; left: 10px;
+  width: calc(var(--mad-helper-size) * .26); height: calc(var(--mad-helper-size) * .48);
+  border-left: 2px solid #392b20; border-bottom: 2px solid #392b20; border-radius: 0 0 0 100%; }
+.mad-helper-bubble::before { content: ''; position: absolute;
+  top: calc(100% + var(--mad-helper-size) * .48 - 5px);
+  left: calc(10px + var(--mad-helper-size) * .26 - 6px); width: 7px; height: 7px;
+  border-top: 2px solid #392b20; border-right: 2px solid #392b20; transform: rotate(35deg); }
+.mad-helper-bubble-below .mad-helper-bubble { bottom: auto; top: calc(100% + 12px); }
+.mad-helper-bubble-below .mad-helper-bubble::after { top: auto; bottom: 100%; height: calc(var(--mad-helper-size) * .60);
+  border-bottom: 0; border-top: 2px solid #392b20; border-radius: 100% 0 0 0; }
+.mad-helper-bubble-below .mad-helper-bubble::before { top: auto; bottom: calc(100% + var(--mad-helper-size) * .60 - 5px);
+  transform: rotate(-35deg); }
 .mad-helper-measure { position: absolute; left: -100000px; top: 0; height: auto;
   white-space: pre-wrap; overflow-wrap: break-word; visibility: hidden; pointer-events: none; }
 
-/* Supply the outer half's gutter on modest desktop widths. Mobile shifts inward instead. */
-@media (min-width: 621px) and (max-width: 1335px) {
-  .mad-helper-enabled .workshop { margin-left: 36px; }
-}
-
-@media (min-width: 621px) and (max-width: 1335px) {
-  .mad-helper-enabled .promotion-gallery { margin-left: 36px; width: calc(100% - 36px); }
+/* Reserve only the outer gutter needed by the enlarged helper. */
+@media (min-width: 621px) {
+  .mad-helper-enabled { --mad-helper-gutter: max(0px, calc(113px - (100vw - min(1200px, calc(100vw - 64px))) / 2)); }
+  .mad-helper-enabled .workshop { margin-left: var(--mad-helper-gutter); }
+  .mad-helper-enabled .promotion-gallery { margin-left: var(--mad-helper-gutter); width: calc(100% - var(--mad-helper-gutter)); }
 }
 @media (min-width: 621px) and (max-width: 700px) {
-  .mad-helper-enabled.build-page .build-workshop { margin-left: 56px; }
+  .mad-helper-enabled.build-page .build-workshop { margin-left: 101px; }
+}
+@media (max-width: 620px) {
+  /* Trade existing inner text clearance for an outer gutter: keep the half overlap. */
+  .mad-helper-enabled .workshop { margin-left: 57px; }
+  .mad-helper-enabled .promotion-gallery { margin-left: 57px; width: calc(100% - 57px); }
+  .mad-helper-enabled .munge-engine-group { width: 100%; }
 }

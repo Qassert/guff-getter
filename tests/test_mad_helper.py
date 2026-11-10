@@ -29,7 +29,7 @@ def test_shared_helper_settings_and_create_editors_render_unchanged():
         assert rendered.count('data-mad-helper-toggle') == 1
         assert 'data-mad-helper-text' in rendered
         assert 'data-mad-helper-paper' in rendered
-        assert 'mad-helper-2' in rendered
+        assert 'mad-helper-3' in rendered
     signed_out = env.get_template('promotion_gallery.html').render(
         url_for=lambda name, path: '/static/' + path, signed_in=False, login_url='/login')
     assert 'data-mad-helper-toggle' not in signed_out
@@ -64,3 +64,17 @@ def test_every_video_has_alpha_and_no_audio(clip):
     assert video['codec_type'] == 'video'
     assert video['width'] == video['height'] == 320
     assert video['tags']['alpha_mode'] == '1'
+
+
+@pytest.mark.skipif(not shutil.which('ffmpeg'), reason='Offline ffmpeg tooling not installed')
+@pytest.mark.parametrize('filename', ['idle.png', 'animation-01.webm'])
+def test_refined_matte_removes_leg_gap_and_preserves_light_details(filename):
+    command = ['ffmpeg', '-v', 'error']
+    if filename.endswith('.webm'):
+        command += ['-ss', '2', '-c:v', 'libvpx-vp9']
+    raw = subprocess.check_output(command + ['-i', str(ROOT / filename), '-frames:v', '1',
+        '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'])
+    alpha = lambda x, y: raw[(y * 320 + x) * 4 + 3]
+    assert alpha(158 if filename.endswith('.png') else 155, 282) == 0
+    for x, y in [(148, 99), (170, 157), (140, 220)]:
+        assert alpha(x, y) >= 250
