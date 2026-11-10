@@ -135,6 +135,6 @@ test('both grammatical types reach editable prompt and mocked MUNGE 30/60/90 unc
     assert.equal(sent.target_words, target);
     assert.deepEqual(sent.recipe.modifier, instance.recipe.modifier.map(({text, grammar}) => ({text, grammar})));
     for (const selected of instance.recipe.modifier) assert.ok(sent.prompt.includes(selected.text));
-    assert.match(sent.prompt, new RegExp(String(Math.round(target * 1.1))));
+    assert.match(sent.prompt, new RegExp(`Aim for approximately ${target} words`));
   }
 });

@@ -39,8 +39,8 @@ test('provider prompt assembly groups the recipe and defaults to the 60-word tar
   assert.match(prompt, /raw genetic material for a comedic monstrosity/);
   assert.match(prompt, /Make the impossible inevitable/);
   assert.match(prompt, /Finish with a detonation/);
-  assert.match(prompt, /Aim for 54–66 words/);
-  assert.match(prompt, /never exceeding 66/);
+  assert.match(prompt, /Aim for approximately 60 words/);
+  assert.match(prompt, /Prioritise a complete, funny story/);
 });
 
 test('Build template is isolated and exposes bounded MUNGE generation', () => {

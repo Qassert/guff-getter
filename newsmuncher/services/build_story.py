@@ -12,7 +12,7 @@ from newsmuncher.config import ENV_FILE
 
 BUILD_STORY_MODEL = "gpt-6-sol"
 BUILD_STORY_TIMEOUT_SECONDS = 30.0
-BUILD_STORY_MAX_WORDS = 99
+BUILD_STORY_MAX_WORDS = 135
 BUILD_STORY_MAX_OUTPUT_TOKENS = 750
 BUILD_HEADLINE_MAX_WORDS = 18
 BUILD_HEADLINE_MAX_CHARACTERS = 180
@@ -33,11 +33,14 @@ BUILD_STORY_FORMAT = {
 
 
 def enforce_word_limit(text: str, maximum: int = BUILD_STORY_MAX_WORDS) -> str:
-    """Return provider prose containing no more than the requested word count."""
+    """Accept whole stories within a safety ceiling; never cut prose or punchlines."""
     if not isinstance(text, str):
         return ""
     words = re.findall(r"\S+", text.strip())
-    return " ".join(words[:maximum])
+    if len(words) > maximum:
+        raise BuildStoryResponseError('overlong_story',
+            'Story generation returned an excessively long story. Your recipe and previous story are still here; please try again.')
+    return " ".join(words)
 
 
 def bounded_headline(text: str) -> str:
@@ -70,8 +73,10 @@ def generate_build_story(prompt: str, maximum_words: int) -> dict[str, str]:
                     "content": (
                         "Write only the requested miniature story. Transform the supplied "
                         "ingredients into coherent absurd events rather than quoting them in "
-                        "dialogue. Adult language supplied by the user is allowed. Keep the "
-                        f"story at most {maximum_words} words. After completing the story, write "
+                        "dialogue. Adult language supplied by the user is allowed. Follow the "
+                        "approximate word target in the user prompt, allowing slight overruns "
+                        "for coherence, comedic timing or a better punchline. Prefer a complete, "
+                        "funny story; use fewer ingredients when crowded. After completing the story, write "
                         "a separate 12–18-word headline that captures its funniest outrageous "
                         "event. Make the headline punchy, rhythmic, deranged and suitable for "
                         "singing or rapping, like an absurd tabloid hook. Prefer vivid characters, "

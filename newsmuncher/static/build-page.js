@@ -91,6 +91,11 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
 
   function phrase(parts) { return capitalise(parts.map(part => part.word).join(' ')); }
 
+  function storyLengthInstruction(targetWords) {
+    const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
+    return `Story length: Aim for approximately ${targetWords} words. You may go slightly over when it improves the story's coherence, comedic timing or final punchline. Prioritise a complete, funny story over hitting an exact word count. If there are too many ingredients, use fewer rather than forcing everything into the story. ${pacing}`;
+  }
+
   function buildPrompt(recipe, targetWords = 60, creativePrompt = DEFAULT_CREATIVE_PROMPT) {
     const ingredientLines = [
       ['Objects', 'stuff'], ['Swear words', 'swear'], ['People', 'person'], ['Modifiers', 'modifier']
@@ -98,9 +103,6 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       const values = (recipe[key] || []).map(item => item.text).filter(Boolean);
       return values.length ? [`${label}: ${values.join('; ')}`] : [];
     });
-    const maximum = {30: 33, 60: 66, 90: 99}[targetWords];
-    const minimum = Math.round(targetWords * 0.9);
-    const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
     return [
       creativePrompt.trim(),
       '',
@@ -117,16 +119,13 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       'Write exactly one miniature comic catastrophe. Every sentence must earn its place through a joke, escalation or payoff.',
       '',
       'Return only the story. No title, commentary or explanation.',
-      `Story length: Aim for ${minimum}–${maximum} words, never exceeding ${maximum}. ${pacing}`
+      storyLengthInstruction(targetWords)
     ].join('\n');
   }
 
   function applyStoryLength(prompt, targetWords) {
-    const maximum = {30: 33, 60: 66, 90: 99}[targetWords];
-    const minimum = Math.round(targetWords * 0.9);
-    const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
     const cleaned = String(prompt || '').replace(/^Story length:.*(?:\n|$)/gm, '').trimEnd();
-    return `${cleaned}\n\nStory length: Aim for ${minimum}–${maximum} words, never exceeding ${maximum}. ${pacing}`;
+    return `${cleaned}\n\n${storyLengthInstruction(targetWords)}`;
   }
 
   function wait(delay) { return new Promise(resolve => setTimeout(resolve, delay)); }

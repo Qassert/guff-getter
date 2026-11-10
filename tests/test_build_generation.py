@@ -39,10 +39,10 @@ def generation_payload(target=60, **overrides):
     }
 
 
-def test_build_generation_uses_recipe_without_persistence_and_caps_each_length():
+def test_build_generation_uses_approximate_targets_and_accepts_overruns_without_persistence():
     original = build.story_provider
     seen = []
-    build.story_provider = lambda prompt, maximum: seen.append((prompt, maximum)) or ' '.join(f'w{i}' for i in range(120))
+    build.story_provider = lambda prompt, maximum: seen.append((prompt, maximum)) or ' '.join([f'w{i}' for i in range(round(maximum * 0.8) - 1)] + ['Punchline.'])
     try:
         responses = {
             target: client().post('/build/generate', json=generation_payload(target))
@@ -51,8 +51,8 @@ def test_build_generation_uses_recipe_without_persistence_and_caps_each_length()
     finally:
         build.story_provider = original
     assert {target: response.status_code for target, response in responses.items()} == {30: 200, 60: 200, 90: 200}
-    assert {target: len(response.json()['story'].split()) for target, response in responses.items()} == {30: 33, 60: 66, 90: 99}
-    assert [maximum for _, maximum in seen] == [33, 66, 99]
+    assert {target: len(response.json()['story'].split()) for target, response in responses.items()} == {30: 36, 60: 72, 90: 108}
+    assert [maximum for _, maximum in seen] == [45, 90, 135]
     for target, (prompt, maximum) in zip((30, 60, 90), seen):
         assert 'Transparent bipolar wrench projector' in prompt
         assert 'flap-mouthed bollock merchant' in prompt
@@ -60,8 +60,10 @@ def test_build_generation_uses_recipe_without_persistence_and_caps_each_length()
         assert 'raw genetic material for a comedic monstrosity' in prompt
         assert 'Start in the middle of madness' in prompt
         assert 'Finish with a detonation' in prompt
-        assert f'Aim for {round(target * 0.9)}–{maximum} words' in prompt
-        assert f'never exceeding {maximum}' in prompt
+        assert f'Aim for approximately {target} words' in prompt
+        assert 'You may go slightly over' in prompt
+        assert 'use fewer rather than forcing everything' in prompt
+        assert 'never exceeding' not in prompt
 
 
 def test_build_prompt_omits_empty_categories_instead_of_describing_absences():
@@ -136,7 +138,8 @@ def test_provider_reuses_responses_api_model_and_word_limit_without_live_call():
     assert call['model'] == 'gpt-6-sol'
     assert call['input'][1] == {'role': 'user', 'content': 'local test prompt'}
     assert 'rather than quoting them in dialogue' in call['input'][0]['content']
-    assert 'at most 99 words' in call['input'][0]['content']
+    assert 'approximate word target' in call['input'][0]['content']
+    assert 'at most' not in call['input'][0]['content']
     assert '12–18-word headline' in call['input'][0]['content']
     assert 'singing or rapping' in call['input'][0]['content']
     assert call['text']['format']['name'] == 'build_story_with_headline'
@@ -160,9 +163,9 @@ def test_build_generation_uses_complete_edited_prompt_without_rebuilding_ingredi
     assert 'malicious pastry physics' in seen[0][0]
     assert 'Transparent bipolar wrench projector' not in seen[0][0]
     assert 'stale instruction' not in seen[0][0]
-    assert 'Aim for 27–33 words' in seen[0][0]
+    assert 'Aim for approximately 30 words' in seen[0][0]
     assert seen[0][0].count('Story length:') == 1
-    assert seen[0][1] == 33
+    assert seen[0][1] == 45
 
 
 def test_build_draft_is_created_only_by_explicit_nomination_preparation():
@@ -210,7 +213,7 @@ def test_build_draft_replaces_stale_or_missing_headline_without_losing_edits():
 def test_generation_bounds_headline_independently_from_story():
     original = build.story_provider
     build.story_provider = lambda _prompt, _maximum: {
-        'story': ' '.join(f'story{i}' for i in range(120)),
+        'story': ' '.join([f'story{i}' for i in range(39)] + ['Punchline.']),
         'headline': ' '.join(f'headline{i}' for i in range(30)),
     }
     try:
@@ -218,7 +221,8 @@ def test_generation_bounds_headline_independently_from_story():
     finally:
         build.story_provider = original
     assert response.status_code == 200
-    assert len(response.json()['story'].split()) == 33
+    assert len(response.json()['story'].split()) == 40
+    assert response.json()['story'].endswith('Punchline.')
     assert len(response.json()['headline'].split()) == 18
 
 
@@ -246,7 +250,7 @@ def test_build_provider_uses_the_same_bounded_nonreasoning_settings_as_create():
     mocked.__enter__.return_value = mocked
     mocked.responses.create.return_value = response
     with patch.object(build_story, 'OpenAI', return_value=mocked):
-        for maximum in (33, 66, 99):
+        for maximum in (45, 90, 135):
             result = build_story.generate_build_story('A local prompt', maximum)
             assert result['story'] == 'The bishop floated away.'
     call = mocked.responses.create.call_args.kwargs
@@ -368,3 +372,41 @@ def test_provider_diagnostics_do_not_log_headers_credentials_or_arbitrary_provid
     assert 'sk-secret' not in caplog.text
     assert 'user prompt' not in caplog.text
     assert 'sk-secret' not in response.text
+
+
+@pytest.mark.parametrize('target,words', [(30,34),(60,68),(90,102),(30,45),(60,90),(90,135)])
+def test_build_returns_complete_over_target_stories_intact(target, words):
+    story = ' '.join(['Story'] * (words - 4) + ['The', 'complete', 'final', 'punchline.'])
+    with patch.object(build, 'story_provider', return_value={'story': story, 'headline': 'A retained headline'}):
+        response = client().post('/build/generate', json=generation_payload(target))
+    assert response.status_code == 200
+    assert response.json()['story'] == story
+    assert response.json()['story'].endswith('The complete final punchline.')
+
+
+@pytest.mark.parametrize('target,ceiling', [(30,45),(60,90),(90,135)])
+def test_excessive_story_is_rejected_without_returning_a_cut_off_story(target, ceiling):
+    story = 'A complete opening sentence. ' + ' '.join(['word'] * ceiling) + ' A complete final punchline.'
+    with patch.object(build, 'story_provider', return_value={'story':story,'headline':'Headline'}):
+        response = client().post('/build/generate', json=generation_payload(target))
+    assert response.status_code == 502
+    assert 'excessively long' in response.json()['detail']
+    assert 'previous story are still here' in response.json()['detail']
+    assert 'story' not in response.json()
+    with pytest.raises(build_story.BuildStoryResponseError, match='excessively long'):
+        build_story.enforce_word_limit(story, ceiling)
+
+
+def test_canonical_length_switch_preserves_manual_edits_and_matches_frontend():
+    import json
+    import subprocess
+    original = 'Custom opening.\nKeep my sentence and punchline.\nStory length: Never exceed 33 words.\nCustom ending.'
+    js = subprocess.check_output(['node','-e',
+        "const b=require('./newsmuncher/static/build-page.js');process.stdout.write(JSON.stringify([30,60,90].map(t=>b.applyStoryLength(" + json.dumps(original) + ",t))));"], text=True)
+    for target, frontend in zip((30,60,90), json.loads(js)):
+        backend = build.apply_story_length(original, target)
+        assert frontend == backend
+        assert 'Custom opening.\nKeep my sentence and punchline.\nCustom ending.' in backend
+        assert f'Aim for approximately {target} words' in backend
+        assert backend.count('Story length:') == 1
+        assert 'Never exceed' not in backend

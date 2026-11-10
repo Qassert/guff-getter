@@ -19,7 +19,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 story_provider = generate_build_story
 log = logging.getLogger(__name__)
-STORY_LENGTH_MAXIMUMS = {30: 33, 60: 66, 90: 99}
+STORY_LENGTH_SAFETY_CEILINGS = {30: 45, 60: 90, 90: 135}
 DEFAULT_BUILD_CREATIVE_PROMPT = """You are a dangerously unhinged comedy writer with impeccable comic timing and absolutely no respect for reality.
 
 Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels like someone has accidentally combined a fever dream, a filthy British comedy sketch and a catastrophic misunderstanding of how the universe works.
@@ -80,10 +80,6 @@ def build_story_prompt(recipe: BuildRecipe, target_words: int, creative_prompt: 
         line("Modifiers", "modifier"),
     ))
 
-    minimum = round(target_words * 0.9)
-    maximum = STORY_LENGTH_MAXIMUMS[target_words]
-    pacing = ({30: "Keep it punchy and compressed.", 60: "Give the absurd situation room to escalate.", 90: "Develop a more elaborate absurd situation while keeping every sentence useful."})[target_words]
-
     return "\n".join((
         creative_prompt.strip(),
         "",
@@ -100,24 +96,28 @@ def build_story_prompt(recipe: BuildRecipe, target_words: int, creative_prompt: 
         "Write exactly one miniature comic catastrophe. Every sentence must earn its place through a joke, escalation or payoff.",
         "",
         "Return only the story. No title, commentary or explanation.",
-        f"Story length: Aim for {minimum}–{maximum} words, never exceeding {maximum}. {pacing}",
+        story_length_instruction(target_words),
     ))
 
 
-def apply_story_length(prompt: str, target_words: int) -> str:
-    """Replace only NewsMuncher's canonical length line, preserving all user edits."""
-    maximum = STORY_LENGTH_MAXIMUMS[target_words]
-    minimum = round(target_words * 0.9)
+def story_length_instruction(target_words: int) -> str:
     pacing = ({
         30: "Keep it punchy and compressed.",
         60: "Give the absurd situation room to escalate.",
         90: "Develop a more elaborate absurd situation while keeping every sentence useful.",
     })[target_words]
-    cleaned = re.sub(r"(?m)^Story length:.*(?:\n|$)", "", prompt).rstrip()
-    instruction = (
-        f"Story length: Aim for {minimum}–{maximum} words, never exceeding {maximum}. {pacing}"
+    return (
+        f"Story length: Aim for approximately {target_words} words. "
+        "You may go slightly over when it improves the story's coherence, comedic timing or final punchline. "
+        "Prioritise a complete, funny story over hitting an exact word count. "
+        f"If there are too many ingredients, use fewer rather than forcing everything into the story. {pacing}"
     )
-    return f"{cleaned}\n\n{instruction}"
+
+
+def apply_story_length(prompt: str, target_words: int) -> str:
+    """Replace only the canonical length line, preserving all other manual edits."""
+    cleaned = re.sub(r"(?m)^Story length:.*(?:\n|$)", "", prompt).rstrip()
+    return f"{cleaned}\n\n{story_length_instruction(target_words)}"
 
 
 @router.get('/build', response_class=HTMLResponse)
@@ -182,10 +182,16 @@ async def generate_build_munge(payload: BuildStoryRequest):
     if sum(len(item.text) for item in ingredients) > 4000:
         raise HTTPException(status_code=422, detail='The selected recipe is too large.')
 
-    maximum_words = STORY_LENGTH_MAXIMUMS[payload.target_words]
+    maximum_words = STORY_LENGTH_SAFETY_CEILINGS[payload.target_words]
     prompt = apply_story_length(payload.prompt, payload.target_words)
     try:
         generated = await run_in_threadpool(story_provider, prompt, maximum_words)
+        if isinstance(generated, dict):
+            story = enforce_word_limit(generated.get('story'), maximum_words)
+            headline = bounded_headline(generated.get('headline'))
+        else:  # Keep injected test/legacy providers safe while the live provider is structured.
+            story = enforce_word_limit(generated, maximum_words)
+            headline = ''
     except (APITimeoutError, TimeoutError) as exc:
         raise HTTPException(status_code=504, detail='Story generation timed out. Please try again.') from exc
     except BuildStoryResponseError as exc:
@@ -209,12 +215,6 @@ async def generate_build_munge(payload: BuildStoryRequest):
         log.warning('BUILD generation failed: endpoint=/build/generate exception_type=%s', type(exc).__name__)
         raise HTTPException(status_code=502, detail='Story generation failed. Your recipe is still here.') from exc
 
-    if isinstance(generated, dict):
-        story = enforce_word_limit(generated.get('story'), maximum_words)
-        headline = bounded_headline(generated.get('headline'))
-    else:  # Keep injected test/legacy providers safe while the live provider is structured.
-        story = enforce_word_limit(generated, maximum_words)
-        headline = ''
     if not story:
         raise HTTPException(status_code=502, detail='Story generation returned no text. Please try again.')
     return {'story': story, 'headline': headline or fallback_headline(story)}

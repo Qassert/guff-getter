@@ -107,6 +107,6 @@ test('selected insults reach editable prompts and mocked MUNGE 30/60/90 requests
     assert.equal(sent.target_words, target);
     assert.equal(sent.recipe.swear[0].text, selected);
     assert.ok(sent.prompt.includes(selected));
-    assert.match(sent.prompt, new RegExp(String(Math.round(target * 1.1))));
+    assert.match(sent.prompt, new RegExp(`Aim for approximately ${target} words`));
   }
 });

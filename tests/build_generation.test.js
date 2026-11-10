@@ -12,8 +12,8 @@ const recipe = {
 };
 
 test('Build prompt shares its creative rules across all three length targets', () => {
-  const expectations = [[30, 33], [60, 66], [90, 99]];
-  for (const [target, maximum] of expectations) {
+  const expectations = [30, 60, 90];
+  for (const target of expectations) {
     const prompt = buildPrompt(recipe, target);
     assert.match(prompt, /Transparent bipolar wrench projector/);
     assert.match(prompt, /flap-mouthed bollock merchant/);
@@ -22,8 +22,10 @@ test('Build prompt shares its creative rules across all three length targets', (
     assert.match(prompt, /Start in the middle of madness/);
     assert.match(prompt, /Finish with a detonation/);
     assert.match(prompt, /Never mechanically list or name-drop them/);
-    assert.match(prompt, new RegExp(`Aim for ${Math.round(target * 0.9)}–${maximum} words`));
-    assert.match(prompt, new RegExp(`never exceeding ${maximum}`));
+    assert.match(prompt, new RegExp(`Aim for approximately ${target} words`));
+    assert.match(prompt, /You may go slightly over/);
+    assert.match(prompt, /use fewer rather than forcing everything/);
+    assert.doesNotMatch(prompt, /never exceeding|never exceed|absolute maximum/i);
   }
 });
 
@@ -111,11 +113,11 @@ test('length switching preserves all manual prompt edits and keeps one instructi
   let prompt = buildPrompt(recipe, 60).replace('Transparent bipolar wrench projector', 'Hand-edited gazebo');
   prompt = applyStoryLength(prompt, 30);
   assert.match(prompt, /Hand-edited gazebo/);
-  assert.match(prompt, /Aim for 27–33 words/);
+  assert.match(prompt, /Aim for approximately 30 words/);
   prompt = applyStoryLength(prompt, 90);
   assert.match(prompt, /Hand-edited gazebo/);
-  assert.doesNotMatch(prompt, /Aim for 27–33 words/);
-  assert.match(prompt, /Aim for 81–99 words/);
+  assert.doesNotMatch(prompt, /Aim for approximately 30 words/);
+  assert.match(prompt, /Aim for approximately 90 words/);
   assert.equal((prompt.match(/Story length:/g) || []).length, 1);
 });
 
@@ -165,4 +167,43 @@ test('edited story and CREATE-compatible action row remain authoritative', () =>
   assert.match(source, /creationActions\?\.attachDraft/);
   assert.match(source, /creationActions\.nominate\(\)/);
   assert.doesNotMatch(source, /root\.bankThisBeauty/);
+});
+
+test('RESET PROMPT restores flexible target wording and current recipe for every length', () => {
+  const {BuildWorkshop} = require('../newsmuncher/static/build-page.js');
+  for (const target of [30, 60, 90]) {
+    const editor = {value: 'Hand-edited instructions', style: {}, scrollHeight: 100};
+    const workshop = new BuildWorkshop({querySelector: () => editor});
+    workshop.recipe = structuredClone(recipe);
+    workshop.promptTarget = target;
+    workshop.promptDirty = true;
+    workshop.resetPrompt();
+    assert.equal(editor.value, buildPrompt(recipe, target));
+    assert.match(editor.value, new RegExp(`Aim for approximately ${target} words`));
+    assert.match(editor.value, /Prioritise a complete, funny story/);
+    assert.equal(workshop.promptDirty, false);
+  }
+});
+
+test('an overlong-response error leaves the recipe and previously generated story intact', async () => {
+  const {BuildWorkshop} = require('../newsmuncher/static/build-page.js');
+  const nodes = new Map();
+  const element = {dataset:{generateUrl:'/build/generate'},querySelector: selector => {
+    if (!nodes.has(selector)) {
+      const classes = new Set();
+      nodes.set(selector, {value:'',style:{},scrollHeight:100,classList:{add:c=>classes.add(c),remove:c=>classes.delete(c),contains:c=>classes.has(c)}});
+    }
+    return nodes.get(selector);
+  },querySelectorAll:()=>[]};
+  const workshop = new BuildWorkshop(element, {fetcher:async()=>({ok:false,status:502,json:async()=>({detail:'Story generation returned an excessively long story. Your recipe and previous story are still here; please try again.'})})});
+  workshop.recipe = structuredClone(recipe);
+  workshop.promptDirty = true;
+  element.querySelector('[data-prompt-editor]').value = 'Keep my hand-edited rules.';
+  element.querySelector('[data-build-story]').value = 'The previous complete story.';
+  const before = structuredClone(workshop.recipe);
+  await workshop.generateStory(30);
+  assert.deepEqual(workshop.recipe, before);
+  assert.equal(element.querySelector('[data-build-story]').value, 'The previous complete story.');
+  assert.match(element.querySelector('[data-prompt-editor]').value, /Keep my hand-edited rules/);
+  assert.match(element.querySelector('[data-munge-status]').textContent, /excessively long/);
 });

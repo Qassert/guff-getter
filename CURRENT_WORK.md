@@ -1,8 +1,8 @@
-STATUS: READY
+STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: GALLERY EDIT REAL-BROWSER VERIFICATION
-LAST_COMPLETED_COMMIT: See latest BUILD consolidation and merge commits in Git history
+LAST_COMPLETED_FEATURE: BUILD APPROXIMATE WORD TARGETS
+LAST_COMPLETED_COMMIT: See latest BUILD approximate word-target commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Gallery edit/save/refresh/reopen and failed-save recovery verified in real Chrome; disposable fixtures removed.
-APPROVAL: Andy authorized local server restart, disposable-story browser verification and cleanup, and pushing develop if all checks pass. No production deployment.
-NEXT_STEP: Push verified develop as authorized; continue local development without production deployment.
-VALIDATION: 215 JavaScript tests; 149 Python tests plus six subtests pass. Real-browser disposable-story checks passed, with unchanged unrelated records/media and complete fixture cleanup. See docs/gallery-text-edit.md.
+CURRENT_TASK: BUILD 30/60/90 use approximate targets and non-truncating 150% safety ceilings; complete locally for review.
+APPROVAL: Andy authorized committing only the BUILD word-count refinement. No push, merge or deployment.
+NEXT_STEP: Review the flexible BUILD prompt wording and safe overlong-response handling. No push, merge or deployment.
+VALIDATION: 217 JavaScript tests; 230 Python tests plus six subtests pass. No live provider calls. See docs/build-approximate-lengths.md.
 
 ## Early adoption access — 2026-11-09
 
