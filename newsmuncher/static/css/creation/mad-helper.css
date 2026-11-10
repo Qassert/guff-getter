@@ -1,0 +1,28 @@
+.mad-helper-toggle { display: inline-flex; align-items: center; gap: 6px; width: max-content; margin: clamp(80px, 10vw, 140px) 0 0 auto;
+  color: var(--muted); font: 600 .8rem var(--body-font); cursor: pointer; }
+.mad-helper-toggle input { width: auto; min-height: 0; margin: 0; accent-color: var(--purple); }
+.mad-helper-place { position: absolute; z-index: 45; pointer-events: none; transform: translate(-50%, -50%); }
+.mad-helper-place[hidden], .mad-helper-place [hidden] { display: none !important; }
+.mad-helper-button, .mad-helper-button:hover, .mad-helper-button:active {
+  position: relative; display: block; width: 100%; height: 100%; min-height: 0; padding: 0;
+  background: none; border: 0; border-radius: 0; box-shadow: none; transform: none;
+  pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.mad-helper-button img, .mad-helper-button video { display: block; width: 100%; height: 100%;
+  position: absolute; inset: 0; object-fit: contain; pointer-events: none; }
+.mad-helper-button:focus-visible { outline: 2px dashed var(--purple); outline-offset: 2px; }
+.mad-helper-bubble { position: absolute; bottom: 68%; left: 5%; z-index: 2; box-sizing: border-box;
+  width: 72%; padding: 6px 2px; text-align: center; background: #fff8d8; color: #392b20;
+  border: 2px solid #392b20; border-radius: 48% 38% 45% 42%; box-shadow: 2px 3px 0 #392b2055;
+  font: 900 clamp(10px, 1.2vw, 15px)/1 var(--display-font); letter-spacing: .04em;
+}
+.mad-helper-bubble::after { content: ''; position: absolute; width: 12px; height: 12px;
+  bottom: -9px; left: 60%; background: #fff8d8; border-right: 2px solid #392b20;
+  border-bottom: 2px solid #392b20; transform: skewY(30deg) rotate(25deg); }
+.mad-helper-measure { position: absolute; left: -100000px; top: 0; height: auto;
+  white-space: pre-wrap; overflow-wrap: break-word; visibility: hidden; pointer-events: none; }
+
+/* Supply the outer half's gutter on modest desktop widths. Mobile shifts inward instead. */
+@media (min-width: 621px) and (max-width: 1335px) {
+  .mad-helper-enabled .workshop { margin-left: 36px; }
+}

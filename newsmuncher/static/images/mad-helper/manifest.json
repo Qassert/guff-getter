@@ -1,0 +1,107 @@
+{
+  "png": "idle.png",
+  "width": 320,
+  "height": 320,
+  "fps": 20,
+  "animations": [
+    {
+      "webm": "animation-01.webm",
+      "fallback": "animation-01.webp",
+      "duration": 16.7
+    },
+    {
+      "webm": "animation-02.webm",
+      "fallback": "animation-02.webp",
+      "duration": 16.7
+    },
+    {
+      "webm": "animation-03.webm",
+      "fallback": "animation-03.webp",
+      "duration": 16.7
+    },
+    {
+      "webm": "animation-04.webm",
+      "fallback": "animation-04.webp",
+      "duration": 16.7
+    },
+    {
+      "webm": "animation-05.webm",
+      "fallback": "animation-05.webp",
+      "duration": 12.9
+    },
+    {
+      "webm": "animation-06.webm",
+      "fallback": "animation-06.webp",
+      "duration": 12.9
+    },
+    {
+      "webm": "animation-07.webm",
+      "fallback": "animation-07.webp",
+      "duration": 12.9
+    },
+    {
+      "webm": "animation-08.webm",
+      "fallback": "animation-08.webp",
+      "duration": 12.9
+    },
+    {
+      "webm": "animation-09.webm",
+      "fallback": "animation-09.webp",
+      "duration": 9.05
+    },
+    {
+      "webm": "animation-10.webm",
+      "fallback": "animation-10.webp",
+      "duration": 9.05
+    },
+    {
+      "webm": "animation-11.webm",
+      "fallback": "animation-11.webp",
+      "duration": 9.05
+    },
+    {
+      "webm": "animation-12.webm",
+      "fallback": "animation-12.webp",
+      "duration": 9.05
+    },
+    {
+      "webm": "animation-13.webm",
+      "fallback": "animation-13.webp",
+      "duration": 5.2
+    },
+    {
+      "webm": "animation-14.webm",
+      "fallback": "animation-14.webp",
+      "duration": 5.2
+    },
+    {
+      "webm": "animation-15.webm",
+      "fallback": "animation-15.webp",
+      "duration": 5.2
+    },
+    {
+      "webm": "animation-16.webm",
+      "fallback": "animation-16.webp",
+      "duration": 5.2
+    }
+  ],
+  "originals": {
+    "create_an_avator_character_big_head_small_body_charicture_fea_303ad6b9-8582-448d-b7e0-3185e3c9ee27_3.png": "9fe0c515b17b74b2c8912f97275d9234c94408b8aba700fef83152b8750649ae",
+    "create_an_avator_character_big_head_small_body_charicture_fea_074d126e-3ee8-4dd6-9f2f-a18fc2f376bd_0.mp4": "944509fd92f77bb6d1e815dc8d171f9231f364df8982414e662b925467de31f0",
+    "create_an_avator_character_big_head_small_body_charicture_fea_074d126e-3ee8-4dd6-9f2f-a18fc2f376bd_1.mp4": "97250682ee093787c60a343741180883617ae4dd4f5ca87ce5401aba0beb0e46",
+    "create_an_avator_character_big_head_small_body_charicture_fea_074d126e-3ee8-4dd6-9f2f-a18fc2f376bd_2.mp4": "d07a60d43e95de6160e32e470c3e3e444940fa4dc5b1f57eee7c4334ee6a77e4",
+    "create_an_avator_character_big_head_small_body_charicture_fea_074d126e-3ee8-4dd6-9f2f-a18fc2f376bd_3.mp4": "4fb74aaa34e40624627599dbcd18b0ac3c2765130a5f54275877f79aca930405",
+    "create_an_avator_character_big_head_small_body_charicture_fea_16cb9430-c0d9-4895-ad54-9d967878109b_0.mp4": "77198cbbffa90b7f60840da7527cf126ed147858cd10835ea18a9096905106f3",
+    "create_an_avator_character_big_head_small_body_charicture_fea_16cb9430-c0d9-4895-ad54-9d967878109b_1.mp4": "360ba8d25078aad00840a161f0563338ec80895a616296f793d9077745e01b5b",
+    "create_an_avator_character_big_head_small_body_charicture_fea_16cb9430-c0d9-4895-ad54-9d967878109b_2.mp4": "a07407616d849755125f34854cb91d2088a196177f95665b143ea0c55bd0ae08",
+    "create_an_avator_character_big_head_small_body_charicture_fea_16cb9430-c0d9-4895-ad54-9d967878109b_3.mp4": "d479e1e0627df0364b8e60b26e685dd744692c794d5023c3e8c8c58648dafab9",
+    "create_an_avator_character_big_head_small_body_charicture_fea_e13fc816-9a50-4587-8112-6648d52634ba_0.mp4": "051b9e2985779c0d3abd1ac1e0ad83bce09e52d0f6a42088e2ec08fc30eecdfe",
+    "create_an_avator_character_big_head_small_body_charicture_fea_e13fc816-9a50-4587-8112-6648d52634ba_1.mp4": "912ab27e99878696ad3d02c5322bea89001f1bd94c8d7752725e83274cc29f4d",
+    "create_an_avator_character_big_head_small_body_charicture_fea_e13fc816-9a50-4587-8112-6648d52634ba_2.mp4": "d7158e9fada631e7f4f1a97a9b88ca4b4fb8afec7d1af15e951053136f2b2f76",
+    "create_an_avator_character_big_head_small_body_charicture_fea_e13fc816-9a50-4587-8112-6648d52634ba_3.mp4": "5eeb181386c82018c7b536323efe8b3a65bce3f53dcafc80e06a1fc687bf10b8",
+    "create_an_avator_character_big_head_small_body_charicture_fea_f2b8f3ad-9abf-4669-bcd5-24e21a3d3a5b_0.mp4": "797aa5e02fd99bdd49da785df85d69e5ead36d52414756d6bb78d372d726c074",
+    "create_an_avator_character_big_head_small_body_charicture_fea_f2b8f3ad-9abf-4669-bcd5-24e21a3d3a5b_1.mp4": "337e113517bece297db98227b7fafd8fb06e095efd4ed00877b1179f3e5923ac",
+    "create_an_avator_character_big_head_small_body_charicture_fea_f2b8f3ad-9abf-4669-bcd5-24e21a3d3a5b_2.mp4": "0f3866bfba04bdab567d9f7b2999987374eedaf6ae6d63e35bb95bcb9e040590",
+    "create_an_avator_character_big_head_small_body_charicture_fea_f2b8f3ad-9abf-4669-bcd5-24e21a3d3a5b_3.mp4": "a5793dc95e43fcaf8cbcc055069d541227919fe92fb6353d442345465f2927cb"
+  }
+}

@@ -228,6 +228,7 @@ async function copyMungeResult() {
 }
 
 function autoResize(textarea) {
+    window.NewsMuncherMadHelper?.scheduleLayout();
     if (textarea?.id === 'responseBodyDraft' && responseArticleFitter) {
         responseArticleFitter.schedule();
         return;
