@@ -410,3 +410,16 @@ def test_canonical_length_switch_preserves_manual_edits_and_matches_frontend():
         assert f'Aim for approximately {target} words' in backend
         assert backend.count('Story length:') == 1
         assert 'Never exceed' not in backend
+
+
+def test_build_dramatic_default_prompt_matches_frontend():
+    import json
+    import subprocess
+    frontend = json.loads(subprocess.check_output(['node', '-e',
+        "process.stdout.write(JSON.stringify(require('./newsmuncher/static/build-page.js').DEFAULT_CREATIVE_PROMPT))"], text=True))
+    assert frontend == build.DEFAULT_BUILD_CREATIVE_PROMPT
+    for target in (30,60,90):
+        prompt = build.build_story_prompt(build.BuildRecipe(), target, build.DEFAULT_BUILD_CREATIVE_PROMPT)
+        assert 'Make every story outrageously dramatic.' in prompt
+        assert 'absolute conviction and deadpan seriousness.' in prompt
+        assert f'Aim for approximately {target} words' in prompt

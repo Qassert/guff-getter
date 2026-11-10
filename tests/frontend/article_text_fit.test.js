@@ -22,7 +22,8 @@ test('short articles expand to the generous 60px maximum without changing conten
 });
 
 test('fitting uses the allocated content region rather than the text element own height',()=>{
-  const style={},element={style,dataset:{},clientWidth:100,clientHeight:20,
+  const style={},element={style,dataset:{},clientWidth:100,
+    get clientHeight(){return parseFloat(style.height)||20;},
     get scrollHeight(){return 170;},get scrollWidth(){return 280;}};
   const container={clientWidth:300,clientHeight:220};
   assert.equal(fitter(element,{container}).fit(),DEFAULT_MAX_PX);
@@ -84,4 +85,54 @@ test('Create and Gallery regions vertically centre fitted text with breathing ro
   const gallery=fs.readFileSync('newsmuncher/static/css/gallery/promotion-gallery.css','utf8');
   assert.match(shared,/#responseEditor\s*\{[^}]*padding: 26px 0;[^}]*align-items: center;/s);
   assert.match(gallery,/\.gallery-text-region\s*\{[^}]*align-items: center;[^}]*padding: 26px 0;/s);
+});
+
+
+test('final viewport clipping falls back to 8px scrolling without losing the last sentence',()=>{
+  const story='A long theatrical catastrophe. The final pigeon declared bankruptcy!';
+  const element=textBox(80,{text:story});
+  element.clientHeight=80; // Flex layout constrains the final viewport below the measured region.
+  const unit=fitter(element,{container:{clientWidth:300,clientHeight:200}});
+  assert.equal(unit.fit(),8);
+  assert.equal(element.style.overflowY,'auto');
+  assert.equal(element.dataset.textFitOverflow,'true');
+  assert.equal(element.value,story);
+  assert(element.value.endsWith('The final pigeon declared bankruptcy!'));
+});
+
+test('hidden results fit after reveal, edits and responsive layout changes',()=>{
+  let width=0,height=0,frame;
+  const element=textBox(14);
+  const container={get clientWidth(){return width;},get clientHeight(){return height;}};
+  const unit=fitter(element,{container,raf:callback=>{frame=callback;return 1;}});
+  assert.equal(unit.fit(),null);
+  width=300;height=200;
+  unit.schedule();frame();
+  assert(parseFloat(element.style.fontSize)<60);
+  element.value+=' A manually edited final sentence!';
+  element.clientHeight=60;width=180;height=100;
+  unit.onResize();frame();
+  assert.equal(element.style.fontSize,'8px');
+  assert.equal(element.style.overflowY,'auto');
+  assert(element.value.endsWith('A manually edited final sentence!'));
+  element.clientHeight=200;width=300;height=200;
+  unit.schedule();frame();
+  assert.equal(element.style.overflowY,'hidden');
+  assert.equal(element.dataset.textFitOverflow,undefined);
+});
+
+
+test('textarea size changes are observed even when its parchment container stays fixed',()=>{
+  const observed=[];
+  class Observer {constructor(callback){this.callback=callback;}observe(element){observed.push(element);}disconnect(){}}
+  const element=textBox(15),container={clientWidth:300,clientHeight:200};
+  const unit=fitter(element,{container,ResizeObserverClass:Observer});
+  assert.deepEqual(observed,[container,element]);
+  unit.disconnect();
+});
+
+test('even one pixel of final-line overflow is made scrollable rather than hidden',()=>{
+  const element=textBox(80);element.clientHeight=199;
+  assert.equal(fitter(element,{container:{clientWidth:300,clientHeight:200}}).fit(),8);
+  assert.equal(element.style.overflowY,'auto');
 });

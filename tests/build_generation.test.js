@@ -21,6 +21,8 @@ test('Build prompt shares its creative rules across all three length targets', (
     assert.match(prompt, /raw genetic material for a comedic monstrosity/);
     assert.match(prompt, /Start in the middle of madness/);
     assert.match(prompt, /Finish with a detonation/);
+    assert.match(prompt, /Make every story outrageously dramatic/);
+    assert.match(prompt, /absolute conviction and deadpan seriousness/);
     assert.match(prompt, /Never mechanically list or name-drop them/);
     assert.match(prompt, new RegExp(`Aim for approximately ${target} words`));
     assert.match(prompt, /You may go slightly over/);
@@ -81,7 +83,7 @@ test('all three MUNGE lengths visibly render successful stories in the editable 
   const fitted = [];
   globalThis.autoResize = editor => fitted.push(editor);
   for (const target of [30, 60, 90]) {
-    const story = `Visible editable ${target}-word story.`;
+    const story = `${"The absurd catastrophe escalated. ".repeat(Math.ceil(target / 4))}The final pigeon declared bankruptcy!`;
     const headline = `A Purpose-Written ${target}-Word Catastrophe Receives Its Own Filthy Musical Tabloid Hook`;
     const fetcher = async () => ({ok: true, json: async () => ({story, headline})});
     const generated = await requestBuildStory(fetcher, '/build/generate', recipe, target,
@@ -89,12 +91,19 @@ test('all three MUNGE lengths visibly render successful stories in the editable 
     const result = {hidden: true, style: {display: ''}};
     const editor = {value: ''};
     const element = {querySelector: selector => selector === '[data-build-result]' ? result : editor};
+    globalThis.autoResize = fittedEditor => {
+      assert.equal(result.hidden, false);
+      assert.equal(result.style.display, "block");
+      assert.equal(fittedEditor.value, story);
+      fitted.push(fittedEditor);
+    };
     displayBuildStory(element, generated.story);
     assert.equal(editor.value, story);
     assert.equal(generated.headline, headline);
     assert.equal(result.hidden, false);
     assert.equal(result.style.display, 'block');
     assert.equal(fitted.at(-1), editor);
+    assert(editor.value.endsWith("The final pigeon declared bankruptcy!"));
   }
   delete globalThis.autoResize;
 });
@@ -181,6 +190,7 @@ test('RESET PROMPT restores flexible target wording and current recipe for every
     assert.equal(editor.value, buildPrompt(recipe, target));
     assert.match(editor.value, new RegExp(`Aim for approximately ${target} words`));
     assert.match(editor.value, /Prioritise a complete, funny story/);
+    assert.match(editor.value, /Make every story outrageously dramatic/);
     assert.equal(workshop.promptDirty, false);
   }
 });

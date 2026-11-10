@@ -21,6 +21,7 @@
             if (ResizeObserverClass) {
                 this.observer = new ResizeObserverClass(() => this.schedule());
                 this.observer.observe(this.container);
+                if (this.element !== this.container) this.observer.observe(this.element);
             }
             Promise.resolve(fonts?.ready).then(() => {
                 if (!this.destroyed) this.schedule();
@@ -49,8 +50,8 @@
             };
         }
         fits(available) {
-            return this.element.scrollHeight <= available.height + 1 &&
-                this.element.scrollWidth <= available.width + 1;
+            return this.element.scrollHeight <= available.height &&
+                this.element.scrollWidth <= available.width;
         }
         fit() {
             const element = this.element;
@@ -64,8 +65,7 @@
             element.style.fontSize = `${this.maxPx}px`;
             if (this.fits(available)) {
                 element.style.height = `${Math.min(element.scrollHeight, available.height)}px`;
-                delete element.dataset.textFitOverflow;
-                return this.maxPx;
+                return this.finish(this.maxPx, available);
             }
             element.style.fontSize = `${this.minPx}px`;
             if (!this.fits(available)) {
@@ -84,8 +84,21 @@
             element.style.fontSize = `${Math.min(this.maxPx, Math.max(this.minPx, best)).toFixed(2)}px`;
             element.style.overflowY = 'hidden';
             element.style.height = `${Math.min(element.scrollHeight, available.height)}px`;
+            return this.finish(Number.parseFloat(element.style.fontSize), available);
+        }
+        finish(size, available) {
+            const element = this.element;
+            // Container measurements alone cannot detect flex/min-height constraints
+            // applied to the final textarea viewport. Never leave clipped prose hidden.
+            if (element.clientHeight > 0 && element.scrollHeight > element.clientHeight) {
+                element.style.fontSize = `${this.minPx}px`;
+                element.style.height = `${available.height}px`;
+                element.style.overflowY = 'auto';
+                element.dataset.textFitOverflow = 'true';
+                return this.minPx;
+            }
             delete element.dataset.textFitOverflow;
-            return Number.parseFloat(element.style.fontSize);
+            return size;
         }
         disconnect() {
             this.destroyed = true;

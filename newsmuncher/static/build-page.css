@@ -138,6 +138,10 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   margin: 0; color: var(--build-red);
   font: 800 clamp(1.3rem, 3vw, 2rem)/1.35 var(--build-head);
 }
+.build-page #responseBodyDraft {
+  /* Keep the measured viewport intact inside the fixed parchment region. */
+  flex: none; min-height: 0; max-height: 100%; box-sizing: border-box;
+}
 .build-page #responseEditor {
   height: clamp(170px, 24vh, 260px);
 }
