@@ -10,7 +10,11 @@
 }
 .mad-helper-button img, .mad-helper-button video { display: block; width: 100%; height: 100%;
   position: absolute; inset: 0; object-fit: contain; pointer-events: none;
-  filter: drop-shadow(0 0 1px #fff1c480) drop-shadow(0 0 6px #83d7c14d) drop-shadow(0 5px 5px #20120a99); }
+  filter: var(--glow-rest-filter, drop-shadow(0 5px 5px #20120a80));
+  transition: filter 700ms ease; }
+.mad-helper-button:is(:hover, :focus-visible) img,
+.mad-helper-button:is(:hover, :focus-visible) video {
+  filter: var(--glow-hover-filter, var(--glow-rest-filter, drop-shadow(0 5px 5px #20120a80))); }
 .mad-helper-button:focus-visible { outline: 2px dashed var(--purple); outline-offset: 2px; }
 .mad-helper-bubble { position: absolute; bottom: calc(100% + 12px); left: 0; z-index: 2; box-sizing: border-box;
   width: clamp(78px, 42%, 96px); padding: 6px 2px; text-align: center; white-space: nowrap;
@@ -48,4 +52,8 @@
   .mad-helper-enabled .workshop { margin-left: 57px; }
   .mad-helper-enabled .promotion-gallery { margin-left: 57px; width: calc(100% - 57px); }
   .mad-helper-enabled .munge-engine-group { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mad-helper-button img, .mad-helper-button video { transition: none; }
 }

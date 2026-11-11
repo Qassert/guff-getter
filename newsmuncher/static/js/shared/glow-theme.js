@@ -12,7 +12,7 @@
     [255,76,190],   // magenta
     [255,72,92]     // coral red
   ];
-  const CONTROL_SELECTOR='.mode-nav-button, .funky-button, .gallery-arrow, .gallery-fur-control, .munge-body-button, .munge-teat, .udder-teat, .master-mute-button';
+  const CONTROL_SELECTOR='.mode-nav-button, .funky-button, .gallery-arrow, .gallery-fur-control, .munge-body-button, .munge-teat, .udder-teat, .master-mute-button, .mad-helper-button';
 
   class GlowTheme {
     constructor({rootElement,random=Math.random,palette=PALETTE}={}){

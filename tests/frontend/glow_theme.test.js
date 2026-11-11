@@ -42,3 +42,22 @@ test('Create and Gallery use the shared glow variables on grouped artwork and co
  for(const selector of ['.gallery-page','.gallery-arrow','.gallery-fur-control','.funky-button'])assert(gallery.includes(selector));
  assert.match(shared,/transition:\s*filter 700ms ease/);assert.match(gallery,/transition:\s*filter 700ms ease/);
 });
+
+
+test('Mad Helper shares the palette, filter tokens and timing without a separate animation',()=>{
+ const f=fixture([0,0]);f.theme.bind(f.target);const first={...f.properties};
+ const helper={disabled:false,getAttribute:()=>null};
+ f.theme.onClick({target:{closest:selector=>selector.includes('.mad-helper-button')?helper:null}});
+ assert.notDeepEqual(f.properties,first);
+ const css=fs.readFileSync('newsmuncher/static/css/creation/mad-helper.css','utf8');
+ assert.match(css,/filter:\s*var\(--glow-rest-filter,/);
+ assert.match(css,/filter:\s*var\(--glow-hover-filter,/);
+ assert.match(css,/transition:\s*filter 700ms ease/);
+ assert.match(css,/@media \(prefers-reduced-motion: reduce\)[\s\S]*transition: none/);
+ assert.doesNotMatch(css,/hue-rotate|@keyframes/);
+ const base=fs.readFileSync('newsmuncher/templates/base.html','utf8');
+ assert(base.includes('glow-theme-2'));
+ for(const name of ['pet_profile.html','build.html','promotion_gallery.html']) {
+  assert(fs.readFileSync('newsmuncher/templates/'+name,'utf8').includes('mad-helper-glow-1'));
+ }
+});
