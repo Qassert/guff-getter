@@ -1208,7 +1208,16 @@ def save_creation_text(rewrite_id: str, payload: SavedStoryText, request: Reques
             raise HTTPException(409, 'Saved creation identity is invalid.')
         query = {'_id': ObjectId(state['entry_id']), 'rewrite_id': rewrite_id, '$or': [
             {'image_owner': owner},
-            {'image_owner': {'$exists': False}, 'creationUser': owner}]}
+            {'image_owner': {'$exists': False}, 'creationUser': owner},
+            {'image_owner': None, 'creationUser': owner}]}
+        if state.get('legacy_editor'):
+            from newsmuncher.services.creation_restore import legacy_editor_id
+            if rewrite_id != legacy_editor_id(state['entry_id']):
+                raise HTTPException(409, 'Saved nomination identity is invalid.')
+            query.pop('rewrite_id')
+            original = collection.find_one(query)
+            if not original or original.get('rewrite_id'):
+                raise HTTPException(409, 'Saved nomination identity changed. Reopen it from Gallery.')
         changes = payload.model_dump()
         # Text-only $set: never invalidate, unlink or regenerate existing media.
         result = collection.update_one(query, {'$set': changes})
@@ -1601,11 +1610,58 @@ def loading_images(active_pet: str = Cookie(None)):
                        for url in random.sample(sorted(urls), min(5, len(urls)))]}
 
 
+@router.get('/gallery_creation/{entry_id}')
+def get_gallery_creation(entry_id: str, active_pet: str = Cookie(None)):
+    from newsmuncher.api.entries import collection
+    from newsmuncher.services.creation_restore import restore_nomination
+    if not active_pet:
+        raise HTTPException(401, 'No active pet selected.')
+    if not ObjectId.is_valid(entry_id):
+        raise HTTPException(404, 'Saved nomination not found.')
+    entry = collection.find_one({'_id': ObjectId(entry_id)})
+    if not entry:
+        raise HTTPException(404, 'Saved nomination not found.')
+    if (entry.get('image_owner') or entry.get('creationUser')) != active_pet:
+        raise HTTPException(403, 'This nomination belongs to another pet.')
+    from newsmuncher.services.creation_restore import legacy_editor_id
+    rewrite_id = entry.get('rewrite_id') or legacy_editor_id(entry_id)
+    with store.transaction() as db:
+        if not db.execute('SELECT 1 FROM rewrites WHERE id=?', (rewrite_id,)).fetchone():
+            return restore_nomination(entry, active_pet, store, db)
+    return get_image_result(rewrite_id, active_pet)
+
+
 @router.get('/image_result/{rewrite_id}')
 def get_image_result(rewrite_id: str, active_pet: str = Cookie(None)):
     # Read-only restoration: refreshing never calls a paid provider.
     with store.transaction() as db:
-        state = read_image_rewrite(db, rewrite_id, active_pet)
+        try:
+            state = read_image_rewrite(db, rewrite_id, active_pet)
+        except HTTPException as exc:
+            if exc.status_code != 404:
+                raise
+            from newsmuncher.api.entries import collection
+            from newsmuncher.services.creation_restore import restore_nomination
+            if not active_pet:
+                raise HTTPException(401, 'No active pet selected.')
+            entry = collection.find_one({'rewrite_id': rewrite_id})
+            if not entry:
+                raise HTTPException(404, 'Saved nomination not found.')
+            return restore_nomination(entry, active_pet, store, db)
+        saved_result = state.get('result') if isinstance(state.get('result'), dict) else {}
+        saved_body = saved_result.get('crazyReplacement1Extract')
+        incomplete_saved_state = bool(
+            (state.get('entry_id') and (not isinstance(saved_body, str) or not saved_body.strip())) or
+            ((saved_result.get('nominated') or saved_result.get('crazyReplacement1done')) and not state.get('entry_id')))
+        if state.get('restored_nomination') or incomplete_saved_state:
+            from newsmuncher.api.entries import collection
+            from newsmuncher.services.creation_restore import restore_nomination
+            query = ({'_id': ObjectId(state['entry_id'])} if ObjectId.is_valid(state.get('entry_id'))
+                     else {'rewrite_id': rewrite_id})
+            entry = collection.find_one(query)
+            if not entry:
+                raise HTTPException(404, 'Saved nomination not found.')
+            return restore_nomination(entry, active_pet, store, db, existing=state)
         redo = state.get('image_redo')
         if redo and redo['status'] != 'complete' and not state.get('entry_id'):
             try:

@@ -799,30 +799,54 @@ function displayRewriteImage(url, current, style = null) {
     });
 }
 
+let rewriteRestoreSequence = 0;
 async function restoreImageRewrite() {
-    let id;
-    try { id = new URLSearchParams(window.location.search).get('rewrite_id'); } catch (_) {}
+    const restoreSequence = ++rewriteRestoreSequence;
+    let id, nominationId;
     try {
-        id = id || sessionStorage.getItem('newsmuncher.imageRewrite');
-        if (id) sessionStorage.setItem('newsmuncher.imageRewrite', id);
-    } catch (_) { if (!id) return; }
-    if (!id) return;
+        const params = new URLSearchParams(window.location.search);
+        id = params.get('rewrite_id'); nominationId = params.get('nomination_id');
+    } catch (_) {}
+    try {
+        id = id || (!nominationId && sessionStorage.getItem('newsmuncher.imageRewrite'));
+    } catch (_) { if (!id && !nominationId) return; }
+    if (!id && !nominationId) return;
     const sequence = rewriteSequence;
     try {
-        const response = await fetch(`/temp/image_result/${encodeURIComponent(id)}`, {credentials: 'include'});
-        if (!response.ok) return;
+        const path = nominationId ? `/temp/gallery_creation/${encodeURIComponent(nominationId)}` : `/temp/image_result/${encodeURIComponent(id)}`;
+        const response = await fetch(path, {credentials: 'include'});
+        if (!response.ok) throw new Error('This saved nomination could not be loaded. Return to Gallery and try again.');
         const data = await response.json();
-        if (sequence !== rewriteSequence || data.rewrite_id !== id) return;
+        if (sequence !== rewriteSequence || restoreSequence !== rewriteRestoreSequence) return;
+        if (id && data.rewrite_id !== id) throw new Error('The saved nomination identity did not match. Reopen it from Gallery.');
+        id = data.rewrite_id;
+        if (!id || !data.crazyReplacement1Extract) throw new Error('This nomination has no recoverable saved story text.');
+        if (displayedRewriteId !== id) resetImagePanel();
         setDisplayedRewriteId(id);
+        const status = document.getElementById('mungeMessage');
+        if (status) status.hidden = true;
         setNominationState(data);
         const title=document.getElementById('responseTitleDraft'),extract=document.getElementById('responseBodyDraft');
         title.value=data.crazyReplacement1Title||'';extract.value=data.crazyReplacement1Extract||'';
+        if (nominationId || new URLSearchParams(window.location.search).has('rewrite_id')) {
+            for (const [field, key] of [['sourceTitleDraft','title'], ['sourceBodyDraft','extract'],
+                ['sourceUrlDraft','source_url'], ['sourceNameDraft','source_name'],
+                ['sourceAuthorDraft','source_author'], ['sourceLicenceDraft','source_licence']]) {
+                const element = document.getElementById(field);
+                if (element) { element.value = typeof data[key] === 'string' ? data[key] : ''; autoResize(element); }
+            }
+        }
         renderNominationButton();
         document.getElementById('outputContainer').style.display = 'block';
         document.getElementById('bankButton').classList.remove('hidden');
         autoResize(extract);
         if (data.image_url) displayRewriteImage(data.image_url, () => sequence === rewriteSequence && displayedRewriteId === id, data.image_style);
-    } catch (_) {} // Restoration is optional and never initiates paid generation.
+    } catch (error) {
+        if (sequence !== rewriteSequence || restoreSequence !== rewriteRestoreSequence) return;
+        const status = document.getElementById('mungeMessage');
+        if (status) { status.textContent = error.message || 'Saved nomination could not be loaded.'; status.hidden = false; }
+        console.warn('Saved nomination restoration failed', {rewrite_id: id || null, nomination_id: nominationId || null});
+    } // Restoration never initiates paid generation.
 }
 
 document.getElementById('mungeControls')?.querySelectorAll?.('.munge-teat, .munge-body-button')?.forEach(button => button.addEventListener('click', confirmData));
@@ -873,7 +897,7 @@ window.onload = () => {
         });
         const requestedRewrite = new URLSearchParams(window.location.search).get('rewrite_id');
         const saved = access?.read();
-        if ((!requestedRewrite || requestedRewrite === saved?.rewriteId) && access?.restore()) {
+        if (!new URLSearchParams(window.location.search).has('nomination_id') && (!requestedRewrite || requestedRewrite === saved?.rewriteId) && access?.restore()) {
             // Recover existing server-side draft controls/media when still authorised;
             // reapply local text afterwards so unsaved edits always win.
             if (saved?.rewriteId) {
@@ -882,7 +906,9 @@ window.onload = () => {
             return;
         }
     }
-    if (document.getElementById('sourceBodyDraft')) {
+    if (document.getElementById('sourceBodyDraft') &&
+        !new URLSearchParams(window.location.search).has('rewrite_id') &&
+        !new URLSearchParams(window.location.search).has('nomination_id')) {
         populateTempData().catch(error=>console.error("Error populating temporary data:",error));
     }
     if (!document.querySelector('[data-build-workshop]')) restoreImageRewrite();

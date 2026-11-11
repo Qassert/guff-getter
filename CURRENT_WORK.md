@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: AUTOMATIC SAFE MEDIA RECOVERY
-LAST_COMPLETED_COMMIT: See latest automatic safe media recovery commit in Git history
+LAST_COMPLETED_FEATURE: HISTORICAL GALLERY EDITOR RESTORATION
+LAST_COMPLETED_COMMIT: See latest historical Gallery editor restoration commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Bounded content-rejection recovery for media prompts; preserve helper offset and prior fixes.
-APPROVAL: One bounded content-only image recovery attempt; mocks only. Preserve video cost controls, prior race fixes and helper work. No push/merge/deploy.
-NEXT_STEP: Review docs/automatic-safe-media-recovery.md. Video/end-frame paid retry controls remain explicit; no live-generation verification was performed.
-VALIDATION: 91 Python tests plus 6 subtests, 34 JS tests, syntax/diff checks pass. No existing stories/media changed; helper offset remains uncommitted.
+CURRENT_TASK: Restore historical Gallery nominations into CREATE without mutating saved stories/media.
+APPROVAL: Backwards-compatible Gallery-to-CREATE loading; read-only historical record checks and mocked write tests. Preserve helper work; no push/merge/deploy.
+NEXT_STEP: Review docs/historical-gallery-editor.md. Known Dickens record passed temporary-cache/read-only API restoration; no real-browser or app restart performed.
+VALIDATION: 70 Python tests plus 6 subtests, 45 JS tests and syntax/diff checks pass. Mongo/media unchanged; helper offset remains uncommitted.
 
 
 ## Early adoption access — 2026-11-09

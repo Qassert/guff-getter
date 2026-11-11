@@ -1,8 +1,9 @@
 /* Stored nominations only; never calls a generation endpoint. */
 (function (root) {
     'use strict';
-    const creatorEditUrl = (base, rewriteId) => rewriteId
-        ? base + '?rewrite_id=' + encodeURIComponent(rewriteId) : base;
+    const creatorEditUrl = (base, rewriteId, nominationId) => rewriteId
+        ? base + '?rewrite_id=' + encodeURIComponent(rewriteId)
+        : nominationId ? base + '?nomination_id=' + encodeURIComponent(nominationId) : base;
     class GalleryMedia {
         constructor({makeAudio = () => new Audio(), status = () => {}} = {}) {
             this.makeAudio = makeAudio;
@@ -709,7 +710,7 @@
             promote.classList.toggle('is-promoted', !!item.promoted);
             promote.setAttribute('aria-label', item.promoted ? 'Creation promoted' : 'Promote creation');
             promote.disabled = item.promoted;
-            edit.href = creatorEditUrl(creationUrl, item.rewrite_id);
+            edit.href = creatorEditUrl(creationUrl, item.rewrite_id, item.id);
             // A fresh image prevents a late error from an old URL hiding the new page.
             const image = document.createElement('img');
             image.id = 'galleryImage'; image.alt = ''; image.decoding = 'async';
