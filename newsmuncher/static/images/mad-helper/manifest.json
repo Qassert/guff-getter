@@ -1,8 +1,8 @@
 {
-  "revision": "refined-3",
+  "revision": "smooth-4",
   "png": "idle.png",
-  "width": 320,
-  "height": 320,
+  "width": 448,
+  "height": 448,
   "fps": 20,
   "animations": [
     {

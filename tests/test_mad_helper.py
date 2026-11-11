@@ -29,7 +29,7 @@ def test_shared_helper_settings_and_create_editors_render_unchanged():
         assert rendered.count('data-mad-helper-toggle') == 1
         assert 'data-mad-helper-text' in rendered
         assert 'data-mad-helper-paper' in rendered
-        assert 'mad-helper-3' in rendered
+        assert 'mad-helper-4' in rendered
     signed_out = env.get_template('promotion_gallery.html').render(
         url_for=lambda name, path: '/static/' + path, signed_in=False, login_url='/login')
     assert 'data-mad-helper-toggle' not in signed_out
@@ -62,7 +62,7 @@ def test_every_video_has_alpha_and_no_audio(clip):
     assert len(info['streams']) == 1
     video = info['streams'][0]
     assert video['codec_type'] == 'video'
-    assert video['width'] == video['height'] == 320
+    assert video['width'] == video['height'] == MANIFEST['width']
     assert video['tags']['alpha_mode'] == '1'
 
 
@@ -74,7 +74,10 @@ def test_refined_matte_removes_leg_gap_and_preserves_light_details(filename):
         command += ['-ss', '2', '-c:v', 'libvpx-vp9']
     raw = subprocess.check_output(command + ['-i', str(ROOT / filename), '-frames:v', '1',
         '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'])
-    alpha = lambda x, y: raw[(y * 320 + x) * 4 + 3]
+    width = MANIFEST['width']
+    alpha = lambda x, y: raw[(round(y * width / 320) * width + round(x * width / 320)) * 4 + 3]
     assert alpha(158 if filename.endswith('.png') else 155, 282) == 0
     for x, y in [(148, 99), (170, 157), (140, 220)]:
         assert alpha(x, y) >= 250
+    # A genuinely antialiased matte has a graded fringe, rather than a binary cutout.
+    assert len({value for value in raw[3::4] if 0 < value < 255}) > 100

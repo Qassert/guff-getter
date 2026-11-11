@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: MAD HELPER VISUAL REFINEMENT
-LAST_COMPLETED_COMMIT: See latest Mad Helper visual refinement commit in Git history
+LAST_COMPLETED_FEATURE: MAD HELPER EDGE QUALITY
+LAST_COMPLETED_COMMIT: See latest Mad Helper edge-quality commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Mad Helper enlarged 70%, external face-safe bubble, refined leg/hair transparency and subtle alpha-aware shadows, with responsive half-overlap.
-APPROVAL: Andy requested this scoped refinement and minimal testing. No push, merge or deployment.
-NEXT_STEP: Review local refinement and docs/mad-helper-refinement.md. Native Safari QA remains unverified.
-VALIDATION: Minimal checks only: 15 helper JavaScript tests and 3 targeted Python checks pass, plus syntax/diff checks and a focused desktop/mobile Chrome visual pass. Originals preserved.
+CURRENT_TASK: Source-resolution helper matting, narrow alpha feathering and premultiplied resizing; higher-detail derivatives and restrained glow/shadow. Display size, placement and interaction code unchanged.
+APPROVAL: Andy requested a scoped mask/edge-quality and visual separation pass. No push, merge or deployment.
+NEXT_STEP: Review docs/mad-helper-edge-quality.md and the local commit. Note the larger on-demand derivative files; native Safari remains unverified.
+VALIDATION: Focused checks only: 15 helper JS tests and 3 targeted Python checks pass; desktop/mobile Chrome PNG/video review, opaque-interior colour comparison, syntax and diff checks. Originals preserved.
 
 ## Early adoption access — 2026-11-09
 
@@ -1943,7 +1943,7 @@ image prompt only: believable figures/materials, cinematic lighting, connected s
 absurd humour and 4–6 dominant colours. Flat style retained as PREVIOUS_IMAGE_STYLE;
 original graffiti/zine wording retained as ORIGINAL_IMAGE_STYLE, both reference-only.
 Image settings, rewritten scene inputs and lifecycle unchanged.
-VALIDATION: Minimal checks only: 15 helper JavaScript tests and 3 targeted Python checks pass, plus syntax/diff checks and a focused desktop/mobile Chrome visual pass. Originals preserved.
+VALIDATION: Focused checks only: 15 helper JS tests and 3 targeted Python checks pass; desktop/mobile Chrome PNG/video review, opaque-interior colour comparison, syntax and diff checks. Originals preserved.
 No real images or external calls. Changes intentionally uncommitted/unpushed for review.
 
 
@@ -1959,7 +1959,7 @@ Run from root using .venv/bin/python -m scripts.diagnostics.compare_tts --provid
 For one live sample, replace all with openai/elevenlabs/cartesia and omit --dry-run.
 Each provider requires an API-enabled account, usable quota/credit and access to the
 configured voice IDs. Account/voice availability has not been tested live.
-VALIDATION: Minimal checks only: 15 helper JavaScript tests and 3 targeted Python checks pass, plus syntax/diff checks and a focused desktop/mobile Chrome visual pass. Originals preserved.
+VALIDATION: Focused checks only: 15 helper JS tests and 3 targeted Python checks pass; desktop/mobile Chrome PNG/video review, opaque-interior colour comparison, syntax and diff checks. Originals preserved.
 STATUS: REVIEW / CODEX; user authorized committing and pushing this harness.
 Earlier image-style changes are already committed; older uncommitted wording above
 is historical. No unrelated files changed in this harness task.

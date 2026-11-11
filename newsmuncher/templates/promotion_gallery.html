@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Gallery · NewsMuncher{% endblock %}
-{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=gallery-parchment-seams-1"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/mad-helper.css') }}?v=mad-helper-3">{% endblock %}
+{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=gallery-parchment-seams-1"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/mad-helper.css') }}?v=mad-helper-4">{% endblock %}
 {% block body_attributes %} class="promotion-gallery-page"{% endblock %}
 {% block header %}{% endblock %}
 {% block background %}<div id="galleryBackdrop" class="gallery-backdrop" aria-hidden="true"><img id="galleryBackdropImage" alt=""></div>{% endblock %}
@@ -58,4 +58,4 @@
 {% if signed_in %}{% include 'partials/mad-helper-toggle.html' %}{% endif %}
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=gallery-text-save-1" defer></script>{% endif %}{% if signed_in %}<script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-3" defer></script>{% endif %}{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=gallery-text-save-1" defer></script>{% endif %}{% if signed_in %}<script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-4" defer></script>{% endif %}{% endblock %}

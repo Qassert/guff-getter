@@ -102,7 +102,7 @@ test('all three modes opt in through shared settings and explicit text anchors',
     for(const file of ['pet_profile.html','build.html','promotion_gallery.html']) {
         const template=fs.readFileSync('newsmuncher/templates/'+file,'utf8');
         assert(template.includes('data-mad-helper-text'));assert(template.includes('data-mad-helper-paper'));
-        assert(template.includes("partials/mad-helper-toggle.html"));assert(template.includes('mad-helper-3'));
+        assert(template.includes("partials/mad-helper-toggle.html"));assert(template.includes('mad-helper-4'));
     }
     assert.match(fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8'),/function autoResize\(textarea\) \{\s*window.NewsMuncherMadHelper\?\.scheduleLayout\(\)/);
     const css=fs.readFileSync('newsmuncher/static/css/creation/mad-helper.css','utf8');
