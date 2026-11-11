@@ -412,11 +412,11 @@ body { isolation: isolate; }
   /* The udder is an absolute overlay; reserve only its lower teat footprint. */
   position:relative; z-index:1;
   padding-top: clamp(77px, calc(13.92vw - var(--creation-gap-reduction)), 106px);
-  /* Pull only the first parchment's trailing edge toward its final source line. */
-  margin-bottom: -20px;
+  margin-bottom: 0;
 }
 .profile-page #sourceBodyDraft {
-  /* Remove the generic textarea tail; this is the final item on the first parchment. */
+  /* Source only: preserve the inherited 1rem baseline, adding exactly 2pt. */
+  font-size: calc(1rem + 2pt);
   margin-bottom: 0;
 }
 .profile-page .source-attribution {
@@ -489,6 +489,34 @@ body { isolation: isolate; }
 .profile-page .profile-container {
   --paper-transition-half-gap: 19px;
   margin-bottom: calc(2 * var(--paper-transition-half-gap));
+}
+/* CREATE reserves the upper half of each MUNGE control in normal flow.
+   Its lower half still overlaps the parchment transition, without covering prose. */
+.profile-page .profile-container:has(#sourceEditor) {
+  --source-munge-width: min(28vw, 362px);
+  --source-paper-padding: clamp(12px, 2vw, 24px);
+}
+.profile-page .profile-container:has(#sourceEditor) .munge-generation-controls {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  transform: none;
+  height: calc(var(--source-munge-width) / 1.18 / 2);
+  margin-top: 1em;
+  margin-bottom: calc(-1 * (var(--paper-edge) + var(--source-paper-padding) + var(--paper-transition-half-gap) + 22px));
+}
+.profile-page .profile-container:has(#sourceEditor) .munge-engine-group {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.profile-page .profile-container:has(#sourceEditor) .munge-control {
+  width: var(--source-munge-width);
+  flex: 0 0 var(--source-munge-width);
+}
+@media (max-width: 620px) {
+  .profile-page .profile-container:has(#sourceEditor) { --source-munge-width: 33.333vw; }
 }
 .profile-page .profile-container { z-index: 2; }
 .profile-page #outputContainer { z-index: 1; }

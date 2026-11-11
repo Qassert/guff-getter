@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: SCENE-PRESERVING MEDIA SANITISATION
-LAST_COMPLETED_COMMIT: See latest scene-preserving media sanitisation commit in Git history
+LAST_COMPLETED_FEATURE: CREATE SOURCE TEXT LAYOUT
+LAST_COMPLETED_COMMIT: See latest CREATE source text layout commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Preserve story details in shared media sanitisation; retain race fixes and uncommitted helper offset.
-APPROVAL: Scene-preserving shared media sanitisation; mocked tests only. No paid generation, push, merge or deployment.
-NEXT_STEP: Review docs/media-sanitisation-refinement.md. Existing uncommitted 65px upper-helper offset and prior race-condition fixes remain intact.
-VALIDATION: 71 Python tests plus 6 subtests and 26 targeted JS tests pass; diff checks pass. No existing story/media changed.
+CURRENT_TASK: CREATE source layout and exact 2pt font increase; preserve uncommitted helper offset.
+APPROVAL: CREATE source layout and 2pt source-only font increase. Preserve existing work; no push, merge or deploy.
+NEXT_STEP: Review docs/create-source-layout.md. Real-browser desktop/mobile/zoom/helper-toggle visual checks remain unavailable. Existing uncommitted helper offset preserved.
+VALIDATION: 42 focused JS tests pass; JS syntax and diff checks pass. No app restart or paid generation.
 
 
 ## Early adoption access — 2026-11-09

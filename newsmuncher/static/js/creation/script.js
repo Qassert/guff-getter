@@ -237,6 +237,21 @@ function autoResize(textarea) {
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
+// Source prose grows with wrapping; only result prose uses the fitting algorithm.
+const sourceBodyForLayout = document.getElementById('sourceBodyDraft');
+if (sourceBodyForLayout) {
+    let sourceWidth = -1;
+    const resizeSource = () => autoResize(sourceBodyForLayout);
+    window.addEventListener('resize', resizeSource, {passive: true});
+    if (typeof ResizeObserver === 'function') {
+        new ResizeObserver(() => {
+            const width = sourceBodyForLayout.clientWidth;
+            if (width !== sourceWidth) { sourceWidth = width; resizeSource(); }
+        }).observe(sourceBodyForLayout);
+    }
+    document.fonts?.ready.then(resizeSource);
+}
+
 const responseArticleFitter = typeof ArticleTextFitter === 'function' &&
     document.getElementById('responseBodyDraft') && document.getElementById('responseEditor')
     ? new ArticleTextFitter({
