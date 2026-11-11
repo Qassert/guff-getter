@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: CREATE HELPER REFERENCE PLACEMENT
-LAST_COMPLETED_COMMIT: See latest CREATE helper reference-placement commit in Git history
+LAST_COMPLETED_FEATURE: NOMINATION SNAPSHOT RACE GUARDS
+LAST_COMPLETED_COMMIT: See latest nomination snapshot race-guard commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,11 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: CREATE upper helper raised to paper corner; lower helper moved below story at lower-right and mirrored, following the supplied screenshot and explicit clarification.
-APPROVAL: Andy confirmed lower-right endpoint, superseding the earlier lower-left instruction. Preserve other modes. No push, merge or deployment.
-NEXT_STEP: Review docs/mad-helper-create-placement.md and the local commit. Temporary browser/static server stopped; no app-server startup.
-VALIDATION: 26 focused helper/glow JS tests, one rendered-template Python check and syntax/diff checks pass. Chrome confirms desktop/mobile placement, text/control clearance, bubbles, mirrored PNG/video, shared-video upper reset and toggle restoration.
+CURRENT_TASK: Investigate nomination/media association races. Preserve the pre-existing uncommitted 65px upper-helper offset.
+APPROVAL: Investigate current browser and records; fix confirmed races using mocked tests. No paid generation, push, merge or deployment.
+NEXT_STEP: Review docs/nomination-media-investigation.md. Existing uncommitted 65px upper-helper offset remains untouched. Current browser was inspected without navigation or refresh.
+VALIDATION: 59 targeted JavaScript tests; 66 Python tests plus 6 subtests; three JS syntax checks and diff whitespace checks pass. No live media generated.
+
 
 ## Early adoption access — 2026-11-09
 

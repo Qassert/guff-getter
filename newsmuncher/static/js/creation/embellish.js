@@ -86,6 +86,7 @@
 
             if (prepared) {
                 await media.Video.show({nominated:true, rewrite_id:id});
+                if (token !== this.revision) return;
                 Promise.resolve(media.Video.ensure()).catch(()=>{
                     if (token === this.revision) this.errors = 'Animation is unavailable.';
                 });

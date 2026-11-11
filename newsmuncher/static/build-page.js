@@ -469,12 +469,22 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     async nominateStory() {
       const story = this.element.querySelector('[data-build-story]')?.value.trim();
       if (!story) return;
+      const sequence = root.creationContext?.().sequence;
+      const isCurrent = () => root.creationContext?.().sequence === sequence &&
+        this.element.querySelector('[data-build-story]')?.value.trim() === story;
       const button = this.element.querySelector('[data-build-nominate]');
       button.disabled = true; button.textContent = 'NOMINATING…';
       try {
         if (!root.creationActions?.hasDraft?.()) {
           const data = await requestBuildDraft(this.fetcher, this.element.dataset.draftUrl, story,
             this.generatedHeadline, this.headlineStory);
+          if (!isCurrent()) {
+            // Bank the clicked snapshot, never attach an old draft to the new story.
+            await root.creationActions.nominate({rewrite_id: data.rewrite_id, sequence,
+              text: {crazyReplacement1Title: data.crazyReplacement1Title || '',
+                crazyReplacement1Extract: story}});
+            return;
+          }
           root.creationActions?.attachDraft?.(data);
         }
         if (typeof root.creationActions?.nominate !== 'function') {
@@ -482,6 +492,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
         }
         root.creationActions.nominate();
       } catch (error) {
+        if (!isCurrent()) return;
         const status = this.element.querySelector('[data-munge-status]');
         status.classList.add('is-error');
         status.textContent = error.message || 'Nomination failed. Your story is still here.';

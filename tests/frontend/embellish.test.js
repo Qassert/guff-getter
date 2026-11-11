@@ -58,3 +58,23 @@ test('queued video does not hold back the still and stale completion is ignored'
  t.ui.show(null);t.media.Video.state={video_url:'/done'};t.timers.at(-1)();
  assert(!t.renders.at(-1).available);
 });
+
+
+test('out-of-order images keep B identity and never start stale A video',async()=>{
+ const t=setup(),pending={},ids=[];
+ t.ui.image=id=>new Promise(resolve=>pending[id]=()=>resolve({reveal:async()=>ids.push('reveal-'+id)}));
+ t.media.Video.show=async data=>ids.push('video-'+data.rewrite_id);
+ const a=t.ui.nominate({rewrite_id:'A',sequence:1});
+ t.ui.show(null);const b=t.ui.nominate({rewrite_id:'B',sequence:2});
+ pending.B();await b;pending.A();await a;
+ assert.deepEqual(ids,['reveal-B','video-B']);
+});
+
+test('reset during delayed video status cannot start a different story video',async()=>{
+ const t=setup();let ready;
+ t.media.Video.show=()=>new Promise(resolve=>ready=resolve);
+ const a=t.ui.nominate({rewrite_id:'A',sequence:1});
+ for(let i=0;i<5&&!ready;i++)await Promise.resolve();
+ assert(ready);t.ui.show(null);ready();await a;
+ assert(!t.calls.includes('video'));
+});

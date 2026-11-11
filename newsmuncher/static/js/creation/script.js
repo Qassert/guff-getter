@@ -474,7 +474,7 @@ window.creationActions = {
     reset: resetCreationActionState,
     attachDraft: attachCreationDraft,
     hasDraft: () => Boolean(displayedRewriteId),
-    nominate: () => bankThisBeauty(),
+    nominate: snapshot => bankThisBeauty(snapshot),
 };
 
 let adoptionCheckPending = false;
@@ -597,21 +597,23 @@ if (window.NewsMuncherStoryText) {
     window.addEventListener('pagehide', () => window.creationTextSaver.flush().catch(() => {}));
 }
 
-function bankThisBeauty() {
-    if (creationNominated && displayedRewriteId && window.creationTextSaver) {
+function bankThisBeauty(nomination = null) {
+    const detached = Boolean(nomination);
+    if (!detached && creationNominated && displayedRewriteId && window.creationTextSaver) {
         return window.creationTextSaver.flush().catch(() => {});
     }
-    if (nominationPending || imageRedoPending) return;
-    const response = currentResultText();
+    if (!detached && (nominationPending || imageRedoPending)) return;
+    const response = nomination?.text || currentResultText();
     const snapshot = JSON.stringify(response);
-    if (snapshot === nominatedSnapshot) return;
-    nominationPending = true;
+    if (!detached && snapshot === nominatedSnapshot) return;
+    if (!detached) nominationPending = true;
     renderNominationButton();
     renderRedoImage();
-    const nominatingId = displayedRewriteId;
-    const nominatingSequence = rewriteSequence;
-    showLoader();
-    fetch("/temp/confirm_data" + (displayedRewriteId ? `?rewrite_id=${encodeURIComponent(displayedRewriteId)}` : ""), {
+    const nominatingId = nomination?.rewrite_id || displayedRewriteId;
+    const nominatingSequence = nomination?.sequence ?? rewriteSequence;
+    const isCurrent = () => nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence;
+    if (!detached) showLoader();
+    return fetch("/temp/confirm_data" + (nominatingId ? `?rewrite_id=${encodeURIComponent(nominatingId)}` : ""), {
         method: "POST",
         credentials: 'include',
         headers: {'Content-Type': 'application/json'},
@@ -623,7 +625,7 @@ function bankThisBeauty() {
         })
         .then(data => {
             if (data.nominated !== true) throw new Error('Nomination was not confirmed.');
-            if (nominatingId === displayedRewriteId && nominatingSequence === rewriteSequence) {
+            if (isCurrent()) {
                 const savedText = {
                     crazyReplacement1Title: data.crazyReplacement1Title ?? response.crazyReplacement1Title,
                     crazyReplacement1Extract: data.crazyReplacement1Extract ?? response.crazyReplacement1Extract
@@ -640,13 +642,14 @@ function bankThisBeauty() {
                 if (typeof jingleUI !== 'undefined') jingleUI.show({nominated: true, rewrite_id: data.rewrite_id || nominatingId});
                 if(typeof embellishUI!=='undefined')embellishUI.nominate({rewrite_id:data.rewrite_id||nominatingId,sequence:nominatingSequence});
             }
-            if (typeof jingleUI !== 'undefined') jingleUI.discover();
+            if (isCurrent() && typeof jingleUI !== 'undefined') jingleUI.discover();
         })
         .catch(error => {
             console.error("Error banking the beauty:", error);
-            hideLoader();
+            if (isCurrent()) hideLoader();
         })
         .finally(() => {
+            if (!isCurrent()) return;
             nominationPending = false;
             renderRedoImage();
             renderNominationButton();
