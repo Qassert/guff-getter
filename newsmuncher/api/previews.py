@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request, Cookie
 from pydantic import BaseModel, Field
 from openai import BadRequestError
 import json
+import logging
 import requests
 import subprocess
 import sys
@@ -76,8 +77,8 @@ from newsmuncher.services.radical_comedy import (
 
 from newsmuncher.services.image_generation import (store, choose_image_style, get_provider,
     build_image_prompt, IMAGE_FIELDS, recover_image, IMAGE_MODEL, IMAGE_QUALITY,
-    IMAGE_SIZE, image_path, DefinitiveImageFailure, safe_provider_failure)
-from newsmuncher.services.media_description import ensure_media_description
+    IMAGE_SIZE, image_path, DefinitiveImageFailure, safe_provider_failure, is_content_rejection)
+from newsmuncher.services.media_description import ensure_media_description, revise_media_description
 
 router = APIRouter()
 
@@ -1240,6 +1241,56 @@ def sync_image_metadata(rewrite_id, owner):
                 pass
 
 
+def generate_prepared_image(rewrite_id, owner, attempt, slot='image_attempt'):
+    """One persisted, content-only retry; never retry an uncertain outcome."""
+    provider = get_provider()
+    try:
+        return provider.generate_image(attempt['prompt'], attempt['image_id'])
+    except BadRequestError as exc:
+        logging.getLogger(__name__).info(
+            'media_recovery rewrite_id=%s slot=%s attempt_id=%s phase=rejected code=%s',
+            rewrite_id, slot, attempt['image_id'], safe_provider_failure(exc)['failure_code'])
+        if not is_content_rejection(exc) or attempt.get('retry_count', 0) >= 1:
+            raise
+        with store.transaction() as db:
+            state = read_image_rewrite(db, rewrite_id, owner)
+            current = state.get(slot) or {}
+            if (current.get('image_id') != attempt['image_id'] or
+                    current.get('status') != 'started' or state.get('discarded')):
+                raise HTTPException(409, 'Image attempt changed; no automatic retry.') from exc
+            description = ensure_media_description(state)
+            if attempt.get('source_hash') and description['source_hash'] != attempt['source_hash']:
+                raise HTTPException(409, 'Story changed; no automatic retry.') from exc
+            state.setdefault(slot + '_history', []).append(
+                {**current, 'status': 'definitive_failed', **safe_provider_failure(exc)})
+            revised = revise_media_description(state)
+            retry = {**current, 'image_id': str(uuid4()), 'status': 'started',
+                     'retry_count': 1, 'content_retry_count': 1,
+                     'prompt': build_image_prompt(state['result'], current.get('image_style'), revised),
+                     'created_at': datetime.now(timezone.utc).isoformat()}
+            for field in tuple(retry):
+                if field.startswith('failure_') or field in ('provider_response_received_at', 'persistence_completed_at'):
+                    retry.pop(field, None)
+            state[slot] = retry
+            store.save(db, rewrite_id, state)  # Atomic claim before the extra paid call.
+        attempt.clear()
+        attempt.update(retry)
+        logging.getLogger(__name__).info(
+            'media_recovery rewrite_id=%s slot=%s attempt_id=%s phase=revised_retry code=moderation_blocked',
+            rewrite_id, slot, retry['image_id'])
+        try:
+            metadata = provider.generate_image(attempt['prompt'], attempt['image_id'])
+        except Exception as retry_error:
+            logging.getLogger(__name__).info(
+                'media_recovery rewrite_id=%s slot=%s attempt_id=%s phase=retry_failed category=%s',
+                rewrite_id, slot, attempt['image_id'], type(retry_error).__name__)
+            raise
+        logging.getLogger(__name__).info(
+            'media_recovery rewrite_id=%s slot=%s attempt_id=%s phase=retry_complete',
+            rewrite_id, slot, attempt['image_id'])
+        return metadata
+
+
 @router.post('/generate_image')
 def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
     cached = None
@@ -1279,6 +1330,7 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                 image_style = choose_image_style()
                 prompt = build_image_prompt(state['result'], image_style, media_description)
                 attempt.update(prompt=prompt, image_style=image_style, stage='main',
+                               source_hash=media_description['source_hash'],
                                created_at=datetime.now(timezone.utc).isoformat())
                 state['image_attempt'] = {**attempt, 'status': 'started'}
                 store.save(db, payload.rewrite_id, state)
@@ -1293,7 +1345,7 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                 if (state.get('image_attempt') or {}).get('image_id') == attempt['image_id']:
                     state['image_attempt'].update(attempt)
                     store.save(db, payload.rewrite_id, state)
-            metadata = get_provider().generate_image(attempt['prompt'], attempt['image_id'])
+            metadata = generate_prepared_image(payload.rewrite_id, active_pet, attempt)
             attempt['provider_response_received_at'] = datetime.now(timezone.utc).isoformat()
             metadata['image_style'] = attempt['image_style']
             with store.transaction() as db:
@@ -1301,34 +1353,23 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                 if state.get('discarded'):
                     image_path(attempt['image_id']).unlink(missing_ok=True)
                     raise HTTPException(status_code=410, detail='Draft discarded; generated file removed.')
+                if ((state.get('image_attempt') or {}).get('image_id') != attempt['image_id'] or
+                        (attempt.get('source_hash') and ensure_media_description(state)['source_hash'] != attempt['source_hash'])):
+                    raise HTTPException(409, 'Story or image attempt changed; completed image was not attached.')
                 state['result'].update(metadata)
                 state['image_attempt'].update(attempt, status='complete',
                     persistence_completed_at=datetime.now(timezone.utc).isoformat())
                 store.save(db, payload.rewrite_id, state)
             break
         except DefinitiveImageFailure as exc:
-            terminal = False
             with store.transaction() as db:
                 state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
                 current = state.get('image_attempt') or {}
-                if current.get('image_id', payload.rewrite_id) != attempt['image_id']:
-                    raise HTTPException(409, 'Image attempt changed; no automatic paid retry.') from exc
-                current['status'] = 'definitive_failed'
-                if current.get('retry_count', 0) >= 1:
-                    state['image_attempt'] = current
+                if current.get('image_id') == attempt['image_id']:
+                    current.update(status='definitive_failed', failure_category=type(exc).__name__,
+                                   failure_message='Provider returned no usable image; no content rejection was reported.')
                     store.save(db, payload.rewrite_id, state)
-                    terminal = True
-                else:
-                    state.setdefault('image_attempt_history', []).append(current)
-                    attempt = {**current, 'image_id': str(uuid4()), 'status': 'started', 'retry_count': 1,
-                               'stage': 'main', 'created_at': datetime.now(timezone.utc).isoformat()}
-                    for field in ('provider_call_entered_at', 'provider_response_received_at',
-                                  'persistence_completed_at', 'failure_category', 'failure_message'):
-                        attempt.pop(field, None)
-                    state['image_attempt'] = attempt
-                    store.save(db, payload.rewrite_id, state)  # Retry claim precedes the second paid call.
-            if terminal:
-                raise HTTPException(422, 'Image generation failed twice. Use REDO IMAGE to try again.') from exc
+            raise HTTPException(422, 'No usable image was returned. Your story is unchanged; REDO IMAGE is available.') from exc
         except BadRequestError as exc:
             with store.transaction() as db:
                 state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
@@ -1336,7 +1377,9 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                 if current.get('image_id') == attempt['image_id']:
                     current.update(status='definitive_failed', **safe_provider_failure(exc))
                     store.save(db, payload.rewrite_id, state)
-            raise HTTPException(422, 'Image request was rejected by the provider; no automatic retry.') from exc
+            raise HTTPException(422, ("Even after a safer visual rewrite, the image generator couldn't picture this madness. Your story is unchanged. REDO IMAGE remains available."
+                if is_content_rejection(exc) and attempt.get('content_retry_count') else
+                'The image request was rejected by the provider. Your story is unchanged.')) from exc
         except Exception as exc:
             with store.transaction() as db:
                 state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)
@@ -1494,7 +1537,7 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
         media_description = ensure_media_description(state)
         style = choose_image_style(exclude=state['result'].get('image_style'))
         attempt = dict(image_id=str(uuid4()), previous_image_url=payload.previous_image_url,
-                       image_style=style,
+                       image_style=style, source_hash=media_description['source_hash'],
                        prompt=build_image_prompt(state['result'], style, media_description),
                        model=IMAGE_MODEL, quality=IMAGE_QUALITY, size=IMAGE_SIZE, status='started')
         if previous:
@@ -1502,7 +1545,7 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
         state['image_redo'] = attempt
         store.save(db, payload.rewrite_id, state)  # Permanent claim before the paid call.
     try:
-        metadata = get_provider().generate_image(attempt['prompt'], attempt['image_id'])
+        metadata = generate_prepared_image(payload.rewrite_id, active_pet, attempt, 'image_redo')
         metadata['image_style'] = attempt['image_style']
         with store.transaction() as db:
             state = read_image_rewrite(db, payload.rewrite_id, active_pet)
@@ -1510,6 +1553,9 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
             # a newer replacement (or a nomination) after such recovery.
             if state['image_redo']['image_id'] != attempt['image_id'] or state['image_redo']['status'] == 'complete':
                 return {key: state['result'].get(key) for key in IMAGE_FIELDS}
+            if (attempt.get('source_hash') and
+                    ensure_media_description(state)['source_hash'] != attempt['source_hash']):
+                raise HTTPException(409, 'Story changed; replacement image was not attached.')
             finish_image_redo(db, payload.rewrite_id, state, metadata)
         if nominated:
             sync_image_metadata(payload.rewrite_id, active_pet)
@@ -1523,7 +1569,9 @@ def redo_image(payload: RedoImageRequest, active_pet: str = Cookie(None)):
             if current.get('image_id') == attempt['image_id']:
                 current.update(status='definitive_failed', **safe_provider_failure(exc))
                 store.save(db, payload.rewrite_id, state)
-        raise HTTPException(422, 'Replacement image was rejected by the provider; no automatic retry.') from exc
+        raise HTTPException(422, ("Even after a safer visual rewrite, the replacement image was rejected. Your story and previous image are unchanged."
+            if is_content_rejection(exc) and attempt.get('content_retry_count') else
+            'Replacement image was rejected by the provider; previous image retained.')) from exc
     except Exception as exc:
         # Preserve the old image and permanent attempt, including uncertain outcomes.
         raise HTTPException(502, 'Replacement unavailable; old image retained. No automatic paid retry.') from exc

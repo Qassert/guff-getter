@@ -6,7 +6,7 @@ let draftSession = null;
 let creationNominated = false, currentImageUrl = null, imageRedoPending = false, imageGenerationFailed = false;
 let imageRetryAttemptId = null, imageRetryConfirmation = null;
 let sourceLoading = false;
-const BUILD_IMAGE_REJECTION_GUIDANCE = "The image generator doesn't like your text, maybe there is something naughty in there? A Little Hack: You can replace those words by editing them, replacing them for something less naughty but equally descriptive! Then hit Redo image, and it might work, then you can put naughties back in after";
+const BUILD_IMAGE_REJECTION_GUIDANCE = "The image generator couldn't picture this particular madness. Your original story is unchanged. REDO IMAGE is available for another attempt.";
 window.creationContext=()=>({rewrite_id:displayedRewriteId,sequence:rewriteSequence});
 function showImageFailure(message, rejected = false) {
     const panel = document.getElementById('imagePanel');

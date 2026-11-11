@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: CREATE SOURCE TEXT LAYOUT
-LAST_COMPLETED_COMMIT: See latest CREATE source text layout commit in Git history
+LAST_COMPLETED_FEATURE: AUTOMATIC SAFE MEDIA RECOVERY
+LAST_COMPLETED_COMMIT: See latest automatic safe media recovery commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: CREATE source layout and exact 2pt font increase; preserve uncommitted helper offset.
-APPROVAL: CREATE source layout and 2pt source-only font increase. Preserve existing work; no push, merge or deploy.
-NEXT_STEP: Review docs/create-source-layout.md. Real-browser desktop/mobile/zoom/helper-toggle visual checks remain unavailable. Existing uncommitted helper offset preserved.
-VALIDATION: 42 focused JS tests pass; JS syntax and diff checks pass. No app restart or paid generation.
+CURRENT_TASK: Bounded content-rejection recovery for media prompts; preserve helper offset and prior fixes.
+APPROVAL: One bounded content-only image recovery attempt; mocks only. Preserve video cost controls, prior race fixes and helper work. No push/merge/deploy.
+NEXT_STEP: Review docs/automatic-safe-media-recovery.md. Video/end-frame paid retry controls remain explicit; no live-generation verification was performed.
+VALIDATION: 91 Python tests plus 6 subtests, 34 JS tests, syntax/diff checks pass. No existing stories/media changed; helper offset remains uncommitted.
 
 
 ## Early adoption access — 2026-11-09

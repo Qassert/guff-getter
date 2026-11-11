@@ -214,41 +214,20 @@ class ImageTests(unittest.TestCase):
         with self.store.transaction() as db:
             self.assertEqual(self.store.read(db, result['rewrite_id'], 'alice')['result'], result)
 
-    def test_definite_failure_gets_one_claimed_automatic_retry(self):
-        routes = self.previews()
-        rid = self.store.create(self.result, 'alice')['rewrite_id']
-        success = LocalStubProvider().generate_image('retry prompt')
-        provider = MagicMock()
-        provider.generate_image.side_effect = [routes.DefinitiveImageFailure('empty'), success]
-        with patch.object(routes, 'get_provider', return_value=provider):
-            result = routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
-        self.assertEqual(result['image_url'], success['image_url'])
-        self.assertEqual(provider.generate_image.call_count, 2)
-        with self.store.transaction() as db:
-            state = self.store.read(db, rid, 'alice')
-        self.assertEqual(state['image_attempt']['retry_count'], 1)
-        self.assertEqual(state['image_attempt']['status'], 'complete')
-        self.assertEqual(state['image_attempt_history'][0]['status'], 'definitive_failed')
-
-    def test_two_definite_failures_stop_and_allow_explicit_redo(self):
+    def test_empty_provider_result_is_not_a_content_rejection_or_automatic_retry(self):
         routes = self.previews()
         rid = self.store.create(self.result, 'alice')['rewrite_id']
         provider = MagicMock()
-        provider.generate_image.side_effect = [routes.DefinitiveImageFailure('empty'),
-            routes.DefinitiveImageFailure('empty again')]
+        provider.generate_image.side_effect = routes.DefinitiveImageFailure('empty')
         with patch.object(routes, 'get_provider', return_value=provider):
             with self.assertRaises(routes.HTTPException) as error:
                 routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
         self.assertEqual(error.exception.status_code, 422)
-        self.assertEqual(provider.generate_image.call_count, 2)
+        self.assertEqual(provider.generate_image.call_count, 1)
         with self.store.transaction() as db:
             state = self.store.read(db, rid, 'alice')
         self.assertEqual(state['image_attempt']['status'], 'definitive_failed')
-        self.assertTrue(routes.get_image_result(rid, 'alice')['image_generation_failed'])
-        replacement = LocalStubProvider().generate_image('user-approved redo')
-        with patch.object(routes, 'get_provider', return_value=types.SimpleNamespace(generate_image=lambda *_: replacement)):
-            result = routes.redo_image(routes.RedoImageRequest(rewrite_id=rid), 'alice')
-        self.assertEqual(result['image_url'], replacement['image_url'])
+        self.assertNotIn('retry_count', state['image_attempt'])
 
     def test_nominated_definitive_failure_redo_rebuilds_safe_description(self):
         routes = self.previews()
@@ -287,7 +266,7 @@ class ImageTests(unittest.TestCase):
         replace.assert_called_once()
         with self.store.transaction() as db:
             state = self.store.read(db, rid, 'alice')
-        self.assertEqual(state['media_description']['version'], 'media-safe-v4')
+        self.assertEqual(state['media_description']['version'], 'media-safe-v5')
         self.assertEqual(state['image_redo_history'][0]['status'], 'definitive_failed')
         self.assertEqual(state['result']['crazyReplacement1Title'],
                          unsafe['crazyReplacement1Title'])
@@ -389,7 +368,7 @@ class ImageTests(unittest.TestCase):
         self.assertEqual(state['result']['crazyReplacement1Extract'],
                          original['crazyReplacement1Extract'])
         self.assertEqual(state['image_attempt']['status'], 'complete')
-        self.assertEqual(state['media_description']['version'], 'media-safe-v4')
+        self.assertEqual(state['media_description']['version'], 'media-safe-v5')
 
     def test_openai_settings_storage_repeat_and_restore(self):
         routes = self.previews()

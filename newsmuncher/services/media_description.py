@@ -6,7 +6,7 @@ import logging
 import re
 
 
-VERSION = "media-safe-v4"
+VERSION = "media-safe-v5"
 logger = logging.getLogger(__name__)
 FALLBACK = (
     "A surreal British editorial scene in an eccentric civic hall, where puzzled "
@@ -19,7 +19,8 @@ _RULES = {
     "sexual": (
         r"\b(?:sex(?:ual|ually)?|porn(?:ographic)?|arous(?:e|ed|al)|orgasm\w*|masturbat\w*|"
         r"shag(?:ged|ging|s)?|spunk\w*|minge\w*|schlong\w*|penis\w*|vagin\w*|"
-        r"testicul\w*|nipple\w*|rectal\w*|genital\w*|manboob\w*|boob\w*)\b",
+        r"testicul\w*|nipple\w*|rectal\w*|genital\w*|manboob\w*|boob\w*|"
+        r"scrotum\w*|pubes|pubic|labia\w*|rectum\w*|arseholes?|ballbags?|breasts?)\b",
     ),
     "graphic": (
         r"\b(?:dismember\w*|decapitat\w*|eviscerat\w*|gore|gory|blood[- ]soaked|"
@@ -47,7 +48,7 @@ def _categories(value: str) -> tuple[str, ...]:
         if category == "sexual" and any(stem in compact for stem in (
                 "sexual", "porn", "arous", "orgasm", "masturbat", "shag",
                 "spunk", "minge", "schlong", "penis", "vagin", "testicul", "nipple",
-                "manboob", "boob")):
+                "manboob", "boob", "scrotum", "pubes", "labia", "rectum", "arsehole", "ballbag")):
             found.append(category)
     return tuple(found)
 
@@ -108,3 +109,49 @@ def ensure_media_description(state: dict) -> dict:
                      current["categories"], current["strategy"], current["rules"],
                      current["preservation"])
     return current
+
+
+# Recovery composes a new, non-explicit scene from ordinary source entities.
+# It never respells restricted acts or asks a provider to ignore its safeguards.
+_SAFE_ENTITIES = (
+    'fax machine', 'fax', 'vicar', 'parish', 'church bell', 'church', 'choir',
+    'font', 'trousers', 'letters', 'sheet music', 'bishop', 'councillor',
+    'divorce decree', 'council crest', 'hot paper', 'bailiff', 'high street',
+    'fire brigade', 'plunger', 'village', 'butcher', 'pork pie', 'letterbox',
+    'collection plate', 'booth', 'fair', 'hat', 'seeds', 'thorny stems', 'woods',
+    'anchor', 'shackle', 'clock', 'birdhouse', 'rack', 'manatee', 'kettle',
+    'cat', 'dog', 'goat', 'moon', 'library', 'librarian', 'brass filing cabinet',
+)
+
+
+def revise_media_description(state: dict) -> dict:
+    """Conservatively remove rejected actions; keep only safe named scene objects."""
+    result = state.get('result') or {}
+    original = build_media_description(result.get('crazyReplacement1Title', ''),
+                                       result.get('crazyReplacement1Extract', ''))
+    source = f"{result.get('crazyReplacement1Title', '')} {result.get('crazyReplacement1Extract', '')}"
+    entities = [entity for entity in _SAFE_ENTITIES
+                if re.search(r'\b' + re.escape(entity) + r'\b', source, re.I)]
+    # Neutral named roles remain recognisable without retaining rejected actions.
+    for name in re.findall(r'\b(?:Councillor|Vicar|Bishop|Dame|Sir) [A-Z][a-z]+\b', source):
+        if not _categories(name) and name not in entities:
+            entities.append(name)
+    actions = []
+    for pattern, action in (
+        (r'\bfax|\bprint', 'A fax machine unrolls a long ribbon of ordinary paper.'),
+        (r'\bchoir|\bs[ai]ng', 'A fully clothed choir sings with theatrical solemnity.'),
+        (r'\bmarch|\blegs\b', 'Inanimate props sprout wooden legs and march in a parade.'),
+        (r'\bseeds?\b', 'Seeds grow into whimsical leafy stage props.'),
+        (r'\bflood', 'A harmless fountain spills water across the street.'),
+    ):
+        if re.search(pattern, source, re.I):
+            actions.append(action)
+    concept = ('A surreal, non-explicit theatrical tableau featuring ' + ', '.join(entities) +
+               '. ' + ' '.join(actions) +
+               ' Fully clothed figures react with exaggerated solemn surprise.') if entities else FALLBACK
+    revised = {**original, 'concept': concept, 'sanitised': True,
+               'strategy': 'provider_rejection_scene_rebuild' if entities else 'generic_fallback',
+               'rules': original['rules'] + ['retain_safe_entities_only'],
+               'preserved_entities': entities, 'adapted_actions': actions}
+    state['media_description'] = revised
+    return revised

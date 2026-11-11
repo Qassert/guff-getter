@@ -131,6 +131,14 @@ class DefinitiveImageFailure(RuntimeError):
     """Provider positively returned without a usable image; no request is in flight."""
 
 
+def is_content_rejection(exc):
+    """Only the documented moderation code authorises content recovery."""
+    body = getattr(exc, 'body', None)
+    error = body.get('error', body) if isinstance(body, dict) else {}
+    return (getattr(exc, 'status_code', None) == 400 and
+            isinstance(error, dict) and error.get('code') == 'moderation_blocked')
+
+
 def safe_provider_failure(exc):
     """Persist bounded provider diagnostics without prompts, secrets or request IDs."""
     body = getattr(exc, 'body', None)

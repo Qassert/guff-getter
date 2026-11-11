@@ -11,7 +11,7 @@ assert(html.includes('aria-label="MUNGE engines"'));assert(html.includes('>NOMIN
 for(const removed of ['>EDIT<','>SAVE<','IMAGE GENERATION MODE','SHIZZALISE'])assert(!html.includes(removed));
 assert(!html.includes("path='profile-editing.js'"));
 const css=fs.readFileSync('newsmuncher/static/css/shared/styles.css','utf8');
-assert.match(css,/#sourceEditor\s*\{[^}]*padding-top:\s*clamp\(77px, calc\(13\.92vw - var\(--creation-gap-reduction\)\), 106px\)[^}]*margin-bottom:\s*-20px/s);
+assert.match(css,/#sourceEditor\s*\{[^}]*padding-top:\s*clamp\(77px, calc\(13\.92vw - var\(--creation-gap-reduction\)\), 106px\)[^}]*margin-bottom:\s*0/s);
 assert.match(css,/#sourceBodyDraft\s*\{[^}]*margin-bottom:\s*0/s);
 assert.match(css,/\.profile-page \.profile-container\s*\{[^}]*padding-bottom:\s*calc\(clamp\(12px, 2vw, 24px\) - 6px\)/s);
 assert.match(css,/#responseEditor\s*\{[^}]*position:\s*relative[^}]*top:\s*-30px[^}]*padding:\s*26px 0[^}]*align-items:\s*center/s);
