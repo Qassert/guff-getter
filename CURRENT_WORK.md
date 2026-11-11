@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: NOMINATION SNAPSHOT RACE GUARDS
-LAST_COMPLETED_COMMIT: See latest nomination snapshot race-guard commit in Git history
+LAST_COMPLETED_FEATURE: SCENE-PRESERVING MEDIA SANITISATION
+LAST_COMPLETED_COMMIT: See latest scene-preserving media sanitisation commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Investigate nomination/media association races. Preserve the pre-existing uncommitted 65px upper-helper offset.
-APPROVAL: Investigate current browser and records; fix confirmed races using mocked tests. No paid generation, push, merge or deployment.
-NEXT_STEP: Review docs/nomination-media-investigation.md. Existing uncommitted 65px upper-helper offset remains untouched. Current browser was inspected without navigation or refresh.
-VALIDATION: 59 targeted JavaScript tests; 66 Python tests plus 6 subtests; three JS syntax checks and diff whitespace checks pass. No live media generated.
+CURRENT_TASK: Preserve story details in shared media sanitisation; retain race fixes and uncommitted helper offset.
+APPROVAL: Scene-preserving shared media sanitisation; mocked tests only. No paid generation, push, merge or deployment.
+NEXT_STEP: Review docs/media-sanitisation-refinement.md. Existing uncommitted 65px upper-helper offset and prior race-condition fixes remain intact.
+VALIDATION: 71 Python tests plus 6 subtests and 26 targeted JS tests pass; diff checks pass. No existing story/media changed.
 
 
 ## Early adoption access — 2026-11-09

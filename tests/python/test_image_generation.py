@@ -255,7 +255,7 @@ class ImageTests(unittest.TestCase):
         unsafe = {**self.result,
             'crazyReplacement1Title': 'Aroused ceremonial machine',
             'crazyReplacement1Extract':
-                'A Manboob clotpole meets an udder watcher before the explicit incident.'}
+                'A Manboob clotpole meets an udder watcher. An explicit sexual incident follows.'}
         rid = self.store.create(unsafe, 'alice')['rewrite_id']
         with self.store.transaction() as db:
             state = self.store.read(db, rid, 'alice')
@@ -281,13 +281,13 @@ class ImageTests(unittest.TestCase):
         self.assertEqual(result['image_url'], replacement['image_url'])
         self.assertEqual(provider.generate_image.call_count, 1)
         prompt = provider.generate_image.call_args.args[0].lower()
-        self.assertIn('eccentric civic hall', prompt)
-        for leaked in ('manboob', 'udder watcher', 'explicit incident', 'unsafe source fragment'):
+        self.assertIn('udder watcher', prompt)
+        for leaked in ('manboob', 'sexual incident', 'aroused', 'unsafe source fragment'):
             self.assertNotIn(leaked, prompt)
         replace.assert_called_once()
         with self.store.transaction() as db:
             state = self.store.read(db, rid, 'alice')
-        self.assertEqual(state['media_description']['version'], 'media-safe-v3')
+        self.assertEqual(state['media_description']['version'], 'media-safe-v4')
         self.assertEqual(state['image_redo_history'][0]['status'], 'definitive_failed')
         self.assertEqual(state['result']['crazyReplacement1Title'],
                          unsafe['crazyReplacement1Title'])
@@ -377,8 +377,8 @@ class ImageTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.api.call_count, 1)
         prompt = self.api.call_args.kwargs['prompt'].lower()
-        self.assertIn('eccentric civic hall', prompt)
-        self.assertNotIn('librarian', prompt)
+        self.assertIn('brass filing cabinet', prompt)
+        self.assertIn('librarian', prompt)
         self.assertNotIn('aroused', prompt)
         self.assertNotIn('adult material', prompt)
         self.assertNotIn('graphic material', prompt)
@@ -389,7 +389,7 @@ class ImageTests(unittest.TestCase):
         self.assertEqual(state['result']['crazyReplacement1Extract'],
                          original['crazyReplacement1Extract'])
         self.assertEqual(state['image_attempt']['status'], 'complete')
-        self.assertEqual(state['media_description']['version'], 'media-safe-v3')
+        self.assertEqual(state['media_description']['version'], 'media-safe-v4')
 
     def test_openai_settings_storage_repeat_and_restore(self):
         routes = self.previews()

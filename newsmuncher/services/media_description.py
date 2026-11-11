@@ -2,18 +2,19 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import re
 
 
-VERSION = "media-safe-v3"
+VERSION = "media-safe-v4"
+logger = logging.getLogger(__name__)
 FALLBACK = (
     "A surreal British editorial scene in an eccentric civic hall, where puzzled "
     "figures inspect an elaborate household contraption while harmless everyday "
     "objects behave with solemn ceremonial importance."
 )
 
-# These are detection rules, not disguised provider-bypass substitutions. When a
-# clause matches, it is omitted from the visual concept rather than respelled.
+# Explicit/graphic matches are omitted at clause boundaries, never disguised.
 _RULES = {
     "sexual": (
         r"\b(?:sex(?:ual|ually)?|porn(?:ographic)?|arous(?:e|ed|al)|orgasm\w*|masturbat\w*|"
@@ -55,23 +56,38 @@ def build_media_description(title: str, body: str) -> dict:
     """Return one bounded visual concept without changing the supplied text."""
     title, body = str(title or ""), str(body or "")
     categories = _categories(f"{title}\n{body}")
-    if not categories:
-        concept = " ".join(f"{title}. {body}".split())[:1400]
-        sanitised = False
-    else:
-        # Partial sentence retention proved unsafe in production: apparently benign
-        # fragments can still contain suggestive compounds or depend on an omitted
-        # clause for their meaning. A flagged source therefore gets one standalone,
-        # positive scene which contains none of the source wording.
+    source = f"{title}. {body}"
+    # Only benign, non-explicit anatomy labels receive local neutral wording.
+    # Explicit sexual acts and graphic violence never use token substitution.
+    rewritten, replacements = re.subn(r"\b(?:manboobs?|boobs?)\b", "peculiar", source,
+                                      flags=re.I)
+    fragments = [part.strip() for part in re.split(r"(?<=[.!?;])\s+|\n+", rewritten)
+                 if part.strip()]
+    retained = [part for part in fragments if not _categories(part)]
+    omitted = len(fragments) - len(retained)
+    concept = " ".join(" ".join(retained).split())[:1400]
+    # A neutralised label alone does not provide a usable scene.
+    if not re.search(r"[a-z]{3}", re.sub(r"\bpeculiar\b", "", concept, flags=re.I), re.I):
         concept = FALLBACK
-        sanitised = True
-    if not concept.strip():
-        concept, sanitised = FALLBACK, True
+        strategy = "generic_fallback"
+    elif omitted:
+        strategy = "scene_preserving_fallback"
+    elif replacements:
+        strategy = "targeted_rewrite"
+    else:
+        strategy = "normal"
+    sanitised = bool(replacements or omitted or concept == FALLBACK)
     return {
         "version": VERSION,
         "concept": concept,
         "sanitised": sanitised,
         "categories": list(categories),
+        "strategy": strategy,
+        "rules": (["benign_anatomy_label"] if replacements else []) +
+                 (["omit_flagged_clause"] if omitted else []),
+        "preservation": {"retained_clauses": len(retained),
+                         "omitted_clauses": omitted,
+                         "neutralised_terms": replacements},
         "source_hash": hashlib.sha256(f"{title}\0{body}".encode()).hexdigest(),
     }
 
@@ -85,4 +101,10 @@ def ensure_media_description(state: dict) -> dict:
     if not isinstance(current, dict) or current.get("version") != VERSION or current.get("source_hash") != expected:
         current = build_media_description(title, body)
         state["media_description"] = current
+        # Development diagnostics contain identity, actions and counts, never text.
+        logger.debug("media_description rewrite_id=%s sanitised=%s categories=%s "
+                     "strategy=%s rules=%s preservation=%s",
+                     result.get("rewrite_id"), current["sanitised"],
+                     current["categories"], current["strategy"], current["rules"],
+                     current["preservation"])
     return current
