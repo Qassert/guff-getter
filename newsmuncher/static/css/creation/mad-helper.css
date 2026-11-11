@@ -57,3 +57,33 @@
 @media (prefers-reduced-motion: reduce) {
   .mad-helper-button img, .mad-helper-button video { transition: none; }
 }
+
+/* Mirror only the artwork. Keep SQUIRT readable and point to the mirrored mouth. */
+.mad-helper-flipped .mad-helper-button img,
+.mad-helper-flipped .mad-helper-button video { transform: scaleX(-1); }
+.mad-helper-flipped .mad-helper-bubble::after { width: calc(var(--mad-helper-size) * .15); }
+.mad-helper-flipped .mad-helper-bubble::before { left: calc(10px + var(--mad-helper-size) * .15 - 6px); }
+
+/* CREATE's results helper occupies a real lower-right slot, clear of story/tools. */
+.mad-helper-result-dock { display: none; }
+.mad-helper-enabled .mad-helper-result-tools {
+  display: grid; grid-template-columns: minmax(0, 1fr) calc(var(--mad-helper-dock-size, 217.6px) + 112px); column-gap: 24px;
+}
+.mad-helper-enabled .mad-helper-result-tools > section { grid-column: 1; }
+.mad-helper-enabled .mad-helper-result-dock {
+  display: block; grid-column: 2; grid-row: 1 / span 2; justify-self: end; align-self: start;
+  width: var(--mad-helper-dock-size, 217.6px); height: var(--mad-helper-dock-size, 217.6px);
+}
+.mad-helper-docked .mad-helper-bubble { top: 28%; bottom: auto; left: auto; right: calc(100% + 10px); }
+.mad-helper-docked .mad-helper-bubble::after {
+  top: 50%; bottom: auto; left: 100%; width: calc(10px + var(--mad-helper-size) * .20); height: calc(var(--mad-helper-size) * .10);
+  border: 0; border-bottom: 2px solid #392b20; border-radius: 0 0 60% 0;
+}
+.mad-helper-docked .mad-helper-bubble::before {
+  top: calc(50% + var(--mad-helper-size) * .10 - 5px); bottom: auto;
+  left: calc(100% + 10px + var(--mad-helper-size) * .20 - 6px); transform: rotate(35deg);
+}
+@media (max-width: 620px) {
+  .mad-helper-enabled .mad-helper-result-tools { grid-template-columns: minmax(0, 1fr); }
+  .mad-helper-enabled .mad-helper-result-dock { grid-column: 1; grid-row: 3; }
+}

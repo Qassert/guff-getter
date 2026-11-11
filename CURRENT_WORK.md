@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: MAD HELPER SHARED COLOUR GLOW
-LAST_COMPLETED_COMMIT: See latest Mad Helper shared-glow commit in Git history
+LAST_COMPLETED_FEATURE: CREATE HELPER REFERENCE PLACEMENT
+LAST_COMPLETED_COMMIT: See latest CREATE helper reference-placement commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Mad Helper uses the existing site-wide palette, rest/hover glow tokens and 700ms transitions. Existing size, masks, layout, media and interactions preserved.
-APPROVAL: Andy requested a small matching dynamic coloured shadow/glow refinement. No push, merge or deployment.
-NEXT_STEP: Review docs/mad-helper-shared-glow.md and the local commit. No app restart or publishing performed.
-VALIDATION: 20 focused shared-glow/helper JS tests pass; syntax/diff checks and one Chrome check confirm shared click-driven colours, PNG/video parity, no layout shifts, reduced motion, fallback shadow and light/dark appearance.
+CURRENT_TASK: CREATE upper helper raised to paper corner; lower helper moved below story at lower-right and mirrored, following the supplied screenshot and explicit clarification.
+APPROVAL: Andy confirmed lower-right endpoint, superseding the earlier lower-left instruction. Preserve other modes. No push, merge or deployment.
+NEXT_STEP: Review docs/mad-helper-create-placement.md and the local commit. Temporary browser/static server stopped; no app-server startup.
+VALIDATION: 26 focused helper/glow JS tests, one rendered-template Python check and syntax/diff checks pass. Chrome confirms desktop/mobile placement, text/control clearance, bubbles, mirrored PNG/video, shared-video upper reset and toggle restoration.
 
 ## Early adoption access — 2026-11-09
 
@@ -1943,7 +1943,7 @@ image prompt only: believable figures/materials, cinematic lighting, connected s
 absurd humour and 4–6 dominant colours. Flat style retained as PREVIOUS_IMAGE_STYLE;
 original graffiti/zine wording retained as ORIGINAL_IMAGE_STYLE, both reference-only.
 Image settings, rewritten scene inputs and lifecycle unchanged.
-VALIDATION: 20 focused shared-glow/helper JS tests pass; syntax/diff checks and one Chrome check confirm shared click-driven colours, PNG/video parity, no layout shifts, reduced motion, fallback shadow and light/dark appearance.
+VALIDATION: 26 focused helper/glow JS tests, one rendered-template Python check and syntax/diff checks pass. Chrome confirms desktop/mobile placement, text/control clearance, bubbles, mirrored PNG/video, shared-video upper reset and toggle restoration.
 No real images or external calls. Changes intentionally uncommitted/unpushed for review.
 
 
@@ -1959,7 +1959,7 @@ Run from root using .venv/bin/python -m scripts.diagnostics.compare_tts --provid
 For one live sample, replace all with openai/elevenlabs/cartesia and omit --dry-run.
 Each provider requires an API-enabled account, usable quota/credit and access to the
 configured voice IDs. Account/voice availability has not been tested live.
-VALIDATION: 20 focused shared-glow/helper JS tests pass; syntax/diff checks and one Chrome check confirm shared click-driven colours, PNG/video parity, no layout shifts, reduced motion, fallback shadow and light/dark appearance.
+VALIDATION: 26 focused helper/glow JS tests, one rendered-template Python check and syntax/diff checks pass. Chrome confirms desktop/mobile placement, text/control clearance, bubbles, mirrored PNG/video, shared-video upper reset and toggle restoration.
 STATUS: REVIEW / CODEX; user authorized committing and pushing this harness.
 Earlier image-style changes are already committed; older uncommitted wording above
 is historical. No unrelated files changed in this harness task.

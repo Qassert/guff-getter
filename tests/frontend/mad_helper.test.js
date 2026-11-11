@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const {AnimationCycle,MadHelper,placementGeometry,avoidControls,discoverPlacements,contentOf,choose,idleDelay,KEY}=require('../../newsmuncher/static/js/shared/mad-helper.js');
+const {AnimationCycle,MadHelper,placementGeometry,avoidControls,discoverPlacements,anchorOf,dockMargin,contentOf,choose,idleDelay,KEY}=require('../../newsmuncher/static/js/shared/mad-helper.js');
 const manifest=JSON.parse(fs.readFileSync('newsmuncher/static/images/mad-helper/manifest.json'));
 function clock(){let id=0;const queued=new Map();return {queued,setTimeout(fn,delay){queued.set(++id,{fn,delay});return id;},clearTimeout(id){queued.delete(id);}};}
 
@@ -102,7 +102,7 @@ test('all three modes opt in through shared settings and explicit text anchors',
     for(const file of ['pet_profile.html','build.html','promotion_gallery.html']) {
         const template=fs.readFileSync('newsmuncher/templates/'+file,'utf8');
         assert(template.includes('data-mad-helper-text'));assert(template.includes('data-mad-helper-paper'));
-        assert(template.includes("partials/mad-helper-toggle.html"));assert(template.includes('mad-helper-4'));
+        assert(template.includes("partials/mad-helper-toggle.html"));assert(template.includes('mad-helper-placement-2'));
     }
     assert.match(fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8'),/function autoResize\(textarea\) \{\s*window.NewsMuncherMadHelper\?\.scheduleLayout\(\)/);
     const css=fs.readFileSync('newsmuncher/static/css/creation/mad-helper.css','utf8');
@@ -147,4 +147,59 @@ test('the enlarged body and external bubble both clear Gallery controls',()=>{
     const arrow={left:70,right:150,top:230,bottom:330};
     const adjusted=avoidControls(geometry,[arrow]);
     assert(adjusted.y-adjusted.width/2-52>=arrow.bottom+12);
+});
+
+
+test('per-text anchors move vertically without changing left-edge geometry or other modes defaults',()=>{
+ const args={paper:{left:200},text:{left:350,top:100,height:300},textHeight:180,viewportWidth:1200};
+ const middle=placementGeometry(args),upper=placementGeometry({...args,anchor:.25});
+ assert.equal(middle.y,190);assert.equal(upper.y,145);assert.equal(upper.x,middle.x);assert.equal(upper.width,middle.width);
+ assert.equal(anchorOf({dataset:{}}),.5);assert.equal(anchorOf({dataset:{madHelperAnchor:'nonsense'}}),.5);
+ const paper={},dock={},text={dataset:{madHelperAnchor:'.25',madHelperFlip:'true',madHelperDock:'#lowerDock'},closest:()=>paper};
+ const placement=discoverPlacements({querySelectorAll:()=>[text],querySelector:()=>dock})[0];
+ assert.equal(placement.dock,dock);
+ assert.equal(placement.anchor,.25);assert.equal(placement.flip,true);
+});
+
+test('only CREATE results opt into mirrored artwork, and the bubble lettering is not mirrored',()=>{
+ const create=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');
+ assert.equal((create.match(/data-mad-helper-flip="true"/g)||[]).length,1);
+ assert.match(create,/id="responseBodyDraft"[^>]*data-mad-helper-flip="true"/);
+ for(const name of ['build.html','promotion_gallery.html'])assert(!fs.readFileSync('newsmuncher/templates/'+name,'utf8').includes('data-mad-helper-flip'));
+ const css=fs.readFileSync('newsmuncher/static/css/creation/mad-helper.css','utf8');
+ assert.match(css,/\.mad-helper-flipped \.mad-helper-button img,[\s\S]*?video \{ transform: scaleX\(-1\); \}/);
+ assert(!/\.mad-helper-bubble[^}]*transform: scaleX/.test(css));
+});
+
+
+test('CREATE upper anchor follows the screenshot paper corner and adapts to mobile text',()=>{
+ const args={paper:{left:373,top:247},text:{left:483,top:445,height:100},textHeight:100,vertical:'paper-start',anchor:.15};
+ const desktop=placementGeometry({...args,viewportWidth:1900});
+ assert(Math.abs(desktop.y-(247+217.6*.36))<1e-8);assert(desktop.y<445);
+ const mobile=placementGeometry({...args,viewportWidth:390});assert.equal(mobile.y,460);
+ assert.equal(placementGeometry({...args,vertical:'text',anchor:.5,viewportWidth:1900}).y,495);
+});
+
+
+test('the upper paper anchor stays inside the document without becoming sticky on scroll',()=>{
+ const args={paper:{left:113,top:24},text:{left:197,top:220,height:100},viewportWidth:1200,vertical:'paper-start'};
+ const initial=placementGeometry(args);
+ assert(initial.y-initial.width/2>=12);
+ const scrolled=placementGeometry({...args,paper:{left:113,top:-76},scrollY:100});
+ assert.equal(scrolled.y,initial.y-100);
+});
+
+
+test('the lower-right dock moves toward the reference height without entering the story',()=>{
+ const margin=dockMargin(1156,1075,217.6,false);
+ assert.equal(margin,-69);assert.equal(1156+margin,1075+12);
+ assert.equal(dockMargin(1156,1075,129.2,true),12);
+ assert(dockMargin(100,150,217.6,false)>0);
+});
+
+test('only CREATE results use the real lower-right dock and mobile stacks it after tools',()=>{
+ const create=fs.readFileSync('newsmuncher/templates/pet_profile.html','utf8');
+ assert.match(create,/data-mad-helper-dock="#createHelperDock"/);
+ assert(create.indexOf('id="createHelperDock"')>create.indexOf('data-swear-generator'));
+ for(const name of ['build.html','promotion_gallery.html'])assert(!fs.readFileSync('newsmuncher/templates/'+name,'utf8').includes('data-mad-helper-dock'));
 });

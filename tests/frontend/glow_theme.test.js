@@ -58,6 +58,6 @@ test('Mad Helper shares the palette, filter tokens and timing without a separate
  const base=fs.readFileSync('newsmuncher/templates/base.html','utf8');
  assert(base.includes('glow-theme-2'));
  for(const name of ['pet_profile.html','build.html','promotion_gallery.html']) {
-  assert(fs.readFileSync('newsmuncher/templates/'+name,'utf8').includes('mad-helper-glow-1'));
+  assert(fs.readFileSync('newsmuncher/templates/'+name,'utf8').includes('mad-helper-placement-2'));
  }
 });

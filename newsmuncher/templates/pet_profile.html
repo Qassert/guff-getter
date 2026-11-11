@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Pet Profile{% endblock %}
-{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/swear-generator.css') }}?v=swear-generator-1"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/mad-helper.css') }}?v=mad-helper-glow-1">{% endblock %}
+{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/swear-generator.css') }}?v=swear-generator-1"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/mad-helper.css') }}?v=mad-helper-placement-2">{% endblock %}
 {% block header %}{% endblock %}
 {% block body_attributes %} class="profile-page"{% endblock %}
 {% block background %}
@@ -49,7 +49,7 @@
       <input id="sourceNameDraft" type="hidden" value="">
       <input id="sourceAuthorDraft" type="hidden" value="">
       <input id="sourceLicenceDraft" type="hidden" value="">
-      <textarea id="sourceBodyDraft" data-mad-helper-text aria-label="Source body" oninput="autoResize(this)"></textarea>
+      <textarea id="sourceBodyDraft" data-mad-helper-text data-mad-helper-vertical="paper-start" data-mad-helper-anchor="0.15" data-mad-helper-avoid=".source-choice, .mode-nav-button" aria-label="Source body" oninput="autoResize(this)"></textarea>
       <a id="sourceAttribution" class="source-attribution" href="" target="_blank" rel="noopener noreferrer" hidden></a>
     </div>
 <div class="generation-controls munge-generation-controls">
@@ -88,9 +88,10 @@
   <div id="outputContainer" class="container hidden" data-mad-helper-paper>
     <div id="responseEditor" class="section-editor article-fit-region">
       <input id="responseTitleDraft" type="hidden" value="">
-      <textarea id="responseBodyDraft" data-mad-helper-text aria-label="Response body" oninput="autoResize(this); responseEdited(); updateCopyButton()"></textarea>
+      <textarea id="responseBodyDraft" data-mad-helper-text data-mad-helper-flip="true" data-mad-helper-dock="#createHelperDock" aria-label="Response body" oninput="autoResize(this); responseEdited(); updateCopyButton()"></textarea>
     </div>
 
+    <div class="mad-helper-result-tools">
     <section class="object-generator" data-object-generator data-vocabulary="{{ url_for('static', path='data/object-generator-vocabulary.csv') }}" aria-label="Object-name generator">
       <button type="button" class="funky-button" data-object-generate>STUFF</button>
       <button type="button" class="funky-button swear-copy-button" data-object-copy disabled>COPY</button>
@@ -104,6 +105,9 @@
       <div class="swear-generator-output" data-swear-output aria-live="polite" aria-atomic="false"></div>
       <span class="swear-generator-status" data-swear-status role="status" aria-live="polite">Loading vocabulary…</span>
     </section>
+
+      <div id="createHelperDock" class="mad-helper-result-dock" aria-hidden="true"></div>
+    </div>
 
     <p id="storyTextSaveStatus" class="creation-status-message" role="status" hidden></p>
 
@@ -163,4 +167,4 @@
   {% include 'partials/mad-helper-toggle.html' %}
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2"></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/munge-control.js') }}?v=munge-audio-1"></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=munge-audio-4"></script><script src="{{ url_for('static', path='js/creation/munge-music.js') }}?v=munge-music-5"></script><script src="{{ url_for('static', path='js/creation/story-text-save.js') }}?v=story-save-1"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=create-actions-7"></script><script src="{{ url_for('static', path='js/creation/swear-generator.js') }}?v=swear-generator-2"></script><script src="{{ url_for('static', path='js/creation/object-generator.js') }}?v=object-generator-1"></script><script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-4" defer></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2"></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=frontend-c1"></script><script src="{{ url_for('static', path='js/creation/munge-control.js') }}?v=munge-audio-1"></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=munge-audio-4"></script><script src="{{ url_for('static', path='js/creation/munge-music.js') }}?v=munge-music-5"></script><script src="{{ url_for('static', path='js/creation/story-text-save.js') }}?v=story-save-1"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=create-actions-7"></script><script src="{{ url_for('static', path='js/creation/swear-generator.js') }}?v=swear-generator-2"></script><script src="{{ url_for('static', path='js/creation/object-generator.js') }}?v=object-generator-1"></script><script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-placement-2" defer></script>{% endblock %}

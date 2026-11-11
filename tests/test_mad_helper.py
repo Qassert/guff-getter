@@ -29,7 +29,7 @@ def test_shared_helper_settings_and_create_editors_render_unchanged():
         assert rendered.count('data-mad-helper-toggle') == 1
         assert 'data-mad-helper-text' in rendered
         assert 'data-mad-helper-paper' in rendered
-        assert 'mad-helper-4' in rendered
+        assert 'mad-helper-placement-2' in rendered
     signed_out = env.get_template('promotion_gallery.html').render(
         url_for=lambda name, path: '/static/' + path, signed_in=False, login_url='/login')
     assert 'data-mad-helper-toggle' not in signed_out

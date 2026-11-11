@@ -9,11 +9,14 @@
     const idleDelay = (duration, frequency, random = Math.random) =>
         duration * 1000 * (1 - frequency) / frequency * (.6 + .8 * random());
 
+    const anchorOf = text => {const value = Number(text.dataset.madHelperAnchor ?? .5); return Number.isFinite(value) && value >= 0 && value <= 1 ? value : .5;};
     const contentOf = text => typeof text.value === 'string' ? text.value : (text.textContent || '');
     const discoverPlacements = doc => Array.from(doc.querySelectorAll('[data-mad-helper-text]'), text => ({
-        text, paper: text.closest('[data-mad-helper-paper]'),
+        text, dock: text.dataset.madHelperDock ? doc.querySelector(text.dataset.madHelperDock) : null, anchor: anchorOf(text), vertical: text.dataset.madHelperVertical || 'text', flip: text.dataset.madHelperFlip === 'true', paper: text.closest('[data-mad-helper-paper]'),
         avoid: text.dataset.madHelperAvoid ? Array.from(doc.querySelectorAll(text.dataset.madHelperAvoid)) : []
     })).filter(placement => placement.paper);
+
+    const dockMargin = (naturalTop, textBottom, width, mobile) => mobile ? 12 : Math.max(-width * .4, textBottom + 12 - naturalTop);
 
     function avoidControls(geometry, obstacles, gap = 12) {
         const result = {...geometry}, half = result.width / 2;
@@ -49,11 +52,14 @@
         complete() { this.onIdle(); this.schedule(); }
     }
 
-    function placementGeometry({paper, text, padding = 0, textHeight, viewportWidth, size = 217.6, gap = 10}) {
+    function placementGeometry({paper, text, padding = 0, textHeight, viewportWidth, size = 217.6, gap = 10, anchor = .5, vertical = 'text', scrollY = 0}) {
         // On narrow screens shift inward just enough to keep the outer half reachable.
         const width = Math.min(size, viewportWidth < 620 ? size * 76 / 128 : size);
         const x = Math.max(paper.left, width / 2 + 4);
-        return {width, x, y: text.top + Math.min(text.height, textHeight || text.height) / 2,
+        const y = vertical === 'paper-start' && viewportWidth >= 621
+            ? Math.max(paper.top + scrollY + width * .36, width / 2 + 12) - scrollY
+            : text.top + Math.min(text.height, textHeight || text.height) * anchor;
+        return {width, x, y,
             clearance: Math.max(0, x + width / 2 + gap - text.left - padding)};
     }
 
@@ -100,13 +106,13 @@
             this.video.className = 'mad-helper-animation'; this.video.hidden = true;
             this.fallback = doc.createElement('img'); this.fallback.alt = ''; this.fallback.className = 'mad-helper-animation'; this.fallback.hidden = true;
             this.mirror = doc.createElement('div'); this.mirror.className = 'mad-helper-measure'; this.mirror.setAttribute('aria-hidden', 'true'); doc.body.append(this.mirror);
-            for (const {paper, text, avoid = []} of placements) {
-                const host = doc.createElement('div'); host.className = 'mad-helper-place'; host.hidden = true;
+            for (const {paper, text, dock = null, avoid = [], anchor = .5, vertical = 'text', flip = false} of placements) {
+                const host = doc.createElement('div'); host.className = 'mad-helper-place'; host.classList.toggle('mad-helper-flipped', flip); host.classList.toggle('mad-helper-docked', !!dock); host.hidden = true;
                 const button = doc.createElement('button'); button.type = 'button'; button.className = 'mad-helper-button'; button.setAttribute('aria-label', 'Mad Helper: ' + bubbleText);
                 const image = doc.createElement('img'); image.src = png; image.alt = ''; image.draggable = false;
                 const bubble = doc.createElement('span'); bubble.className = 'mad-helper-bubble'; bubble.textContent = bubbleText; bubble.hidden = true;
                 button.append(image); host.append(button, bubble); doc.body.append(host);
-                const node = {paper, text, avoid, host, button, image, bubble, padding: text.style.paddingLeft,
+                const node = {paper, text, dock, avoid, anchor, vertical, host, button, image, bubble, padding: text.style.paddingLeft,
                     basePadding: parseFloat(root.getComputedStyle(text).paddingLeft) || 0};
                 button.addEventListener('click', () => this.click(node)); this.nodes.push(node);
             }
@@ -154,10 +160,26 @@
                 const {paper, text, host} = node, rect = text.getBoundingClientRect();
                 if (!rect.width || !rect.height || !text.getClientRects().length) {host.hidden = true; continue;}
                 const measured = this.measure(text);
-                const geometry = avoidControls({...this.position({paper:paper.getBoundingClientRect(), text:{left:rect.left, top:rect.top+measured.top,
+                let geometry = avoidControls({...this.position({paper:paper.getBoundingClientRect(), text:{left:rect.left, top:rect.top+measured.top,
                     height:Math.max(0, text.clientHeight-measured.top-measured.bottom)}, padding:node.basePadding,
-                    textHeight:contentOf(text) ? measured.height : null, viewportWidth:root.innerWidth, size:this.size, gap:this.gap}), bubbleExtra:52},
+                    textHeight:contentOf(text) ? measured.height : null, viewportWidth:root.innerWidth, size:this.size, gap:this.gap, anchor:node.anchor, vertical:node.vertical, scrollY:root.scrollY}), bubbleExtra:52},
                     node.avoid.filter(element => element.getClientRects().length).map(element => element.getBoundingClientRect()));
+                if (node.dock) {
+                    const dock = node.dock, width = geometry.width;
+                    dock.parentElement.style.setProperty('--mad-helper-dock-size', width + 'px');
+                    const baseRight = dock.getBoundingClientRect().right - (node.dockShift || 0);
+                    const shift = Math.max(0, paper.getBoundingClientRect().right - 24 - baseRight);
+                    if (Math.abs(shift - (node.dockShift || 0)) > .5) {
+                        node.dockShift = shift; dock.style.transform = `translateX(${shift}px)`;
+                    }
+                    const oldMargin = parseFloat(dock.style.marginTop) || 0;
+                    const naturalTop = dock.getBoundingClientRect().top - oldMargin;
+                    const textBottom = rect.top + measured.top + Math.min(measured.height, text.clientHeight - measured.top - measured.bottom);
+                    const margin = dockMargin(naturalTop, textBottom, width, root.innerWidth < 621);
+                    if (Math.abs(margin - oldMargin) > .5) dock.style.marginTop = margin + 'px';
+                    const box = dock.getBoundingClientRect();
+                    geometry = {...geometry, x:box.left + width / 2, y:box.top + width / 2, clearance:0};
+                }
                 const padding = node.basePadding + geometry.clearance;
                 if (Math.abs((parseFloat(text.style.paddingLeft)||0) - padding) > .5) {
                     text.style.paddingLeft = padding + 'px'; root.autoResize?.(text); this.scheduleLayout();
@@ -188,6 +210,7 @@
                 this.mutationObserver = new root.MutationObserver(this.onLayout);
                 for (const node of this.nodes) {
                     this.resizeObserver.observe(node.text); this.resizeObserver.observe(node.paper);
+                    if (node.dock) this.resizeObserver.observe(node.dock);
                     // Do not observe the udder/rotor subtree, which animates independently.
                     for (const target of new Set([node.paper, node.text, node.text.parentElement])) {
                         this.mutationObserver.observe(target, {attributes:true, attributeFilter:['style','class','hidden'],
@@ -206,7 +229,10 @@
             if (this.frame) root.cancelAnimationFrame(this.frame); this.frame = null;
             for (const node of this.nodes) {
                 node.host.hidden = true; node.moving = false;
-                if (!this.enabled) {node.text.style.paddingLeft = node.padding; root.autoResize?.(node.text);}
+                if (!this.enabled) {
+                    if (node.dock) {node.dock.style.marginTop = ''; node.dock.style.transform = ''; node.dockShift = 0; node.dock.parentElement.style.removeProperty('--mad-helper-dock-size');}
+                    node.text.style.paddingLeft = node.padding; root.autoResize?.(node.text);
+                }
             }
             if (this.enabled) {this.listen(true); this.scheduleLayout();}
         }
@@ -288,7 +314,7 @@
             root.addEventListener('pageshow', () => {helper.scheduleLayout(); helper.cycle.schedule();});
         } catch (_) {toggle.checked = false; toggle.disabled = true; toggle.title = 'Mad Helper assets could not be loaded';}
     }
-    const api = {MadHelper, AnimationCycle, placementGeometry, avoidControls, discoverPlacements, contentOf, choose, idleDelay, supportsAlpha, KEY};
+    const api = {MadHelper, AnimationCycle, placementGeometry, avoidControls, discoverPlacements, anchorOf, dockMargin, contentOf, choose, idleDelay, supportsAlpha, KEY};
     root.NewsMuncherMadHelperComponent = api;
     if (typeof module !== 'undefined') module.exports = api;
     if (root.document) mount();
