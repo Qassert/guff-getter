@@ -84,3 +84,15 @@ Changed files:
 - tests/test_build_generation.py
 - tests/test_build_page.py
 - CURRENT_WORK.md and this report
+
+## Follow-up: white directions field and secular stories
+
+Further Instructions now uses a high-specificity white background so shared
+parchment textarea styles cannot make it transparent. Removed the visible
+"Optional creative direction" label; the existing section heading names the field
+for assistive technology. Added the BUILD rule: "Do not mention vicars, priests or
+religious references. Transform any religious ingredient or setting into a secular
+alternative." Both default/reset prompts include it; the backend also adds it to
+older saved/manual prompts when absent. CREATE prompts are unchanged.
+24 focused JS tests and 70 Python tests pass, including all three lengths with an
+older prompt. No paid generation or live browser visual check was performed.

@@ -34,6 +34,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
 - **Commit to the stupidity.** Characters must take the most outrageously inappropriate actions with absolute conviction. Nobody should acknowledge how bizarre anything is.
 - **Weaponise specificity.** Ridiculously precise details, revolting physical transformations, petty grievances, bodily indignities and wildly disproportionate punishments are your friends.
 - **Be magnificently inappropriate.** Embrace vulgarity, grotesque slapstick, dark humour, humiliation, stupidity, bad taste and outrageous social transgressions whenever they make the joke funnier.
+- Do not mention vicars, priests or religious references. Transform any religious ingredient or setting into a secular alternative.
 - **Surprise yourself.** Avoid predictable surrealism, talking household appliances, corporate satire, existential philosophy, random royalty and anything that resembles a conventional whimsical fairy tale.
 - **Don't explain the joke.** No moral, no reflection, no clever concluding observation. Let the absurdity speak for itself.
 - **Finish with a detonation.** The final sentence should deliver a brutally funny reversal, escalation or revelation that makes the preceding nonsense even more ridiculous. A proper comic payoff, not a random non sequitur.`;

@@ -462,3 +462,12 @@ def test_custom_only_recipe_is_supported_without_persisting_to_source_pools():
     with patch.object(build,'story_provider',return_value='A complete comic disaster.') as provider:
         assert client().post('/build/generate',json=body).status_code==200
         assert 'Custom Ingredients: Exploding toilet' in provider.call_args.args[0]
+
+
+@pytest.mark.parametrize('target',[30,60,90])
+def test_build_religious_exclusion_also_applies_to_saved_older_prompts(target):
+    body=generation_payload(target)
+    body['prompt']='An older manually edited creative prompt.'
+    with patch.object(build,'story_provider',return_value='A complete secular catastrophe.') as provider:
+        assert client().post('/build/generate',json=body).status_code==200
+        assert build.BUILD_STORY_DIRECTION in provider.call_args.args[0]

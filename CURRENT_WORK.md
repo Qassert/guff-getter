@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: BUILD INTERACTIVE INGREDIENT AND INSTRUCTION PANELS
-LAST_COMPLETED_COMMIT: See latest BUILD interactive prompt redesign commit in Git history
+LAST_COMPLETED_FEATURE: BUILD WHITE DIRECTIONS FIELD AND SECULAR STORY RULE
+LAST_COMPLETED_COMMIT: See latest BUILD directions refinement commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Move the Mad Helper toggle beside global mute as a round face/off-slash control; preserve helper JavaScript edits.
+CURRENT_TASK: White Further Instructions textbox, remove its redundant visible label and exclude religious references from BUILD output.
 APPROVAL: BUILD-only layered panels, bounded custom ingredients and 100-character directions; retain advanced editing, core prompts and existing work. No paid generation, push/merge/deploy.
-NEXT_STEP: Review docs/build-interactive-prompt.md. Visual browser verification remains unperformed; prior uncommitted helper JavaScript offset is preserved.
-VALIDATION: 87 JS and 67 Python tests, rendered-template/syntax/diff checks pass. No CSV, historical nomination or media changes.
+NEXT_STEP: Review the small BUILD directions refinement. Prior uncommitted helper offset is preserved.
+VALIDATION: 24 focused JS tests and 70 Python tests pass; diff checks pass. No paid generation or unrelated changes.
 
 
 ## Early adoption access — 2026-11-09
@@ -1944,7 +1944,7 @@ image prompt only: believable figures/materials, cinematic lighting, connected s
 absurd humour and 4–6 dominant colours. Flat style retained as PREVIOUS_IMAGE_STYLE;
 original graffiti/zine wording retained as ORIGINAL_IMAGE_STYLE, both reference-only.
 Image settings, rewritten scene inputs and lifecycle unchanged.
-VALIDATION: 26 focused helper/glow JS tests, one rendered-template Python check and syntax/diff checks pass. Chrome confirms desktop/mobile placement, text/control clearance, bubbles, mirrored PNG/video, shared-video upper reset and toggle restoration.
+VALIDATION: 24 focused JS tests and 70 Python tests pass; diff checks pass. No paid generation or unrelated changes.
 No real images or external calls. Changes intentionally uncommitted/unpushed for review.
 
 
@@ -1960,7 +1960,7 @@ Run from root using .venv/bin/python -m scripts.diagnostics.compare_tts --provid
 For one live sample, replace all with openai/elevenlabs/cartesia and omit --dry-run.
 Each provider requires an API-enabled account, usable quota/credit and access to the
 configured voice IDs. Account/voice availability has not been tested live.
-VALIDATION: 26 focused helper/glow JS tests, one rendered-template Python check and syntax/diff checks pass. Chrome confirms desktop/mobile placement, text/control clearance, bubbles, mirrored PNG/video, shared-video upper reset and toggle restoration.
+VALIDATION: 24 focused JS tests and 70 Python tests pass; diff checks pass. No paid generation or unrelated changes.
 STATUS: REVIEW / CODEX; user authorized committing and pushing this harness.
 Earlier image-style changes are already committed; older uncommitted wording above
 is historical. No unrelated files changed in this harness task.

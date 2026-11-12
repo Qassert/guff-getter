@@ -72,7 +72,7 @@ test('main panels precede all three MUNGE buttons; advanced editor is closed and
  assert(html.indexOf('buildIngredientsTitle')<html.indexOf('buildInstructionsTitle'));
  assert(html.indexOf('buildInstructionsTitle')<html.indexOf('class="munge-action"'));
  assert.match(html,/<details[^>]*data-advanced-prompt>/);assert.doesNotMatch(html,/<details[^>]*\bopen\b/);
- assert.match(html,/data-further-instructions maxlength="100"/);
+ assert.match(html,/data-further-instructions aria-labelledby="buildInstructionsTitle" maxlength="100"/);
  assert.match(js,/data-custom-ingredient-form.*addEventListener\('submit'/);
 });
 

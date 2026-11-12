@@ -10,7 +10,7 @@
 {% endblock %}
 {% block content %}
 <script src="{{ url_for('static', path='js/shared/article-text-fit.js') }}?v=article-fit-2"></script>
-<link rel="stylesheet" href="{{ url_for('static', path='build-page.css') }}?v=build-interactive-1">
+<link rel="stylesheet" href="{{ url_for('static', path='build-page.css') }}?v=build-instructions-2">
 <div id="imageAmbient" class="image-ambient" aria-hidden="true"><div class="wash-group"><span></span><span></span></div><div class="wash-group"><span></span><span></span></div></div>
 <section class="build-workshop workshop"
   data-build-workshop
@@ -92,8 +92,7 @@
     </section>
     <section class="prompt-editor-panel build-instructions-panel" aria-labelledby="buildInstructionsTitle">
       <h2 id="buildInstructionsTitle">FURTHER INSTRUCTIONS</h2>
-      <label class="build-input-help" for="buildFurtherInstructions">Optional creative direction</label>
-      <textarea id="buildFurtherInstructions" data-further-instructions maxlength="100" rows="3" aria-describedby="buildInstructionsCount" placeholder="Make it sci-fi and catastrophically dramatic"></textarea>
+      <textarea id="buildFurtherInstructions" data-further-instructions aria-labelledby="buildInstructionsTitle" maxlength="100" rows="3" aria-describedby="buildInstructionsCount" placeholder="Make it sci-fi and catastrophically dramatic"></textarea>
       <div class="instructions-footer"><span id="buildInstructionsCount" data-instructions-count aria-live="polite">0 / 100</span><button type="button" class="mini-action" data-clear-instructions>CLEAR</button></div>
     </section>
     <details class="build-advanced-prompt" data-advanced-prompt>
@@ -162,4 +161,4 @@
 
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/story-text-save.js') }}?v=story-save-1"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=build-actions-2" defer></script><script src="{{ url_for('static', path='build-page.js') }}?v=build-interactive-1" defer></script><script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-placement-2" defer></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script><script src="{{ url_for('static', path='js/creation/creation-meta.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-loading.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/embellish.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/video.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/jingles.js') }}?v=build-actions-1" defer></script><script src="{{ url_for('static', path='js/creation/image-background.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/image-colors.js') }}?v=build-background-1" defer></script><script src="{{ url_for('static', path='js/creation/source-udder.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/udder-sounds.js') }}?v=build-udder-1" defer></script><script src="{{ url_for('static', path='js/creation/story-text-save.js') }}?v=story-save-1"></script><script src="{{ url_for('static', path='js/creation/script.js') }}?v=build-actions-2" defer></script><script src="{{ url_for('static', path='build-page.js') }}?v=build-instructions-2" defer></script><script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-placement-2" defer></script>{% endblock %}

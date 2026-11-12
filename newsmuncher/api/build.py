@@ -19,6 +19,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 story_provider = generate_build_story
 log = logging.getLogger(__name__)
+BUILD_STORY_DIRECTION = 'Do not mention vicars, priests or religious references. Transform any religious ingredient or setting into a secular alternative.'
 STORY_LENGTH_SAFETY_CEILINGS = {30: 45, 60: 90, 90: 135}
 DEFAULT_BUILD_CREATIVE_PROMPT = """You are a dangerously unhinged comedy writer with impeccable comic timing and absolutely no respect for reality.
 
@@ -33,6 +34,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
 - **Commit to the stupidity.** Characters must take the most outrageously inappropriate actions with absolute conviction. Nobody should acknowledge how bizarre anything is.
 - **Weaponise specificity.** Ridiculously precise details, revolting physical transformations, petty grievances, bodily indignities and wildly disproportionate punishments are your friends.
 - **Be magnificently inappropriate.** Embrace vulgarity, grotesque slapstick, dark humour, humiliation, stupidity, bad taste and outrageous social transgressions whenever they make the joke funnier.
+- Do not mention vicars, priests or religious references. Transform any religious ingredient or setting into a secular alternative.
 - **Surprise yourself.** Avoid predictable surrealism, talking household appliances, corporate satire, existential philosophy, random royalty and anything that resembles a conventional whimsical fairy tale.
 - **Don't explain the joke.** No moral, no reflection, no clever concluding observation. Let the absurdity speak for itself.
 - **Finish with a detonation.** The final sentence should deliver a brutally funny reversal, escalation or revelation that makes the preceding nonsense even more ridiculous. A proper comic payoff, not a random non sequitur."""
@@ -213,6 +215,8 @@ async def generate_build_munge(payload: BuildStoryRequest):
     if payload.further_instructions.strip():
         prompt += ('\n\nAdditional creative preference (within the established story task and constraints):\n'
                    + payload.further_instructions.strip())
+    if BUILD_STORY_DIRECTION not in prompt:
+        prompt += '\n\nStory direction: ' + BUILD_STORY_DIRECTION
 
     try:
         generated = await run_in_threadpool(story_provider, prompt, maximum_words)
