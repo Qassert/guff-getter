@@ -1,7 +1,7 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: GALLERY REMEMBERED RANDOM/LATEST SORTING
+LAST_COMPLETED_FEATURE: GALLERY SORT TOGGLE LOWER-RIGHT PLACEMENT
 LAST_COMPLETED_COMMIT: See latest remembered Gallery sorting commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,7 +13,7 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Gallery RANDOM/LATEST FIRST sorting with a remembered preference; preserve helper edit.
+CURRENT_TASK: Move the Gallery sorting toggle beneath the story at the lower right, following Andy’s screenshot. Preserve sorting behaviour and helper edit.
 APPROVAL: Gallery-only RANDOM/LATEST FIRST ordering and local preference; preserve helper and historical data. No paid generation, push, merge or deployment.
 NEXT_STEP: Review docs/gallery-sorting.md. Desktop/mobile visual browser checks remain unverified; all changes committed locally except the preserved helper offset.
 VALIDATION: 84 Python and 68 JS tests pass, including Gallery EDIT/ENHANCE/video and race regressions. Syntax/diff checks pass; no live nomination/media changes.

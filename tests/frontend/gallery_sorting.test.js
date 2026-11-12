@@ -52,7 +52,9 @@ test('rapid mode switching ignores stale responses and actions keep the latest i
 
 test('parchment toggle has accessible depressed state and responsive styling',()=>{
  const html=fs.readFileSync('newsmuncher/templates/promotion_gallery.html','utf8'),css=fs.readFileSync('newsmuncher/static/css/gallery/promotion-gallery.css','utf8');
- assert(html.indexOf('class="gallery-sort"')<html.indexOf('<figure id="galleryIllustration"'));
+ assert(html.indexOf('class="gallery-sort"')>html.indexOf('id="galleryTextRegion"'));
+ assert(html.indexOf('class="gallery-sort"')<html.indexOf('id="galleryFurControls"'));
+ assert.match(css,/\.gallery-sort \{[^}]*align-self: flex-end/s);
  assert.match(html,/data-gallery-sort="random" aria-pressed="true">RANDOM/);
  assert.match(html,/data-gallery-sort="latest" aria-pressed="false">LATEST FIRST/);
  assert.match(css,/\.gallery-sort \.funky-button\[aria-pressed="true"\][^{]*\{[^}]*translateY\(2px\)[^}]*inset[^}]*underline/s);

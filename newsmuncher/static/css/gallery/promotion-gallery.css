@@ -215,7 +215,7 @@
   .gallery-page.has-image .gallery-arrow { top: var(--gallery-arrow-centre-y, max(194px, calc(min(40dvh, 375px) + 31px))); }
   .gallery-page.has-image figure { position: sticky; top: 24px; margin: 0; height: 100%; }
   .gallery-page.has-image figure > img { height: 100%; max-height: 100%; }
-  .gallery-page.has-image .gallery-copy { height: auto; max-height: none; overflow: hidden; padding-right: 4px; }
+  .gallery-page.has-image .gallery-copy { height: auto; max-height: none; overflow: visible; padding-right: 4px; }
 }
 @media (max-width: 620px) {
   .promotion-gallery-page .site-main { width: calc(100% - 24px); padding-top: 20px; }
@@ -251,8 +251,8 @@
 
 /* Remembered ordering, using the existing parchment tabs. */
 .gallery-sort {
-  grid-column: 1 / -1; display: flex; justify-content: center; flex-wrap: wrap;
-  align-self: start; gap: 8px; margin: 0 0 20px; min-width: 0;
+  display: flex; justify-content: flex-end; flex-wrap: wrap; flex: 0 0 auto;
+  align-self: flex-end; gap: 8px; margin: 16px 0 0; min-width: 0; max-width: 100%;
 }
 .gallery-sort .funky-button {
   font-size: .9rem; min-width: 0; padding: 12px 20px;
@@ -269,5 +269,3 @@
   .gallery-sort .funky-button { font-size: .8rem; padding: 10px 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .gallery-sort .funky-button { transition: none; } }
-
-@media (min-width: 850px) { .gallery-page.has-image .gallery-sort { margin-bottom: 0; } }

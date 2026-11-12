@@ -77,3 +77,11 @@ Changed files:
 - tests/python/test_gallery_sorting.py
 - tests/frontend/gallery_sorting.test.js
 - CURRENT_WORK.md and this report
+
+## Placement follow-up
+
+Andy’s subsequent screenshot moves the toggle below the story on the lower-right
+side of the parchment. The toggle is now inside the copy column, after the fitted
+story region, aligned right in normal flex flow. Space is reserved so it cannot
+cover story text; desktop overflow permits the existing button glow. The original
+pressed state and preference/selection logic are unchanged.
