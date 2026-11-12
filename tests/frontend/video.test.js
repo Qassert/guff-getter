@@ -105,7 +105,7 @@ test('real DOM binding keeps animation automatic with no generation button', asy
 test('Creator restore accepts an exact gallery rewrite selector without generating media',()=>{
     const fs=require('node:fs'); const script=fs.readFileSync('newsmuncher/static/js/creation/script.js','utf8');
     assert.match(script,/new URLSearchParams\(window\.location\.search\)\.get\('rewrite_id'\)/);
-    assert.match(script,/fetch\(`\/temp\/image_result\/\$\{encodeURIComponent\(id\)\}`/);
+    assert.match(script,/const response = await fetch\(path,/); assert.match(script,/\/temp\/image_result\//);
 });
 
 

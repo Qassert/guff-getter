@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: GALLERY ENHANCE COMPATIBILITY AND POLICY DIAGNOSTICS
-LAST_COMPLETED_COMMIT: See latest Gallery ENHANCE compatibility commit in Git history
+LAST_COMPLETED_FEATURE: SAFE VIDEO END-FRAME RECOVERY AND GALLERY NOTICES
+LAST_COMPLETED_COMMIT: See latest safe video end-frame recovery commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Read-only ENHANCE preparation, selection identity guards and policy failure reporting; preserve helper edit.
-APPROVAL: ENHANCE investigation, local-only preparation and explicit in-app confirmation before legacy metadata commitment. Preserve records/media/helper; no paid tests or push/merge/deploy.
-NEXT_STEP: Review docs/gallery-enhance-investigation.md. Dickens EDIT remains fixed; exact vicar end-image provider block is preserved and now reported accurately, not silently retried.
-VALIDATION: 116 Python tests plus 6 subtests, 47 JS tests, syntax/diff checks pass. Read-only actual-record preparation passed; no live metadata/media writes. Helper offset remains uncommitted.
+CURRENT_TASK: Explicit safe video end-frame recovery and contained Gallery notifications; preserve helper edit and existing media.
+APPROVAL: Explicitly confirmed paid recovery only in future user application actions; no paid tests. Keep story/start image/history/helper unchanged; no push/merge/deploy.
+NEXT_STEP: Review docs/video-end-frame-recovery.md. ENHANCE offers one confirmed independent safe end frame; visual browser checks and real provider acceptance remain unverified.
+VALIDATION: 122 Python tests plus 6 subtests, 68 JS tests, syntax/diff checks pass. Actual start-image hash verified read-only; no media/data changes. Helper offset remains uncommitted.
 
 
 ## Early adoption access — 2026-11-09

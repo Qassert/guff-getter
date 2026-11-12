@@ -614,12 +614,13 @@
                             await this.refresh(item, sequence);
                         }
                     } catch (error) {
-                        const recovery = error.mediaState?.end_image_retry_attempt_id;
-                        if (recovery && await this.view.confirmEndImageRetry()) {
+                        const safeRecovery = error.mediaState?.end_image_safe_retry_attempt_id;
+                        const recovery = safeRecovery || error.mediaState?.end_image_retry_attempt_id;
+                        if (recovery && await this.view.confirmEndImageRetry({safe: !!safeRecovery})) {
                             try {
                                 this.view.progress('Retrying end image…');
                                 const state = await providerRequest(
-                                    '/videos/' + encodeURIComponent(item.rewrite_id) + '/retry-uncertain-end-image', {
+                                    '/videos/' + encodeURIComponent(item.rewrite_id) + (safeRecovery ? '/retry-safe-end-image' : '/retry-uncertain-end-image'), {
                                         method: 'POST', signal, body: JSON.stringify({
                                             attempt_id: recovery, confirmed: true
                                         })
@@ -633,7 +634,7 @@
                                 failures.push(this.completionFailure('video', retryError));
                             }
                         } else if (recovery) {
-                            failures.push('End-image retry cancelled; the uncertain attempt remains unchanged.');
+                            failures.push(safeRecovery ? 'Video retry cancelled; your successful image and story are unchanged.' : 'End-image retry cancelled; the uncertain attempt remains unchanged.');
                         } else failures.push(this.completionFailure(phase, error));
                     }
                 } else if (!item.video_url && !item.image_url) failures.push('Video is waiting for a usable main image.');
@@ -792,7 +793,16 @@
             status.textContent = '';
         },
         backAvailable(available) { get('galleryBack').hidden = !available; },
-        error(message) { status.textContent = message; page.setAttribute('aria-busy', 'false'); },
+        error(message) {
+            if (page.hidden) status.textContent = message;
+            else {
+                status.textContent = '';
+                this.progress(message);
+                completionStatus.dataset.kind = 'error';
+                completionStatus.focus?.({preventScroll: true});
+            }
+            page.setAttribute('aria-busy', 'false');
+        },
         promoting(busy) { promote.disabled = busy || !!gallery.current?.promoted; },
         promoted() {
             get('galleryPromoted').hidden = false;
@@ -804,6 +814,7 @@
         progress(message) {
             completionStatus.textContent = message;
             completionStatus.hidden = !message;
+            completionStatus.dataset.kind = 'progress';
         },
         completed(alreadyComplete) {
             this.progress(alreadyComplete ? 'This creation is already complete.' : 'Complete');
@@ -814,7 +825,12 @@
             else retryDialog.setAttribute('open', '');
             return new Promise(resolve => { retryConfirmation = resolve; });
         },
-        confirmEndImageRetry() {
+        confirmEndImageRetry({safe = false} = {}) {
+            get('galleryEndImageRetryTitle').textContent = safe ? 'Retry video with a safe final frame?' : 'Previous end-image generation had an uncertain outcome.';
+            get('galleryEndImageRetryDescription').textContent = safe
+                ? 'Your existing image and story will stay unchanged. This creates one revised, non-explicit final frame independently, then requests a video using your existing image as its start. Both requests may incur charges. Continue?'
+                : 'The previous end-image request may have reached the provider. Retrying could create and charge for another image and video. Retry anyway?';
+            get('galleryConfirmEndImageRetry').textContent = safe ? 'RETRY VIDEO' : 'RETRY';
             if (endRetryConfirmation) return Promise.resolve(false);
             if (typeof endRetryDialog.showModal === 'function') endRetryDialog.showModal();
             else endRetryDialog.setAttribute('open', '');

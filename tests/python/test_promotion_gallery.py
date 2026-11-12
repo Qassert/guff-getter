@@ -465,7 +465,9 @@ def test_polish_accessibility_and_scoped_styles():
     assert '@media (max-width: 620px)' in css
     assert '.promotion-gallery [hidden] { display: none !important; }' in css
     assert 'aria-live="polite"' in template and 'aria-label="Creation controls"' in template
-    assert 'tabindex="-1"' not in template  # Native buttons/links, no focus trap.
+    import re
+    assert not re.search(r'<(?:button|a)\b[^>]*tabindex="-1"', template)  # Controls stay in native tab order.
+    assert 'aria-atomic="true" tabindex="-1"' in template  # Notification can receive error focus.
     script = Path('newsmuncher/static/js/gallery/promotion-gallery.js').read_text()
     assert "[music, promote, edit, complete].forEach" in script
     assert "[get('galleryNext'), get('galleryBack')].forEach" in script

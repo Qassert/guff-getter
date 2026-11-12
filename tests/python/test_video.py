@@ -450,3 +450,117 @@ def test_exact_duplicate_end_frame_is_diagnostic_and_requires_explicit_retry(set
     replacement = state(service, key)['video']['end_frame']
     assert replacement['retry_of'] == saved['end_frame']['image_id']
     assert replacement['transformation_map'] == saved['end_frame']['transformation_map']
+
+
+def policy_blocked_end_frame(service, collection, key):
+    response = httpx.Response(400, request=httpx.Request('POST', 'https://provider.invalid'))
+    error = BadRequestError('rejected', response=response, body={'error': {'code': 'moderation_blocked'}})
+    service.image_provider.generate_referenced_image = lambda *args: (_ for _ in ()).throw(error)
+    service.claim(collection, key, 'pet'); service.run(collection, key, 'pet')
+    return state(service, key)['video']['end_frame']['image_id']
+
+
+def test_policy_recovery_uses_independent_safe_frame_and_preserves_successful_image(setup):
+    service, collection, key, calls = setup
+    fax = json.loads(Path('tests/fixtures/fax_vicar_nomination.json').read_text())
+    with service.store.transaction() as db:
+        saved = service.store.read(db, key, 'pet')
+        saved['result'].update(crazyReplacement1Title=fax['title'], crazyReplacement1Extract=fax['body'])
+        service.store.save(db, key, saved)
+    before = state(service, key)['result'].copy()
+    image_bytes = (service.images / f'{key}.png').read_bytes()
+    attempt = policy_blocked_end_frame(service, collection, key)
+    public = service.status(collection, key, 'pet')
+    assert public['end_image_safe_retry_attempt_id'] == attempt
+    assert 'REDO IMAGE' not in public['message'] and 'image is ready' in public['message']
+    assert not calls
+    prepared, claimed = service.retry_safe_end_image(collection, key, 'pet', attempt)
+    assert claimed and prepared['video_status'] == 'queued'
+    with pytest.raises(VideoError): service.retry_safe_end_image(collection, key, 'pet', attempt)
+    service.run(collection, key, 'pet')
+    saved = state(service, key)
+    assert saved['result'] == before
+    assert (service.images / f'{key}.png').read_bytes() == image_bytes
+    assert saved['video']['status'] == 'complete' and len(calls) == 1
+    assert saved['video']['end_frame']['mode'] == 'independent_safe_end_frame'
+    prompt = saved['video']['end_frame']['image_prompt']
+    assert all(term in prompt.lower() for term in ('vicar', 'fax', 'choir', 'paper', 'church'))
+    assert 'scrotum' not in prompt.lower() and 'pubes' not in prompt.lower()
+    assert prompt != saved['video']['end_frame_history'][0]['image_prompt']
+    assert saved['video']['end_frame_history'][0]['image_id'] == attempt
+    assert all(call[0] != 'edit' for call in service.image_provider.calls)
+
+
+def test_safe_frame_rejection_has_no_automatic_retry_or_repeated_recovery(setup):
+    service, collection, key, calls = setup
+    attempt = policy_blocked_end_frame(service, collection, key)
+    service.retry_safe_end_image(collection, key, 'pet', attempt)
+    requests = []
+    def reject(*args):
+        requests.append(args)
+        raise BadRequestError('rejected', response=httpx.Response(400,
+            request=httpx.Request('POST', 'https://provider.invalid')),
+            body={'error': {'code': 'moderation_blocked'}})
+    service.image_provider.generate_image = reject
+    service.run(collection, key, 'pet')
+    public = service.status(collection, key, 'pet')
+    assert len(requests) == 1 and not calls
+    assert public['failure_kind'] == 'content_policy'
+    assert not public.get('end_image_safe_retry_attempt_id')
+    retry_id = state(service, key)['video']['end_frame']['image_id']
+    with pytest.raises(VideoError): service.retry_safe_end_image(collection, key, 'pet', retry_id)
+    assert (service.images / f'{key}.png').read_bytes() == PNG
+
+
+def test_safe_frame_story_change_stops_before_new_paid_work(setup):
+    service, collection, key, calls = setup
+    attempt = policy_blocked_end_frame(service, collection, key)
+    service.retry_safe_end_image(collection, key, 'pet', attempt)
+    with service.store.transaction() as db:
+        saved = service.store.read(db, key, 'pet')
+        saved['result']['crazyReplacement1Extract'] = 'Changed by another editor.'
+        service.store.save(db, key, saved)
+    service.run(collection, key, 'pet')
+    assert not service.image_provider.calls and not calls
+
+
+def test_safe_frame_requires_explicit_api_confirmation(setup):
+    from unittest.mock import MagicMock
+    from newsmuncher.api import videos
+    service, collection, key, calls = setup
+    attempt = policy_blocked_end_frame(service, collection, key)
+    fake = MagicMock()
+    fake.retry_safe_end_image.return_value = ({'rewrite_id':key}, False)
+    app = FastAPI(); app.include_router(videos.router)
+    app.dependency_overrides[videos.viewer] = lambda: {'pet':'pet'}
+    with patch.object(videos, 'service', fake):
+        client = TestClient(app)
+        denied = client.post(f'/videos/{key}/retry-safe-end-image',json={'attempt_id':attempt,'confirmed':False})
+        assert denied.status_code == 400 and not fake.retry_safe_end_image.called
+        allowed = client.post(f'/videos/{key}/retry-safe-end-image',json={'attempt_id':attempt,'confirmed':True})
+        assert allowed.status_code == 200 and fake.retry_safe_end_image.call_count == 1
+
+
+def test_optional_end_frame_transport_omits_last_image_when_not_supplied(setup, monkeypatch):
+    from test_video_smoke_test import FakeSession
+    service, collection, key, calls = setup
+    fake = FakeSession(); record = {}
+    monkeypatch.setattr(wavespeed.time, 'sleep', lambda _: None)
+    target = service.directory.parent / 'optional-endpoint.mp4'
+    with patch.object(wavespeed.requests, 'Session', return_value=fake):
+        wavespeed.create_video(service.images / f'{key}.png', target, 'Harmless movement.',
+                               1, record, lambda: None, 'mock-secret', last_source=None)
+    submission = next(call for call in fake.calls if call[0] == 'POST' and not call[1].endswith('/media/uploads'))
+    assert 'last_image' not in submission[2]['json']
+    assert len([call for call in fake.calls if call[1].endswith('/media/uploads')]) == 1
+
+
+def test_video_appearing_after_recovery_confirmation_is_never_overwritten(setup):
+    service, collection, key, calls = setup
+    attempt = policy_blocked_end_frame(service, collection, key)
+    service.retry_safe_end_image(collection, key, 'pet', attempt)
+    service.directory.mkdir(parents=True, exist_ok=True)
+    service.path(key).write_bytes(MP4)
+    service.run(collection, key, 'pet')
+    assert service.path(key).read_bytes() == MP4
+    assert not calls and not service.image_provider.calls

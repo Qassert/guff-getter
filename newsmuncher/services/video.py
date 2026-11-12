@@ -1,6 +1,7 @@
 """One non-expiring animation claim per existing rewrite; status never generates."""
 from datetime import datetime, timezone
 import hashlib
+from copy import deepcopy
 import logging
 import os
 from pathlib import Path
@@ -14,7 +15,7 @@ from openai import BadRequestError
 from newsmuncher.config import GENERATED_IMAGES_DIR, GENERATED_VIDEO_DIR
 from newsmuncher.services.image_generation import (store, get_provider, build_end_image_prompt,
     build_transformation_map, choose_image_style, safe_provider_failure)
-from newsmuncher.services.media_description import ensure_media_description
+from newsmuncher.services.media_description import ensure_media_description, revise_media_description, build_media_description
 from newsmuncher.services.video_prompt import build_transition_prompt, choose_transformation
 from newsmuncher.services.video_pingpong import service as pingpong
 from newsmuncher.integrations.wavespeed import MODEL, create_video, read_image
@@ -135,7 +136,12 @@ class Videos:
         if (end_status == 'definitive_failed' and isinstance(end_frame, dict) and
                 end_frame.get('failure_code') == 'moderation_blocked'):
             result.update(failure_kind='content_policy', failure_stage='end_image',
-                message='The video end image was rejected by the provider safety policy. Existing story and media are unchanged. Open EDIT and explicitly choose REDO IMAGE for a new safe visual attempt; no automatic paid retry was made.')
+                message='Your image is ready, but the video final frame was rejected by the provider safety policy. Your story and image are safe.')
+            if not end_frame.get('safe_retry_count'):
+                result['end_image_safe_retry_attempt_id'] = end_frame.get('image_id')
+                result['message'] += ' Use ENHANCE to confirm a new safe end frame and video request; additional charges may apply.'
+            else:
+                result['message'] += ' The revised final frame was also rejected. No further recovery was submitted; review is required.'
         if (isinstance(end_frame, dict) and end_status in ('started', 'uncertain', 'duplicate') and
                 isinstance(end_frame.get('image_id'), str)):
             result['end_image_retry_attempt_id'] = end_frame['image_id']
@@ -216,6 +222,50 @@ class Videos:
                 state['result'], shared_style, transformation_map,
                 media_description, transformation)
             self.store.save(db, key, state)
+            return self.public(key, state), True
+
+    def retry_safe_end_image(self, collection, key, owner, attempt_id):
+        """One explicit, single-use recovery of a definitive end-frame policy block."""
+        try:
+            expected = str(UUID(str(attempt_id)))
+        except (ValueError, TypeError, AttributeError):
+            raise VideoError(409, 'End-image attempt is invalid.') from None
+        with self.store.transaction() as db:
+            state = self.read(db, key, owner)
+            video = state.get('video') or {}
+            previous = video.get('end_frame') or {}
+            if (video.get('status') != 'failed_or_uncertain' or previous.get('image_id') != expected or
+                    previous.get('status') != 'definitive_failed' or
+                    previous.get('failure_code') != 'moderation_blocked' or previous.get('safe_retry_count')):
+                raise VideoError(409, 'This policy recovery is unavailable or already used.')
+            source = self.source(key, state)
+            data, _, _ = read_image(source)
+            if hashlib.sha256(data).hexdigest() != video.get('source_sha256'):
+                raise VideoError(409, 'The saved start image changed; recovery was not submitted.')
+            if self.path(key).exists() or self.path(key).is_symlink():
+                raise VideoError(409, 'Existing video retained; recovery was not submitted.')
+            # Build a different non-explicit scene, not a disguised resubmission.
+            description = revise_media_description(deepcopy(state))
+            concept = description['concept']
+            if 'vicar' in concept and 'choir' in concept:
+                concept += ' The ceremony takes place in a church with an astonished, fully clothed choir.'
+            style = video.get('visual_style') or state['result'].get('image_style')
+            prompt = ('Create a later moment in this safe theatrical scene: ' + concept +
+                      ' Keep recognisable characters, principal props, setting and composition, '
+                      'using exaggerated non-explicit slapstick. Maintain consistent framing, lighting and artistic medium.' +
+                      (f' Visual style: {style}.' if style else ''))
+            if prompt == previous.get('image_prompt'):
+                raise VideoError(409, 'No materially revised end-frame description is available.')
+            replacement = {'image_id': str(uuid4()), 'status': 'queued', 'stage': 'end',
+                'image_prompt': prompt, 'image_style': style, 'mode': 'independent_safe_end_frame',
+                'source_story_hash': description['source_hash'], 'safe_retry_count': 1,
+                'retry_of': expected, 'created_at': now(), 'confirmed_at': now()}
+            video.setdefault('end_frame_history', []).append(deepcopy(previous))
+            video.update(end_frame=replacement, status='queued', worker_started=False,
+                         requested_epoch=time.time(), retry_requested_at=now())
+            video.pop('error', None)
+            state['video'] = video
+            self.store.save(db, key, state)  # Permanent claim before any new paid work.
             return self.public(key, state), True
 
     def retry_uncertain_end_image(self, collection, key, owner, attempt_id):
@@ -305,6 +355,15 @@ class Videos:
             last_source = None
             end_frame = video.get('end_frame')
             if isinstance(end_frame, dict):
+                if (end_frame.get('mode') == 'independent_safe_end_frame' and
+                        (self.path(key).exists() or self.path(key).is_symlink())):
+                    raise VideoError(409, 'Existing video retained; recovery was not submitted.')
+                if end_frame.get('source_story_hash'):
+                    result = state['result']
+                    current_hash = build_media_description(result.get('crazyReplacement1Title', ''),
+                                                           result.get('crazyReplacement1Extract', ''))['source_hash']
+                    if current_hash != end_frame['source_story_hash']:
+                        raise VideoError(409, 'Saved story changed after video recovery was confirmed.')
                 last_source = self.images / f"{end_frame['image_id']}.png"
                 if end_frame.get('status') != 'complete':
                     end_frame['status'] = 'started'
@@ -315,7 +374,7 @@ class Videos:
                     image_provider = self.image_provider or get_provider()
                     reference_generation = getattr(image_provider, 'generate_referenced_image', None)
                     generated = (reference_generation(end_frame['image_prompt'], end_frame['image_id'], source)
-                        if callable(reference_generation) else image_provider.generate_image(
+                        if callable(reference_generation) and end_frame.get('mode') != 'independent_safe_end_frame' else image_provider.generate_image(
                             end_frame['image_prompt'], end_frame['image_id']))
                     end_frame['provider_response_received_at'] = now()
                     end_frame.update(generated, status='complete')

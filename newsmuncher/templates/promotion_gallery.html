@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Gallery · NewsMuncher{% endblock %}
-{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=gallery-parchment-seams-1"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/mad-helper.css') }}?v=mad-helper-placement-2">{% endblock %}
+{% block styles %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap"><link rel="stylesheet" href="{{ url_for('static', path='css/gallery/promotion-gallery.css') }}?v=gallery-video-recovery-1"><link rel="stylesheet" href="{{ url_for('static', path='css/creation/mad-helper.css') }}?v=mad-helper-placement-2">{% endblock %}
 {% block body_attributes %} class="promotion-gallery-page"{% endblock %}
 {% block header %}{% endblock %}
 {% block background %}<div id="galleryBackdrop" class="gallery-backdrop" aria-hidden="true"><img id="galleryBackdropImage" alt=""></div>{% endblock %}
@@ -28,7 +28,7 @@
       <a id="galleryEdit" class="gallery-fur-control gallery-fur-edit" href="{{ creation_url }}" aria-label="Edit creation" title="Edit this creation"><img src="{{ url_for('static', path='images/buttons/Furry Cowhide Pencil Badge.png') }}" alt=""></a>
       <button id="galleryComplete" type="button" class="gallery-fur-control gallery-fur-complete" aria-label="ENHANCE" title="ENHANCE"><img src="{{ url_for('static', path='images/buttons/Magical Cowhide Wand Emblem.png') }}" alt=""></button>
     </div>
-    <p id="galleryCompletionStatus" class="gallery-completion-status" role="status" aria-live="polite" hidden></p>
+    <p id="galleryCompletionStatus" class="gallery-completion-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden></p>
   </article>
   <dialog id="galleryImageRetryDialog" class="creation-delete-dialog" aria-labelledby="galleryImageRetryTitle">
     <h2 id="galleryImageRetryTitle">Previous image generation had an uncertain outcome.</h2>
@@ -38,9 +38,9 @@
       <button type="button" id="galleryCancelImageRetry" class="funky-button">CANCEL</button>
     </div>
   </dialog>
-  <dialog id="galleryEndImageRetryDialog" class="creation-delete-dialog" aria-labelledby="galleryEndImageRetryTitle">
+  <dialog id="galleryEndImageRetryDialog" class="creation-delete-dialog" aria-labelledby="galleryEndImageRetryTitle" aria-describedby="galleryEndImageRetryDescription">
     <h2 id="galleryEndImageRetryTitle">Previous end-image generation had an uncertain outcome.</h2>
-    <p>The previous end-image request may have reached the provider. Retrying could create and charge for another image. Retry anyway?</p>
+    <p id="galleryEndImageRetryDescription">The previous end-image request may have reached the provider. Retrying could create and charge for another image and video. Retry anyway?</p>
     <div class="creation-delete-dialog-actions">
       <button type="button" id="galleryConfirmEndImageRetry" class="funky-button">RETRY</button>
       <button type="button" id="galleryCancelEndImageRetry" class="funky-button">CANCEL</button>
@@ -58,4 +58,4 @@
 {% if signed_in %}{% include 'partials/mad-helper-toggle.html' %}{% endif %}
 {% endblock %}
 {% block footer %}{% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=gallery-text-save-1" defer></script>{% endif %}{% if signed_in %}<script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-placement-2" defer></script>{% endif %}{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='js/shared/mode-nav.js') }}?v=nav-sounds-2" defer></script>{% if signed_in %}<script src="{{ url_for('static', path='js/gallery/promotion-gallery.js') }}?v=gallery-video-recovery-1" defer></script>{% endif %}{% if signed_in %}<script src="{{ url_for('static', path='js/shared/mad-helper.js') }}?v=mad-helper-placement-2" defer></script>{% endif %}{% endblock %}

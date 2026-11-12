@@ -85,3 +85,40 @@ test('main-image content rejection remains distinct from data validation failure
  const data=new Error('Saved story missing');data.httpStatus=422;
  assert.match(t.gallery.completionFailure('orchestration',data),/Creation data/);
 });
+
+test('safe final-frame recovery is explicitly confirmed and never regenerates main image',async()=>{
+ let record={...item(),video_url:null};const calls=[];
+ const t=setup(async(url,opts)=>{
+  calls.push([url,opts]);
+  if(url.endsWith('/retry-safe-end-image')){record={...record,video_url:'/safe-video.mp4'};return response({rewrite_id:'rewrite-A',video_url:record.video_url});}
+  if(url.startsWith('/videos/'))return response({rewrite_id:'rewrite-A',video_status:'failed_or_uncertain',failure_kind:'content_policy',
+    end_image_safe_retry_attempt_id:'attempt',message:'Final frame rejected; your image is safe.'});
+  return response(record);
+ });
+ let confirmation;t.gallery.view.confirmEndImageRetry=async options=>{confirmation=options;return true;};
+ t.gallery.current={...record};await t.gallery.complete();
+ assert.deepEqual(confirmation,{safe:true});
+ const retry=calls.find(([url])=>url.endsWith('/retry-safe-end-image'));
+ assert.deepEqual(JSON.parse(retry[1].body),{attempt_id:'attempt',confirmed:true});
+ assert(!calls.some(([url])=>url==='/temp/generate_image'||url==='/temp/redo_image'));
+ assert.equal(t.gallery.current.image_url,'/image.png');assert.equal(t.gallery.current.video_url,'/safe-video.mp4');
+});
+
+test('declining safe final-frame recovery submits no paid request',async()=>{
+ const calls=[];const record={...item(),video_url:null};
+ const t=setup(async(url,opts)=>{calls.push([url,opts]);return response(url.startsWith('/videos/')?
+  {video_status:'failed_or_uncertain',failure_kind:'content_policy',end_image_safe_retry_attempt_id:'attempt'}:record);});
+ t.gallery.view.confirmEndImageRetry=async()=>false;t.gallery.current={...record};await t.gallery.complete();
+ assert(!calls.some(([url,opts])=>url.startsWith('/videos/')&&opts.method==='POST'));
+ assert(t.errors.some(message=>message.includes('successful image and story are unchanged')));
+});
+
+test('switching nomination while safe recovery confirmation is open cancels submission',async()=>{
+ const prompt=deferred(),calls=[],record={...item(),video_url:null};
+ const t=setup(async(url,opts)=>{calls.push([url,opts]);return response(url.startsWith('/videos/')?
+  {video_status:'failed_or_uncertain',failure_kind:'content_policy',end_image_safe_retry_attempt_id:'attempt'}:record);});
+ t.gallery.view.confirmEndImageRetry=()=>prompt.promise;t.gallery.current={...record};const pending=t.gallery.complete();
+ await new Promise(setImmediate);t.gallery.sequence++;t.gallery.completionAbort.abort();t.gallery.current=item('B');
+ prompt.resolve(true);await pending;
+ assert(!calls.some(([url,opts])=>url.endsWith('/retry-safe-end-image')));assert.equal(t.gallery.current.id,'B');
+});

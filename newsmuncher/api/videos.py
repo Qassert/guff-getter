@@ -52,6 +52,17 @@ def retry_uncertain_end_image(rewrite_id: str, payload: EndImageRetry,
     return response(data, 202 if claimed else 200)
 
 
+@router.post('/{rewrite_id}/retry-safe-end-image')
+def retry_safe_end_image(rewrite_id: str, payload: EndImageRetry,
+                         tasks: BackgroundTasks, user=Depends(viewer)):
+    if not payload.confirmed:
+        raise HTTPException(400, 'Explicit confirmation of additional image/video charges is required.')
+    data, claimed = invoke(service.retry_safe_end_image, rewrite_id, user['pet'], payload.attempt_id)
+    if claimed:
+        tasks.add_task(service.run, collection, rewrite_id, user['pet'])
+    return response(data, 202 if claimed else 200)
+
+
 @router.get('/{rewrite_id}/media')
 def media(rewrite_id: str, tasks: BackgroundTasks, user=Depends(viewer)):
     data = invoke(service.status, rewrite_id, user['pet'])
