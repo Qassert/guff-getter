@@ -1,3 +1,5 @@
-<label class="mad-helper-toggle"><input type="checkbox" data-mad-helper-toggle checked
+<label class="master-mute-button mad-helper-toggle" title="Toggle Mad Helper"><input type="checkbox" aria-label="Mad Helper" data-mad-helper-toggle checked
     data-assets="{{ url_for('static', path='images/mad-helper/') }}"
-    data-sounds='["{{ url_for('static', path='audio/effects/ui/cartoon-double-boing-pop.wav') }}", "{{ url_for('static', path='audio/effects/ui/farty_button_squelch.wav') }}", "{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"]'>Mad Helper</label>
+    data-sounds='["{{ url_for('static', path='audio/effects/ui/cartoon-double-boing-pop.wav') }}", "{{ url_for('static', path='audio/effects/ui/farty_button_squelch.wav') }}", "{{ url_for('static', path='audio/effects/ui/squelch_01_wet_pop.wav') }}"]'>
+  <span class="mad-helper-toggle-face" aria-hidden="true"><img src="{{ url_for('static', path='images/mad-helper/idle.png') }}" alt=""></span>
+</label>

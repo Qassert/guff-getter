@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: GALLERY SORT TOGGLE LOWER-RIGHT PLACEMENT
-LAST_COMPLETED_COMMIT: See latest remembered Gallery sorting commit in Git history
+LAST_COMPLETED_FEATURE: GLOBAL MAD HELPER FACE TOGGLE
+LAST_COMPLETED_COMMIT: See latest global Mad Helper face toggle commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Move the Gallery sorting toggle beneath the story at the lower right, following Andy’s screenshot. Preserve sorting behaviour and helper edit.
-APPROVAL: Gallery-only RANDOM/LATEST FIRST ordering and local preference; preserve helper and historical data. No paid generation, push, merge or deployment.
-NEXT_STEP: Review docs/gallery-sorting.md. Desktop/mobile visual browser checks remain unverified; all changes committed locally except the preserved helper offset.
-VALIDATION: 84 Python and 68 JS tests pass, including Gallery EDIT/ENHANCE/video and race regressions. Syntax/diff checks pass; no live nomination/media changes.
+CURRENT_TASK: Move the Mad Helper toggle beside global mute as a round face/off-slash control; preserve helper JavaScript edits.
+APPROVAL: Move the existing helper toggle beside mute with a PNG face and off-state red slash. Preserve current helper behaviour and uncommitted work; no push/merge/deploy.
+NEXT_STEP: Review docs/mad-helper-face-toggle.md. Helper JavaScript and the prior 65px positioning edit are untouched; no live browser visual check.
+VALIDATION: 31 focused JS tests and four rendered-template checks pass; diff checks pass. No new assets, paid calls or media changes.
 
 
 ## Early adoption access — 2026-11-09
