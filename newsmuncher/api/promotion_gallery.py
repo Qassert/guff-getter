@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from urllib.parse import quote
 from uuid import UUID, uuid4
+from typing import Literal
 from newsmuncher.config import TEMPLATES_DIR
 from pydantic import BaseModel, Field
 
@@ -40,9 +41,11 @@ def response(value):
 
 @router.get('/next')
 def next_item(previous: str | None = None, shown: str | None = None,
-              chronological_index: int = Query(0, ge=0, le=3), user=Depends(viewer)):
+              chronological_index: int = Query(0, ge=0, le=3),
+              sort: Literal['random', 'latest'] = 'random', seed: str = Query('', max_length=100),
+              user=Depends(viewer)):
     shown_ids = tuple(key for key in (shown or '').split(',') if ObjectId.is_valid(key))
-    return response(service.select(user['id'], previous, shown_ids, chronological_index))
+    return response(service.select(user['id'], previous, shown_ids, chronological_index, sort=sort, seed=seed))
 
 
 class Displayed(BaseModel):

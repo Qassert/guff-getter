@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: GALLERY POPUP-ONLY PRESENTATION
-LAST_COMPLETED_COMMIT: See latest safe video end-frame recovery commit in Git history
+LAST_COMPLETED_FEATURE: GALLERY REMEMBERED RANDOM/LATEST SORTING
+LAST_COMPLETED_COMMIT: See latest remembered Gallery sorting commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Remove the visible Gallery parchment status box at Andy’s request; retain the recovery popup and screen-reader announcements.
-APPROVAL: Explicitly confirmed paid recovery only in future user application actions; no paid tests. Keep story/start image/history/helper unchanged; no push/merge/deploy.
-NEXT_STEP: Review the popup-only presentation refinement; safe recovery flow and pre-existing helper edit remain unchanged.
-VALIDATION: 13 focused Gallery notification/recovery JS tests and syntax checks pass. Recovery popup and helper offset preserved; no push/merge/deploy.
+CURRENT_TASK: Gallery RANDOM/LATEST FIRST sorting with a remembered preference; preserve helper edit.
+APPROVAL: Gallery-only RANDOM/LATEST FIRST ordering and local preference; preserve helper and historical data. No paid generation, push, merge or deployment.
+NEXT_STEP: Review docs/gallery-sorting.md. Desktop/mobile visual browser checks remain unverified; all changes committed locally except the preserved helper offset.
+VALIDATION: 84 Python and 68 JS tests pass, including Gallery EDIT/ENHANCE/video and race regressions. Syntax/diff checks pass; no live nomination/media changes.
 
 
 ## Early adoption access — 2026-11-09

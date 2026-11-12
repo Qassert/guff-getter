@@ -4,6 +4,16 @@
     const creatorEditUrl = (base, rewriteId, nominationId) => rewriteId
         ? base + '?rewrite_id=' + encodeURIComponent(rewriteId)
         : nominationId ? base + '?nomination_id=' + encodeURIComponent(nominationId) : base;
+    const SORT_PREFERENCE_KEY = 'newsmuncher.gallery.sort';
+    const validSort = mode => mode === 'latest' ? 'latest' : 'random';
+    function readSort(storage) {
+        try { return validSort((storage || root.localStorage)?.getItem(SORT_PREFERENCE_KEY)); }
+        catch (_) { return 'random'; }
+    }
+    function saveSort(storage, mode) {
+        try { (storage || root.localStorage)?.setItem(SORT_PREFERENCE_KEY, mode); } catch (_) {}
+    }
+    const randomSeed = () => root.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
     class GalleryMedia {
         constructor({makeAudio = () => new Audio(), status = () => {}} = {}) {
             this.makeAudio = makeAudio;
@@ -202,8 +212,12 @@
         }
     }
     class PromotionGallery {
-        constructor({view, fetcher = (url, options) => fetch(url, options), afterDisplay = () => Promise.resolve(), media = new GalleryMedia(), visual = new GalleryVideo(), backdrop = new GalleryBackdrop()}) {
+        constructor({view, storage, fetcher = (url, options) => fetch(url, options), afterDisplay = () => Promise.resolve(), media = new GalleryMedia(), visual = new GalleryVideo(), backdrop = new GalleryBackdrop()}) {
             this.view = view;
+            this.storage = storage;
+            this.sortMode = readSort(storage);
+            this.randomSeed = randomSeed();
+            this.view.sorting?.(this.sortMode);
             this.media = media;
             this.visual = visual;
             this.backdrop = backdrop;
@@ -285,6 +299,18 @@
                 .finally(() => { this.acknowledging = null; });
             return this.acknowledging;
         }
+        async setSort(mode) {
+            mode = validSort(mode);
+            if (mode === this.sortMode) return;
+            this.sortMode = mode;
+            saveSort(this.storage, mode);
+            this.randomSeed = randomSeed();
+            this.history = []; this.forward = []; this.cycleSeen = [];
+            this.chronologicalIndex = 0; this.current = null;
+            this.view.sorting?.(mode);
+            this.view.backAvailable?.(false);
+            return this.next();
+        }
         async next() {
             const sequence = ++this.sequence;
             const previousItem = this.current;
@@ -318,7 +344,8 @@
                     return;
                 }
                 const query = new URLSearchParams({
-                    chronological_index: String(this.chronologicalIndex)
+                    chronological_index: String(this.chronologicalIndex),
+                    sort: this.sortMode, seed: this.randomSeed
                 });
                 if (this.current) query.set('previous', this.current.id);
                 if (this.cycleSeen.length) query.set('shown', this.cycleSeen.join(','));
@@ -332,7 +359,7 @@
                 if (data.chronological === true) this.chronologicalIndex++;
                 if (data.chronological === false || data.chronological_complete)
                     this.chronologicalIndex = 3;
-                if (data.cycle_complete) this.cycleSeen = [];
+                if (data.cycle_complete) { this.cycleSeen = []; this.randomSeed = randomSeed(); }
                 this.view.show(data.item);
                 this.view.backAvailable?.(this.history.length > 0);
                 this.backdrop.activate(data.item);
@@ -740,6 +767,7 @@
     const alignFurControls = () => {
         if (!page.classList.contains('has-image') || illustration.hidden) {
             page.style.removeProperty('--gallery-image-centre-x');
+            page.style.removeProperty('--gallery-arrow-centre-y');
             return;
         }
         const pageBox = page.getBoundingClientRect(), imageBox = illustration.getBoundingClientRect();
@@ -748,8 +776,15 @@
         // the exact middle gap between PROMOTE and EDIT.
         page.style.setProperty('--gallery-image-centre-x',
             `${imageBox.left + imageBox.width / 2 - pageBox.left - page.clientLeft}px`);
+        page.style.setProperty('--gallery-arrow-centre-y',
+            `${imageBox.top + imageBox.height / 2 - pageBox.top - page.clientTop}px`);
     };
     const view = {
+        sorting(mode) {
+            document.querySelectorAll('[data-gallery-sort]').forEach(button => {
+                button.setAttribute('aria-pressed', String(button.dataset.gallerySort === mode));
+            });
+        },
         confirmEnhancementPreparation() {
             return window.confirm('Prepare this older nomination for ENHANCE? This saves a compatibility update while keeping its story and existing media unchanged, then continues generating missing media.');
         },
@@ -929,6 +964,17 @@
         }
     });
     page.addEventListener('animationend', () => page.classList.remove('turning'));
+    document.querySelectorAll('[data-gallery-sort]').forEach(button => {
+        button.addEventListener('click', () => {
+            if (button.dataset.gallerySort === gallery.sortMode) return;
+            clearTimeout(nextTimer); clearTimeout(promoteTimer); clearTimeout(editTimer);
+            nextTimer = promoteTimer = editTimer = null;
+            promotePending = editPending = false;
+            nextButton.disabled = false;
+            [nextButton, promote, edit].forEach(control => control.classList.remove('is-pressed'));
+            gallery.setSort(button.dataset.gallerySort);
+        });
+    });
     const nextButton = get('galleryNext');
     let nextTimer = null;
     nextButton.addEventListener('click', () => {

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from contextlib import closing
 import json
+import hashlib
 import random
 import re
 import sqlite3
@@ -217,27 +218,40 @@ class PromotionGallery:
         except OSError:
             return url
 
-    def select(self, viewer, previous=None, shown=(), chronological_index=0):
+    def select(self, viewer, previous=None, shown=(), chronological_index=0, sort=None, seed=""):
         # Only ordering metadata is scanned; content/assets are loaded for one item.
         candidates = list(self.entries.find(NOMINATED, {
             'nominated_at': 1, 'creationDate': 1, 'promotion_gallery_seen_count': 1
         }))
         if not candidates:
             return {'item': None}
-        candidates.sort(key=chronological_key, reverse=True)
+        if sort not in ('random', 'latest'):
+            candidates.sort(key=chronological_key, reverse=True)
         shown = set(shown)
         unseen = [entry for entry in candidates if str(entry['_id']) not in shown]
-        chronological = chronological_index < 3 and bool(unseen)
-        if chronological:
-            selected = unseen[0]
+        if sort in ('random', 'latest'):
+            pool = unseen or candidates
+            if sort == 'random':
+                if not shown and len(pool) > 1:
+                    pool = [entry for entry in pool if str(entry['_id']) != previous]
+                selected = (min(pool, key=lambda entry: hashlib.sha256(
+                    f"{seed}:{entry['_id']}".encode()).digest()) if seed else self.choose(pool))
+            else:
+                selected = max(pool, key=chronological_key)
+            chronological = sort == 'latest'
         else:
-            # Once the three newest entries have been shown, retain the original
-            # fairness floor and random tie-breaking. Prefer unvisited entries for
-            # this page's browsing cycle, then resume normal fairness selection.
-            pool = unseen or [entry for entry in candidates if str(entry['_id']) != previous]
-            pool = pool or candidates
-            floor = min(seen(entry) for entry in pool)
-            selected = self.choose([entry for entry in pool if seen(entry) == floor])
+            # Compatibility for existing internal callers of the original selector.
+            chronological = chronological_index < 3 and bool(unseen)
+            if chronological:
+                selected = unseen[0]
+            else:
+                # Once the three newest entries have been shown, retain the original
+                # fairness floor and random tie-breaking. Prefer unvisited entries for
+                # this page's browsing cycle, then resume normal fairness selection.
+                pool = unseen or [entry for entry in candidates if str(entry['_id']) != previous]
+                pool = pool or candidates
+                floor = min(seen(entry) for entry in pool)
+                selected = self.choose([entry for entry in pool if seen(entry) == floor])
         entry = self.entry(str(selected['_id']))
         token = str(uuid4())
         self.receipts.create_index('expires_at', expireAfterSeconds=0)
