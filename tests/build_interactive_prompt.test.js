@@ -38,9 +38,9 @@ test('custom additions normalise whitespace, reject empty/duplicate/oversized va
  assert.doesNotMatch(t.fields['data-prompt-editor'].value,/Exploding Victorian toilet/);
 });
 
-test('instructions cap at 100 characters and update their counter',()=>{
- const t=setup();t.fields['data-further-instructions'].value='x'.repeat(110);t.workshop.updateInstructions();
- assert.equal(t.workshop.furtherInstructions().length,100);assert.equal(t.fields['data-instructions-count'].textContent,'100 / 100');
+test('instructions cap at 100 words and update their counter',()=>{
+ const t=setup();t.fields['data-further-instructions'].value=Array(110).fill('ridiculous').join(' ');t.workshop.updateInstructions();
+ assert.equal(t.workshop.furtherInstructions().split(/\s+/).length,100);assert(t.workshop.furtherInstructions().length>100);assert.equal(t.fields['data-instructions-count'].textContent,'100 / 100 words');
 });
 
 test('advanced manual rules survive while obsolete selected ingredients are removed',()=>{
@@ -72,7 +72,7 @@ test('main panels precede all three MUNGE buttons; advanced editor is closed and
  assert(html.indexOf('buildIngredientsTitle')<html.indexOf('buildInstructionsTitle'));
  assert(html.indexOf('buildInstructionsTitle')<html.indexOf('class="munge-action"'));
  assert.match(html,/<details[^>]*data-advanced-prompt>/);assert.doesNotMatch(html,/<details[^>]*\bopen\b/);
- assert.match(html,/data-further-instructions aria-labelledby="buildInstructionsTitle" maxlength="100"/);
+ assert.match(html,/data-further-instructions aria-labelledby="buildInstructionsTitle" maxlength="5000"/);
  assert.match(js,/data-custom-ingredient-form.*addEventListener\('submit'/);
 });
 

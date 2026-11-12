@@ -99,3 +99,17 @@ older prompt. No paid generation or live browser visual check was performed.
 
 Further Instructions now also matches the ingredient input’s 12px/14px padding,
 1px #78796d border and 3px corner radius. Only its textarea height differs.
+
+## Follow-up: 100-word directions and non-specific setting
+
+Further Instructions now allows 100 whitespace-separated words, with a live
+"0 / 100 words" counter. Typing/pasting and draft restoration retain the first
+100 words without the former 100-character truncation; the backend rejects more
+than 100 words. A separate 5000-character safety ceiling bounds pathological
+single-word payloads. Older short saved instructions continue to work.
+
+BUILD defaults/reset and final requests (including older saved prompts) include:
+"Do not make the resulting answer be set in any particular place." The previous
+religious-reference exclusion remains unchanged. No CREATE prompt changes.
+24 JS and 74 Python tests pass with mocked generation, including 100 words longer
+than 100 characters, all three targets, rejection of 101 words and the safety cap.

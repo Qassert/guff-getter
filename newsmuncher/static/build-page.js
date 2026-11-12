@@ -34,6 +34,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
 - **Commit to the stupidity.** Characters must take the most outrageously inappropriate actions with absolute conviction. Nobody should acknowledge how bizarre anything is.
 - **Weaponise specificity.** Ridiculously precise details, revolting physical transformations, petty grievances, bodily indignities and wildly disproportionate punishments are your friends.
 - **Be magnificently inappropriate.** Embrace vulgarity, grotesque slapstick, dark humour, humiliation, stupidity, bad taste and outrageous social transgressions whenever they make the joke funnier.
+- Do not make the resulting answer be set in any particular place.
 - Do not mention vicars, priests or religious references. Transform any religious ingredient or setting into a secular alternative.
 - **Surprise yourself.** Avoid predictable surrealism, talking household appliances, corporate satire, existential philosophy, random royalty and anything that resembles a conventional whimsical fairy tale.
 - **Don't explain the joke.** No moral, no reflection, no clever concluding observation. Let the absurdity speak for itself.
@@ -96,6 +97,12 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
   function storyLengthInstruction(targetWords) {
     const pacing = {30: 'Keep it punchy and compressed.', 60: 'Give the absurd situation room to escalate.', 90: 'Develop a more elaborate absurd situation while keeping every sentence useful.'}[targetWords];
     return `Story length: Aim for approximately ${targetWords} words. You may go slightly over when it improves the story's coherence, comedic timing or final punchline. Prioritise a complete, funny story over hitting an exact word count. If there are too many ingredients, use fewer rather than forcing everything into the story. ${pacing}`;
+  }
+
+  function limitFurtherInstructions(value) {
+    const text = String(value || '').slice(0, 5000);
+    const words = [...text.matchAll(/\S+/g)];
+    return words.length > 100 ? text.slice(0, words[100].index).trimEnd() : text;
   }
 
   function selectedIngredientLines(recipe) {
@@ -241,7 +248,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
             this.promptDirty = !!draft.promptDirty;
             this.element.querySelector('[data-prompt-editor]').value = draft.prompt || '';
             const instructions = this.element.querySelector('[data-further-instructions]');
-            if (instructions) instructions.value = String(draft.furtherInstructions || '').slice(0, 100);
+            if (instructions) instructions.value = limitFurtherInstructions(draft.furtherInstructions);
             if (draft.story) {
               displayBuildStory(this.element, draft.story);
               const nominate = this.element.querySelector('[data-build-nominate]');
@@ -388,14 +395,14 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     }
 
     furtherInstructions() {
-      return (this.element.querySelector('[data-further-instructions]')?.value || '').slice(0, 100);
+      return limitFurtherInstructions(this.element.querySelector('[data-further-instructions]')?.value);
     }
 
     updateInstructions() {
       const field = this.element.querySelector('[data-further-instructions]');
-      if (field) field.value = field.value.slice(0, 100);
+      if (field) field.value = limitFurtherInstructions(field.value);
       const count = this.element.querySelector('[data-instructions-count]');
-      if (count) count.textContent = `${this.furtherInstructions().length} / 100`;
+      if (count) count.textContent = `${(this.furtherInstructions().match(/\S+/g) || []).length} / 100 words`;
     }
 
     addCustomIngredient() {

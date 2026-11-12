@@ -443,7 +443,7 @@ def test_interactive_custom_recipe_and_directions_reach_provider_without_old_nam
 
 
 @pytest.mark.parametrize('updates',[
-    {'further_instructions':'x'*101},
+    {'further_instructions':'word '*101},
     {'recipe':{'custom':[{'text':' '}]}},
     {'recipe':{'custom':[{'text':'Toilet'},{'text':'toilet'}]}},
     {'recipe':{'custom':[{'text':'x'*161}]}},
@@ -471,3 +471,23 @@ def test_build_religious_exclusion_also_applies_to_saved_older_prompts(target):
     with patch.object(build,'story_provider',return_value='A complete secular catastrophe.') as provider:
         assert client().post('/build/generate',json=body).status_code==200
         assert build.BUILD_STORY_DIRECTION in provider.call_args.args[0]
+
+
+@pytest.mark.parametrize('target',[30,60,90])
+def test_build_accepts_100_instruction_words_and_applies_no_particular_place_rule(target):
+    body=generation_payload(target)
+    body['prompt']='An older custom prompt.'
+    body['further_instructions']=' '.join(['ridiculous']*100)
+    with patch.object(build,'story_provider',return_value='A complete comic catastrophe.') as provider:
+        assert client().post('/build/generate',json=body).status_code==200
+        prompt=provider.call_args.args[0]
+        assert body['further_instructions'] in prompt
+        assert build.BUILD_SETTING_DIRECTION in prompt
+        assert build.BUILD_STORY_DIRECTION in prompt
+
+
+def test_instruction_character_safety_ceiling_remains_bounded():
+    body=generation_payload();body['further_instructions']='x'*5001
+    with patch.object(build,'story_provider') as provider:
+        assert client().post('/build/generate',json=body).status_code==422
+        provider.assert_not_called()

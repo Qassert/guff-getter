@@ -105,8 +105,8 @@ def test_build_removes_theme_scene_selector_but_keeps_other_ingredient_groups():
     assert 'data-category="theme"' not in template
     for category in ('stuff', 'swear', 'modifier', 'person'):
         assert f'data-category="{category}"' in template
-    assert "path='build-page.js') }}?v=build-instructions-2" in template
-    assert "path='build-page.css') }}?v=build-instructions-3" in template
+    assert "path='build-page.js') }}?v=build-directions-words-1" in template
+    assert "path='build-page.css') }}?v=build-directions-words-1" in template
 
 
 def test_build_reuses_create_editors_and_bottom_action_order():
@@ -143,7 +143,7 @@ def test_build_prompt_editor_auto_sizes_and_remains_the_only_prompt_surface():
     template = Path('newsmuncher/templates/build.html').read_text()
     assert '<summary>ADVANCED PROMPT</summary>' in template
     assert 'data-advanced-prompt>' in template
-    assert 'FURTHER INSTRUCTIONS' in template and 'maxlength="100"' in template
+    assert 'FURTHER INSTRUCTIONS' in template and '0 / 100 words' in template
     assert 'clip-path: polygon(' in css
     assert 'linear-gradient(#dfc36f, #c79d43)' in css
     assert 'text-shadow: 0 1px 0 #f7e7a5' in css
