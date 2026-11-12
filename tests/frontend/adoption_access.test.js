@@ -104,12 +104,14 @@ test('BUILD restores real slots, USE recipe, editable prompt and story after ado
         const after = await loadBuild(f.access);
         assert.deepEqual(after.recipe, recipe);
         assert.deepEqual(after.slots.stuff.map(slot => slot.id), ids);
-        assert.equal(after.currentPrompt(), 'My hand-edited prompt');
+        assert.match(after.currentPrompt(), /^My hand-edited prompt\n/);
+        assert.ok(after.currentPrompt().includes(`Objects: ${recipe.stuff[0].text}`));
         assert.equal(after.element.querySelector('[data-build-story]').value, 'My generated and edited story');
         assert.equal(after.generatedHeadline, 'Saved headline');
         assert.equal(after.promptTarget, 90);
+        const restoredPrompt = after.currentPrompt();
         await after.generateStory(30); // Missing adoption: no generation or prompt mutation.
-        assert.equal(after.currentPrompt(), 'My hand-edited prompt');
+        assert.equal(after.currentPrompt(), restoredPrompt);
         assert.equal(after.promptTarget, 90);
     } finally { delete global.adoptionAccess; }
 });

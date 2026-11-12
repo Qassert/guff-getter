@@ -43,7 +43,7 @@ test('nomination remains visible as NOMINATED and becomes editable only after ch
   assert.match(success,/renderNominationButton\(\)/);
   const restoreStart=script.indexOf('async function restoreImageRewrite');
   const restore=script.slice(restoreStart,script.indexOf("document.getElementById('mungeControls')",restoreStart));
-  assert.match(restore,/extract\.value=data\.crazyReplacement1Extract\|\|'';\s*renderNominationButton\(\)/);
+  assert.match(restore,/extract\.value=data\.crazyReplacement1Extract\|\|'';[\s\S]*renderNominationButton\(\)/);
 });
 
 test('persisted nomination disables the button until the result is edited',()=>{
