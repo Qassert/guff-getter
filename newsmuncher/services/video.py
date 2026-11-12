@@ -132,6 +132,10 @@ class Videos:
         result = {'rewrite_id': key, 'video_status': 'failed_or_uncertain', 'can_generate': False,
                 'end_image_status': end_status,
                 'message': 'Animation unavailable or interrupted. Operator review is needed; no automatic retry.'}
+        if (end_status == 'definitive_failed' and isinstance(end_frame, dict) and
+                end_frame.get('failure_code') == 'moderation_blocked'):
+            result.update(failure_kind='content_policy', failure_stage='end_image',
+                message='The video end image was rejected by the provider safety policy. Existing story and media are unchanged. Open EDIT and explicitly choose REDO IMAGE for a new safe visual attempt; no automatic paid retry was made.')
         if (isinstance(end_frame, dict) and end_status in ('started', 'uncertain', 'duplicate') and
                 isinstance(end_frame.get('image_id'), str)):
             result['end_image_retry_attempt_id'] = end_frame['image_id']

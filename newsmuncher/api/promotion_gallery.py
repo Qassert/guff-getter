@@ -1,5 +1,7 @@
 """Private Promotion Gallery: stored nominations and assets only."""
 import logging
+import hashlib
+import json
 from bson import ObjectId
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
@@ -57,83 +59,119 @@ def promote(key: str, user=Depends(viewer)):
     return response(service.promote(key))
 
 
+def editor_entry(entry):
+    """Read-time text normalisation shared with CREATE; never write Gallery text."""
+    from newsmuncher.services.creation_restore import text_fields
+    normalized = text_fields(entry)
+    owner = entry.get('image_owner') or entry.get('creationUser')
+    if (not normalized.get('crazyReplacement1Extract') or
+            not isinstance(normalized.get('crazyReplacement1Title'), str)) and owner:
+        with store.transaction() as db:
+            try:
+                from newsmuncher.services.creation_restore import legacy_editor_id
+                state = store.read(db, entry.get('rewrite_id') or legacy_editor_id(entry['_id']), owner)
+            except (LookupError, PermissionError):
+                state = {}
+            if str(state.get('entry_id')) == str(entry['_id']):
+                cached = text_fields(state.get('result') or {})
+                for field in ('crazyReplacement1Title', 'crazyReplacement1Extract'):
+                    missing = (not normalized.get(field) if field == 'crazyReplacement1Extract'
+                               else not isinstance(normalized.get(field), str))
+                    if missing and isinstance(cached.get(field), str):
+                        normalized[field] = cached[field]
+    return {**entry, **normalized}
+
+
 @router.get('/items/{key}')
 def item(key: str, user=Depends(viewer)):
-    return response(service.serialize(service.entry(key)))
+    return response(service.serialize(editor_entry(service.entry(key))))
+
+
+def enhancement_revision(entry):
+    value = editor_entry(entry)
+    text = [value.get('crazyReplacement1Title') or '', value.get('crazyReplacement1Extract') or '']
+    return hashlib.sha256(json.dumps(text, ensure_ascii=False).encode()).hexdigest()
+
+
+class CommitEnhancement(BaseModel):
+    confirmed: bool
+    revision: str = Field(pattern=r'^[0-9a-f]{64}$')
+
+
+@router.post('/items/{key}/commit-enhancement')
+def commit_enhancement(key: str, payload: CommitEnhancement, user=Depends(viewer)):
+    """Explicitly commit only the compatibility metadata approved in the UI."""
+    if payload.confirmed is not True:
+        raise HTTPException(400, 'Explicit confirmation is required.')
+    entry = service.entry(key)
+    owner = entry.get('image_owner') or entry.get('creationUser')
+    if owner != user['pet']:
+        raise HTTPException(403, 'Only this creation’s owner can prepare it for enhancement.')
+    if enhancement_revision(entry) != payload.revision:
+        raise HTTPException(409, 'Saved story changed; review it again before confirming.')
+    try:
+        rewrite_id = str(UUID(str(entry.get('rewrite_id'))))
+    except (ValueError, TypeError, AttributeError):
+        if entry.get('rewrite_id') not in (None, ''):
+            raise HTTPException(409, 'Existing media identity is invalid; operator review is required.')
+        rewrite_id = str(uuid4())
+    from newsmuncher.services.creation_restore import legacy_editor_id, restore_nomination
+    previous_state = None
+    with store.transaction() as db:
+        try:
+            candidate = store.read(db, entry.get('rewrite_id') or legacy_editor_id(entry['_id']), owner)
+            if str(candidate.get('entry_id')) == str(entry['_id']):
+                previous_state = candidate
+        except (LookupError, PermissionError):
+            pass
+    query = {'_id': entry['_id']}
+    # Prevent a confirmation from committing over a concurrent edit or owner change.
+    for field in ('rewrite_id', 'image_owner', 'creationUser', 'crazyReplacement1Title',
+                  'crazyReplacement1Extract', 'result'):
+        query[field] = entry[field] if field in entry else {'$exists': False}
+    updated = service.entries.update_one(query, {'$set': {
+        'rewrite_id': rewrite_id, 'image_owner': owner, 'nominated': True}})
+    if updated.matched_count != 1:
+        raise HTTPException(409, 'Nomination changed; no compatibility update was committed.')
+    if previous_state:
+        with store.transaction() as db:
+            restore_nomination(service.entry(key), owner, store, db, existing=previous_state)
+    return prepare_completion(key, user)
 
 
 @router.post('/items/{key}/prepare-completion')
 def prepare_completion(key: str, user=Depends(viewer)):
-    """Give an owner-matched legacy nomination one durable modern rewrite identity."""
+    """Prepare a local snapshot only; saved nominations and media are read-only."""
+    from newsmuncher.services.creation_restore import restore_nomination, legacy_editor_id
     entry = service.entry(key)
     owner = entry.get('image_owner') or entry.get('creationUser')
     if owner != user['pet']:
-        raise HTTPException(403, 'Only this creation’s owner can complete its media.')
+        raise HTTPException(403, 'Only this creation’s owner can enhance its media.')
+    ready = True
     try:
         rewrite_id = str(UUID(str(entry.get('rewrite_id'))))
     except (ValueError, TypeError, AttributeError):
-        candidate = str(uuid4())
-        service.entries.update_one({'_id': entry['_id'], '$or': [
-            {'rewrite_id': {'$exists': False}}, {'rewrite_id': None}, {'rewrite_id': ''}
-        ]}, {'$set': {'rewrite_id': candidate, 'image_owner': owner}})
-        entry = service.entry(key)
-        try:
-            rewrite_id = str(UUID(str(entry.get('rewrite_id'))))
-        except (ValueError, TypeError, AttributeError):
-            raise HTTPException(409, 'Creation identity could not be prepared safely.') from None
-    # Gallery historically treated crazyReplacement1done as nominated. Modern media
-    # services require the equivalent explicit flag and owner on the same Mongo item.
-    service.entries.update_one({'_id': entry['_id'], 'rewrite_id': rewrite_id}, {'$set': {
-        'nominated': True, 'image_owner': owner
-    }})
-    entry = service.entry(key)
-    result = {
-        'rewrite_id': rewrite_id,
-        'crazyReplacement1Title': entry.get('crazyReplacement1Title') or '',
-        'crazyReplacement1Extract': entry.get('crazyReplacement1Extract') or '',
-        'creationUser': owner,
-        'nominated': True,
-    }
-    result.update({field: entry.get(field) for field in IMAGE_FIELDS if entry.get(field) is not None})
-    with store.transaction() as rewrite_db:
-        row = rewrite_db.execute('SELECT state FROM rewrites WHERE id=?', (rewrite_id,)).fetchone()
+        rewrite_id = legacy_editor_id(entry['_id'])
+        ready = False
+    ready = ready and entry.get('nominated') is True and entry.get('image_owner') == owner
+    with store.transaction() as db:
+        row = db.execute('SELECT state FROM rewrites WHERE id=?', (rewrite_id,)).fetchone()
+        existing = None
         if row:
             try:
-                state = store.read(rewrite_db, rewrite_id, owner)
+                existing = store.read(db, rewrite_id, owner)
             except (LookupError, PermissionError):
                 raise HTTPException(409, 'Creation identity belongs to another rewrite.') from None
-            if str(state.get('entry_id') or entry['_id']) != str(entry['_id']):
+            if str(existing.get('entry_id') or entry['_id']) != str(entry['_id']):
                 raise HTTPException(409, 'Creation identity does not match its nomination.')
-            changed = False
-            if not state.get('entry_id'):
-                state['entry_id'] = str(entry['_id'])
-                changed = True
-            stored_result = state.setdefault('result', {})
-            for field, value in result.items():
-                if field not in stored_result and value is not None:
-                    stored_result[field] = value
-                    changed = True
-            if changed:
-                store.save(rewrite_db, rewrite_id, state)
-        else:
-            state = {'owner': owner, 'entry_id': str(entry['_id']), 'result': result}
-            store.save(rewrite_db, rewrite_id, state)
-    # A historical SQLite rewrite may retain title/body that its older Mongo adapter
-    # omitted. Restore only genuinely absent fields; never replace persisted text.
-    stored_result = state.get('result') or {}
-    for field in ('crazyReplacement1Title', 'crazyReplacement1Extract'):
-        value = stored_result.get(field)
-        current = entry.get(field)
-        if (not isinstance(current, str) or not current.strip()) and isinstance(value, str) and value.strip():
-            service.entries.update_one({'_id': entry['_id'], 'rewrite_id': rewrite_id, '$or': [
-                {field: {'$exists': False}}, {field: None}, {field: ''}
-            ]}, {'$set': {field: value}})
-    entry = service.entry(key)
-    hydrated = service.serialize(entry)
-    log.info('[complete] %s hydrate: ready; image=%s; title=%s; body=%s', rewrite_id,
-             'existing' if hydrated.get('image_url') else 'missing',
-             'existing' if (entry.get('crazyReplacement1Title') or '').strip() else 'missing',
-             'existing' if (entry.get('crazyReplacement1Extract') or '').strip() else 'missing')
+        restored = restore_nomination(entry, owner, store, db, existing=existing)
+    hydrated = service.serialize({**entry, **restored})
+    hydrated['can_enhance'] = ready
+    if not ready:
+        hydrated['enhancement_revision'] = enhancement_revision(entry)
+        hydrated['enhancement_error'] = ('This older nomination has no committed media identity. '
+            'Its text can be opened with EDIT; ENHANCE stopped without changing the saved record or submitting generation.')
+    log.debug('enhance_prepare nomination_id=%s rewrite_id=%s ready=%s', key, rewrite_id, ready)
     return response(hydrated)
 
 

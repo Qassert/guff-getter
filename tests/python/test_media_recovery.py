@@ -65,7 +65,7 @@ def test_second_rejection_stops_and_replayed_request_cannot_spend(setup):
     with patch.object(routes, 'get_provider', return_value=provider):
         with pytest.raises(routes.HTTPException) as error:
             routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
-        assert error.value.status_code == 422 and 'safer visual rewrite' in error.value.detail
+        assert error.value.status_code == 422 and 'safer visual rewrite' in error.value.detail['message']
         with pytest.raises(routes.HTTPException):
             routes.generate_image(routes.ImageRequest(rewrite_id=rid), 'alice')
     assert provider.generate_image.call_count == 2

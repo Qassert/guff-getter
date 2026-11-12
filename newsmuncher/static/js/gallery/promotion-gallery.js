@@ -411,6 +411,10 @@
         completionFailure(stage, error) {
             if (error.completionMessage) return error.completionMessage;
             const state = error.mediaState || {};
+            if (state.detail?.code === 'media_content_rejected') return state.detail.message;
+            if (state.failure_kind === 'content_policy') return state.message || 'The provider rejected this visual interpretation under its safety policy. Existing media is unchanged.';
+            if (stage === 'orchestration' && [403,404,409,422].includes(error.httpStatus))
+                return 'Creation data could not be prepared: ' + error.message;
             const detail = String(error.message || '').toLowerCase();
             const unresolved = /uncertain|pending|processing|submitted|already started|operator review|no automatic retry/.test(detail);
             if (stage === 'display') return 'Saved media is ready, but the Gallery display could not be refreshed.';
@@ -474,8 +478,34 @@
             const original = this.current, sequence = this.sequence;
             if (!original?.id || this.completing) return;
             this.completing = true;
-            this.completionAbort = new AbortController();
-            const signal = this.completionAbort.signal, failures = [];
+            const controller = new AbortController();
+            this.completionAbort = controller;
+            const signal = controller.signal, failures = [];
+            const assertCurrent = () => {
+                if (signal.aborted || sequence !== this.sequence)
+                    throw new DOMException('Enhancement selection changed', 'AbortError');
+            };
+            let expectedRewrite, expectedStory;
+            const storedItem = async selected => {
+                assertCurrent();
+                const fresh = await this.storedItem(selected, signal);
+                assertCurrent();
+                if (fresh.id !== original.id || (expectedRewrite && fresh.rewrite_id !== expectedRewrite) ||
+                        (expectedStory && JSON.stringify([fresh.title, fresh.body]) !== expectedStory)) {
+                    const error = new Error('The selected nomination or its saved text changed; reopen it before enhancing.');
+                    error.httpStatus = 409;
+                    throw error;
+                }
+                return fresh;
+            };
+            const providerRequest = async (url, options) => {
+                assertCurrent();
+                const data = await this.providerRequest(url, options);
+                assertCurrent();
+                if (data?.rewrite_id && data.rewrite_id !== expectedRewrite)
+                    throw new Error('Enhancement response belongs to a different rewrite.');
+                return data;
+            };
             this.view.completing(true);
             this.view.progress('Checking creation…');
             try {
@@ -484,9 +514,26 @@
                 let item = await this.request('/items/' + original.id + '/prepare-completion', {
                     method: 'POST', signal, body: '{}'
                 });
-                if (sequence !== this.sequence) return;
+                assertCurrent();
+                if (item.id !== original.id || !item.rewrite_id)
+                    throw new Error('Selected nomination could not be identified for enhancement.');
+                if (item.can_enhance === false) {
+                    const accepted = await this.view.confirmEnhancementPreparation?.();
+                    assertCurrent();
+                    if (!accepted || !item.enhancement_revision) {
+                        const error = new Error(item.enhancement_error); error.httpStatus = 409; throw error;
+                    }
+                    item = await this.request('/items/' + original.id + '/commit-enhancement', {
+                        method: 'POST', signal, body: JSON.stringify({confirmed:true, revision:item.enhancement_revision})
+                    });
+                    assertCurrent();
+                    if (item.id !== original.id || !item.rewrite_id || item.can_enhance === false)
+                        throw new Error('Selected nomination could not be prepared safely.');
+                }
+                expectedRewrite = item.rewrite_id;
+                expectedStory = JSON.stringify([item.title, item.body]);
                 this.current = item;
-                item = await this.storedItem(item, signal);
+                item = await storedItem(item);
                 const initiallyComplete = item.image_url && item.video_url && item.jingle_url;
                 if (initiallyComplete) {
                     this.view.completed(true);
@@ -502,11 +549,11 @@
                                 throw missing;
                             }
                             this.view.progress('Creating image…');
-                            await this.providerRequest('/temp/generate_image', {
+                            await providerRequest('/temp/generate_image', {
                                 method: 'POST', signal, body: JSON.stringify({rewrite_id: item.rewrite_id})
                             });
                         }
-                        item = await this.storedItem(item, signal);
+                        item = await storedItem(item);
                         if (!item.image_url) {
                             const unavailable = new Error('Image outcome is uncertain.');
                             unavailable.httpStatus = 502;
@@ -518,14 +565,14 @@
                         if (error.imageRecovery && await this.view.confirmImageRetry()) {
                             try {
                                 this.view.progress('Retrying image…');
-                                await this.providerRequest('/temp/retry_uncertain_image', {
+                                await providerRequest('/temp/retry_uncertain_image', {
                                     method: 'POST', signal, body: JSON.stringify({
                                         rewrite_id: error.imageRecovery.rewrite_id,
                                         attempt_id: error.imageRecovery.attempt_id,
                                         confirmed: true
                                     })
                                 });
-                                item = await this.storedItem(item, signal);
+                                item = await storedItem(item);
                                 if (item.image_url) await this.refresh(item, sequence);
                             } catch (retryError) {
                                 failures.push(this.completionFailure('image', retryError));
@@ -535,18 +582,18 @@
                         } else failures.push(this.completionFailure(phase, error));
                     }
                 }
-                item = await this.storedItem(original, signal);
+                item = await storedItem(original);
                 if (!item.video_url && item.image_url) {
                     let phase = 'video';
                     try {
                         this.view.progress('Checking video…');
                         if (!item.video_url) {
-                            let state = await this.providerRequest('/videos/' + encodeURIComponent(item.rewrite_id), {signal});
+                            let state = await providerRequest('/videos/' + encodeURIComponent(item.rewrite_id), {signal});
                             if (!state.video_url && state.video_status === 'none' && state.can_generate) {
-                                item = await this.storedItem(original, signal);
+                                item = await storedItem(original);
                                 if (!item.video_url) {
                                     this.view.progress('Creating end image…');
-                                    state = await this.providerRequest(
+                                    state = await providerRequest(
                                         '/videos/' + encodeURIComponent(item.rewrite_id), {method: 'POST', signal});
                                 }
                             }
@@ -557,7 +604,7 @@
                                 unavailable.mediaState = state;
                                 throw unavailable;
                             }
-                            item = await this.storedItem(item, signal);
+                            item = await storedItem(item);
                             if (!item.video_url) {
                                 const unavailable = new Error('Video outcome is uncertain.');
                                 unavailable.mediaState = state;
@@ -571,7 +618,7 @@
                         if (recovery && await this.view.confirmEndImageRetry()) {
                             try {
                                 this.view.progress('Retrying end image…');
-                                const state = await this.providerRequest(
+                                const state = await providerRequest(
                                     '/videos/' + encodeURIComponent(item.rewrite_id) + '/retry-uncertain-end-image', {
                                         method: 'POST', signal, body: JSON.stringify({
                                             attempt_id: recovery, confirmed: true
@@ -580,7 +627,7 @@
                                 if (!state.video_url && ['queued', 'started'].includes(state.video_status)) {
                                     await this.waitForVideo(item.rewrite_id, signal);
                                 }
-                                item = await this.storedItem(item, signal);
+                                item = await storedItem(item);
                                 if (item.video_url) await this.refresh(item, sequence);
                             } catch (retryError) {
                                 failures.push(this.completionFailure('video', retryError));
@@ -590,7 +637,7 @@
                         } else failures.push(this.completionFailure(phase, error));
                     }
                 } else if (!item.video_url && !item.image_url) failures.push('Video is waiting for a usable main image.');
-                item = await this.storedItem(original, signal);
+                item = await storedItem(original);
                 if (!item.jingle_url) {
                     let phase = 'jingle';
                     try {
@@ -601,20 +648,20 @@
                                 throw missing;
                             }
                             this.view.progress('Creating jingle…');
-                            const jingleState = await this.providerRequest('/jingles/' + encodeURIComponent(item.rewrite_id), {method: 'POST', signal});
+                            const jingleState = await providerRequest('/jingles/' + encodeURIComponent(item.rewrite_id), {method: 'POST', signal});
                             if (!jingleState.jingle_url && ['started', 'submitted', 'uncertain', 'brief_failed'].includes(jingleState.jingle_status)) {
                                 const unavailable = new Error(jingleState.message || 'Jingle was not completed.');
                                 unavailable.mediaState = jingleState;
                                 throw unavailable;
                             }
                         }
-                        item = await this.storedItem(item, signal);
+                        item = await storedItem(item);
                         if (!item.jingle_url) throw new Error('No usable saved jingle is available.');
                         phase = 'display';
                         await this.refresh(item, sequence);
                     } catch (error) { failures.push(this.completionFailure(phase, error)); }
                 }
-                item = await this.storedItem(original, signal);
+                item = await storedItem(original);
                 const mediaChanged = ['image_url', 'video_url', 'jingle_url'].some(
                     field => item[field] !== this.current?.[field]);
                 if (mediaChanged) await this.refresh(item, sequence);
@@ -631,6 +678,7 @@
                     this.view.error(error.message);
                 }
             } finally {
+                if (this.completionAbort !== controller) return;
                 this.completing = false;
                 this.completionAbort = null;
                 if (sequence === this.sequence) this.view.completing(false);
@@ -701,6 +749,9 @@
             `${imageBox.left + imageBox.width / 2 - pageBox.left - page.clientLeft}px`);
     };
     const view = {
+        confirmEnhancementPreparation() {
+            return window.confirm('Prepare this older nomination for ENHANCE? This saves a compatibility update while keeping its story and existing media unchanged, then continues generating missing media.');
+        },
         loading() { status.textContent = 'Turning the page…'; promote.disabled = true; page.setAttribute('aria-busy', 'true'); },
         empty() { page.hidden = true; page.setAttribute('aria-busy', 'false'); status.textContent = 'The collection is waiting for its first nomination. Head back to NewsMuncher to nominate a creation.'; },
         show(item) {

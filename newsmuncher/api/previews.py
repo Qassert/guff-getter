@@ -1386,9 +1386,11 @@ def generate_image(payload: ImageRequest, active_pet: str = Cookie(None)):
                 if current.get('image_id') == attempt['image_id']:
                     current.update(status='definitive_failed', **safe_provider_failure(exc))
                     store.save(db, payload.rewrite_id, state)
-            raise HTTPException(422, ("Even after a safer visual rewrite, the image generator couldn't picture this madness. Your story is unchanged. REDO IMAGE remains available."
+            message = ("Even after a safer visual rewrite, the image generator couldn't picture this madness. Your story is unchanged. REDO IMAGE remains available."
                 if is_content_rejection(exc) and attempt.get('content_retry_count') else
-                'The image request was rejected by the provider. Your story is unchanged.')) from exc
+                'The image request was rejected by the provider. Your story is unchanged.')
+            detail = {'code': 'media_content_rejected', 'message': message} if is_content_rejection(exc) else message
+            raise HTTPException(422, detail) from exc
         except Exception as exc:
             with store.transaction() as db:
                 state = read_image_rewrite(db, payload.rewrite_id, active_pet, allow_discarded=True)

@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: HISTORICAL GALLERY EDITOR RESTORATION
-LAST_COMPLETED_COMMIT: See latest historical Gallery editor restoration commit in Git history
+LAST_COMPLETED_FEATURE: GALLERY ENHANCE COMPATIBILITY AND POLICY DIAGNOSTICS
+LAST_COMPLETED_COMMIT: See latest Gallery ENHANCE compatibility commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Restore historical Gallery nominations into CREATE without mutating saved stories/media.
-APPROVAL: Backwards-compatible Gallery-to-CREATE loading; read-only historical record checks and mocked write tests. Preserve helper work; no push/merge/deploy.
-NEXT_STEP: Review docs/historical-gallery-editor.md. Known Dickens record passed temporary-cache/read-only API restoration; no real-browser or app restart performed.
-VALIDATION: 70 Python tests plus 6 subtests, 45 JS tests and syntax/diff checks pass. Mongo/media unchanged; helper offset remains uncommitted.
+CURRENT_TASK: Read-only ENHANCE preparation, selection identity guards and policy failure reporting; preserve helper edit.
+APPROVAL: ENHANCE investigation, local-only preparation and explicit in-app confirmation before legacy metadata commitment. Preserve records/media/helper; no paid tests or push/merge/deploy.
+NEXT_STEP: Review docs/gallery-enhance-investigation.md. Dickens EDIT remains fixed; exact vicar end-image provider block is preserved and now reported accurately, not silently retried.
+VALIDATION: 116 Python tests plus 6 subtests, 47 JS tests, syntax/diff checks pass. Read-only actual-record preparation passed; no live metadata/media writes. Helper offset remains uncommitted.
 
 
 ## Early adoption access — 2026-11-09
