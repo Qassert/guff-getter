@@ -799,7 +799,6 @@
                 status.textContent = '';
                 this.progress(message);
                 completionStatus.dataset.kind = 'error';
-                completionStatus.focus?.({preventScroll: true});
             }
             page.setAttribute('aria-busy', 'false');
         },

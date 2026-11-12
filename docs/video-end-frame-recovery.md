@@ -103,3 +103,10 @@ static/css/gallery/promotion-gallery.css, templates/promotion_gallery.html,
 tests/python/test_video.py, tests/python/test_promotion_gallery.py,
 tests/frontend/gallery_enhance.test.js, tests/frontend/gallery_notice_layout.test.js,
 tests/frontend/video.test.js, CURRENT_WORK.md and this report.
+
+## Follow-up: popup-only presentation
+
+Andy requested removal of the visible status box shown beneath the story/image.
+The completion status is now screen-reader-only, with no border or layout space.
+The recovery popup, confirmation and cost warning remain unchanged. Removed
+automatic focus on the now-invisible status, and advanced Gallery asset versions.
