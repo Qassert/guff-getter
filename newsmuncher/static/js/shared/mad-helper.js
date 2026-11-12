@@ -55,7 +55,7 @@
     function placementGeometry({paper, text, padding = 0, textHeight, viewportWidth, size = 217.6, gap = 10, anchor = .5, vertical = 'text', scrollY = 0}) {
         // On narrow screens shift inward just enough to keep the outer half reachable.
         const width = Math.min(size, viewportWidth < 620 ? size * 76 / 128 : size);
-        const x = Math.max(paper.left, width / 2 + 4);
+        const x = Math.max(paper.left, width / 2 + 4) + (vertical === 'paper-start' ? 65 : 0);
         const y = vertical === 'paper-start' && viewportWidth >= 621
             ? Math.max(paper.top + scrollY + width * .36, width / 2 + 12) - scrollY
             : text.top + Math.min(text.height, textHeight || text.height) * anchor;
