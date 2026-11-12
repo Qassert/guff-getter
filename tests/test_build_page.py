@@ -106,7 +106,7 @@ def test_build_removes_theme_scene_selector_but_keeps_other_ingredient_groups():
     for category in ('stuff', 'swear', 'modifier', 'person'):
         assert f'data-category="{category}"' in template
     assert "path='build-page.js') }}?v=build-instructions-2" in template
-    assert "path='build-page.css') }}?v=build-instructions-2" in template
+    assert "path='build-page.css') }}?v=build-instructions-3" in template
 
 
 def test_build_reuses_create_editors_and_bottom_action_order():

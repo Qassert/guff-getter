@@ -1,7 +1,7 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: BUILD WHITE DIRECTIONS FIELD AND SECULAR STORY RULE
+LAST_COMPLETED_FEATURE: BUILD DIRECTIONS INPUT BORDER AND PADDING
 LAST_COMPLETED_COMMIT: See latest BUILD directions refinement commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: White Further Instructions textbox, remove its redundant visible label and exclude religious references from BUILD output.
+CURRENT_TASK: Match Further Instructions text padding and border to the custom ingredient input; preserve helper edit.
 APPROVAL: BUILD-only layered panels, bounded custom ingredients and 100-character directions; retain advanced editing, core prompts and existing work. No paid generation, push/merge/deploy.
 NEXT_STEP: Review the small BUILD directions refinement. Prior uncommitted helper offset is preserved.
-VALIDATION: 24 focused JS tests and 70 Python tests pass; diff checks pass. No paid generation or unrelated changes.
+VALIDATION: Scoped CSS values match the existing ingredient input; BUILD page checks and diff checks pass. No generation changes.
 
 
 ## Early adoption access — 2026-11-09
@@ -1944,7 +1944,7 @@ image prompt only: believable figures/materials, cinematic lighting, connected s
 absurd humour and 4–6 dominant colours. Flat style retained as PREVIOUS_IMAGE_STYLE;
 original graffiti/zine wording retained as ORIGINAL_IMAGE_STYLE, both reference-only.
 Image settings, rewritten scene inputs and lifecycle unchanged.
-VALIDATION: 24 focused JS tests and 70 Python tests pass; diff checks pass. No paid generation or unrelated changes.
+VALIDATION: Scoped CSS values match the existing ingredient input; BUILD page checks and diff checks pass. No generation changes.
 No real images or external calls. Changes intentionally uncommitted/unpushed for review.
 
 
@@ -1960,7 +1960,7 @@ Run from root using .venv/bin/python -m scripts.diagnostics.compare_tts --provid
 For one live sample, replace all with openai/elevenlabs/cartesia and omit --dry-run.
 Each provider requires an API-enabled account, usable quota/credit and access to the
 configured voice IDs. Account/voice availability has not been tested live.
-VALIDATION: 24 focused JS tests and 70 Python tests pass; diff checks pass. No paid generation or unrelated changes.
+VALIDATION: Scoped CSS values match the existing ingredient input; BUILD page checks and diff checks pass. No generation changes.
 STATUS: REVIEW / CODEX; user authorized committing and pushing this harness.
 Earlier image-style changes are already committed; older uncommitted wording above
 is historical. No unrelated files changed in this harness task.

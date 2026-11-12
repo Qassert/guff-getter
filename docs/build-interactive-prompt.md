@@ -96,3 +96,6 @@ alternative." Both default/reset prompts include it; the backend also adds it to
 older saved/manual prompts when absent. CREATE prompts are unchanged.
 24 focused JS tests and 70 Python tests pass, including all three lengths with an
 older prompt. No paid generation or live browser visual check was performed.
+
+Further Instructions now also matches the ingredient input’s 12px/14px padding,
+1px #78796d border and 3px corner radius. Only its textarea height differs.
