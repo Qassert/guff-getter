@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from openai import APITimeoutError, APIStatusError, APIConnectionError
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from starlette.concurrency import run_in_threadpool
 
 from newsmuncher.config import TEMPLATES_DIR
@@ -49,12 +49,29 @@ class BuildRecipe(BaseModel):
     modifier: list[BuildIngredient] = Field(default_factory=list, max_length=12)
     person: list[BuildIngredient] = Field(default_factory=list, max_length=12)
     theme: list[BuildIngredient] = Field(default_factory=list, max_length=12)
+    custom: list[BuildIngredient] = Field(default_factory=list, max_length=12)
+
+    @field_validator('custom')
+    @classmethod
+    def validate_custom(cls, items, info):
+        seen = {" ".join(item.text.split()).casefold()
+                for key in ('stuff', 'swear', 'modifier', 'person', 'theme')
+                for item in info.data.get(key, [])}
+        normalized = []
+        for item in items:
+            text = " ".join(item.text.split())
+            if not text or text.casefold() in seen:
+                raise ValueError('Custom ingredients must be non-empty and unique.')
+            seen.add(text.casefold())
+            normalized.append(item.model_copy(update={'text': text}))
+        return normalized
 
 
 class BuildStoryRequest(BaseModel):
     recipe: BuildRecipe
     target_words: Literal[30, 60, 90]
     prompt: str = Field(min_length=1, max_length=10000)
+    further_instructions: str = Field(default="", max_length=100)
 
 
 class BuildDraftRequest(BaseModel):
@@ -79,6 +96,7 @@ def build_story_prompt(recipe: BuildRecipe, target_words: int, creative_prompt: 
         line("Swear words", "swear"),
         line("People", "person"),
         line("Modifiers", "modifier"),
+        line("Custom Ingredients", "custom"),
     ))
 
     return "\n".join((
@@ -175,7 +193,7 @@ async def generate_build_munge(payload: BuildStoryRequest):
     if not payload.prompt.strip():
         raise HTTPException(status_code=422, detail='The generation prompt cannot be blank.')
     ingredients = [
-        item for key in ('stuff', 'swear', 'modifier', 'person', 'theme')
+        item for key in ('stuff', 'swear', 'modifier', 'person', 'theme', 'custom')
         for item in getattr(recipe, key)
     ]
     if not ingredients:
@@ -185,6 +203,17 @@ async def generate_build_munge(payload: BuildStoryRequest):
 
     maximum_words = STORY_LENGTH_SAFETY_CEILINGS[payload.target_words]
     prompt = apply_story_length(payload.prompt, payload.target_words)
+    labels = [('Objects', 'stuff'), ('Swear words', 'swear'), ('People', 'person'),
+              ('Modifiers', 'modifier'), ('Custom Ingredients', 'custom')]
+    lines = [label + ': ' + '; '.join(item.text for item in getattr(recipe, key))
+             for label, key in labels if getattr(recipe, key)]
+    if '**Selected ingredients:**' in prompt and '**Ingredient handling:**' in prompt:
+        prompt = re.sub(r'(?m)^\*\*Selected ingredients:\*\*$[\s\S]*?(?=^\*\*Ingredient handling:\*\*$)',
+                        lambda _: '**Selected ingredients:**\n\n' + '\n'.join(lines) + '\n\n', prompt)
+    if payload.further_instructions.strip():
+        prompt += ('\n\nAdditional creative preference (within the established story task and constraints):\n'
+                   + payload.further_instructions.strip())
+
     try:
         generated = await run_in_threadpool(story_provider, prompt, maximum_words)
         if isinstance(generated, dict):

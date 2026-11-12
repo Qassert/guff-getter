@@ -16,7 +16,7 @@
   ];
   const LABELS = {
     stuff: 'Stuff / Objects', swear: 'Swear words', modifier: 'Modifiers',
-    person: 'People'
+    person: 'People', custom: 'Custom Ingredients'
   };
   const INITIAL_COUNTS = {stuff: 3, swear: 2, modifier: 5, person: 1};
   const FLICK_COUNT = 5;
@@ -97,13 +97,17 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     return `Story length: Aim for approximately ${targetWords} words. You may go slightly over when it improves the story's coherence, comedic timing or final punchline. Prioritise a complete, funny story over hitting an exact word count. If there are too many ingredients, use fewer rather than forcing everything into the story. ${pacing}`;
   }
 
-  function buildPrompt(recipe, targetWords = 60, creativePrompt = DEFAULT_CREATIVE_PROMPT) {
-    const ingredientLines = [
-      ['Objects', 'stuff'], ['Swear words', 'swear'], ['People', 'person'], ['Modifiers', 'modifier']
+  function selectedIngredientLines(recipe) {
+    return [
+      ['Objects', 'stuff'], ['Swear words', 'swear'], ['People', 'person'], ['Modifiers', 'modifier'], ['Custom Ingredients', 'custom']
     ].flatMap(([label, key]) => {
       const values = (recipe[key] || []).map(item => item.text).filter(Boolean);
       return values.length ? [`${label}: ${values.join('; ')}`] : [];
     });
+  }
+
+  function buildPrompt(recipe, targetWords = 60, creativePrompt = DEFAULT_CREATIVE_PROMPT) {
+    const ingredientLines = selectedIngredientLines(recipe);
     return [
       creativePrompt.trim(),
       '',
@@ -124,6 +128,15 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     ].join('\n');
   }
 
+  function syncPromptIngredients(prompt, recipe, target = 60) {
+    const section = '\n\n' + selectedIngredientLines(recipe).join('\n') + '\n\n';
+    const pattern = /^\*\*Selected ingredients:\*\*$[\s\S]*?(?=^\*\*Ingredient handling:\*\*$)/m;
+    if (pattern.test(prompt)) return prompt.replace(pattern, () => '**Selected ingredients:**' + section);
+    const canonical = buildPrompt(recipe, target);
+    const creative = String(prompt).split('**Selected ingredients:**')[0].trimEnd();
+    return creative + '\n\n' + canonical.slice(canonical.indexOf('**Selected ingredients:**'));
+  }
+
   function applyStoryLength(prompt, targetWords) {
     const cleaned = String(prompt || '').replace(/^Story length:.*(?:\n|$)/gm, '').trimEnd();
     return `${cleaned}\n\n${storyLengthInstruction(targetWords)}`;
@@ -136,11 +149,11 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       items.map(item => ({text: item.text, ...(item.grammar ? {grammar: item.grammar} : {})}))]));
   }
 
-  async function requestBuildStory(fetcher, url, recipe, targetWords, prompt, signal) {
+  async function requestBuildStory(fetcher, url, recipe, targetWords, prompt, signal, furtherInstructions = '') {
     const response = await fetcher(url, {
       method: 'POST', credentials: 'same-origin', signal,
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({recipe: serialiseRecipe(recipe), target_words: targetWords, prompt})
+      body: JSON.stringify({recipe: serialiseRecipe(recipe), target_words: targetWords, prompt, ...(furtherInstructions ? {further_instructions: furtherInstructions} : {})})
     });
     let payload = {};
     try { payload = await response.json(); } catch (_) {}
@@ -184,7 +197,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       this.reducedMotion = options.reducedMotion || (() => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
       this.vocabularies = {};
       this.slots = {stuff: [], swear: [], modifier: [], person: []};
-      this.recipe = {stuff: [], swear: [], modifier: [], person: []};
+      this.recipe = {stuff: [], swear: [], modifier: [], person: [], custom: []};
       this.nextId = 1;
       this.generating = false;
       this.generateController = null;
@@ -212,12 +225,12 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
         }
         root.adoptionAccess?.register('build', {
           snapshot: () => ({slots: this.slots, recipe: this.recipe, nextId: this.nextId,
-            prompt: this.currentPrompt(), promptTarget: this.promptTarget, promptDirty: this.promptDirty,
+            prompt: this.currentPrompt(), promptTarget: this.promptTarget, promptDirty: this.promptDirty, furtherInstructions: this.furtherInstructions(),
             story: this.element.querySelector('[data-build-story]')?.value || '',
             generatedHeadline: this.generatedHeadline, headlineStory: this.headlineStory}),
           restore: draft => {
             if (!draft.slots || !draft.recipe) return;
-            this.slots = draft.slots; this.recipe = draft.recipe; this.nextId = draft.nextId;
+            this.slots = draft.slots; this.recipe = {...draft.recipe, custom: draft.recipe.custom || []}; this.nextId = draft.nextId;
             for (const slots of Object.values(this.slots)) {
               for (const slot of slots) { slot.busy = false; slot.generation++; }
             }
@@ -226,6 +239,8 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
             this.headlineStory = draft.headlineStory || '';
             this.promptDirty = !!draft.promptDirty;
             this.element.querySelector('[data-prompt-editor]').value = draft.prompt || '';
+            const instructions = this.element.querySelector('[data-further-instructions]');
+            if (instructions) instructions.value = String(draft.furtherInstructions || '').slice(0, 100);
             if (draft.story) {
               displayBuildStory(this.element, draft.story);
               const nominate = this.element.querySelector('[data-build-nominate]');
@@ -357,7 +372,10 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       const slot = this.slots[category].find(item => item.id === id);
       if (!slot || slot.busy) return;
       const text = phrase(slot.parts);
-      if (!text || this.recipe[category].some(item => item.text === text)) return;
+      if (!text) return;
+      const selected = this.recipe[category].find(item => item.text === text);
+      if (selected) return this.removeRecipe(category, selected.id);
+      if (Object.values(this.recipe).flat().some(item => item.text.toLowerCase() === text.toLowerCase())) return;
       this.recipe[category].push({id: `${category}-${Date.now()}-${this.nextId++}`, text,
         grammar: category === 'modifier' ? slot.parts[0].category : undefined});
       this.renderRecipe();
@@ -368,7 +386,46 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       this.renderRecipe();
     }
 
+    furtherInstructions() {
+      return (this.element.querySelector('[data-further-instructions]')?.value || '').slice(0, 100);
+    }
+
+    updateInstructions() {
+      const field = this.element.querySelector('[data-further-instructions]');
+      if (field) field.value = field.value.slice(0, 100);
+      const count = this.element.querySelector('[data-instructions-count]');
+      if (count) count.textContent = `${this.furtherInstructions().length} / 100`;
+    }
+
+    addCustomIngredient() {
+      const input = this.element.querySelector('[data-custom-ingredient]');
+      const text = input.value.replace(/\s+/g, ' ').trim();
+      const duplicate = Object.values(this.recipe).flat().some(item => item.text.toLowerCase() === text.toLowerCase());
+      const custom = this.recipe.custom || (this.recipe.custom = []);
+      const error = !text ? 'Enter an ingredient.' : text.length > 160 ? 'Use 160 characters or fewer.' :
+        duplicate ? 'That ingredient is already selected.' : custom.length >= 12 ? 'Use at most 12 custom ingredients.' : '';
+      input.setCustomValidity(error);
+      if (error) { input.reportValidity(); return false; }
+      custom.push({id: `custom-${this.nextId++}`, text});
+      input.value = '';
+      this.renderRecipe();
+      root.adoptionAccess?.save();
+      return true;
+    }
+
     bind() {
+      this.element.querySelector('[data-custom-ingredient-form]')?.addEventListener('submit', event => {
+        event.preventDefault(); this.addCustomIngredient();
+      });
+      this.element.querySelector('[data-custom-ingredient]')?.addEventListener('input', event => event.target.setCustomValidity(''));
+      this.element.querySelector('[data-further-instructions]')?.addEventListener('input', () => {
+        this.updateInstructions(); root.adoptionAccess?.save();
+      });
+      this.element.querySelector('[data-clear-instructions]')?.addEventListener('click', () => {
+        this.element.querySelector('[data-further-instructions]').value = '';
+        this.updateInstructions(); root.adoptionAccess?.save();
+      });
+      this.element.querySelector('[data-advanced-prompt]')?.addEventListener('toggle', () => this.resizePromptEditor());
       const promptEditor = this.element.querySelector('[data-prompt-editor]');
       promptEditor?.addEventListener('input', () => {
         this.promptDirty = true;
@@ -406,7 +463,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
         <div class="ingredient-phrase">${words}</div>
         <div class="slot-actions">
           <button type="button" class="mini-action" data-randomise-slot="${slot.id}" data-category="${slot.category}" ${slot.busy ? 'disabled' : ''}>SPIN</button>
-          <button type="button" class="mini-action use-action" data-use-slot="${slot.id}" data-category="${slot.category}" ${slot.busy ? 'disabled' : ''}>USE</button>
+          <button type="button" class="mini-action use-action" data-use-slot="${slot.id}" data-category="${slot.category}" ${slot.busy ? 'disabled' : ''} aria-pressed="${this.recipe[slot.category].some(item => item.text === phrase(slot.parts))}">USE</button>
           <button type="button" class="remove-action" data-remove-slot="${slot.id}" data-category="${slot.category}" aria-label="Remove ${slot.category} slot" ${this.slots[slot.category].length <= 1 ? 'disabled' : ''}>×</button>
         </div>
       </article>`;
@@ -428,6 +485,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     }
 
     renderRecipe() {
+      this.element.querySelector('[data-custom-ingredient]')?.setCustomValidity?.('');
       const populated = Object.values(this.recipe).some(items => items.length);
       const panel = this.element.querySelector('[data-recipe-panel]');
       panel.hidden = false;
@@ -437,6 +495,15 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
         `<section class="recipe-category"><h3>${LABELS[category]}</h3><div class="recipe-items">${items.map(item =>
           `<span class="recipe-chip">${escapeHTML(item.text)}${item.grammar ? ` <small>(${escapeHTML(item.grammar)})</small>` : ''}<button type="button" data-remove-recipe="${item.id}" data-category="${category}" aria-label="Remove ${escapeHTML(item.text)}">×</button></span>`).join('')}</div></section>`).join('');
       if (!this.promptDirty) this.resetPrompt();
+      else {
+        const editor = this.element.querySelector('[data-prompt-editor]');
+        editor.value = syncPromptIngredients(editor.value, this.recipe, this.promptTarget);
+      }
+      this.updateInstructions();
+      this.element.querySelectorAll('[data-use-slot]').forEach(button => {
+        const slot = this.slots[button.dataset.category]?.find(item => item.id === Number(button.dataset.useSlot));
+        if (slot) button.setAttribute('aria-pressed', String(this.recipe[slot.category].some(item => item.text === phrase(slot.parts))));
+      });
       const buttons = this.element.querySelectorAll('[data-munge]');
       buttons.forEach(button => { button.disabled = !populated || this.generating; });
       if (!this.generating) {
@@ -511,7 +578,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       this.generating = true;
       this.promptTarget = targetWords;
       const editor = this.element.querySelector('[data-prompt-editor]');
-      editor.value = applyStoryLength(editor.value, targetWords);
+      editor.value = applyStoryLength(syncPromptIngredients(editor.value, this.recipe, targetWords), targetWords);
       this.resizePromptEditor();
       const buttons = this.element.querySelectorAll('[data-munge]');
       const button = this.element.querySelector(`[data-munge-target="${targetWords}"]`);
@@ -524,7 +591,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
       const timeout = root.setTimeout(() => this.generateController?.abort(), 35000);
       try {
         const generated = await requestBuildStory(this.fetcher, this.element.dataset.generateUrl, this.recipe,
-          targetWords, this.currentPrompt(), this.generateController.signal);
+          targetWords, this.currentPrompt(), this.generateController.signal, this.furtherInstructions());
         root.creationActions?.reset?.();
         this.generatedHeadline = generated.headline;
         this.headlineStory = generated.story;
@@ -556,7 +623,7 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     workshop.load(); return workshop;
   }
 
-  const api = {parseCSV, weightedStructure, phrase, buildPrompt, applyStoryLength, serialiseRecipe, requestBuildStory, displayBuildStory, requestBuildDraft, BuildWorkshop, mount,
+  const api = {syncPromptIngredients, parseCSV, weightedStructure, phrase, buildPrompt, applyStoryLength, serialiseRecipe, requestBuildStory, displayBuildStory, requestBuildDraft, BuildWorkshop, mount,
     DEFAULT_CREATIVE_PROMPT, STUFF_STRUCTURES, STUFF_WEIGHTS, SWEAR_STRUCTURES, INITIAL_COUNTS, FLICK_COUNT, FLICK_DELAY};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.NewsMuncherBuild = api;

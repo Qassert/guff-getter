@@ -1,8 +1,8 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: GLOBAL MAD HELPER FACE TOGGLE
-LAST_COMPLETED_COMMIT: See latest global Mad Helper face toggle commit in Git history
+LAST_COMPLETED_FEATURE: BUILD INTERACTIVE INGREDIENT AND INSTRUCTION PANELS
+LAST_COMPLETED_COMMIT: See latest BUILD interactive prompt redesign commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
 
@@ -14,9 +14,9 @@ HANDOVER: README.md
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
 CURRENT_TASK: Move the Mad Helper toggle beside global mute as a round face/off-slash control; preserve helper JavaScript edits.
-APPROVAL: Move the existing helper toggle beside mute with a PNG face and off-state red slash. Preserve current helper behaviour and uncommitted work; no push/merge/deploy.
-NEXT_STEP: Review docs/mad-helper-face-toggle.md. Helper JavaScript and the prior 65px positioning edit are untouched; no live browser visual check.
-VALIDATION: 31 focused JS tests and four rendered-template checks pass; diff checks pass. No new assets, paid calls or media changes.
+APPROVAL: BUILD-only layered panels, bounded custom ingredients and 100-character directions; retain advanced editing, core prompts and existing work. No paid generation, push/merge/deploy.
+NEXT_STEP: Review docs/build-interactive-prompt.md. Visual browser verification remains unperformed; prior uncommitted helper JavaScript offset is preserved.
+VALIDATION: 87 JS and 67 Python tests, rendered-template/syntax/diff checks pass. No CSV, historical nomination or media changes.
 
 
 ## Early adoption access — 2026-11-09

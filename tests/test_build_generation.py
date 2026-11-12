@@ -423,3 +423,42 @@ def test_build_dramatic_default_prompt_matches_frontend():
         assert 'Make every story outrageously dramatic.' in prompt
         assert 'absolute conviction and deadpan seriousness.' in prompt
         assert f'Aim for approximately {target} words' in prompt
+
+
+@pytest.mark.parametrize('target',[30,60,90])
+def test_interactive_custom_recipe_and_directions_reach_provider_without_old_names(target):
+    body=generation_payload(target)
+    body['recipe']['person']=[]
+    body['recipe']['custom']=[{'text':'  Exploding   Victorian toilet  '}]
+    body['further_instructions']='Set everything on Mars!'
+    seen=[]
+    with patch.object(build,'story_provider',side_effect=lambda prompt,maximum:seen.append(prompt) or 'A complete comic disaster.'):
+        response=client().post('/build/generate',json=body)
+    assert response.status_code==200
+    assert 'Custom Ingredients: Exploding Victorian toilet' in seen[0]
+    assert 'Dame Edith Crumble' not in seen[0]
+    assert 'Set everything on Mars!' in seen[0]
+    assert 'dangerously unhinged comedy writer' in seen[0]
+    assert f'approximately {target} words' in seen[0]
+
+
+@pytest.mark.parametrize('updates',[
+    {'further_instructions':'x'*101},
+    {'recipe':{'custom':[{'text':' '}]}},
+    {'recipe':{'custom':[{'text':'Toilet'},{'text':'toilet'}]}},
+    {'recipe':{'custom':[{'text':'x'*161}]}},
+    {'recipe':{'custom':[{'text':str(i)} for i in range(13)]}},
+])
+def test_interactive_invalid_inputs_are_rejected_before_generation(updates):
+    body=generation_payload();body.update(updates)
+    with patch.object(build,'story_provider') as provider:
+        assert client().post('/build/generate',json=body).status_code==422
+        provider.assert_not_called()
+
+
+def test_custom_only_recipe_is_supported_without_persisting_to_source_pools():
+    body={'recipe':{'custom':[{'text':'Exploding toilet'}]},'target_words':30,
+          'prompt':build.build_story_prompt(build.BuildRecipe(custom=[{'text':'Exploding toilet'}]),30,build.DEFAULT_BUILD_CREATIVE_PROMPT)}
+    with patch.object(build,'story_provider',return_value='A complete comic disaster.') as provider:
+        assert client().post('/build/generate',json=body).status_code==200
+        assert 'Custom Ingredients: Exploding toilet' in provider.call_args.args[0]
