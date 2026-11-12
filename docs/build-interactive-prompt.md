@@ -113,3 +113,9 @@ BUILD defaults/reset and final requests (including older saved prompts) include:
 religious-reference exclusion remains unchanged. No CREATE prompt changes.
 24 JS and 74 Python tests pass with mocked generation, including 100 words longer
 than 100 characters, all three targets, rejection of 101 words and the safety cap.
+
+Further Instructions now grows to its content height on input, paste, clear,
+recipe/draft render, window resize and font readiness. Border height is included
+so the final line remains visible. Manual textarea resizing is replaced by
+automatic sizing; the white background, padding, border and 100-word cap remain.
+25 focused JS tests and 12 BUILD page checks pass, plus syntax/diff checks.

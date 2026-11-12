@@ -1,7 +1,7 @@
 STATUS: REVIEW
 OWNER: CODEX
 BRANCH: develop
-LAST_COMPLETED_FEATURE: BUILD SETTING RULE AND 100-WORD DIRECTIONS
+LAST_COMPLETED_FEATURE: BUILD AUTO-GROWING FURTHER INSTRUCTIONS
 LAST_COMPLETED_COMMIT: See latest BUILD directions refinement commit in Git history
 LAST_OWNER: CODEX
 HANDOVER: README.md
@@ -13,10 +13,10 @@ HANDOVER: README.md
 - **BLOCKED**: work is incomplete and must not be overwritten
 - **REVIEW**: implementation is complete but awaiting Andy's review/approval
 
-CURRENT_TASK: Add the no-particular-place BUILD rule and change Further Instructions from 100 characters to 100 words.
+CURRENT_TASK: Auto-expand Further Instructions to its full content height, including restored drafts and resized windows.
 APPROVAL: BUILD-only layered panels, bounded custom ingredients and 100-character directions; retain advanced editing, core prompts and existing work. No paid generation, push/merge/deploy.
 NEXT_STEP: Review the small BUILD directions refinement. Prior uncommitted helper offset is preserved.
-VALIDATION: 24 focused JS and 74 Python tests pass; syntax/diff checks pass. Existing helper modification preserved; no paid generation.
+VALIDATION: 25 focused JS tests and 12 BUILD page checks pass; syntax/diff checks pass. Existing helper edit untouched.
 
 
 ## Early adoption access — 2026-11-09
@@ -1944,7 +1944,7 @@ image prompt only: believable figures/materials, cinematic lighting, connected s
 absurd humour and 4–6 dominant colours. Flat style retained as PREVIOUS_IMAGE_STYLE;
 original graffiti/zine wording retained as ORIGINAL_IMAGE_STYLE, both reference-only.
 Image settings, rewritten scene inputs and lifecycle unchanged.
-VALIDATION: 24 focused JS and 74 Python tests pass; syntax/diff checks pass. Existing helper modification preserved; no paid generation.
+VALIDATION: 25 focused JS tests and 12 BUILD page checks pass; syntax/diff checks pass. Existing helper edit untouched.
 No real images or external calls. Changes intentionally uncommitted/unpushed for review.
 
 
@@ -1960,7 +1960,7 @@ Run from root using .venv/bin/python -m scripts.diagnostics.compare_tts --provid
 For one live sample, replace all with openai/elevenlabs/cartesia and omit --dry-run.
 Each provider requires an API-enabled account, usable quota/credit and access to the
 configured voice IDs. Account/voice availability has not been tested live.
-VALIDATION: 24 focused JS and 74 Python tests pass; syntax/diff checks pass. Existing helper modification preserved; no paid generation.
+VALIDATION: 25 focused JS tests and 12 BUILD page checks pass; syntax/diff checks pass. Existing helper edit untouched.
 STATUS: REVIEW / CODEX; user authorized committing and pushing this harness.
 Earlier image-style changes are already committed; older uncommitted wording above
 is historical. No unrelated files changed in this harness task.

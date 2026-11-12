@@ -400,7 +400,12 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
 
     updateInstructions() {
       const field = this.element.querySelector('[data-further-instructions]');
-      if (field) field.value = limitFurtherInstructions(field.value);
+      if (field) {
+        field.value = limitFurtherInstructions(field.value);
+        field.style.height = 'auto';
+        const borderHeight = Math.max(0, (field.offsetHeight || 0) - (field.clientHeight || 0));
+        field.style.height = `${field.scrollHeight + borderHeight}px`;
+      }
       const count = this.element.querySelector('[data-instructions-count]');
       if (count) count.textContent = `${(this.furtherInstructions().match(/\S+/g) || []).length} / 100 words`;
     }
@@ -422,6 +427,8 @@ Your job is to produce a tiny, gloriously ridiculous piece of fiction that feels
     }
 
     bind() {
+      root.addEventListener?.('resize', () => this.updateInstructions(), {passive: true});
+      root.document?.fonts?.ready?.then(() => this.updateInstructions());
       this.element.querySelector('[data-custom-ingredient-form]')?.addEventListener('submit', event => {
         event.preventDefault(); this.addCustomIngredient();
       });

@@ -103,3 +103,13 @@ test('BUILD draft restore preserves custom ingredients and directions and accept
   assert.deepEqual(t.workshop.recipe.custom,[]);assert.equal(t.workshop.furtherInstructions(),'');
  } finally {if(previous===undefined)delete global.adoptionAccess;else global.adoptionAccess=previous;}
 });
+
+
+test('directions expand for more lines and shrink after clearing without losing text',()=>{
+ const t=setup(),field=t.fields['data-further-instructions'];
+ field.value='One line.\nAnother line.\nAnd another.';field.scrollHeight=280;field.offsetHeight=100;field.clientHeight=98;
+ t.workshop.updateInstructions();assert.equal(field.style.height,'282px');
+ assert.equal(field.value,'One line.\nAnother line.\nAnd another.');
+ field.scrollHeight=500;t.workshop.updateInstructions();assert.equal(field.style.height,'502px');
+ field.value='';field.scrollHeight=88;t.workshop.updateInstructions();assert.equal(field.style.height,'90px');
+});
